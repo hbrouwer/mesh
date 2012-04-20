@@ -70,6 +70,6 @@ void zero_out_vector(struct vector *v)
 void print_vector(struct vector *v)
 {
         for (int i = 0; i < v->size; i++)
-                printf("%.2lf\t", v->elements[i]);
+                printf("%lf\t", v->elements[i]);
         printf("\n");
 }

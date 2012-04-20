@@ -112,7 +112,7 @@ void print_matrix(struct matrix *m)
 {
         for (int i = 0; i < m->rows; i++) {
                 for (int j = 0; j < m->cols; j++)
-                        printf("%.2lf\t", m->elements[i][j]);
+                        printf("%lf\t", m->elements[i][j]);
                 printf("\n");
         }
 }
