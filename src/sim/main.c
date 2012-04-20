@@ -32,7 +32,8 @@ int main(int argc, char **argv)
         cprintf("");
         mprintf("MESH %s", VERSION);
         mprintf("(c) 2012 Harm Brouwer <me@hbrouwer.eu>");
-        mprintf("University of Groningen, Center for Language and Cognition");
+        mprintf("Center for Language and Cognition, University of Groningen &");
+        mprintf("Netherlands Organisation for Scientific Research (NWO)");
         cprintf("");
 
         for (int i = 1; i < argc; i++) {
