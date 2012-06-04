@@ -104,7 +104,7 @@ void dispose_group_array(struct group_array *gs)
         free(gs);
 }
 
-struct group *create_group(char *name, int size, bool recurrent)
+struct group *create_group(char *name, int size, bool bias, bool recurrent)
 {
         struct group *g;
         if (!(g = malloc(sizeof(struct group))))
@@ -122,6 +122,7 @@ struct group *create_group(char *name, int size, bool recurrent)
         g->inc_projs = create_projs_array(MAX_PROJS);
         g->out_projs = create_projs_array(MAX_PROJS);
 
+        g->bias = bias;
         g->recurrent = recurrent;
 
         return g;
@@ -129,6 +130,59 @@ struct group *create_group(char *name, int size, bool recurrent)
 error_out:
         perror("[create_group()]");
         return NULL;
+}
+
+void attach_bias_group(struct network *n, struct group *g)
+{
+        char *tmp;
+        int block_size = (strlen(g->name) + 6) * sizeof(char);
+        if (!(tmp = malloc(block_size)))
+                goto error_out;
+        memset(tmp, 0, sizeof(block_size));
+
+        sprintf(tmp, "%s_bias", g->name);
+        struct group *bg = create_group(tmp, 1, true, false);
+
+        free(tmp);
+
+        n->groups->elements[n->groups->num_elements++] = bg;
+        if (n->groups->num_elements == n->groups->max_elements)
+                increase_group_array_size(n->groups);
+
+        bg->vector->elements[0] = 1.0;
+
+        struct matrix *weights = create_matrix(
+                        bg->vector->size,
+                        g->vector->size);
+        struct vector *error = create_vector(
+                        bg->vector->size);
+        struct matrix *deltas = create_matrix(
+                        bg->vector->size,
+                        g->vector->size);
+        struct matrix *prev_deltas = create_matrix(
+                        bg->vector->size,
+                        g->vector->size);
+
+        // XXX: this need to go elsewhere
+        randomize_matrix(weights, 0.0, 0.25);
+
+        bg->out_projs->elements[bg->out_projs->num_elements++] =
+                create_projection(g, weights, error, deltas, prev_deltas,
+                                false);
+        if (bg->out_projs->num_elements == bg->out_projs->max_elements)
+                increase_projs_array_size(bg->out_projs);
+        
+        g->inc_projs->elements[g->inc_projs->num_elements++] =
+                create_projection(bg, weights, error, deltas, prev_deltas,
+                                false);
+        if (g->inc_projs->num_elements == g->out_projs->max_elements)
+                increase_projs_array_size(g->inc_projs);
+
+        return;
+
+error_out:
+        perror("[attach_bias_group()]");
+        return;
 }
 
 void dispose_groups(struct group *g)
@@ -322,7 +376,6 @@ void load_int_parameter(char *buf, char *fmt, int *par, char *msg)
                 mprintf(msg, *par);
 }
 
-
 void load_act_function(char *buf, char *fmt, struct network *n,
                 bool output, char *msg)
 {
@@ -467,7 +520,7 @@ void load_group(char *buf, char *fmt, struct network *n, char *input,
         if (sscanf(buf, fmt, tmp, &tmp_int) == 0)
                 return;
 
-        struct group *g = create_group(tmp, tmp_int, false);
+        struct group *g = create_group(tmp, tmp_int, false, false);
 
         if (strcmp(tmp, input) == 0)
                 n->input = g;
@@ -480,6 +533,9 @@ void load_group(char *buf, char *fmt, struct network *n, char *input,
         n->groups->elements[n->groups->num_elements++] = g;
         if (n->groups->num_elements == n->groups->max_elements)
                 increase_group_array_size(n->groups);
+
+        if (strcmp(tmp, input) != 0)
+                attach_bias_group(n, g);
 
         mprintf(msg, tmp, tmp_int);
 }
@@ -552,7 +608,6 @@ void load_recurrent_group(char *buf, char *fmt, struct network *n,
         g->recurrent = true;
 
         mprintf(msg, tmp, tmp);
-
 }
 
 void load_elman_projection(char *buf, char *fmt, struct network *n, 

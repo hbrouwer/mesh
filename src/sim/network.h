@@ -111,6 +111,8 @@ struct group
 
         struct group *elman_proj;   /* context group for Elman-type topologies */
 
+        bool bias;                  /* flags whether this is a bias group */
+
         bool recurrent;             /* flags whether this is a recurrent group
                                        for BPTT */
 };
@@ -153,7 +155,8 @@ struct group_array *create_group_array(int max_elements);
 void increase_group_array_size(struct group_array *gs);
 void dispose_group_array(struct group_array *gs);
 
-struct group *create_group(char *name, int size, bool recurrent);
+struct group *create_group(char *name, int size, bool bias, bool recurrent);
+void attach_bias_group(struct network *n, struct group *g);
 void dispose_groups(struct group *g);
 
 struct projs_array *create_projs_array(int max_elements);

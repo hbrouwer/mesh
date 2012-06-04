@@ -372,7 +372,7 @@ void backpropagate_error(struct network *n, struct group *g,
                         continue;
 
                 struct group *ng = g->inc_projs->elements[i]->to;
-                
+
                 struct vector *grp_error = group_error(n, ng);
                 backpropagate_error(n, ng, grp_error);
                 dispose_vector(grp_error);

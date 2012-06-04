@@ -152,7 +152,8 @@ error_out:
 
 void ffn_dispose_duplicate_network(struct network *dn)
 {
-        ffn_dispose_duplicate_groups(dn->input);
+        // ffn_dispose_duplicate_groups(dn->input);
+        ffn_dispose_duplicate_groups(dn->output);
         dispose_group_array(dn->groups);
 
         free(dn);
@@ -179,6 +180,7 @@ struct group *ffn_duplicate_group(struct group *g)
         dg->out_projs = create_projs_array(g->out_projs->max_elements);
         dg->out_projs->num_elements = g->out_projs->num_elements;
 
+        dg->bias = g->bias;
         dg->recurrent = g->recurrent;
 
         return dg;
@@ -197,6 +199,41 @@ struct group *ffn_duplicate_groups(struct network *n, struct network *dn,
         if (dn->groups->num_elements == dn->groups->max_elements)
                 increase_group_array_size(dn->groups);
 
+        /* duplicate bias groups */
+        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+                struct group *bg = g->inc_projs->elements[i]->to;
+
+                if (!bg->bias)
+                        continue;
+                
+                struct group *dbg = ffn_duplicate_group(bg);
+                dn->groups->elements[dn->groups->num_elements++] = dbg;
+                if (dn->groups->num_elements == dn->groups->max_elements)
+                        increase_group_array_size(dn->groups);
+
+                /*
+                 * Note: weight matrices are shared among recurrent
+                 *   projections.
+                 */
+                struct vector *error = create_vector(
+                                bg->vector->size);
+                struct matrix *deltas = create_matrix(
+                                bg->vector->size,
+                                g->vector->size);
+                struct matrix *prev_deltas = create_matrix(
+                                bg->vector->size,
+                                        g->vector->size);
+
+                dg->inc_projs->elements[i] = ffn_duplicate_projection(
+                                g->inc_projs->elements[i], error, deltas, prev_deltas);
+                dg->inc_projs->elements[i]->to = dbg;
+
+                dbg->out_projs->elements[0] = ffn_duplicate_projection(
+                                bg->out_projs->elements[0], error, deltas, prev_deltas);
+                dbg->out_projs->elements[0]->to = dg;
+        }
+
+        /* duplicate outgoing projections */
         for (int i = 0; i < g->out_projs->num_elements; i++) {
                 struct group *g2 = g->out_projs->elements[i]->to;
 
@@ -230,7 +267,7 @@ struct group *ffn_duplicate_groups(struct network *n, struct network *dn,
                                                         error, deltas, prev_deltas);
                                 rg->inc_projs->elements[j]->to = dg;
                         }
-                }
+                 }
         }
 
         if (n->input == g)
@@ -241,6 +278,26 @@ struct group *ffn_duplicate_groups(struct network *n, struct network *dn,
         return dg;
 }
 
+void ffn_dispose_duplicate_groups(struct group *dg)
+{
+        for (int i = 0; i < dg->inc_projs->num_elements; i++) {
+                ffn_dispose_duplicate_groups(dg->inc_projs->elements[i]->to);
+                ffn_dispose_duplicate_projection(dg->inc_projs->elements[i]);
+        }
+        dispose_projs_array(dg->inc_projs);
+
+        for (int i = 0; i < dg->out_projs->num_elements; i++) {
+                free(dg->out_projs->elements[i]);
+        }
+        dispose_projs_array(dg->out_projs);
+
+        free(dg->name);
+        dispose_vector(dg->vector);
+
+        free(dg);
+}
+
+/*
 void ffn_dispose_duplicate_groups(struct group *dg)
 {
         for (int i = 0; i < dg->out_projs->num_elements; i++) {
@@ -258,6 +315,7 @@ void ffn_dispose_duplicate_groups(struct group *dg)
 
         free(dg);
 }
+*/
 
 struct projection *ffn_duplicate_projection(
                 struct projection *p,
@@ -317,7 +375,7 @@ void ffn_attach_recurrent_groups(struct ffn_unfolded_network *un,
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
                 char *name = un->recur_groups->elements[i]->name;
                 struct group *g1 = find_group_by_name(n, name);
-                struct group *g2 = create_group(g1->name, g1->vector->size, true);
+                struct group *g2 = create_group(g1->name, g1->vector->size, false, true);
 
                 /*
                  * Note: weight matrices are shared among recurrent
