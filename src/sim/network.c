@@ -125,6 +125,9 @@ struct group *create_group(char *name, int size, bool bias, bool recurrent)
         g->bias = bias;
         g->recurrent = recurrent;
 
+        if(g->bias)
+                g->vector->elements[0] = 1.0;
+
         return g;
 
 error_out:
@@ -148,8 +151,6 @@ void attach_bias_group(struct network *n, struct group *g)
         n->groups->elements[n->groups->num_elements++] = bg;
         if (n->groups->num_elements == n->groups->max_elements)
                 increase_group_array_size(n->groups);
-
-        bg->vector->elements[0] = 1.0;
 
         struct matrix *weights = create_matrix(
                         bg->vector->size,
