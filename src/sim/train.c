@@ -202,7 +202,7 @@ void train_bp(struct network *n)
                         copy_vector(n->target, e->target);
                         feed_forward(n, n->input);
 
-                        struct vector *error = output_error(n);
+                        struct vector *error = n->error_measure(n);
                         backpropagate_error(n, n->output, error);
                         dispose_vector(error);
                 }
@@ -242,7 +242,7 @@ void train_bptt_epochwise(struct network *n)
 
                 for (int i = n->epoch_length - 1; i >= 0; i--) {
                         struct network *ns = n->unfolded_net->stack[i];
-                        struct vector *error = output_error(ns);
+                        struct vector *error = n->error_measure(ns);
                         backpropagate_error(ns, ns->output, error);
                         dispose_vector(error);
                 }
@@ -284,7 +284,7 @@ void train_bptt_truncated(struct network *n)
                 }
 
                 struct network *ns = n->unfolded_net->stack[n->history_length];
-                struct vector *error = output_error(ns);
+                struct vector *error = n->error_measure(ns);
                 backpropagate_error(ns, ns->output, error);
                 dispose_vector(error);
                 
@@ -304,7 +304,7 @@ void train_bptt_truncated(struct network *n)
                                 n->unfolded_net->stack[i]);
 }
 
-struct vector *output_error(struct network *n)
+struct vector *ss_output_error(struct network *n)
 {
         struct vector *error = create_vector(n->target->size);
 
@@ -312,6 +312,19 @@ struct vector *output_error(struct network *n)
                 double act = n->output->vector->elements[i];
                 double err = n->target->elements[i] - act;
                 error->elements[i] = err * n->out_act_fun_deriv(act);
+        }
+
+        return error;
+}
+
+struct vector *ce_output_error(struct network *n)
+{
+        struct vector *error = create_vector(n->target->size);
+
+        for (int i = 0; i < error->size; i++) {
+                double act = n->output->vector->elements[i];
+                double err = n->target->elements[i] - act;
+                error->elements[i] = err;
         }
 
         return error;
@@ -440,6 +453,7 @@ void adjust_projection_weights(struct network *n, struct group *g,
                 for (int j = 0; j < g->vector->size; j++)
                         p->weights->elements[i][j] += 
                                 n->learning_rate * p->deltas->elements[i][j]
+                                - n->weight_decay * p->prev_deltas->elements[i][j]
                                 + n->momentum * p->prev_deltas->elements[i][j];
         
         copy_matrix(p->prev_deltas, p->deltas);

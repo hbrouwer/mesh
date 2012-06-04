@@ -39,8 +39,9 @@ struct network
 
         struct group_array *groups; /* groups in the network */
 
-        double learning_rate;       /* learning rate (beta parameter) */
-        double momentum;            /* momentum (alpha parameter) */
+        double learning_rate;       /* learning rate */
+        double momentum;            /* momentum */
+        double weight_decay;        /* weight decay */
 
         double mse_threshold;       /* mean squared error threshold */
 
@@ -61,6 +62,9 @@ struct network
 
         void (*learning_algorithm)  /* learning algorithm */
                 (struct network *n);
+
+        struct vector               /* error measure */
+                *(*error_measure) (struct network *n);
 
         struct group *input;        /* input group for this network */
         struct group *output;       /* output group for this network */
@@ -172,6 +176,8 @@ void load_int_parameter(char *buf, char *fmt, int *par, char *msg);
 void load_act_function(char *buf, char *fmt, struct network *n,
                 bool output, char *msg);
 void load_learning_algorithm(char *buf, char *fmt, struct network *n,
+                char *msg);
+void load_error_measure(char *buf, char *fmt, struct network *n,
                 char *msg);
 void load_item_set(char *buf, char *fmt, struct network *n, bool train,
                 char *msg);

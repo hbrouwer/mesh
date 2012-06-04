@@ -256,9 +256,11 @@ struct network *load_network(char *filename)
                 }
 
                 load_double_parameter(buf, "LearningRate %lf", &n->learning_rate,
-                                "set learning rate (beta): [%lf]");
+                                "set learning rate: [%lf]");
                 load_double_parameter(buf, "Momentum %lf", &n->momentum,
-                                "set momentum (alpha): [%lf]");
+                                "set momentum: [%lf]");
+                load_double_parameter(buf, "WeightDecay %lf", &n->weight_decay,
+                                "set weight decay: [%lf] *** CHEAT ALERT ***");
                 load_double_parameter(buf, "MSEThreshold %lf", &n->mse_threshold,
                                 "set MSE threshold: [%lf]");
 
@@ -276,6 +278,8 @@ struct network *load_network(char *filename)
 
                 load_learning_algorithm(buf, "LearningMethod %s", n,
                                 "set learning algorithm: [%s]");
+                load_error_measure(buf, "ErrorMeasure %s", n,
+                                "set error measure: [%s]");
 
                 load_group(buf, "Group %s %d", n, input, output,
                                 "added group: [%s (%d)]");
@@ -406,6 +410,25 @@ void load_learning_algorithm(char *buf, char *fmt, struct network *n,
                 n->learning_algorithm = train_bptt_truncated;
 
         if (n->learning_algorithm)
+                mprintf(msg, tmp);
+}
+
+void load_error_measure(char *buf, char *fmt, struct network *n,
+                char *msg)
+{
+        char tmp[64];
+        if (sscanf(buf, fmt, tmp) == 0)
+                return;
+
+        /* sum squared error measure */
+        if (strcmp(tmp, "ss") == 0)
+                n->error_measure = ss_output_error;
+
+        /* cross-entropy error measure */
+        if (strcmp(tmp, "ce") == 0)
+                n->error_measure = ce_output_error;
+
+        if (n->error_measure)
                 mprintf(msg, tmp);
 }
 
@@ -599,7 +622,6 @@ void print_groups(struct group *g)
 
                 printf("  |--> [%s]\n", p->to->name);
                 print_matrix(p->weights);
-
         }
 
         for (int i = 0; i < g->out_projs->num_elements; i++)

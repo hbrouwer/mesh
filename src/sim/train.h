@@ -35,7 +35,8 @@ void train_bp(struct network *n);
 void train_bptt_epochwise(struct network *n);
 void train_bptt_truncated(struct network *n);
 
-struct vector *output_error(struct network *n);
+struct vector *ss_output_error(struct network *n);
+struct vector *ce_output_error(struct network *n);
 
 void backpropagate_error(struct network *n, struct group *g,
                 struct vector *error);
