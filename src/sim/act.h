@@ -30,4 +30,7 @@ double act_fun_tanh_deriv(double y);
 double act_fun_linear(double x);
 double act_fun_linear_deriv(double y);
 
+double act_fun_squash(double x);
+double act_fun_squash_deriv(double y);
+
 #endif /* ACT_H */

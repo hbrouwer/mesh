@@ -326,9 +326,9 @@ struct network *load_network(char *filename)
                                 "set BPTT history length: [%d]");
 
                 load_act_function(buf, "ActFunc %s", n, false,
-                                "set (hidden) activation function: [%s]");
+                                "set hidden activation function: [%s]");
                 load_act_function(buf, "OutActFunc %s", n, true,
-                                "set (output) activation function: [%s]");
+                                "set output activation function: [%s]");
 
                 load_learning_algorithm(buf, "LearningMethod %s", n,
                                 "set learning algorithm: [%s]");
@@ -433,6 +433,15 @@ void load_act_function(char *buf, char *fmt, struct network *n,
                         n->out_act_fun_deriv = act_fun_linear_deriv;
                 }
 
+        /* squash activation function */
+        if (strcmp(tmp, "squash") == 0)
+                if (!output) {
+                        n->act_fun = act_fun_squash;
+                        n->act_fun_deriv = act_fun_squash_deriv;
+                } else {
+                        n->out_act_fun = act_fun_squash;
+                        n->out_act_fun_deriv = act_fun_squash_deriv;
+                }
 
         if (!output) {
                 if (n->act_fun != NULL && n->act_fun_deriv != NULL)

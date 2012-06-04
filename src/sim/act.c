@@ -98,3 +98,16 @@ double act_fun_linear_deriv(double y)
 {
         return 1;
 }
+
+/*
+ * Squash activation function
+ */
+double act_fun_squash(double x)
+{
+        return x / (1.0 + fabs(x));
+}
+
+double act_fun_squash_deriv(double y)
+{
+        return pow(1.0 - fabs(y), 2);
+}
