@@ -745,7 +745,7 @@ void print_weight_stats(struct network *n)
 {
         struct weight_stats *ws = gather_weight_stats(n);
 
-        printf("___ weight statistics ___\n");
+        printf("___weight statistics___\n");
         printf("mean      : %f\n", ws->mean);
         printf("mean abs. : %f\n", ws->mean_abs);
         printf("mean dist.: %f\n", ws->mean_dist);
