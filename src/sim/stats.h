@@ -1,0 +1,39 @@
+/*
+ * stats.h
+ *
+ * Copyright 2012 Harm Brouwer <me@hbrouwer.eu>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef STATS_H
+#define STATS_H
+
+#include "network.h"
+
+struct weight_stats
+{
+        int num_weights;
+        double mean;
+        double mean_abs;
+        double mean_dist;
+        double variance;
+        double minimum;
+        double maximum;
+};
+
+struct weight_stats *gather_weight_stats(struct network *n);
+void gather_proj_weight_stats(struct weight_stats *ws, struct group *g);
+void gather_proj_weight_md_stats(struct weight_stats *ws, struct group *g);
+
+#endif /* STATS_H */

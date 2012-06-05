@@ -18,6 +18,7 @@
 
 #include "act.h"
 #include "network.h"
+#include "stats.h"
 #include "train.h"
 
 struct network *create_network(char *name)
@@ -664,31 +665,92 @@ struct group *find_group_by_name(struct network *n, char *name)
         return NULL;
 }
 
-/* experimental */
+/*
+ * ########################################################################
+ * ## Experimental code                                                  ##
+ * ########################################################################
+ */
 
-void print_network(struct network *n)
+void print_units(struct network *n)
 {
-        rprintf(" ");
-        /*
-        pprintf("network: [%s]", n->name);
-        rprintf(" ");
-        */
-
-        print_groups(n->input);
+        printf("\n");
+        print_group_units(n->output);
+        printf("\n");
 }
 
-void print_groups(struct group *g)
+void print_group_units(struct group *g)
 {
-        printf("[%s]\n", g->name);
+        for (int i = 0; i < g->vector->size; i++)
+                printf("%s(%d)\t", g->name, i);
+        printf("\n");
         print_vector(g->vector);
+        printf("\n");
 
-        for (int i = 0; i < g->out_projs->num_elements; i++) {
-                struct projection *p = g->out_projs->elements[i];
+        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+                struct group *ng = g->inc_projs->elements[i]->to;
+                print_group_units(ng);
+        }
+}
 
-                printf("  |--> [%s]\n", p->to->name);
-                print_matrix(p->weights);
+void print_group_units_compact(struct group *g)
+{
+        printf("%s: ", g->name);
+        printf("[ ");
+        for (int i = 0; i < g->vector->size; i++) {
+                double val = g->vector->elements[i];
+                if (val >= 0.75)
+                        printf("++");
+                if (val >= 0.50 && val < 0.75)
+                        printf(" +");
+                if (val >= 0.25 && val < 0.50)
+                        printf(" -");
+                if (val < 0.25)
+                        printf("--");
+
+                if (i < g->vector->size - 1)
+                        printf (" | ");
         }
 
-        for (int i = 0; i < g->out_projs->num_elements; i++)
-                print_groups(g->out_projs->elements[i]->to);
+        printf(" ]\n\n");
+
+        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+                struct group *ng = g->inc_projs->elements[i]->to;
+                print_group_units_compact(ng);
+        }
+}
+
+void print_weights(struct network *n)
+{
+        printf("\n");
+        print_projection_weights(n->output);
+        printf("\n");
+}
+
+void print_projection_weights(struct group *g)
+{
+        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+                struct group *ng = g->inc_projs->elements[i]->to;
+
+                printf("%s -> %s\n", ng->name, g->name);
+
+                print_matrix(g->inc_projs->elements[i]->weights);
+
+                printf("\n");
+
+                print_projection_weights(ng);
+        }
+}
+
+void print_weight_stats(struct network *n)
+{
+        struct weight_stats *ws = gather_weight_stats(n);
+
+        printf("___ weight statistics ___\n");
+        printf("mean      : %f\n", ws->mean);
+        printf("mean abs. : %f\n", ws->mean_abs);
+        printf("mean dist.: %f\n", ws->mean_dist);
+        printf("variance  : %f\n", ws->variance);
+        printf("minimum   : %f\n", ws->minimum);
+        printf("maximum   : %f\n", ws->maximum);
+        printf("\n");
 }

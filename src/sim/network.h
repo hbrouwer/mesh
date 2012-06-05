@@ -195,7 +195,11 @@ void load_recurrent_group(char *buf, char *fmt, struct network *n,
 struct group *find_group_by_name(struct network *n, char *name);
 
 /* experimental */
-void print_network(struct network *n);
-void print_groups(struct group *g);
+void print_units(struct network *n);
+void print_group_units(struct group *g);
+void print_group_units_compact(struct group *g);
+void print_weights(struct network *n);
+void print_projection_weights(struct group *g);
+void print_weight_stats(struct network *n);
 
 #endif /* NETWORK_H */

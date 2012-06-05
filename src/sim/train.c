@@ -49,8 +49,8 @@ void test_network(struct network *n)
 
                 pprintf("testing item: %d", i);
                 
-                pprintf("input vector:");
-                print_vector(n->input->vector);
+                // pprintf("input vector:");
+                // print_vector(n->input->vector);
 
                 if (e->target != NULL) {
                         pprintf("target vector:");
@@ -59,9 +59,14 @@ void test_network(struct network *n)
 
                 feed_forward(n, n->input);
 
-                pprintf("output vector:");
-                print_vector(n->output->vector);
+                // pprintf("output vector:");
+                // print_vector(n->output->vector);
+
+                print_units(n);
         }
+
+        print_weights(n);
+        print_weight_stats(n);
 }
 
 /*

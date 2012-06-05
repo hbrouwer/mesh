@@ -13,6 +13,7 @@ add_executable(mesh
         src/sim/math.c
         src/sim/matrix.c
         src/sim/set.c
+        src/sim/stats.c
         src/sim/train.c
         src/sim/network.c
         src/sim/vector.c)

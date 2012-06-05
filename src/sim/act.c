@@ -109,5 +109,5 @@ double act_fun_squash(double x)
 
 double act_fun_squash_deriv(double y)
 {
-        return pow(1.0 - fabs(y), 2);
+        return pow(1.0 - fabs(y), 2.0);
 }
