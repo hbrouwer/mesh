@@ -753,4 +753,6 @@ void print_weight_stats(struct network *n)
         printf("minimum   : %f\n", ws->minimum);
         printf("maximum   : %f\n", ws->maximum);
         printf("\n");
+
+        free(ws);
 }
