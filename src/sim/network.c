@@ -407,6 +407,16 @@ void load_act_function(char *buf, char *fmt, struct network *n,
                         n->out_act_fun_deriv = act_fun_sigmoid_deriv;
                 }
 
+        /* softmax activation function */
+        if (strcmp(tmp, "softmax") == 0)
+                if (!output) {
+                        n->act_fun = act_fun_softmax;
+                        n->act_fun_deriv = act_fun_softmax_deriv;
+                } else {
+                        n->out_act_fun = act_fun_softmax;
+                        n->out_act_fun_deriv = act_fun_softmax_deriv;
+                }
+
         /* hyperbolic tangent activation function */
         if (strcmp(tmp, "tanh") == 0)
                 if (!output) {

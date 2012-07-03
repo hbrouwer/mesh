@@ -19,18 +19,23 @@
 #ifndef ACT_H
 #define ACT_H
 
-double act_fun_sigmoid(double x);
-double act_fun_sigmoid_approx(double x);
-double act_fun_sigmoid_deriv(double y);
+#include "vector.h"
 
-double act_fun_tanh(double x);
-double act_fun_tanh_approx(double x);
-double act_fun_tanh_deriv(double y);
+double act_fun_sigmoid(struct vector *v, int i);
+double act_fun_sigmoid_approx(struct vector *v, int i);
+double act_fun_sigmoid_deriv(struct vector *v, int i);
 
-double act_fun_linear(double x);
-double act_fun_linear_deriv(double y);
+double act_fun_softmax(struct vector *v, int i);
+double act_fun_softmax_deriv(struct vector *v, int i);
 
-double act_fun_squash(double x);
-double act_fun_squash_deriv(double y);
+double act_fun_tanh(struct vector *v, int i);
+double act_fun_tanh_approx(struct vector *v, int i);
+double act_fun_tanh_deriv(struct vector *v, int i);
+
+double act_fun_linear(struct vector *v, int i);
+double act_fun_linear_deriv(struct vector *v, int i);
+
+double act_fun_squash(struct vector *v, int i);
+double act_fun_squash_deriv(struct vector *v, int i);
 
 #endif /* ACT_H */

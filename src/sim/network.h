@@ -51,14 +51,14 @@ struct network
         int history_length;         /* number of timesteps for BPTT */
 
         double (*act_fun)           /* activation function for hidden groups */
-                (double);      
+                (struct vector *, int);      
         double (*act_fun_deriv)     /* derivative of the activation function */
-                (double); 
+                (struct vector *, int); 
 
         double (*out_act_fun)       /* activation function for the ouput group */
-                (double);
+                (struct vector *, int);
         double (*out_act_fun_deriv) /* derivative of the activation function */
-                (double); 
+                (struct vector *, int); 
 
         void (*learning_algorithm)  /* learning algorithm */
                 (struct network *n);

@@ -48,9 +48,6 @@ void test_network(struct network *n)
                 rprintf("");
 
                 pprintf("testing item: %d", i);
-                
-                // pprintf("input vector:");
-                // print_vector(n->input->vector);
 
                 if (e->target != NULL) {
                         pprintf("target vector:");
@@ -59,14 +56,14 @@ void test_network(struct network *n)
 
                 feed_forward(n, n->input);
 
-                // pprintf("output vector:");
-                // print_vector(n->output->vector);
-
                 print_units(n);
         }
 
         print_weights(n);
         print_weight_stats(n);
+
+        double mse = mean_squared_error(n);
+        pprintf("MSE: [%lf]", mse);
 }
 
 /*
@@ -125,8 +122,16 @@ void feed_forward(struct network *n, struct group *g)
 
         for (int i = 0; i < g->out_projs->num_elements; i++) {
                 struct group *rg = g->out_projs->elements[i]->to;
-                for (int j = 0; j < rg->vector->size; j++)
+                for (int j = 0; j < rg->vector->size; j++) {
                         rg->vector->elements[j] = unit_activation(n, rg, j);
+
+                        if (rg != n->output)
+                                rg->vector->elements[j] =
+                                        n->act_fun(rg->vector, j);
+                        else
+                                rg->vector->elements[j] =
+                                        n->out_act_fun(rg->vector, j);
+                }
         }
 
         for (int i = 0; i < g->out_projs->num_elements; i++)
@@ -142,11 +147,6 @@ double unit_activation(struct network *n, struct group *g, int u)
                 for (int j = 0; j < pg->vector->size; j++)
                         act += w->elements[j][u] * pg->vector->elements[j];
         }
-        
-        if (g != n->output)
-                act = n->act_fun(act);
-        else
-                act = n->out_act_fun(act);
 
         return act;
 }
@@ -316,7 +316,8 @@ struct vector *ss_output_error(struct network *n)
         for (int i = 0; i < error->size; i++) {
                 double act = n->output->vector->elements[i];
                 double err = n->target->elements[i] - act;
-                error->elements[i] = err * n->out_act_fun_deriv(act);
+                error->elements[i] = err
+                        * n->out_act_fun_deriv(n->output->vector, i);
         }
 
         return error;
@@ -407,12 +408,11 @@ struct vector *group_error(struct network *n, struct group *g)
                         error->elements[i] += p->error->elements[i];
                 }
                 
-                double act = g->vector->elements[i];
                 double act_deriv;
                 if (g != n->input)
-                        act_deriv = n->act_fun_deriv(act);
+                        act_deriv = n->act_fun_deriv(g->vector, i);
                 else 
-                        act_deriv = act;
+                        act_deriv = g->vector->elements[i];
 
                 error->elements[i] *= act_deriv;
         }
