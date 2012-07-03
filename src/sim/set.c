@@ -112,6 +112,8 @@ struct set *load_set(char *filename, int input_size, int output_size)
                 struct vector *input = create_vector(input_size);
                 for (int i = 0; i < input_size; i++) {
                         tokens = strtok(NULL, " ");
+                        if (!tokens)
+                                goto error_out;
                         sscanf(tokens, "%lf", &input->elements[i]);
                 }
 

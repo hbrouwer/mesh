@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 
+#include <math.h> /* XXX: for fabs... */
+
 #include "act.h"
 #include "network.h"
 #include "stats.h"
@@ -674,7 +676,7 @@ struct group *find_group_by_name(struct network *n, char *name)
 void print_units(struct network *n)
 {
         printf("\n");
-        print_group_units(n->output);
+        print_group_units_compact(n->output);
         printf("\n");
 }
 
@@ -694,18 +696,12 @@ void print_group_units(struct group *g)
 
 void print_group_units_compact(struct group *g)
 {
-        printf("%s: ", g->name);
+        printf("%s:\n", g->name);
         printf("[ ");
         for (int i = 0; i < g->vector->size; i++) {
                 double val = g->vector->elements[i];
-                if (val >= 0.75)
-                        printf("++");
-                if (val >= 0.50 && val < 0.75)
-                        printf(" +");
-                if (val >= 0.25 && val < 0.50)
-                        printf(" -");
-                if (val < 0.25)
-                        printf("--");
+
+                print_value_as_symbols(val);
 
                 if (i < g->vector->size - 1)
                         printf (" | ");
@@ -722,7 +718,9 @@ void print_group_units_compact(struct group *g)
 void print_weights(struct network *n)
 {
         printf("\n");
-        print_projection_weights(n->output);
+        struct weight_stats *ws = gather_weight_stats(n);
+        double range = ws->maximum - ws->minimum;
+        print_projection_weights_compact(range, ws->minimum, n->output);
         printf("\n");
 }
 
@@ -739,6 +737,54 @@ void print_projection_weights(struct group *g)
 
                 print_projection_weights(ng);
         }
+}
+
+void print_projection_weights_compact(double range, double minimum, 
+                struct group *g)
+{
+        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+                struct group *ng = g->inc_projs->elements[i]->to;
+
+                printf("%s -> %s\n", ng->name, g->name);
+
+                struct matrix *m = g->inc_projs->elements[i]->weights;
+
+                for (int r = 0; r < m->rows; r++) {
+                        printf("[ ");
+                        for (int c = 0; c < m->cols; c++) {
+                                double val = m->elements[r][c] + fabs(minimum);
+
+                                print_value_as_symbols(val / range);
+
+                                if (c < m->cols - 1)
+                                        printf(" | ");
+                        }
+                        printf(" ]\n");
+                }
+                
+                printf("\n");
+
+                print_projection_weights_compact(range, minimum, ng);
+        }
+}
+
+/*
+ * ++
+ *  +
+ *  -
+ * --
+ */
+
+void print_value_as_symbols(double value)
+{
+        if (value >= 0.75)
+                printf("++");
+        if (value >= 0.50 && value < 0.75)
+                printf(" +");
+        if (value >= 0.25 && value < 0.50)
+                printf(" -");
+        if (value < 0.25)
+                printf("--");
 }
 
 void print_weight_stats(struct network *n)
