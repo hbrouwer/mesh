@@ -32,15 +32,18 @@ struct set
 
 struct element
 {
-        struct vector *input;       /* input vector */
-        struct vector *target;      /* target vector */
+        char *name;                 /* name */
+        int num_events;             /* number of events */
+        struct vector **inputs;     /* input vectors */
+        struct vector **targets;    /* target vectors */
 };
 
 struct set *create_set(int max_elements);
 void increase_set_size(struct set *s);
 void dispose_set(struct set *s);
 
-struct element *create_element(struct vector *input, struct vector *target);
+struct element *create_element(char *name, int num_events, 
+                struct vector **inputs, struct vector **targets);
 void dispose_element(struct element *e);
 
 struct set *load_set(char *filename, int input_size, int output_size);

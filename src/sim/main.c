@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 
         if (!n)
                 goto exit_success;
-            
+       
         train_network(n);
         if (n->learning_algorithm == train_bp)
                 test_network(n);

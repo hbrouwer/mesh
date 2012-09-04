@@ -67,7 +67,8 @@ void dispose_set(struct set *s)
         free(s);
 }
 
-struct element *create_element(struct vector *input, struct vector *target)
+struct element *create_element(char *name, int num_events, 
+                struct vector **inputs, struct vector **targets)
 {
         struct element *e;
 
@@ -75,8 +76,10 @@ struct element *create_element(struct vector *input, struct vector *target)
                 goto error_out;
         memset(e, 0, sizeof(struct element));
 
-        e->input = input;
-        e->target = target;
+        e->name = name;
+        e->num_events = num_events;
+        e->inputs = inputs;
+        e->targets = targets;
 
         return e;
 
@@ -87,10 +90,16 @@ error_out:
 
 void dispose_element(struct element *e)
 {
-        if (e->input)
-                dispose_vector(e->input);
-        if (e->target)
-                dispose_vector(e->target);
+        for (int i = 0; i < e->num_events; i++) {
+                if (e->inputs[i])
+                        dispose_vector(e->inputs[i]);
+                if (e->targets[i])
+                        dispose_vector(e->targets[i]);
+        }
+
+        free(e->inputs);
+        free(e->targets);
+
         free(e);
 }
 
@@ -104,35 +113,56 @@ struct set *load_set(char *filename, int input_size, int output_size)
 
         char buf[4096];
         while (fgets(buf, sizeof(buf), fd)) {
-                char *tokens = strtok(buf, " ");
+                char tmp[64];
+                int num_events;
 
-                if (strcmp(tokens, "Input") != 0)
+                if (!(sscanf(buf, "Name \"%[^\"]\" %d", tmp, &num_events)))
                         continue;
 
-                struct vector *input = create_vector(input_size);
-                for (int i = 0; i < input_size; i++) {
-                        tokens = strtok(NULL, " ");
-                        if (!tokens)
-                                goto error_out;
-                        sscanf(tokens, "%lf", &input->elements[i]);
-                }
+                char *name;
+                int block_size = ((strlen(tmp) + 1) * sizeof(char));
+                if (!(name = malloc(block_size)))
+                        goto error_out;
+                memset(name, 0, block_size);
+                strncpy(name, tmp, strlen(tmp));
 
-                struct vector *target = NULL;
-                if (tokens = strtok(NULL, " ")) {
-                        if (strcmp(tokens, "Target") != 0) {
-                                dispose_vector(input);
-                                continue;
+                struct vector **inputs;
+                block_size = num_events * sizeof(struct vector *);
+                if (!(inputs = malloc(block_size)))
+                        goto error_out;
+                memset(inputs, 0, block_size);
+                struct vector **targets;
+                if (!(targets = malloc(block_size)))
+                        goto error_out;
+                memset(targets, 0, block_size);
+
+                for (int i = 0; i < num_events; i++) {
+                        if (!(fgets(buf, sizeof(buf), fd)))
+                                goto error_out;
+                        char *tokens = strtok(buf, " ");
+
+                        if (strcmp(tokens, "Input") == 0) {
+                                inputs[i] = create_vector(input_size);
+                                for (int j = 0; j < input_size; j++) {
+                                        tokens = strtok(NULL, " ");
+                                        sscanf(tokens, "%lf", &inputs[i]->elements[j]);
+                                }
                         }
 
-                        target = create_vector(output_size);
-                        for (int i = 0; i < output_size; i++) {
-                                tokens = strtok(NULL, " ");
-                                sscanf(tokens, "%lf", &target->elements[i]);
+                        if (tokens = strtok(NULL, " ")) {
+                                targets[i] = create_vector(output_size);
+                                if (strcmp (tokens, "Target") == 0) {
+                                        for (int j = 0; j < output_size; j++) {
+                                                tokens = strtok(NULL, " ");
+                                                sscanf(tokens, "%lf", &targets[i]->elements[j]);
+                                        }
+
+                                }
                         }
                 }
 
                 s->elements[s->num_elements++] =
-                        create_element(input, target);
+                        create_element(name, num_events, inputs, targets);
                 if (s->num_elements == s->max_elements)
                         increase_set_size(s);
         }

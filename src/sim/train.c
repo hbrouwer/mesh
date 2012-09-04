@@ -41,22 +41,24 @@ void test_network(struct network *n)
         for (int i = 0; i < n->test_set->num_elements; i++) {
                 struct element *e = n->test_set->elements[i];
 
-                copy_vector(n->input->vector, e->input);
-                if (e->target != NULL)
-                        copy_vector(n->target, e->target);
+                rprintf("testing item: %d -- \"%s\"", i, e->name);
 
-                rprintf("");
+                for (int j = 0; j < e->num_events; j++) {
+                        copy_vector(n->input->vector, e->inputs[j]);
+                        if (e->targets[j] != NULL)
+                                copy_vector(n->target, e->targets[j]);
+                
+                        rprintf("");
 
-                pprintf("testing item: %d", i);
+                        if (e->targets[j] != NULL) {
+                                rprintf("target vector:");
+                                print_vector(n->target);
+                        }
 
-                if (e->target != NULL) {
-                        pprintf("target vector:");
-                        print_vector(n->target);
+                        feed_forward(n, n->input);
+
+                        print_units(n);
                 }
-
-                feed_forward(n, n->input);
-
-                print_units(n);
         }
 
         print_weights(n);
@@ -79,11 +81,15 @@ double mean_squared_error(struct network *n)
         for (int i = 0; i < n->training_set->num_elements; i++) {
                 struct element *e = n->training_set->elements[i];
 
-                copy_vector(n->input->vector, e->input);
-                copy_vector(n->target, e->target);
-                feed_forward(n, n->input);
-                
-                mse += squared_error(n->output->vector, n->target);
+                for (int j = 0; j < e->num_events; j++) {
+                        copy_vector(n->input->vector, e->inputs[j]);
+                        feed_forward(n, n->input);
+
+                        if (e->targets[j]) {
+                                copy_vector(n->target, e->targets[j]);
+                                mse += squared_error(n->output->vector, n->target);
+                        }
+                }
         }
 
         return mse / n->training_set->num_elements;
@@ -96,11 +102,11 @@ void report_mean_squared_error(int epoch, double mse)
 
 /*
  * Feed activation forward. For a specified group G, the activation is
- * computed for each unit in all of the groups towards G maintains an 
+ * computed for each unit in all of the groups towards which G maintains an
  * outgoing projection. This process is recursively repeated for all groups
- * that have a projection coming in from G. If the first G is the input 
- * group of the network, activation should be forwarded through all of the 
- * network's hidden groups to the output group:
+ * that have a projection coming in from G. If the first G is the input
+ * group of the network, activation should be propagated forwar through all
+ * of the network's hidden groups to the output group:
  *
  * ##########    ##########    ##########
  * # input  #---># hidden #---># output #
@@ -195,21 +201,28 @@ void train_bp(struct network *n)
 {
         int report_after = n->max_epochs * REPORT_AFTER_PERCENTAGE;
 
-        int item = 0;
+        int item = 0, event = 0;
         for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
                 for (int i = 0; i < n->epoch_length; i++) {
-                        struct element *e = n->training_set->elements[item++];
-                       
+                        struct element *e = n->training_set->elements[item];
+                        
+                        copy_vector(n->input->vector, e->inputs[event]);
+                        feed_forward(n, n->input);
+                        
+                        if (e->targets[event]) {
+                                copy_vector(n->target, e->targets[event]);
+                                struct vector *error = n->error_measure(n);
+                                backpropagate_error(n, n->output, error);
+                                dispose_vector(error);
+                        }
+
+                        event++;
+                        if (event == e->num_events) {
+                                event = 0;
+                                item++;
+                        }
                         if (item == n->training_set->num_elements)
                                 item = 0;
-
-                        copy_vector(n->input->vector, e->input);
-                        copy_vector(n->target, e->target);
-                        feed_forward(n, n->input);
-
-                        struct vector *error = n->error_measure(n);
-                        backpropagate_error(n, n->output, error);
-                        dispose_vector(error);
                 }
                 adjust_weights(n, n->output);
 
@@ -223,26 +236,33 @@ void train_bp(struct network *n)
 
 void train_bptt_epochwise(struct network *n)
 {
-        int item = 0;
+        int item = 0, event = 0;
         for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
                 for (int i = 0; i < n->epoch_length; i++) {
-                        struct element *e = n->training_set->elements[item++];
+                        struct element *e = n->training_set->elements[item];
 
-                        if (item == n->training_set->num_elements)
-                                item = 0;
-
-                        if(i > 0)
+                        if (i > 0)
                                 ffn_connect_duplicate_networks(
                                                 n->unfolded_net,
                                                 n->unfolded_net->stack[i - 1],
                                                 n->unfolded_net->stack[i]);
                         
-                        copy_vector(n->unfolded_net->stack[i]->input->vector,
-                                        e->input);
-                        copy_vector(n->unfolded_net->stack[i]->target,
-                                        e->target);
+                        copy_vector(n->unfolded_net->stack[i]->input->vector, 
+                                        e->inputs[event]);
                         feed_forward(n->unfolded_net->stack[i],
                                         n->unfolded_net->stack[i]->input);
+                        
+                        if (e->targets[event])
+                                copy_vector(n->unfolded_net->stack[i]->target,
+                                                e->targets[event]);
+
+                        event++;
+                        if (event == e->num_events) {
+                                event = 0;
+                                item++;
+                        }
+                        if (item == n->training_set->num_elements)
+                                item = 0;
                 }
 
                 for (int i = n->epoch_length - 1; i >= 0; i--) {
@@ -266,26 +286,33 @@ void train_bptt_epochwise(struct network *n)
 
 void train_bptt_truncated(struct network *n)
 {
-        int item = 0, h = 0;
+        int item = 0, event = 0, h = 0;
         for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
                 for (int i = h; i < n->history_length + 1; i++, h++) {
-                        struct element *e = n->training_set->elements[item++];
+                        struct element *e = n->training_set->elements[item];
 
-                        if (item == n->training_set->num_elements)
-                                item = 0;
-
-                        if(i > 0)
+                        if (i > 0)
                                 ffn_connect_duplicate_networks(
                                                 n->unfolded_net,
                                                 n->unfolded_net->stack[i - 1],
                                                 n->unfolded_net->stack[i]);
 
-                        copy_vector(n->unfolded_net->stack[i]->input->vector,
-                                        e->input);
-                        copy_vector(n->unfolded_net->stack[i]->target,
-                                        e->target);
+                        copy_vector(n->unfolded_net->stack[i]->input->vector, 
+                                        e->inputs[event]);
                         feed_forward(n->unfolded_net->stack[i],
                                         n->unfolded_net->stack[i]->input);
+                        
+                        if (e->targets[event])
+                                copy_vector(n->unfolded_net->stack[i]->target,
+                                                e->targets[event]);
+
+                        event++;
+                        if (event == e->num_events) {
+                                event = 0;
+                                item++;
+                        }
+                        if (item == n->training_set->num_elements)
+                                item = 0;
                 }
 
                 struct network *ns = n->unfolded_net->stack[n->history_length];
@@ -457,9 +484,12 @@ void adjust_projection_weights(struct network *n, struct group *g,
         for (int i = 0; i < p->to->vector->size; i++)
                 for (int j = 0; j < g->vector->size; j++)
                         p->weights->elements[i][j] += 
-                                n->learning_rate * p->deltas->elements[i][j]
-                                - n->weight_decay * p->prev_deltas->elements[i][j]
-                                + n->momentum * p->prev_deltas->elements[i][j];
+                                n->learning_rate
+                                * p->deltas->elements[i][j]
+                                - n->weight_decay
+                                * p->prev_deltas->elements[i][j]
+                                + n->momentum
+                                * p->prev_deltas->elements[i][j];
         
         copy_matrix(p->prev_deltas, p->deltas);
         zero_out_matrix(p->deltas);
