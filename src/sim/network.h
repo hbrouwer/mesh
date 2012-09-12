@@ -37,6 +37,8 @@ struct network
 {
         char *name;                 /* name of the network */
 
+        bool srn;                   /* flags whether this network is an SRN */
+
         struct group_array *groups; /* groups in the network */
 
         double learning_rate;       /* learning rate */
@@ -158,6 +160,8 @@ void dispose_group_array(struct group_array *gs);
 struct group *create_group(char *name, int size, bool bias, bool recurrent);
 void attach_bias_group(struct network *n, struct group *g);
 void dispose_groups(struct group *g);
+
+void reset_elman_groups(struct network *n);
 
 struct projs_array *create_projs_array(int max_elements);
 void increase_projs_array_size(struct projs_array *ps);

@@ -53,12 +53,15 @@ void test_network(struct network *n)
                         if (e->targets[j] != NULL) {
                                 rprintf("target vector:");
                                 print_vector(n->target);
+
+                                print_vector(n->output->vector);
                         }
 
                         feed_forward(n, n->input);
-
-                        print_units(n);
                 }
+
+                if (n->srn)
+                        reset_elman_groups(n);
         }
 
         print_weights(n);
@@ -205,7 +208,7 @@ void train_bp(struct network *n)
         for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
                 for (int i = 0; i < n->epoch_length; i++) {
                         struct element *e = n->training_set->elements[item];
-                        
+
                         copy_vector(n->input->vector, e->inputs[event]);
                         feed_forward(n, n->input);
                         
@@ -223,6 +226,9 @@ void train_bp(struct network *n)
                         }
                         if (item == n->training_set->num_elements)
                                 item = 0;
+
+                        if (n->srn)
+                                reset_elman_groups(n);
                 }
                 adjust_weights(n, n->output);
 

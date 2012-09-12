@@ -23,6 +23,8 @@
 #include "stats.h"
 #include "train.h"
 
+#define RANDOM_WEIGHTS_SIGMA 0.75
+
 struct network *create_network(char *name)
 {
         struct network *n;
@@ -168,7 +170,7 @@ void attach_bias_group(struct network *n, struct group *g)
                         g->vector->size);
 
         // XXX: this need to go elsewhere
-        randomize_matrix(weights, 0.0, 0.25);
+        randomize_matrix(weights, 0.0, RANDOM_WEIGHTS_SIGMA);
 
         bg->out_projs->elements[bg->out_projs->num_elements++] =
                 create_projection(g, weights, error, deltas, prev_deltas,
@@ -207,6 +209,19 @@ void dispose_groups(struct group *g)
         dispose_projs_array(g->out_projs);
 
         free(g);
+}
+
+
+void reset_elman_groups(struct network *n)
+{
+        for (int i = 0; i < n->groups->num_elements; i++) {
+                struct group *g = n->groups->elements[i];
+                if (g->elman_proj) {
+                        g = g->elman_proj;
+                        for (int j = 0; j < g->vector->size; j++)
+                                g->vector->elements[j] = 0.5;
+                }
+        }
 }
 
 struct projs_array *create_projs_array(int max_elements)
@@ -596,7 +611,7 @@ void load_projection(char *buf, char *fmt, struct network *n, char *msg)
                         tg->vector->size);
 
         /* XXX: this needs to go some place else */
-        randomize_matrix(weights, 0.0, 0.25);
+        randomize_matrix(weights, 0.0, RANDOM_WEIGHTS_SIGMA);
 
         fg->out_projs->elements[fg->out_projs->num_elements++] =
                 create_projection(tg, weights, error, deltas, prev_deltas,
@@ -661,7 +676,11 @@ void load_elman_projection(char *buf, char *fmt, struct network *n,
                 return;
         }
 
+        n->srn = true;
+
         fg->elman_proj = tg;
+
+        reset_elman_groups(n);
 
         mprintf(msg, tmp1, tmp2);
 }

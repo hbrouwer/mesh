@@ -20,6 +20,7 @@
 
 #include "ffn_unfold.h"
 
+#include "erps.h"
 #include "main.h"
 #include "network.h"
 #include "train.h"
@@ -65,10 +66,12 @@ int main(int argc, char **argv)
                 goto exit_success;
        
         train_network(n);
-        if (n->learning_algorithm == train_bp)
+        if (n->learning_algorithm == train_bp) {
                 test_network(n);
-        else
+                compute_erp_correlates(n);
+        } else {
                 test_network(n->unfolded_net->stack[0]);
+        }
 
         mprintf("Cleaning up...");
         dispose_network(n);
