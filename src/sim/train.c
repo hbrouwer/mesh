@@ -48,16 +48,15 @@ void test_network(struct network *n)
                         if (e->targets[j] != NULL)
                                 copy_vector(n->target, e->targets[j]);
                 
-                        rprintf("");
-
-                        if (e->targets[j] != NULL) {
-                                rprintf("target vector:");
-                                print_vector(n->target);
-
-                                print_vector(n->output->vector);
-                        }
+                        /* rprintf(""); */
 
                         feed_forward(n, n->input);
+
+                        if (e->targets[j] != NULL) {
+                                print_vector(n->target);
+                                print_vector(n->output->vector);
+                                printf("\n");
+                        }
                 }
 
                 if (n->srn)
@@ -93,6 +92,9 @@ double mean_squared_error(struct network *n)
                                 mse += squared_error(n->output->vector, n->target);
                         }
                 }
+
+                if (n->srn)
+                        reset_elman_groups(n);
         }
 
         return mse / n->training_set->num_elements;
@@ -203,7 +205,7 @@ double unit_activation(struct network *n, struct group *g, int u)
 void train_bp(struct network *n)
 {
         int report_after = n->max_epochs * REPORT_AFTER_PERCENTAGE;
-
+        
         int item = 0, event = 0;
         for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
                 for (int i = 0; i < n->epoch_length; i++) {
@@ -237,6 +239,15 @@ void train_bp(struct network *n)
                         report_mean_squared_error(epoch, mse);
                 if (mse < n->mse_threshold)
                         break;
+
+                /* XXX: experimental */
+                /*
+                int decrease_lr_after = n->max_epochs * 0.10;
+                if (epoch % decrease_lr_after == 0) {
+                        n->learning_rate = n->learning_rate * 0.5;
+                        mprintf("decreased learning rate to: %f", n->learning_rate);
+                }
+                */
         }
 }
 

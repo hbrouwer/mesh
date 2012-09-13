@@ -29,20 +29,51 @@
 term_expansion((H --> [B]),(H --> [B])) :-
         assert(word(B)).
 
+%assert_word_vectors :-
+%        retractall(word_vector(_,_)),
+%        findall(W,word(W),Ws),
+%        assert_word_vectors(Ws).
+
+%assert_word_vectors([]).
+%assert_word_vectors([W|Ws]) :-
+%        word_vector_size(S),
+%        random_bit_vector(S,BV),
+%        (   word_vector(_,BV)
+%        ->  !, assert_word_vectors([W|Ws])
+%        ;   !, assert(word_vector(W,BV)),
+%            assert_word_vectors(Ws)
+%        ).
 assert_word_vectors :-
         retractall(word_vector(_,_)),
-        findall(W,word(W),Ws),
-        assert_word_vectors(Ws).
-
-assert_word_vectors([]).
-assert_word_vectors([W|Ws]) :-
         word_vector_size(S),
-        random_bit_vector(S,BV),
-        (   word_vector(_,BV)
-        ->  !, assert_word_vectors([W|Ws])
-        ;   !, assert(word_vector(W,BV)),
-            assert_word_vectors(Ws)
-        ).
+        findall(W,word(W),Ws),
+        %list_to_set...
+        assert_word_vectors(Ws,S).
+
+assert_word_vectors(Ws,S) :-
+        assert_word_vectors(Ws,1,S).
+
+assert_word_vectors([],_,_).
+assert_word_vectors([W|Ws],N,S) :-
+        create_word_vector(N,S,V),
+        assert(word_vector(W,V)),
+        N0 is N + 1,
+        assert_word_vectors(Ws,N0,S).
+
+create_word_vector(N,S,V) :-
+        create_word_vector(1,N,S,V).
+
+%% note: this is a copy of create_situation_vector/4
+create_word_vector(I,_,S,[]) :-
+        I > S, !.
+create_word_vector(I,N,S,[0|V]) :-
+        I \= N, !,
+        I0 is I + 1,
+        create_word_vector(I0,N,S,V).
+create_word_vector(I,N,S,[1|V]) :-
+        I == N, !,
+        I0 is I + 1,
+        create_word_vector(I0,N,S,V).
 
 random_bit_vector(0,[]).
 random_bit_vector(N,[B|Bs]) :-
@@ -51,10 +82,14 @@ random_bit_vector(N,[B|Bs]) :-
         random(0,2,B),
         random_bit_vector(N0,Bs).
 
+%required_word_vector_size(S) :-
+%        findall(W,word(W),Ws),
+%        length(Ws,N),
+%        S is ceiling(log(N) / log(2)).
 required_word_vector_size(S) :-
         findall(W,word(W),Ws),
-        length(Ws,N),
-        S is ceiling(log(N) / log(2)).
+        length(Ws,S).
+        %S is ceiling(log(N) / log(2)).
 
 assert_situation_vectors :-
         retractall(situation_vector(_,_)),

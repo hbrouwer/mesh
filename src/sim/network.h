@@ -39,6 +39,10 @@ struct network
 
         bool srn;                   /* flags whether this network is an SRN */
 
+        unsigned int random_seed;   /* seed for the random number generator */
+        double random_mu;           /* mu for random matrices */
+        double random_sigma;        /* sigma for random matrices */
+
         struct group_array *groups; /* groups in the network */
 
         double learning_rate;       /* learning rate */
@@ -151,6 +155,7 @@ struct projection
  */
 
 struct network *create_network(char *name);
+void initialize_network(struct network *n);
 void dispose_network(struct network *n);
 
 struct group_array *create_group_array(int max_elements);
@@ -175,6 +180,8 @@ struct projection *create_projection(
                 struct matrix *prev_deltas,
                 bool recurrent);
 void dispose_projection(struct projection *p);
+
+void randomize_weight_matrices(struct group *g, struct network *n);
 
 struct network *load_network(char *filename);
 

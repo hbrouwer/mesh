@@ -23,8 +23,6 @@
 #include "stats.h"
 #include "train.h"
 
-#define RANDOM_WEIGHTS_SIGMA 0.75
-
 struct network *create_network(char *name)
 {
         struct network *n;
@@ -46,6 +44,19 @@ error_out:
         perror("[create_network()]");
         return NULL;
 }
+
+void initialize_network(struct network *n)
+{
+        mprintf("attempting to initialize network: [%s]", n->name);
+
+        srand(n->random_seed);
+
+        // XXX: todo--sanity checks!
+        randomize_weight_matrices(n->input, n);
+
+        mprintf("initialized network: [%s]", n->name);
+}
+
 
 void dispose_network(struct network *n)
 {
@@ -168,9 +179,6 @@ void attach_bias_group(struct network *n, struct group *g)
         struct matrix *prev_deltas = create_matrix(
                         bg->vector->size,
                         g->vector->size);
-
-        // XXX: this need to go elsewhere
-        randomize_matrix(weights, 0.0, RANDOM_WEIGHTS_SIGMA);
 
         bg->out_projs->elements[bg->out_projs->num_elements++] =
                 create_projection(g, weights, error, deltas, prev_deltas,
@@ -308,6 +316,18 @@ void dispose_projection(struct projection *p)
         free(p);
 }
 
+
+
+void randomize_weight_matrices(struct group *g, struct network *n)
+{
+        for (int i = 0; i < g->inc_projs->num_elements; i++)
+                randomize_matrix(g->inc_projs->elements[i]->weights, 
+                                n->random_mu, n->random_sigma);
+
+        for (int i = 0; i < g->out_projs->num_elements; i++)
+                randomize_weight_matrices(g->out_projs->elements[i]->to, n);
+}
+
 struct network *load_network(char *filename)
 {
         mprintf("attempting to load network: [%s]", filename);
@@ -327,6 +347,13 @@ struct network *load_network(char *filename)
                         mprintf("created network: [%s (%s -> %s)]",
                                         tmp, input, output);
                 }
+
+                load_int_parameter(buf, "RandomSeed %d", &n->random_seed,
+                                "set random seed: [%d]");
+                load_double_parameter(buf, "RandomMu %lf", &n->random_mu,
+                                "set random mu: [%lf]");                
+                load_double_parameter(buf, "RandomSigma %lf", &n->random_sigma,
+                                "set random sigma: [%lf]");
 
                 load_double_parameter(buf, "LearningRate %lf", &n->learning_rate,
                                 "set learning rate: [%lf]");
@@ -609,9 +636,6 @@ void load_projection(char *buf, char *fmt, struct network *n, char *msg)
         struct matrix *prev_deltas = create_matrix(
                         fg->vector->size,
                         tg->vector->size);
-
-        /* XXX: this needs to go some place else */
-        randomize_matrix(weights, 0.0, RANDOM_WEIGHTS_SIGMA);
 
         fg->out_projs->elements[fg->out_projs->num_elements++] =
                 create_projection(tg, weights, error, deltas, prev_deltas,

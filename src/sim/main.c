@@ -64,11 +64,12 @@ int main(int argc, char **argv)
 
         if (!n)
                 goto exit_success;
-       
+
+        initialize_network(n);
         train_network(n);
         if (n->learning_algorithm == train_bp) {
                 test_network(n);
-                compute_erp_correlates(n);
+                // compute_erp_correlates(n);
         } else {
                 test_network(n->unfolded_net->stack[0]);
         }
