@@ -24,7 +24,7 @@
 :- dynamic(word_vector_size/1).
 
 :- dynamic(situation_vector/2).
-:- dynamic(situation_vector_size/2).
+:- dynamic(situation_vector_size/1).
 
 term_expansion((H --> [B]),(H --> [B])) :-
         assert(word(B)).
@@ -55,10 +55,10 @@ assert_word_vectors(Ws,S) :-
 
 assert_word_vectors([],_,_).
 assert_word_vectors([W|Ws],N,S) :-
-        create_word_vector(N,S,V),
-        assert(word_vector(W,V)),
-        N0 is N + 1,
-        assert_word_vectors(Ws,N0,S).
+       create_word_vector(N,S,V),
+       assert(word_vector(W,V)),
+       N0 is N + 1,
+       assert_word_vectors(Ws,N0,S).
 
 create_word_vector(N,S,V) :-
         create_word_vector(1,N,S,V).
@@ -89,7 +89,6 @@ random_bit_vector(N,[B|Bs]) :-
 required_word_vector_size(S) :-
         findall(W,word(W),Ws),
         length(Ws,S).
-        %S is ceiling(log(N) / log(2)).
 
 assert_situation_vectors :-
         retractall(situation_vector(_,_)),

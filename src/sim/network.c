@@ -357,8 +357,16 @@ struct network *load_network(char *filename)
 
                 load_double_parameter(buf, "LearningRate %lf", &n->learning_rate,
                                 "set learning rate: [%lf]");
+                load_double_parameter(buf, "LRScaleFactor %lf", &n->lr_scale_factor,
+                                "set LR scale factor: [%lf]");
+                load_double_parameter(buf, "LRScaleAfter %lf", &n->lr_scale_after,
+                                "set LR scaling after (fraction of epochs): [%lf]");
                 load_double_parameter(buf, "Momentum %lf", &n->momentum,
                                 "set momentum: [%lf]");
+                load_double_parameter(buf, "MNScaleFactor %lf", &n->mn_scale_factor,
+                                "set momentum scale factor: [%lf]");
+                load_double_parameter(buf, "MNScaleAfter %lf", &n->mn_scale_after,
+                                "set momentum scaling after (fraction of epochs): [%lf]");
                 load_double_parameter(buf, "WeightDecay %lf", &n->weight_decay,
                                 "set weight decay: [%lf] *** CHEAT ALERT ***");
                 load_double_parameter(buf, "MSEThreshold %lf", &n->mse_threshold,

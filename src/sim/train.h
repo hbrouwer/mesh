@@ -26,7 +26,7 @@ void train_network(struct network *n);
 void test_network(struct network *n);
 
 double mean_squared_error(struct network *n);
-void report_mean_squared_error(int epoch, double mse);
+void report_error(int epoch, double mse, struct network *n);
 
 void feed_forward(struct network *n, struct group *g);
 double unit_activation(struct network *n, struct group *g, int u);
@@ -37,6 +37,9 @@ void train_bptt_truncated(struct network *n);
 
 struct vector *ss_output_error(struct network *n);
 struct vector *ce_output_error(struct network *n);
+
+void scale_learning_rate(int epoch, struct network *n);
+void scale_momentum(int epoch, struct network *n);
 
 void backpropagate_error(struct network *n, struct group *g,
                 struct vector *error);

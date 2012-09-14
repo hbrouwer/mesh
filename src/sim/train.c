@@ -21,7 +21,9 @@
 #include "set.h"
 #include "train.h"
 
-#define REPORT_AFTER_PERCENTAGE 0.05
+#include <math.h> /* XXX: for sqrt */
+
+#define REPORT_AFTER_PERCENTAGE 0.01
 
 void train_network(struct network *n)
 {
@@ -48,8 +50,6 @@ void test_network(struct network *n)
                         if (e->targets[j] != NULL)
                                 copy_vector(n->target, e->targets[j]);
                 
-                        /* rprintf(""); */
-
                         feed_forward(n, n->input);
 
                         if (e->targets[j] != NULL) {
@@ -63,8 +63,10 @@ void test_network(struct network *n)
                         reset_elman_groups(n);
         }
 
+        /*
         print_weights(n);
         print_weight_stats(n);
+        */
 
         double mse = mean_squared_error(n);
         pprintf("MSE: [%lf]", mse);
@@ -100,9 +102,14 @@ double mean_squared_error(struct network *n)
         return mse / n->training_set->num_elements;
 }
 
-void report_mean_squared_error(int epoch, double mse)
+void report_error(int epoch, double mse, struct network *n)
 {
-        pprintf("epoch: [%d] | MSE: [%lf]", epoch, mse);
+        int report_after = REPORT_AFTER_PERCENTAGE * n->max_epochs;
+
+        if (epoch % report_after == 0) {
+                double rms = sqrt(mse);
+                pprintf("epoch: [%d] | MSE: [%lf] | RMS: [%lf]", epoch, mse, rms);
+        }
 }
 
 /*
@@ -204,8 +211,6 @@ double unit_activation(struct network *n, struct group *g, int u)
 
 void train_bp(struct network *n)
 {
-        int report_after = n->max_epochs * REPORT_AFTER_PERCENTAGE;
-        
         int item = 0, event = 0;
         for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
                 for (int i = 0; i < n->epoch_length; i++) {
@@ -234,20 +239,15 @@ void train_bp(struct network *n)
                 }
                 adjust_weights(n, n->output);
 
+                /* report MSE */
                 double mse = mean_squared_error(n);
-                if (epoch == 1 || epoch % report_after == 0)
-                        report_mean_squared_error(epoch, mse);
+                report_error(epoch, mse, n);
                 if (mse < n->mse_threshold)
                         break;
 
-                /* XXX: experimental */
-                /*
-                int decrease_lr_after = n->max_epochs * 0.10;
-                if (epoch % decrease_lr_after == 0) {
-                        n->learning_rate = n->learning_rate * 0.5;
-                        mprintf("decreased learning rate to: %f", n->learning_rate);
-                }
-                */
+                /* scale LR and momentum */
+                scale_learning_rate(epoch,n);
+                scale_momentum(epoch,n);
         }
 }
 
@@ -292,7 +292,17 @@ void train_bptt_epochwise(struct network *n)
                 ffn_sum_deltas(n->unfolded_net);
                 adjust_weights(n->unfolded_net->stack[0],
                                 n->unfolded_net->stack[0]->output);
-                
+
+                /* report MSE */
+                double mse = mean_squared_error(n->unfolded_net->stack[0]);
+                report_error(epoch, mse, n);
+                if (mse < n->mse_threshold)
+                        break;
+
+                /* scale LR and momentum */
+                scale_learning_rate(epoch,n);
+                scale_momentum(epoch,n);
+
                 for (int i = 1; i < n->epoch_length; i++)
                         ffn_disconnect_duplicate_networks(
                                         n->unfolded_net,
@@ -342,8 +352,18 @@ void train_bptt_truncated(struct network *n)
                                 n->unfolded_net->stack[0]->output);
 
                 ffn_cycle_stack(n->unfolded_net);
-
+                
                 h--;
+
+                /* report MSE */
+                double mse = mean_squared_error(n->unfolded_net->stack[0]);
+                report_error(epoch, mse, n);
+                if (mse < n->mse_threshold)
+                        break;
+
+                /* scale LR and momentum */
+                scale_learning_rate(epoch,n);
+                scale_momentum(epoch,n);
         }
 
         for (int i = 1; i < n->history_length; i++)
@@ -378,6 +398,29 @@ struct vector *ce_output_error(struct network *n)
         }
 
         return error;
+}
+
+void scale_learning_rate(int epoch, struct network *n)
+{
+        int scale_after = n->lr_scale_after * n->max_epochs;
+        if (scale_after > 0 && epoch % scale_after == 0) {
+                double lr = n->learning_rate;
+                n->learning_rate = n->lr_scale_factor * n->learning_rate;
+                mprintf("scaled learning rate: [%lf --> %lf]",
+                                lr, n->learning_rate);
+        }
+
+}
+
+void scale_momentum(int epoch, struct network *n)
+{
+        int scale_after = n->mn_scale_after * n->max_epochs;
+        if (scale_after > 0 && epoch % scale_after == 0) {
+                double mn = n->momentum;
+                n->momentum = n->mn_scale_factor * n->momentum;
+                mprintf("scaled momentum: [%lf --> %lf]",
+                                mn, n->momentum);
+        }
 }
 
 /*

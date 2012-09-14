@@ -91,8 +91,8 @@ struct ffn_unfolded_network *ffn_init_unfolded_network(struct network *n)
                 un->recur_weights[i] = create_matrix(
                                 g->vector->size,
                                 g->vector->size);
-                // XXX: move this...
-                randomize_matrix(un->recur_weights[i], 0.0, 0.25);
+                randomize_matrix(un->recur_weights[i],
+                                n->random_mu, n->random_sigma);
         }
 
         if (n->learning_algorithm == train_bptt_epochwise)

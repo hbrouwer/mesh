@@ -46,7 +46,13 @@ struct network
         struct group_array *groups; /* groups in the network */
 
         double learning_rate;       /* learning rate */
+        double lr_scale_factor;     /* scale factor for the learning rate */
+        double lr_scale_after;      /* fraction of maximum number of epochs
+                                       after which to scale the learning rate */
         double momentum;            /* momentum */
+        double mn_scale_factor;     /* scale factor for momentum */
+        double mn_scale_after;      /* fraction of maximum number of epochs
+                                       after which to scale the momentum */
         double weight_decay;        /* weight decay */
 
         double mse_threshold;       /* mean squared error threshold */

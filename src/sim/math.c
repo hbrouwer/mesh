@@ -65,5 +65,7 @@ double squared_error(struct vector *output, struct vector *target)
         for (int i = 0; i < output->size; i++)
                 se += pow(target->elements[i] - output->elements[i], 2.0);
 
-        return (0.5) * se;
+        // XXX: ???
+        // return (0.5) * se;
+        return se;
 }
