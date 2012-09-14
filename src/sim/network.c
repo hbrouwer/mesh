@@ -232,6 +232,17 @@ void reset_elman_groups(struct network *n)
         }
 }
 
+void reset_recurrent_groups(struct network *n) {
+        for (int i = 0; i < n->groups->num_elements; i++) {
+                struct group *g = n->groups->elements[i];
+                if (g->recurrent) {
+                        for (int j = 0; j < g->vector->size; j++)
+                                g->vector->elements[j] = 0.0;
+                }
+        }
+}
+        
+
 struct projs_array *create_projs_array(int max_elements)
 {
         struct projs_array *ps;
@@ -524,16 +535,23 @@ void load_learning_algorithm(char *buf, char *fmt, struct network *n,
                 return;
 
         /* 'standard' backpropagation */
-        if (strcmp(tmp, "bp") == 0)
+        if (strncmp(tmp, "bp", 2) == 0)
                 n->learning_algorithm = train_bp;
 
+        if (strncmp(tmp, "bptt", 4) == 0)
+                n->learning_algorithm = train_bptt;
+                        
         /* epochwise backpropagation through time */
+        /*
         if (strcmp(tmp, "epoch_bptt") == 0)
                 n->learning_algorithm = train_bptt_epochwise;
+                */
 
         /* truncated backpropagation through time */
+        /*
         if (strcmp(tmp, "trunc_bptt") == 0)
                 n->learning_algorithm = train_bptt_truncated;
+                */
 
         if (n->learning_algorithm)
                 mprintf(msg, tmp);

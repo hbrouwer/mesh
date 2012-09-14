@@ -23,14 +23,19 @@
 
 #include <math.h> /* XXX: for sqrt */
 
-#define REPORT_AFTER_PERCENTAGE 0.01
+#define REPORT_AFTER_PERCENTAGE 0.10
 
 void train_network(struct network *n)
 {
         mprintf("starting training of network: [%s]", n->name);
 
+        /*
         if ((n->learning_algorithm == train_bptt_epochwise)
                         || (n->learning_algorithm == train_bptt_truncated))
+                n->unfolded_net = ffn_init_unfolded_network(n);
+                */
+
+        if (n->learning_algorithm == train_bptt)
                 n->unfolded_net = ffn_init_unfolded_network(n);
 
         n->learning_algorithm(n);
@@ -72,63 +77,59 @@ void test_network(struct network *n)
 
 // XXX: experimental unfolded net testing
 // XXX: only works for epochwise bptt
+//
+// TODO: clean this
 void test_unfolded_network(struct network *n)
 {
         mprintf("starting testing of network: [%s]", n->name);
 
-        for (int i = 0; i < n->test_set->num_elements; i++) {
-                int event = 0;
-                struct element *e =  n->training_set->elements[i];
+        struct ffn_unfolded_network *un = n->unfolded_net;
 
-                for (int s = 0; s < n->unfolded_net->stack_size; s++) {
-                        if (s > 0)
-                                ffn_connect_duplicate_networks(
-                                                n->unfolded_net,
-                                                n->unfolded_net->stack[s - 1],
-                                                n->unfolded_net->stack[s]);
+        int h = 0;
+        for (int i = 0; i < n->training_set->num_elements; i++) {
+                struct element *e = n->training_set->elements[i];
 
-                        copy_vector(n->unfolded_net->stack[s]->input->vector, 
-                                        e->inputs[event]);
-                        feed_forward(n->unfolded_net->stack[s],
-                                        n->unfolded_net->stack[s]->input);
-                        
-                        if (e->targets[event])
-                                copy_vector(n->unfolded_net->stack[i]->target,
-                                                e->targets[event]);
+                rprintf("testing item: %d -- \"%s\"", i, e->name);
 
-                        event++;
-                        /*
-                        if (++event == e->num_events) {
-                                event = 0;
-                                if (++item == n->training_set->num_elements)
-                                        item = 0;
-                                e = n->training_set->elements[item];
+                for (int j = 0; j < e->num_events; j++) {
+                        if (h == un->stack_size) {
+                                ffn_cycle_stack(un);
+                                h--;
                         }
-                        */
 
+                        if (h > 0)
+                                ffn_connect_duplicate_networks(un,
+                                                un->stack[h - 1], un->stack[h]);
+
+                        copy_vector(un->stack[h]->input->vector, e->inputs[j]);
+                        feed_forward(un->stack[h], un->stack[h]->input);
+
+                        if (e->targets[j])
+                                copy_vector(un->stack[h]->target, e->targets[j]);
+
+                        if (j == e->num_events - 1) {
+                                print_vector(un->stack[h]->target);
+                                print_vector(un->stack[h]->output->vector);
+                        }
+
+                        h++;
                 }
 
-                print_vector(n->unfolded_net->stack[n->unfolded_net->stack_size - 1]->target);
-                print_vector(n->unfolded_net->stack[n->unfolded_net->stack_size - 1]->output->vector);
-
-                printf("\n");
-
-                for (int i = 1; i < n->epoch_length; i++)
-                        ffn_disconnect_duplicate_networks(
-                                        n->unfolded_net,
-                                        n->unfolded_net->stack[i - 1],
-                                        n->unfolded_net->stack[i]);
+                reset_recurrent_groups(un->stack[h - 1]);
         }
 
-        print_weights(n->unfolded_net->stack[0]);
-        print_weight_stats(n->unfolded_net->stack[0]);
+        print_weights(un->stack[0]);
+        print_weight_stats(un->stack[0]);
+
+        for (int i = 1; i < un->stack_size; i++)
+                ffn_disconnect_duplicate_networks(un, un->stack[i - 1], un->stack[i]);
 }
 
 /*
  * Total network error (or mean squared error).
  */
-
 // XXX: only works for FFN's and SRN's
+// TODO: adapt for unfolded nets (bptt)
 double mean_squared_error(struct network *n)
 {
         double mse = 0.0;
@@ -156,7 +157,7 @@ void report_error(int epoch, double mse, struct network *n)
 {
         int report_after = REPORT_AFTER_PERCENTAGE * n->max_epochs;
 
-        if (epoch % report_after == 0) {
+        if (epoch == 1 || epoch % report_after == 0) {
                 double rms = sqrt(mse);
                 pprintf("epoch: [%d] | MSE: [%lf] | RMS: [%lf]", epoch, mse, rms);
         }
@@ -300,12 +301,61 @@ void train_bp(struct network *n)
         }
 }
 
+void train_bptt(struct network *n)
+{
+        struct ffn_unfolded_network *un = n->unfolded_net;
+
+        int h = 0;
+        for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
+                for (int i = 0; i < n->training_set->num_elements; i++) {
+                        struct element *e = n->training_set->elements[i];
+
+                        for (int j = 0; j < e->num_events; j++) {
+                                if (h == un->stack_size) {
+                                        ffn_cycle_stack(un);
+                                        h--;
+                                }
+
+                                if (h > 0)
+                                        ffn_connect_duplicate_networks(un, 
+                                                        un->stack[h - 1], un->stack[h]);
+
+                                copy_vector(un->stack[h]->input->vector, e->inputs[j]);
+                                feed_forward(un->stack[h], un->stack[h]->input);
+                        
+                                if (e->targets[j])
+                                        copy_vector(un->stack[h]->target, e->targets[j]);
+
+                                h++;
+                        }
+
+                        struct network *ns = un->stack[n->history_length];
+                        struct vector *error = n->error_measure(ns);
+                        backpropagate_error(ns, ns->output, error);
+                        dispose_vector(error);
+             
+                        ffn_sum_deltas(un);
+                        adjust_weights(un->stack[0], un->stack[0]->output);
+
+                        reset_recurrent_groups(un->stack[h - 1]);
+                }
+
+                /* scale LR and momentum */
+                scale_learning_rate(epoch,n);
+                scale_momentum(epoch,n);
+        }
+
+        for (int i = 1; i < un->stack_size; i++)
+                ffn_disconnect_duplicate_networks(un, un->stack[i - 1], un->stack[i]);
+}
+
 /*
  * XXX: check how events should be handled in BPTT
  *
  * XXX: what about bptt for item sizes, i.e., variable sized
  * input sequences...
  */
+/*
 void train_bptt_epochwise(struct network *n)
 {
         int item = 0, event = 0;
@@ -347,15 +397,6 @@ void train_bptt_epochwise(struct network *n)
                 adjust_weights(n->unfolded_net->stack[0],
                                 n->unfolded_net->stack[0]->output);
 
-                /* report MSE */
-                /*
-                double mse = mean_squared_error(n->unfolded_net->stack[0]);
-                report_error(epoch, mse, n);
-                if (mse < n->mse_threshold)
-                        break;
-                        */
-
-                /* scale LR and momentum */
                 scale_learning_rate(epoch,n);
                 scale_momentum(epoch,n);
 
@@ -366,12 +407,13 @@ void train_bptt_epochwise(struct network *n)
                                         n->unfolded_net->stack[i]);
         }
 }
+*/
 
+/*
 void train_bptt_truncated(struct network *n)
 {
         int item = 0, event = 0, h = 0;
         struct element *e = n->training_set->elements[item];
-
 
         for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
                 for (int i = h; i < n->history_length + 1; i++, h++) {
@@ -411,15 +453,6 @@ void train_bptt_truncated(struct network *n)
                 
                 h--;
 
-                /* report MSE */
-                /*
-                double mse = mean_squared_error(n->unfolded_net->stack[0]);
-                report_error(epoch, mse, n);
-                if (mse < n->mse_threshold)
-                        break;
-                        */
-
-                /* scale LR and momentum */
                 scale_learning_rate(epoch,n);
                 scale_momentum(epoch,n);
         }
@@ -430,6 +463,7 @@ void train_bptt_truncated(struct network *n)
                                 n->unfolded_net->stack[i - 1],
                                 n->unfolded_net->stack[i]);
 }
+*/
 
 struct vector *ss_output_error(struct network *n)
 {
@@ -518,9 +552,11 @@ void backpropagate_error(struct network *n, struct group *g,
         }
         
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
+                /*
                 if (n->learning_algorithm != train_bptt_truncated &&
                                 g->inc_projs->elements[i]->recurrent)
                         continue;
+                        */
 
                 struct group *ng = g->inc_projs->elements[i]->to;
 

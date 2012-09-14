@@ -94,10 +94,14 @@ struct ffn_unfolded_network *ffn_init_unfolded_network(struct network *n)
                                 n->random_mu, n->random_sigma);
         }
 
+        /*
         if (n->learning_algorithm == train_bptt_epochwise)
                 un->stack_size = n->epoch_length;
         else
                 un->stack_size = n->history_length + 1;
+                */
+
+        un->stack_size = n->history_length + 1;
         block_size = un->stack_size * sizeof(struct network *);
         if (!(un->stack = malloc(block_size)))
                 goto error_out;

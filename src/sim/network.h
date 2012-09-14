@@ -173,6 +173,7 @@ void attach_bias_group(struct network *n, struct group *g);
 void dispose_groups(struct group *g);
 
 void reset_elman_groups(struct network *n);
+void reset_recurrent_groups(struct network *n);
 
 struct projs_array *create_projs_array(int max_elements);
 void increase_projs_array_size(struct projs_array *ps);

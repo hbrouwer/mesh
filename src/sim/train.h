@@ -33,6 +33,7 @@ void feed_forward(struct network *n, struct group *g);
 double unit_activation(struct network *n, struct group *g, int u);
 
 void train_bp(struct network *n);
+void train_bptt(struct network *n);
 void train_bptt_epochwise(struct network *n);
 void train_bptt_truncated(struct network *n);
 
