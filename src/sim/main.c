@@ -71,7 +71,7 @@ int main(int argc, char **argv)
                 test_network(n);
                 // compute_erp_correlates(n);
         } else {
-                test_network(n->unfolded_net->stack[0]);
+                test_unfolded_network(n);
         }
 
         mprintf("Cleaning up...");

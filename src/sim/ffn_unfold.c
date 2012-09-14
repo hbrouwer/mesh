@@ -80,8 +80,7 @@ struct ffn_unfolded_network *ffn_init_unfolded_network(struct network *n)
 
         un->recur_groups = ffn_recurrent_groups(n);
 
-        int block_size = un->recur_groups->num_elements
-                * sizeof(struct matrix *);
+        int block_size = un->recur_groups->num_elements * sizeof(struct matrix *);
         if (!(un->recur_weights = malloc(block_size)))
                 goto error_out;
         memset(un->recur_weights, 0, block_size);

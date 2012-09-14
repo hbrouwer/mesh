@@ -52,11 +52,7 @@ double normrand(double mu, double sigma)
 }
 
 /*
- * Squared error (network error), as described in:
- *
- * Williams R. J. and Zipser. D. (1990). Gradient-based learning algoritms
- *   for recurrent connectionist networks. (Technical Report NU-CCS-90-0).
- *   Boston: Northeastern University, College of Computer Science.
+ * Squared error (network error)
  */
 double squared_error(struct vector *output, struct vector *target)
 {

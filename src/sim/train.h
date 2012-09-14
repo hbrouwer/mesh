@@ -24,6 +24,7 @@
 
 void train_network(struct network *n);
 void test_network(struct network *n);
+void test_unfolded_network(struct network *n);
 
 double mean_squared_error(struct network *n);
 void report_error(int epoch, double mse, struct network *n);
