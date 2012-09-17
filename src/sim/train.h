@@ -27,6 +27,7 @@ void test_network(struct network *n);
 void test_unfolded_network(struct network *n);
 
 double mean_squared_error(struct network *n);
+double mean_squared_error_un(struct network *n);
 void report_error(int epoch, double mse, struct network *n);
 
 void feed_forward(struct network *n, struct group *g);
@@ -34,8 +35,6 @@ double unit_activation(struct network *n, struct group *g, int u);
 
 void train_bp(struct network *n);
 void train_bptt(struct network *n);
-void train_bptt_epochwise(struct network *n);
-void train_bptt_truncated(struct network *n);
 
 struct vector *ss_output_error(struct network *n);
 struct vector *ce_output_error(struct network *n);

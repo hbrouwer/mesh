@@ -385,8 +385,9 @@ struct network *load_network(char *filename)
 
                 load_int_parameter(buf, "MaxEpochs %d", &n->max_epochs,
                                 "set maximum number of epochs: [%d]");
+                /*
                 load_int_parameter(buf, "EpochLength %d", &n->epoch_length,
-                                "set epoch length: [%d]");
+                                "set epoch length: [%d]"); */
                 load_int_parameter(buf, "HistoryLength %d", &n->history_length,
                                 "set BPTT history length: [%d]");
 
@@ -538,21 +539,10 @@ void load_learning_algorithm(char *buf, char *fmt, struct network *n,
         if (strncmp(tmp, "bp", 2) == 0)
                 n->learning_algorithm = train_bp;
 
+        /* backpropagation through time */
         if (strncmp(tmp, "bptt", 4) == 0)
                 n->learning_algorithm = train_bptt;
                         
-        /* epochwise backpropagation through time */
-        /*
-        if (strcmp(tmp, "epoch_bptt") == 0)
-                n->learning_algorithm = train_bptt_epochwise;
-                */
-
-        /* truncated backpropagation through time */
-        /*
-        if (strcmp(tmp, "trunc_bptt") == 0)
-                n->learning_algorithm = train_bptt_truncated;
-                */
-
         if (n->learning_algorithm)
                 mprintf(msg, tmp);
 }

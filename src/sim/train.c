@@ -21,7 +21,7 @@
 #include "set.h"
 #include "train.h"
 
-#include <math.h> /* XXX: for sqrt */
+#include <math.h>
 
 #define REPORT_AFTER_PERCENTAGE 0.10
 
@@ -29,43 +29,41 @@ void train_network(struct network *n)
 {
         mprintf("starting training of network: [%s]", n->name);
 
-        /*
-        if ((n->learning_algorithm == train_bptt_epochwise)
-                        || (n->learning_algorithm == train_bptt_truncated))
-                n->unfolded_net = ffn_init_unfolded_network(n);
-                */
-
         if (n->learning_algorithm == train_bptt)
                 n->unfolded_net = ffn_init_unfolded_network(n);
 
         n->learning_algorithm(n);
 }
 
+/* test 'normal' network */
 void test_network(struct network *n)
 {
         mprintf("starting testing of network: [%s]", n->name);
-
+        
         for (int i = 0; i < n->test_set->num_elements; i++) {
                 struct element *e = n->test_set->elements[i];
-
-                rprintf("testing item: %d -- \"%s\"", i, e->name);
-
-                for (int j = 0; j < e->num_events; j++) {
-                        copy_vector(n->input->vector, e->inputs[j]);
-                        if (e->targets[j] != NULL)
-                                copy_vector(n->target, e->targets[j]);
                 
-                        feed_forward(n, n->input);
-
-                        if (e->targets[j] != NULL) {
-                                print_vector(n->target);
-                                print_vector(n->output->vector);
-                                printf("\n");
-                        }
-                }
-
+                /* reset Elman groups */
                 if (n->srn)
                         reset_elman_groups(n);
+
+                rprintf("testing item: %d -- \"%s\"", i, e->name);
+                for (int j = 0; j < e->num_events; j++) {
+                        copy_vector(n->input->vector, e->inputs[j]);
+                        feed_forward(n, n->input);
+
+                        /* 
+                         * If there is target vector for this event,
+                         * print this vector as well as the network's
+                         * output
+                         */
+                        if (e->targets[j] != NULL) {
+                                copy_vector(n->target, e->targets[j]);
+                                print_vector(n->target);
+                                print_vector(n->output->vector);
+                                rprintf("");
+                        }
+                }
         }
 
         print_weights(n);
@@ -75,79 +73,122 @@ void test_network(struct network *n)
         pprintf("MSE: [%lf]", mse);
 }
 
-// XXX: experimental unfolded net testing
-// XXX: only works for epochwise bptt
-//
-// TODO: clean this
+/* test an unfolded network */
 void test_unfolded_network(struct network *n)
 {
         mprintf("starting testing of network: [%s]", n->name);
 
         struct ffn_unfolded_network *un = n->unfolded_net;
-
         int h = 0;
+        reset_recurrent_groups(un->stack[h]);
+
         for (int i = 0; i < n->training_set->num_elements; i++) {
                 struct element *e = n->training_set->elements[i];
 
                 rprintf("testing item: %d -- \"%s\"", i, e->name);
-
                 for (int j = 0; j < e->num_events; j++) {
+                        /* cycle network stack, if full */
                         if (h == un->stack_size) {
                                 ffn_cycle_stack(un);
                                 h--;
                         }
 
-                        if (h > 0)
-                                ffn_connect_duplicate_networks(un,
-                                                un->stack[h - 1], un->stack[h]);
-
                         copy_vector(un->stack[h]->input->vector, e->inputs[j]);
-                        feed_forward(un->stack[h], un->stack[h]->input);
-
                         if (e->targets[j])
                                 copy_vector(un->stack[h]->target, e->targets[j]);
+                        feed_forward(un->stack[h], un->stack[h]->input);
 
-                        if (j == e->num_events - 1) {
+                        /* 
+                         * If there is target vector for this event,
+                         * print this vector as well as the network's
+                         * output
+                         */
+                        if (e->targets[j] != NULL) {
                                 print_vector(un->stack[h]->target);
                                 print_vector(un->stack[h]->output->vector);
+                                rprintf("");
                         }
 
                         h++;
                 }
 
+                // XXX: does this make sense??
                 reset_recurrent_groups(un->stack[h - 1]);
         }
 
         print_weights(un->stack[0]);
         print_weight_stats(un->stack[0]);
 
-        for (int i = 1; i < un->stack_size; i++)
-                ffn_disconnect_duplicate_networks(un, un->stack[i - 1], un->stack[i]);
+        double mse = mean_squared_error_un(n);
+        pprintf("MSE: [%lf]", mse);
 }
 
 /*
  * Total network error (or mean squared error).
  */
-// XXX: only works for FFN's and SRN's
-// TODO: adapt for unfolded nets (bptt)
 double mean_squared_error(struct network *n)
 {
         double mse = 0.0;
         for (int i = 0; i < n->training_set->num_elements; i++) {
                 struct element *e = n->training_set->elements[i];
+                
+                /* reset Elman groups */
+                if (n->srn)
+                        reset_elman_groups(n);
 
                 for (int j = 0; j < e->num_events; j++) {
                         copy_vector(n->input->vector, e->inputs[j]);
                         feed_forward(n, n->input);
 
-                        if (e->targets[j]) {
+                        /* 
+                         * Compute MSE on basis of the current item's
+                         * last event
+                         */
+                        if (j == e->num_events - 1) {
                                 copy_vector(n->target, e->targets[j]);
                                 mse += squared_error(n->output->vector, n->target);
                         }
                 }
+        }
 
-                if (n->srn)
-                        reset_elman_groups(n);
+        return mse / n->training_set->num_elements;
+}
+
+double mean_squared_error_un(struct network *n)
+{
+        double mse = 0.0;
+        struct ffn_unfolded_network *un = n->unfolded_net;
+        int h = 0;
+        reset_recurrent_groups(un->stack[h]);
+
+        for (int i = 0; i < n->training_set->num_elements; i++) {
+                struct element *e = n->training_set->elements[i];
+
+                for (int j = 0; j < e->num_events; j++) {
+                        /* cycle network stack, if full */
+                        if (h == un->stack_size) {
+                                ffn_cycle_stack(un);
+                                h--;
+                        }
+
+                        copy_vector(un->stack[h]->input->vector, e->inputs[j]);
+                        feed_forward(un->stack[h], un->stack[h]->input);
+
+                        /* 
+                         * Compute MSE on basis of the current item's
+                         * last event
+                         */
+                        if (j == e->num_events - 1) {
+                                copy_vector(un->stack[h]->target, e->targets[j]);
+                                mse += squared_error(un->stack[h]->output->vector,
+                                                un->stack[h]->target);
+                        }
+
+                        h++;
+                }
+
+                // XXX: does this make sense??
+                reset_recurrent_groups(un->stack[h - 1]);
         }
 
         return mse / n->training_set->num_elements;
@@ -168,7 +209,7 @@ void report_error(int epoch, double mse, struct network *n)
  * computed for each unit in all of the groups towards which G maintains an
  * outgoing projection. This process is recursively repeated for all groups
  * that have a projection coming in from G. If the first G is the input
- * group of the network, activation should be propagated forwar through all
+ * group of the network, activation should be propagated forward through all
  * of the network's hidden groups to the output group:
  *
  * ##########    ##########    ##########
@@ -190,6 +231,9 @@ void feed_forward(struct network *n, struct group *g)
                 copy_vector(g->elman_proj->vector, g->vector);
 
         for (int i = 0; i < g->out_projs->num_elements; i++) {
+                if (g->out_projs->elements[i]->recurrent)
+                        continue;
+
                 struct group *rg = g->out_projs->elements[i]->to;
                 for (int j = 0; j < rg->vector->size; j++) {
                         rg->vector->elements[j] = unit_activation(n, rg, j);
@@ -203,8 +247,10 @@ void feed_forward(struct network *n, struct group *g)
                 }
         }
 
-        for (int i = 0; i < g->out_projs->num_elements; i++)
-                feed_forward(n, g->out_projs->elements[i]->to);
+        for (int i = 0; i < g->out_projs->num_elements; i++) {
+                if (!g->out_projs->elements[i]->recurrent)
+                        feed_forward(n, g->out_projs->elements[i]->to);
+        }
 }
 
 double unit_activation(struct network *n, struct group *g, int u)
@@ -221,250 +267,103 @@ double unit_activation(struct network *n, struct group *g, int u)
 }
 
 /*
- * Backpropagation training. Three types of backpropagation are provided:
- *
- * (1) Standard or regular backpropagation;
- *
- *     For each training element, activation is fed forward to the
- *     output group, and error is backpropagated from the output to the
- *     input group. Weights are adjusted after a specified training epoch
- *     length. If the epoch length is one iteration, this is similar to
- *     adjusting weights after each training instance.
- *
- * (2) Epochwise backpropagation through time
- *
- *     Activation of all training items in an epoch is fed forward to the 
- *     output group. For each item, the activation of recurrent groups as
- *     evoked by the previous training item is also taken into account.
- *     When the last item of an epoch is reached, the error gradient is
- *     computed for each time step in the epoch, by means of propagating
- *     error at the time step's output group to the time step's input group
- *     (i.e., this is essentially the standard backpropagation procedure 
- *     applied to the individual time steps). The error gradient for the
- *     entire epoch is then determined by summing the gradients at the
- *     different time steps, and weights are adjusted according to this
- *     total error gradient.
- *
- * (3) Truncated backpropagation through time.
- *
- *     This training procedure is essentially similar to that of epochwise
- *     backpropagation through time. However, instead of presenting the
- *     network with items for the course of an epoch, a fixed history 
- *     length is used. After activation is fed forward for all items, error 
- *     is  backpropagated from the latest time step all the way down to the
- *     earliest time step. Importantly, and in contrast to epochwise
- *     backpropagation through time, only the output error at the latest 
- *     time step is taken into account. No error is injected at
- *     earlier time steps. The error gradient for the entire history length
- *     is then determined by summing individual error gradients, and weights
- *     are adjusted accordingly.
+ * Backpropagation training
  */
 
 void train_bp(struct network *n)
 {
-        int item = 0, event = 0;
-        struct element *e = n->training_set->elements[item];
-
         for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
-                for (int i = 0; i < n->epoch_length; i++) {
-                        copy_vector(n->input->vector, e->inputs[event]);
-                        feed_forward(n, n->input);
-                        
-                        if (e->targets[event]) {
-                                copy_vector(n->target, e->targets[event]);
-                                struct vector *error = n->error_measure(n);
-                                backpropagate_error(n, n->output, error);
-                                dispose_vector(error);
-                        }
+                for (int i = 0; i < n->training_set->num_elements; i++) {
+                        struct element *e = n->training_set->elements[i];
 
-                        if (++event == e->num_events) {
-                                event = 0;
-                                if (++item == n->training_set->num_elements)
-                                        item = 0;
-                                e = n->training_set->elements[item];
-                        }
-
+                        /* reset Elman groups */
                         if (n->srn)
                                 reset_elman_groups(n);
+
+                        for (int j = 0; j < e->num_events; j++) {
+                                copy_vector(n->input->vector, e->inputs[j]);
+                                feed_forward(n, n->input);
+
+                                /* inject error if a target is specified */
+                                if (e->targets[j]) {
+                                        copy_vector(n->target, e->targets[j]);
+                                        struct vector *error = n->error_measure(n);
+                                        backpropagate_error(n, n->output, error);
+                                        dispose_vector(error);
+                                }
+                        }
                 }
                 adjust_weights(n, n->output);
 
-                /* report MSE */
+                /* compute and report MSE */
                 double mse = mean_squared_error(n);
                 report_error(epoch, mse, n);
                 if (mse < n->mse_threshold)
                         break;
 
-                /* scale LR and momentum */
+                /* scale LR and Momentum */
                 scale_learning_rate(epoch,n);
                 scale_momentum(epoch,n);
         }
 }
 
+/*
+ * Backpropagation through time training
+ */
 void train_bptt(struct network *n)
 {
         struct ffn_unfolded_network *un = n->unfolded_net;
 
-        int h = 0;
         for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
+                int h = 0;
+                reset_recurrent_groups(un->stack[h]);
+                
                 for (int i = 0; i < n->training_set->num_elements; i++) {
                         struct element *e = n->training_set->elements[i];
 
                         for (int j = 0; j < e->num_events; j++) {
+                                /* cycle network stack if full */
                                 if (h == un->stack_size) {
                                         ffn_cycle_stack(un);
                                         h--;
                                 }
 
-                                if (h > 0)
-                                        ffn_connect_duplicate_networks(un, 
-                                                        un->stack[h - 1], un->stack[h]);
-
                                 copy_vector(un->stack[h]->input->vector, e->inputs[j]);
-                                feed_forward(un->stack[h], un->stack[h]->input);
-                        
                                 if (e->targets[j])
                                         copy_vector(un->stack[h]->target, e->targets[j]);
-
+                                feed_forward(un->stack[h], un->stack[h]->input);
+                        
                                 h++;
                         }
 
-                        struct network *ns = un->stack[n->history_length];
-                        struct vector *error = n->error_measure(ns);
-                        backpropagate_error(ns, ns->output, error);
-                        dispose_vector(error);
-             
-                        ffn_sum_deltas(un);
-                        adjust_weights(un->stack[0], un->stack[0]->output);
+                        /* inject error and adjust weights */
+                        if (h == un->stack_size) {
+                                struct network *ns = un->stack[n->history_length];
+                                struct vector *error = n->error_measure(ns);
+                                backpropagate_error(ns, ns->output, error);
+                                dispose_vector(error);
+                                ffn_sum_deltas(un);
+                                adjust_weights(un->stack[0], un->stack[0]->output);
+                        }
 
+                        // XXX: but what if h > num_events ?
                         reset_recurrent_groups(un->stack[h - 1]);
                 }
 
-                /* scale LR and momentum */
+                /* compute and report MSE */
+                double mse = mean_squared_error_un(n);
+                report_error(epoch, mse, n);
+                if (mse < n->mse_threshold)
+                        break;
+
+                /* scale LR and Momentum */
                 scale_learning_rate(epoch,n);
                 scale_momentum(epoch,n);
         }
-
-        for (int i = 1; i < un->stack_size; i++)
-                ffn_disconnect_duplicate_networks(un, un->stack[i - 1], un->stack[i]);
 }
 
-/*
- * XXX: check how events should be handled in BPTT
- *
- * XXX: what about bptt for item sizes, i.e., variable sized
- * input sequences...
- */
-/*
-void train_bptt_epochwise(struct network *n)
-{
-        int item = 0, event = 0;
-        struct element *e =  n->training_set->elements[item];
 
-        for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
-                for (int i = 0; i < n->epoch_length; i++) {
-                        if (i > 0)
-                                ffn_connect_duplicate_networks(
-                                                n->unfolded_net,
-                                                n->unfolded_net->stack[i - 1],
-                                                n->unfolded_net->stack[i]);
-                        
-                        copy_vector(n->unfolded_net->stack[i]->input->vector, 
-                                        e->inputs[event]);
-                        feed_forward(n->unfolded_net->stack[i],
-                                        n->unfolded_net->stack[i]->input);
-                        
-                        if (e->targets[event])
-                                copy_vector(n->unfolded_net->stack[i]->target,
-                                                e->targets[event]);
-
-                        if (++event == e->num_events) {
-                                event = 0;
-                                if (++item == n->training_set->num_elements)
-                                        item = 0;
-                                e = n->training_set->elements[item];
-                        }
-                }
-
-                for (int i = n->epoch_length - 1; i >= 0; i--) {
-                        struct network *ns = n->unfolded_net->stack[i];
-                        struct vector *error = n->error_measure(ns);
-                        backpropagate_error(ns, ns->output, error);
-                        dispose_vector(error);
-                }
-
-                ffn_sum_deltas(n->unfolded_net);
-                adjust_weights(n->unfolded_net->stack[0],
-                                n->unfolded_net->stack[0]->output);
-
-                scale_learning_rate(epoch,n);
-                scale_momentum(epoch,n);
-
-                for (int i = 1; i < n->epoch_length; i++)
-                        ffn_disconnect_duplicate_networks(
-                                        n->unfolded_net,
-                                        n->unfolded_net->stack[i - 1],
-                                        n->unfolded_net->stack[i]);
-        }
-}
-*/
-
-/*
-void train_bptt_truncated(struct network *n)
-{
-        int item = 0, event = 0, h = 0;
-        struct element *e = n->training_set->elements[item];
-
-        for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
-                for (int i = h; i < n->history_length + 1; i++, h++) {
-                        if (i > 0)
-                                ffn_connect_duplicate_networks(
-                                                n->unfolded_net,
-                                                n->unfolded_net->stack[i - 1],
-                                                n->unfolded_net->stack[i]);
-
-                        copy_vector(n->unfolded_net->stack[i]->input->vector, 
-                                        e->inputs[event]);
-                        feed_forward(n->unfolded_net->stack[i],
-                                        n->unfolded_net->stack[i]->input);
-                        
-                        if (e->targets[event])
-                                copy_vector(n->unfolded_net->stack[i]->target,
-                                                e->targets[event]);
-
-                        if (++event == e->num_events) {
-                                event = 0;
-                                if (++item == n->training_set->num_elements)
-                                        item = 0;
-                                e = n->training_set->elements[item];
-                        }
-                }
-
-                struct network *ns = n->unfolded_net->stack[n->history_length];
-                struct vector *error = n->error_measure(ns);
-                backpropagate_error(ns, ns->output, error);
-                dispose_vector(error);
-                
-                ffn_sum_deltas(n->unfolded_net);
-                adjust_weights(n->unfolded_net->stack[0],
-                                n->unfolded_net->stack[0]->output);
-
-                ffn_cycle_stack(n->unfolded_net);
-                
-                h--;
-
-                scale_learning_rate(epoch,n);
-                scale_momentum(epoch,n);
-        }
-
-        for (int i = 1; i < n->history_length; i++)
-                ffn_disconnect_duplicate_networks(
-                                n->unfolded_net,
-                                n->unfolded_net->stack[i - 1],
-                                n->unfolded_net->stack[i]);
-}
-*/
-
+/* sum of squares error */
 struct vector *ss_output_error(struct network *n)
 {
         struct vector *error = create_vector(n->target->size);
@@ -479,6 +378,7 @@ struct vector *ss_output_error(struct network *n)
         return error;
 }
 
+/* cross-entropy error */
 struct vector *ce_output_error(struct network *n)
 {
         struct vector *error = create_vector(n->target->size);
@@ -524,10 +424,9 @@ void scale_momentum(int epoch, struct network *n)
  *     between a unit U in G and U' in G' is the error at U' multiplied
  *     by the activation of U.
  *
- * (2) The error of that projection. Let W be the weight matrix between G
- *     and G'. The error for the projection between G and G' relative to a
- *     unit U' in G', is the sum of the weighted error at each of units U
- *     in G.
+ * (2) The error of that projection. The error for the projection between G 
+ *     and G' relative to a unit U' in G', is the sum of the weighted error 
+ *     at each of units U in G.
  *
  *     Note that this the 'absolute' error that needs to be multiplied by
  *     the derivative of the activation of U' to obtain the 'real' error.
@@ -537,9 +436,7 @@ void scale_momentum(int epoch, struct network *n)
  *
  * Once the deltas and errors have been computed for each of the incoming
  * projections of G, the total error at a group G' is recursively propagated
- * to all of the incoming projections of G'. This is true for all 
- * projections, unless it is a recurrent one and the training algorithm at
- * hand is not truncated backpropgation through time.
+ * to all of the incoming projections of G'. 
  */
 
 void backpropagate_error(struct network *n, struct group *g, 
@@ -552,14 +449,7 @@ void backpropagate_error(struct network *n, struct group *g,
         }
         
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
-                /*
-                if (n->learning_algorithm != train_bptt_truncated &&
-                                g->inc_projs->elements[i]->recurrent)
-                        continue;
-                        */
-
                 struct group *ng = g->inc_projs->elements[i]->to;
-
                 struct vector *grp_error = group_error(n, ng);
                 backpropagate_error(n, ng, grp_error);
                 dispose_vector(grp_error);
@@ -605,18 +495,17 @@ struct vector *group_error(struct network *n, struct group *g)
  * Adjust projection weights. For a specified group G, adjust the weights
  * of all of its incoming projections. The new weight of a connection within
  * this projection is this the old weight of this connection plus the
- * learning rate of the network multiplied by the connection's weight delta.
- * In addition, if a value larger than zero is specified for the momentum
- * parameter of the network, the previous weight delta of the connection
- * multiplied by the momentum parameter's value is added to the new weight.
+ * learning rate of the network multiplied by the connection's weight delta,
+ * minus the weight decay multiplied by the previous weight delta, and
+ * plus the momentum times the previous weight delta.
  *
  * Once all of a projection's weights have been adjusted, its weight deltas
  * are set to zero for the next training iteration, but a copy is stored for
- * the application of momentum. After updating the projection weights of all
- * of the incoming projections of G, the process is recursively repeated for
- * all of the incoming projection of the groups that project to G. Hence,
- * if the first G is the output group of the network, the weights of all
- * projections from the output to the input group should be adjusted:
+ * the application of weight decay and momentum. After updating the projection 
+ * weights of all of the incoming projections of G, the process is recursively 
+ * repeated for all of the incoming projection of the groups that project to 
+ * G. Hence, if the first G is the output group of the network, the weights 
+ * of all projections from the output to the input group should be adjusted:
  *
  * ##########    ##########    ##########
  * # input  #<---# hidden #<---# output #

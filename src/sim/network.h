@@ -58,7 +58,7 @@ struct network
         double mse_threshold;       /* mean squared error threshold */
 
         int max_epochs;             /* maximum number of training epochs */
-        int epoch_length;           /* length of a training epoch */
+        //int epoch_length;           /* length of a training epoch */
 
         int history_length;         /* number of timesteps for BPTT */
 

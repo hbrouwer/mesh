@@ -94,22 +94,20 @@ struct ffn_unfolded_network *ffn_init_unfolded_network(struct network *n)
                                 n->random_mu, n->random_sigma);
         }
 
-        /*
-        if (n->learning_algorithm == train_bptt_epochwise)
-                un->stack_size = n->epoch_length;
-        else
-                un->stack_size = n->history_length + 1;
-                */
-
         un->stack_size = n->history_length + 1;
         block_size = un->stack_size * sizeof(struct network *);
         if (!(un->stack = malloc(block_size)))
                 goto error_out;
         memset(un->stack, 0, block_size);
 
-        for (int i = 0; i < un->stack_size; i++)
+        for (int i = 0; i < un->stack_size; i++) {
                 un->stack[i] = ffn_duplicate_network(n);
-        ffn_attach_recurrent_groups(un, un->stack[0]);
+                if (i == 0) {
+                        ffn_attach_recurrent_groups(un, un->stack[0]);
+                } else {
+                        ffn_connect_duplicate_networks(un, un->stack[i - 1], un->stack[i]);
+                }
+        }
 
         return un;
 
@@ -120,6 +118,9 @@ error_out:
 
 void ffn_dispose_unfolded_network(struct ffn_unfolded_network *un)
 {
+        for (int i = 1; i < un->stack_size; i++)
+                ffn_disconnect_duplicate_networks(un, un->stack[i - 1], un->stack[i]);
+
         ffn_detach_recurrent_groups(un, un->stack[0]);
 
         for (int i = 0; i < un->recur_groups->num_elements; i++)
@@ -559,6 +560,8 @@ void ffn_add_deltas(struct group *g1, struct group *g2)
  *     been shifted into stack[n - 1]. Finally, set the stack[n] to refer
  *     to the previous stack[0].
  *
+ * (6) Connect the recurrent groups of stack[n] to those of stack[n-1].
+ *
  * Note: The above procedure extends to multiple recurrent groups per 
  *   network.
  */
@@ -604,4 +607,10 @@ void ffn_cycle_stack(struct ffn_unfolded_network *un)
                 un->stack[i] = un->stack[i + 1];
         }
         un->stack[un->stack_size - 1] = n;
+
+        /* step 6 */
+        ffn_connect_duplicate_networks(
+                        un, 
+                        un->stack[un->stack_size - 2],
+                        un->stack[un->stack_size - 1]);
 }
