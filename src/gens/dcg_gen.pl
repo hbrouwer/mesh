@@ -29,36 +29,36 @@
 term_expansion((H --> [B]),(H --> [B])) :-
         assert(word(B)).
 
-%assert_word_vectors :-
-%        retractall(word_vector(_,_)),
-%        findall(W,word(W),Ws),
-%        assert_word_vectors(Ws).
-
-%assert_word_vectors([]).
-%assert_word_vectors([W|Ws]) :-
-%        word_vector_size(S),
-%        random_bit_vector(S,BV),
-%        (   word_vector(_,BV)
-%        ->  !, assert_word_vectors([W|Ws])
-%        ;   !, assert(word_vector(W,BV)),
-%            assert_word_vectors(Ws)
-%        ).
 assert_word_vectors :-
         retractall(word_vector(_,_)),
-        word_vector_size(S),
         findall(W,word(W),Ws),
-        %list_to_set...
-        assert_word_vectors(Ws,S).
+        assert_word_vectors(Ws).
 
-assert_word_vectors(Ws,S) :-
-        assert_word_vectors(Ws,1,S).
+assert_word_vectors([]).
+assert_word_vectors([W|Ws]) :-
+        word_vector_size(S),
+        random_bit_vector(S,BV),
+        (   (word_vector(_,BV) ; list_to_ord_set(BV,[0]))
+        ->  !, assert_word_vectors([W|Ws])
+        ;   !, assert(word_vector(W,BV)),
+            assert_word_vectors(Ws)
+        ).
+%assert_word_vectors :-
+%        retractall(word_vector(_,_)),
+%        word_vector_size(S),
+%        findall(W,word(W),Ws),
+%        %list_to_set...
+%        assert_word_vectors(Ws,S).
 
-assert_word_vectors([],_,_).
-assert_word_vectors([W|Ws],N,S) :-
-       create_word_vector(N,S,V),
-       assert(word_vector(W,V)),
-       N0 is N + 1,
-       assert_word_vectors(Ws,N0,S).
+%assert_word_vectors(Ws,S) :-
+%        assert_word_vectors(Ws,1,S).
+
+%assert_word_vectors([],_,_).
+%assert_word_vectors([W|Ws],N,S) :-
+%       create_word_vector(N,S,V),
+%       assert(word_vector(W,V)),
+%       N0 is N + 1,
+%       assert_word_vectors(Ws,N0,S).
 
 create_word_vector(N,S,V) :-
         create_word_vector(1,N,S,V).
@@ -79,16 +79,25 @@ random_bit_vector(0,[]).
 random_bit_vector(N,[B|Bs]) :-
         N > 0,
         N0 is N - 1,
-        random(0,2,B),
+        %random(0,2,B),
+        random(0,2,B0),
+        (  B0 == 0
+        -> B is -1
+        ;  B = B0
+        ),
         random_bit_vector(N0,Bs).
 
+required_word_vector_size(S) :-
+        findall(W,word(W),Ws),
+        length(Ws,N),
+        S is ceiling(log(N + 1) / log(2)).
 %required_word_vector_size(S) :-
 %        findall(W,word(W),Ws),
 %        length(Ws,N),
 %        S is ceiling(log(N) / log(2)).
-required_word_vector_size(S) :-
-        findall(W,word(W),Ws),
-        length(Ws,S).
+%required_word_vector_size(S) :-
+%        findall(W,word(W),Ws),
+%        length(Ws,S).
 
 assert_situation_vectors :-
         retractall(situation_vector(_,_)),
@@ -130,6 +139,14 @@ word_list_to_vector([],[]).
 word_list_to_vector([W|Ws],[V|Vs]) :-
         word_vector(W,V),
         word_list_to_vector(Ws,Vs).
+
+%scale_vector([],[]).
+%scale_vector([0|Vs],[0.01|Vs0]) :-
+%        !,
+%        scale_vector(Vs,Vs0).
+%scale_vector([1|Vs],[0.99|Vs0]) :-
+%        !,
+%        scale_vector(Vs,Vs0).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Generation                                                           %%
@@ -215,5 +232,5 @@ mesh_format_inputs([I|Is],T,F) :-
 mesh_format_vector([I],F) :-
         format(F,'~d',I).
 mesh_format_vector([I|Is],F) :-
-        format(F,'~d ',I),
+        format(F,'~d ', I),
         mesh_format_vector(Is,F).

@@ -23,7 +23,7 @@
 
 #include <math.h>
 
-#define REPORT_AFTER_PERCENTAGE 0.10
+#define REPORT_AFTER_PERCENTAGE 0.01
 
 void train_network(struct network *n)
 {
@@ -66,8 +66,10 @@ void test_network(struct network *n)
                 }
         }
 
+        /*
         print_weights(n);
         print_weight_stats(n);
+        */
 
         double mse = mean_squared_error(n);
         pprintf("MSE: [%lf]", mse);
@@ -78,8 +80,8 @@ void test_unfolded_network(struct network *n)
 {
         mprintf("starting testing of network: [%s]", n->name);
 
-        struct ffn_unfolded_network *un = n->unfolded_net;
         int h = 0;
+        struct ffn_unfolded_network *un = n->unfolded_net;
         reset_recurrent_groups(un->stack[h]);
 
         for (int i = 0; i < n->training_set->num_elements; i++) {
@@ -116,8 +118,10 @@ void test_unfolded_network(struct network *n)
                 reset_recurrent_groups(un->stack[h - 1]);
         }
 
+        /*
         print_weights(un->stack[0]);
         print_weight_stats(un->stack[0]);
+        */
 
         double mse = mean_squared_error_un(n);
         pprintf("MSE: [%lf]", mse);
@@ -157,8 +161,8 @@ double mean_squared_error(struct network *n)
 double mean_squared_error_un(struct network *n)
 {
         double mse = 0.0;
-        struct ffn_unfolded_network *un = n->unfolded_net;
         int h = 0;
+        struct ffn_unfolded_network *un = n->unfolded_net;
         reset_recurrent_groups(un->stack[h]);
 
         for (int i = 0; i < n->training_set->num_elements; i++) {

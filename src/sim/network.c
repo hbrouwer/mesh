@@ -52,7 +52,10 @@ void initialize_network(struct network *n)
         srand(n->random_seed);
 
         // XXX: todo--sanity checks!
-        randomize_weight_matrices(n->input, n);
+        if (n->load_weights)
+                load_weights(n);
+        else 
+                randomize_weight_matrices(n->input, n);
 
         mprintf("initialized network: [%s]", n->name);
 }
@@ -449,24 +452,34 @@ void load_act_function(char *buf, char *fmt, struct network *n,
         if (sscanf(buf, fmt, tmp) == 0)
                 return;
 
-        /* sigmoid/logistic activation function */
-        if (strcmp(tmp, "sigmoid") == 0)
+        /* binary sigmoid/logistic activation function */
+        if (strcmp(tmp, "binary_sigmoid") == 0)
                 if (!output) {
-                        n->act_fun = act_fun_sigmoid;
-                        n->act_fun_deriv = act_fun_sigmoid_deriv;
+                        n->act_fun = act_fun_binary_sigmoid;
+                        n->act_fun_deriv = act_fun_binary_sigmoid_deriv;
                 } else {
-                        n->out_act_fun = act_fun_sigmoid;
-                        n->out_act_fun_deriv = act_fun_sigmoid_deriv;
+                        n->out_act_fun = act_fun_binary_sigmoid;
+                        n->out_act_fun_deriv = act_fun_binary_sigmoid_deriv;
                 }
 
-        /* approximation of sigmoid/logistic function */
-        if (strcmp(tmp, "sigmoid_approx") == 0)
+        /* approximation of binary sigmoid/logistic function */
+        if (strcmp(tmp, "binary_sigmoid_approx") == 0)
                 if (!output) {
-                        n->act_fun = act_fun_sigmoid_approx;
-                        n->act_fun_deriv = act_fun_sigmoid_deriv;
+                        n->act_fun = act_fun_binary_sigmoid_approx;
+                        n->act_fun_deriv = act_fun_binary_sigmoid_deriv;
                 } else {
-                        n->out_act_fun = act_fun_sigmoid_approx;
-                        n->out_act_fun_deriv = act_fun_sigmoid_deriv;
+                        n->out_act_fun = act_fun_binary_sigmoid_approx;
+                        n->out_act_fun_deriv = act_fun_binary_sigmoid_deriv;
+                }
+
+        /* bipolar sigmoid/logistic activation function */
+        if (strcmp(tmp, "bipolar_sigmoid") == 0)
+                if (!output) {
+                        n->act_fun = act_fun_bipolar_sigmoid;
+                        n->act_fun_deriv = act_fun_bipolar_sigmoid_deriv;
+                } else {
+                        n->out_act_fun = act_fun_bipolar_sigmoid;
+                        n->out_act_fun_deriv = act_fun_bipolar_sigmoid_deriv;
                 }
 
         /* softmax activation function */
@@ -496,7 +509,7 @@ void load_act_function(char *buf, char *fmt, struct network *n,
                         n->act_fun_deriv = act_fun_tanh_deriv;
                 } else {
                         n->out_act_fun = act_fun_tanh_approx;
-                        n->out_act_fun_deriv = act_fun_sigmoid_deriv;
+                        n->out_act_fun_deriv = act_fun_tanh_deriv;
                 }
 
         /* linear/identity activation function */
@@ -734,6 +747,104 @@ struct group *find_group_by_name(struct network *n, char *name)
         }
 
         return NULL;
+}
+
+void load_weights(struct network *n)
+{
+        FILE *fd;
+        if (!(fd = fopen(n->weights_file, "r")))
+                goto error_out;
+
+        char buf[4096];
+        while (fgets(buf, sizeof(buf), fd)) {
+                char tmp1[64], tmp2[64];
+
+                if (!(sscanf(buf, "Projection %s %s", tmp1, tmp2)))
+                        continue;
+
+                /* find the groups for the projection */
+                struct group *g1, *g2;
+                if ((g1 = find_group_by_name(n, tmp1)) == NULL) {
+                        eprintf("group does not exist: %s", tmp1);
+                        return;
+                }
+                if ((g2 = find_group_by_name(n, tmp2)) == NULL) {
+                        eprintf("group does not exist: %s", tmp2);
+                        return;
+                }
+
+                /* find the projection */
+                struct projection *p;
+                for (int i = 0; i < g1->out_projs->num_elements; i++) {
+                        p = g1->out_projs->elements[i];
+                        if (p->to == g2)
+                                break;
+                }
+
+                /* read the matrix values */
+                for (int r = 0; r < p->weights->rows; r++) {
+                        if (!fgets(buf, sizeof(buf), fd))
+                                goto error_out;
+                        char *tokens = strtok(buf, " ");
+                        for (int c = 0; c < p->weights->cols; c++) {
+                                if (!tokens)
+                                        goto error_out;
+                                sscanf(tokens, "%lf", &p->weights->elements[r][c]);
+                                tokens = strtok(NULL, " ");
+                        }
+                }
+        }
+
+        fclose(fd);
+
+        return;
+
+error_out:
+        perror("[load_weight_matrices()]");
+        return;
+}
+
+void save_weights(struct network *n)
+{
+        FILE *fd;
+        if (!(fd = fopen(n->weights_file, "w")))
+                goto error_out;
+
+        save_weight_matrices(n->input, fd);
+
+        fclose(fd);
+
+        return;
+
+error_out:
+        perror("[save_weight_matrices()]");
+        return;
+}
+
+void save_weight_matrices(struct group *g, FILE *fd)
+{
+        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+                struct projection *p = g->inc_projs->elements[i];
+
+                /* write the projection */
+                fprintf(fd, "Projection %s %s\n", p->to->name, g->name);
+
+                /* write the matrix values */
+                for (int r = 0; r < p->weights->rows; r++) {
+                        for (int c = 0; c < p->weights->cols; c++) {
+                                fprintf(fd, "%f", p->weights->elements[r][c]);
+                                if (c < p->weights->cols - 1)
+                                        fprintf(fd, " ");
+                        }
+                        fprintf(fd, "\n");
+                }
+                fprintf(fd, "\n");
+        }
+
+        for (int i = 0; i < g->out_projs->num_elements; i++) {
+                struct group *rg = g->out_projs->elements[i]->to;
+                save_weight_matrices(rg, fd);
+        }
 }
 
 /*

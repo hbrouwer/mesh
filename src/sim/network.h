@@ -86,6 +86,12 @@ struct network
         struct set *training_set;   /* training set */
         struct set *test_set;       /* test set */
 
+        char *weights_file;         /* weights file name */
+        bool save_weights;          /* flags whether the weight matrices should
+                                       be saved after training */
+        bool load_weights;          /* flags whether weight matrices should be
+                                       loaded */
+
         /*
          * ################################################################
          * ## Data structure for unfolded feed forward networks.         ##
@@ -211,6 +217,10 @@ void load_recurrent_group(char *buf, char *fmt, struct network *n,
                 char *msg);
 
 struct group *find_group_by_name(struct network *n, char *name);
+
+void load_weights(struct network *n);
+void save_weights(struct network *n);
+void save_weight_matrices(struct group *g, FILE *fd);
 
 /* experimental */
 void print_units(struct network *n);

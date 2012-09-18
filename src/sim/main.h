@@ -24,7 +24,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define VERSION "04.09.2012"
+#define VERSION "18.09.2012"
 
 void print_help(char *exec_name);
 void print_version();

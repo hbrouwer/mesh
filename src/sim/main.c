@@ -45,6 +45,20 @@ int main(int argc, char **argv)
                         }
                 }
 
+                if (strcmp(argv[i], "--save_weights") == 0) {
+                        if (++i < argc) {
+                                n->weights_file = argv[i];
+                                n->save_weights = true;
+                        }
+                }
+
+                if (strcmp(argv[i], "--load_weights") == 0) {
+                        if (++i < argc) {
+                                n->weights_file = argv[i];
+                                n->load_weights = true;
+                        }
+                }
+
                 if (strcmp(argv[i], "--help") == 0) {
                         print_help(argv[0]);
                         goto exit_success;
@@ -66,13 +80,17 @@ int main(int argc, char **argv)
                 goto exit_success;
 
         initialize_network(n);
-        train_network(n);
+        if (!n->load_weights)
+                train_network(n);
         if (n->learning_algorithm == train_bp) {
                 test_network(n);
                 // compute_erp_correlates(n);
         } else {
                 test_unfolded_network(n);
         }
+
+        if (n->save_weights)
+                save_weights(n);
 
         mprintf("Cleaning up...");
         dispose_network(n);
@@ -87,12 +105,14 @@ void print_help(char *exec_name)
                         "usage: %s [options]\n\n"
 
                         "  running network simulations:\n"
-                        "    --network <file>\tload, train, and test the network specified in <file>\n"
+                        "    --network <file>\t\tload and test the network specified in <file>\n"
+                        "    --save_weights <file>\tsave weight matrices to <file> after training\n"
+                        "    --load_weights <file>\tload weight matrices from <file>\n"
 
                         "\n"
                         "  basic information for users:\n"
-                        "    --help\t\tshows this help message\n"
-                        "    --version\t\tshows version\n",
+                        "    --help\t\t\tshows this help message\n"
+                        "    --version\t\t\tshows version\n",
                         exec_name);
 }
 
