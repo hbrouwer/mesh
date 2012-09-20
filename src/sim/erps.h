@@ -23,6 +23,8 @@
 #include "vector.h"
 
 void compute_erp_correlates(struct network *n);
-double compute_p600_correlate(struct vector *o, struct vector *po); 
+
+double compute_n400_correlate(struct vector *v, struct vector *pv);
+double compute_p600_correlate(struct vector *v, struct vector *pv); 
 
 #endif /* ERPS_H */

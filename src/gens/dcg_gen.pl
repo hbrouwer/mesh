@@ -55,10 +55,10 @@ assert_word_vectors([W|Ws]) :-
 
 %assert_word_vectors([],_,_).
 %assert_word_vectors([W|Ws],N,S) :-
-%       create_word_vector(N,S,V),
-%       assert(word_vector(W,V)),
-%       N0 is N + 1,
-%       assert_word_vectors(Ws,N0,S).
+%        create_word_vector(N,S,V),
+%        assert(word_vector(W,V)),
+%        N0 is N + 1,
+%        assert_word_vectors(Ws,N0,S).
 
 create_word_vector(N,S,V) :-
         create_word_vector(1,N,S,V).
@@ -66,7 +66,7 @@ create_word_vector(N,S,V) :-
 %% note: this is a copy of create_situation_vector/4
 create_word_vector(I,_,S,[]) :-
         I > S, !.
-create_word_vector(I,N,S,[0|V]) :-
+create_word_vector(I,N,S,[-1|V]) :-
         I \= N, !,
         I0 is I + 1,
         create_word_vector(I0,N,S,V).
@@ -90,7 +90,7 @@ random_bit_vector(N,[B|Bs]) :-
 required_word_vector_size(S) :-
         findall(W,word(W),Ws),
         length(Ws,N),
-        S is ceiling(log(N + 1) / log(2)).
+        S is ceiling(log(N) / log(2)).
 %required_word_vector_size(S) :-
 %        findall(W,word(W),Ws),
 %        length(Ws,N),

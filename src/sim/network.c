@@ -51,11 +51,19 @@ void initialize_network(struct network *n)
 
         srand(n->random_seed);
 
-        // XXX: todo--sanity checks!
-        if (n->load_weights)
-                load_weights(n);
-        else 
+        if (!n->load_weights)
                 randomize_weight_matrices(n->input, n);
+
+        /* initialize unfolded network */
+        if (n->learning_algorithm == train_bptt)
+                n->unfolded_net = ffn_init_unfolded_network(n);
+
+        if (!n->unfolded_net && n->load_weights)
+                load_weights(n);
+        if (n->unfolded_net && n->load_weights)
+                load_weights(n->unfolded_net->stack[0]);
+
+        // XXX: todo--sanity checks!
 
         mprintf("initialized network: [%s]", n->name);
 }
@@ -64,12 +72,15 @@ void initialize_network(struct network *n)
 void dispose_network(struct network *n)
 {
         free(n->name);
-        dispose_group_array(n->groups);
+        /* dispose_group_array(n->groups); */
 
         if (n->unfolded_net)
                 ffn_dispose_unfolded_network(n->unfolded_net);
 
-        dispose_groups(n->output);
+        /* dispose_groups(n->output); */
+        dispose_groups(n->groups);
+        dispose_group_array(n->groups);
+
         dispose_vector(n->target);
         
         dispose_set(n->training_set);
@@ -202,17 +213,19 @@ error_out:
         return;
 }
 
+/*
 void dispose_groups(struct group *g)
 {
+        printf("%s\n", g->name);
+
         for (int i = 0; i < g->inc_projs->num_elements; i++)
                 dispose_groups(g->inc_projs->elements[i]->to);
 
         free(g->name);
         dispose_vector(g->vector);
 
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+        for (int i = 0; i < g->inc_projs->num_elements; i++)
                 dispose_projection(g->inc_projs->elements[i]);
-        }
         for (int i = 0; i < g->out_projs->num_elements; i++)
                 free(g->out_projs->elements[i]);
 
@@ -221,7 +234,27 @@ void dispose_groups(struct group *g)
 
         free(g);
 }
+*/
 
+void dispose_groups(struct group_array *groups)
+{
+        for (int i = 0; i < groups->num_elements; i++) {
+                struct group *g = groups->elements[i];
+
+                free(g->name);
+                dispose_vector(g->vector);
+
+                for (int j = 0; j < g->inc_projs->num_elements; j++)
+                        dispose_projection(g->inc_projs->elements[j]);
+                for (int j = 0; j < g->out_projs->num_elements; j++)
+                        free(g->out_projs->elements[j]);
+
+                dispose_projs_array(g->inc_projs);
+                dispose_projs_array(g->out_projs);
+
+                free(g);
+        }
+}
 
 void reset_elman_groups(struct network *n)
 {
@@ -330,8 +363,6 @@ void dispose_projection(struct projection *p)
         free(p);
 }
 
-
-
 void randomize_weight_matrices(struct group *g, struct network *n)
 {
         for (int i = 0; i < g->inc_projs->num_elements; i++)
@@ -388,9 +419,9 @@ struct network *load_network(char *filename)
 
                 load_int_parameter(buf, "MaxEpochs %d", &n->max_epochs,
                                 "set maximum number of epochs: [%d]");
-                /*
-                load_int_parameter(buf, "EpochLength %d", &n->epoch_length,
-                                "set epoch length: [%d]"); */
+                load_int_parameter(buf, "ReportAfter %d", &n->report_after,
+                                "report training status after (number of epochs): [%d]");
+
                 load_int_parameter(buf, "HistoryLength %d", &n->history_length,
                                 "set BPTT history length: [%d]");
 
@@ -420,6 +451,9 @@ struct network *load_network(char *filename)
                                 "loaded training set: [%s]");
                 load_item_set(buf, "TestSet %s", n, false,
                                 "loaded test set: [%s]");
+
+                load_training_order(buf, "TrainingOrder %s", n,
+                                "set training order: [%s]");
         }
 
         fclose(fd);
@@ -738,6 +772,23 @@ void load_elman_projection(char *buf, char *fmt, struct network *n,
         mprintf(msg, tmp1, tmp2);
 }
 
+void load_training_order(char *buf, char *fmt, struct network *n,
+                char *msg)
+{
+        char tmp[64];
+        if (sscanf(buf, fmt, tmp) == 0)
+                return;
+
+        if (strcmp(tmp, "ordered") == 0)
+                n->training_order = TRAIN_ORDERED;
+        if (strcmp(tmp, "permuted") == 0)
+                n->training_order = TRAIN_PERMUTED;
+        if (strcmp(tmp, "randomized") == 0)
+                n->training_order = TRAIN_RANDOMIZED;
+
+        mprintf(msg, tmp);
+}
+
 struct group *find_group_by_name(struct network *n, char *name)
 {
         for (int i = 0; i < n->groups->num_elements; i++) {
@@ -787,9 +838,8 @@ void load_weights(struct network *n)
                                 goto error_out;
                         char *tokens = strtok(buf, " ");
                         for (int c = 0; c < p->weights->cols; c++) {
-                                if (!tokens)
+                                if (!sscanf(tokens, "%lf", &p->weights->elements[r][c]))
                                         goto error_out;
-                                sscanf(tokens, "%lf", &p->weights->elements[r][c]);
                                 tokens = strtok(NULL, " ");
                         }
                 }
@@ -823,13 +873,15 @@ error_out:
 
 void save_weight_matrices(struct group *g, FILE *fd)
 {
+        /*
+         * write the weight matrices of all of the current group's
+         * incoming projections
+         */
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
-
-                /* write the projection */
+                
                 fprintf(fd, "Projection %s %s\n", p->to->name, g->name);
-
-                /* write the matrix values */
+                
                 for (int r = 0; r < p->weights->rows; r++) {
                         for (int c = 0; c < p->weights->cols; c++) {
                                 fprintf(fd, "%f", p->weights->elements[r][c]);
@@ -841,10 +893,13 @@ void save_weight_matrices(struct group *g, FILE *fd)
                 fprintf(fd, "\n");
         }
 
-        for (int i = 0; i < g->out_projs->num_elements; i++) {
-                struct group *rg = g->out_projs->elements[i]->to;
-                save_weight_matrices(rg, fd);
-        }
+        /* 
+         * repeat the above for all of the current group's
+         * outgoing projections
+         */
+        for (int i = 0; i < g->out_projs->num_elements; i++)
+                if (!g->out_projs->elements[i]->recurrent)
+                        save_weight_matrices(g->out_projs->elements[i]->to, fd);
 }
 
 /*

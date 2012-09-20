@@ -26,8 +26,11 @@
 #include "vector.h"
 
 #define MAX_GROUPS 5
-
 #define MAX_PROJS 2
+
+#define TRAIN_ORDERED 0
+#define TRAIN_PERMUTED 1
+#define TRAIN_RANDOMIZED 2
 
 /*
  * Network
@@ -58,7 +61,8 @@ struct network
         double mse_threshold;       /* mean squared error threshold */
 
         int max_epochs;             /* maximum number of training epochs */
-        //int epoch_length;           /* length of a training epoch */
+        int report_after;           /* number of training epochs after
+                                       which to report status */
 
         int history_length;         /* number of timesteps for BPTT */
 
@@ -86,6 +90,9 @@ struct network
         struct set *training_set;   /* training set */
         struct set *test_set;       /* test set */
 
+        int training_order;         /* order in which training items are
+                                       presented */
+
         char *weights_file;         /* weights file name */
         bool save_weights;          /* flags whether the weight matrices should
                                        be saved after training */
@@ -100,6 +107,15 @@ struct network
 
         struct ffn_unfolded_network /* unfolded feed forward network */
                 *unfolded_net;
+
+        /*
+         * ################################################################
+         * ## Flag from Event-Relation Potential correlate computation.  ##
+         * ################################################################
+         */
+
+        bool compute_erps;          /* flags whether ERP correlates should
+                                       be computed */
 };
 
 /*
@@ -176,7 +192,8 @@ void dispose_group_array(struct group_array *gs);
 
 struct group *create_group(char *name, int size, bool bias, bool recurrent);
 void attach_bias_group(struct network *n, struct group *g);
-void dispose_groups(struct group *g);
+/* void dispose_groups(struct group *g); */
+void dispose_groups(struct group_array *groups);
 
 void reset_elman_groups(struct network *n);
 void reset_recurrent_groups(struct network *n);
@@ -214,6 +231,8 @@ void load_projection(char *buf, char *fmt, struct network *n, char *msg);
 void load_elman_projection(char *buf, char *fmt, struct network *n,
                 char *msg);
 void load_recurrent_group(char *buf, char *fmt, struct network *n,
+                char *msg);
+void load_training_order(char *buf, char *fmt, struct network *n,
                 char *msg);
 
 struct group *find_group_by_name(struct network *n, char *name);

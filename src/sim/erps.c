@@ -25,63 +25,89 @@ void compute_erp_correlates(struct network *n)
 {
         mprintf("computing ERP correlates for network: [%s]", n->name);
 
-        struct vector *previous_output = create_vector(n->output->vector->size);
+        /* find "Wernicke" and "Broca" */
+        struct group *w, *b;
+        if (!(w = find_group_by_name(n, "wernicke")))
+                goto error_out;
+        if (!(b = find_group_by_name(n, "broca")))
+                goto error_out;
+
+        struct vector *pw = create_vector(w->vector->size);
+        struct vector *pb = create_vector(b->vector->size);
+
+        /* present test set to network */
         for (int i = 0; i < n->test_set->num_elements; i++) {
                 struct element *e = n->test_set->elements[i];
 
-                rprintf("computing ERP correlates for item: %d -- \"%s\"", 
-                                i, e->name);
+                /* reset Elman groups */
+                if (n->srn)
+                        reset_elman_groups(n);
+
+                zero_out_vector(pb);
+                zero_out_vector(pw);
+
+                rprintf("computing ERP correlates for item: %d -- \"%s\"\n", i, e->name);
+                char *tokens = strtok(e->name, " ");
 
                 for (int j = 0; j < e->num_events; j++) {
                         copy_vector(n->input->vector, e->inputs[j]);
-                        if (e->targets[j] != NULL)
-                                copy_vector(n->target, e->targets[j]);
-               
                         feed_forward(n, n->input);
 
-                        // print_vector(n->output->vector);
+                        // double n400_correlate = compute_n400_correlate(w->vector, pw);
+                        double n400_correlate = 0.0;
+                        double p600_correlate = compute_p600_correlate(b->vector, pb);
 
-                        if (j == e->num_events - 2) {
-                                copy_vector(previous_output, n->output->vector);
-                        }
-                        
-                        if (j == e->num_events - 1) {
-                                double p600_correlate = compute_p600_correlate(
-                                                n->output->vector, previous_output);
-                                print_vector(previous_output);
-                                print_vector(n->output->vector);
-                                printf("P600-amplitude: %f\n", p600_correlate);
-                        }
+                        /*
+                        printf("%s\n", tokens);
+                        print_vector(pw);
+                        print_vector(w->vector);
+
+                        printf("\n");
+                        print_vector(pb);
+                        print_vector(b->vector);
+                        */
+
+                        printf("%s\n%f\t%f\n\n", tokens, n400_correlate, p600_correlate);
+
+                        copy_vector(pw, w->vector);
+                        copy_vector(pb, b->vector);
+
+                        tokens = strtok(NULL, " ");
                 }
-
-                if (n->srn)
-                        reset_elman_groups(n);
         }
-}
-
-double compute_p600_correlate(struct vector *o, struct vector *po)
-{
-        double ab = 0.0, a = 0.0, b = 0.0;
-        for (int i = 0; i < o->size; i++) {
-                ab += pow(o->elements[i] - po->elements[i], 2.0);
-                //a += sqrt(pow(o->elements[i],2.0));
-                //b += sqrt(pow(po->elements[i],2.0));
-        }
-
-        return sqrt(ab);
         
+        return;
+
+error_out:
+        perror("[compute_erp_correlates()]");
+        return;
 }
 
 /*
-double compute_p600_correlate(struct vector *o, struct vector *po)
+double compute_n400_correlate(struct vector *v, struct vector *pv)
 {
-        double ab = 0.0, a = 0.0, b = 0.0;
-        for (int i = 0; i < o->size; i++) {
-                ab += o->elements[i] * po->elements[i];
-                a += sqrt(pow(o->elements[i],2.0));
-                b += sqrt(pow(po->elements[i],2.0));
-        }
+        double sa = 0.0;
+        for (int i = 0; i < v->size; i++)
+                sa += v->elements[i] + 1;
 
-        return ab / (a * b);
+        return sa / v->size;
 }
 */
+
+double compute_n400_correlate(struct vector *v, struct vector *pv)
+{
+        double ab = 0.0;
+        for (int i = 0; i < v->size; i++)
+                ab += pow(v->elements[i] - pv->elements[i], 2.0);
+
+        return sqrt(ab);
+}
+
+double compute_p600_correlate(struct vector *v, struct vector *pv)
+{
+        double ab = 0.0;
+        for (int i = 0; i < v->size; i++)
+                ab += pow(v->elements[i] - pv->elements[i], 2.0);
+
+        return sqrt(ab);
+}

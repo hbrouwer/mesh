@@ -48,4 +48,7 @@ void dispose_element(struct element *e);
 
 struct set *load_set(char *filename, int input_size, int output_size);
 
+struct set *permute_set(struct set *s);
+struct set *randomize_set(struct set *s);
+
 #endif /* SET_H */

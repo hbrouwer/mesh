@@ -59,6 +59,9 @@ int main(int argc, char **argv)
                         }
                 }
 
+                if (strcmp(argv[i], "--compute_erps") == 0)
+                        n->compute_erps = true;
+
                 if (strcmp(argv[i], "--help") == 0) {
                         print_help(argv[0]);
                         goto exit_success;
@@ -84,13 +87,16 @@ int main(int argc, char **argv)
                 train_network(n);
         if (n->learning_algorithm == train_bp) {
                 test_network(n);
-                // compute_erp_correlates(n);
+                if (n->compute_erps)
+                        compute_erp_correlates(n);
         } else {
                 test_unfolded_network(n);
         }
 
-        if (n->save_weights)
+        if (n->save_weights && !n->unfolded_net)
                 save_weights(n);
+        if (n->save_weights && n->unfolded_net)
+                save_weights(n->unfolded_net->stack[0]);
 
         mprintf("Cleaning up...");
         dispose_network(n);

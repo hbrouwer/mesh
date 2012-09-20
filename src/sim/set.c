@@ -144,19 +144,22 @@ struct set *load_set(char *filename, int input_size, int output_size)
                         if (strcmp(tokens, "Input") == 0) {
                                 inputs[i] = create_vector(input_size);
                                 for (int j = 0; j < input_size; j++) {
-                                        tokens = strtok(NULL, " ");
-                                        sscanf(tokens, "%lf", &inputs[i]->elements[j]);
+                                        if (!(tokens = strtok(NULL, " ")))
+                                                goto error_out;
+                                        if (!sscanf(tokens, "%lf", &inputs[i]->elements[j]))
+                                                goto error_out;
                                 }
                         }
 
                         if (tokens = strtok(NULL, " ")) {
                                 targets[i] = create_vector(output_size);
-                                if (strcmp (tokens, "Target") == 0) {
+                                if (strcmp(tokens, "Target") == 0) {
                                         for (int j = 0; j < output_size; j++) {
-                                                tokens = strtok(NULL, " ");
-                                                sscanf(tokens, "%lf", &targets[i]->elements[j]);
+                                                if (!(tokens = strtok(NULL, " ")))
+                                                        goto error_out;
+                                                if (!sscanf(tokens, "%lf", &targets[i]->elements[j]))
+                                                        goto error_out;
                                         }
-
                                 }
                         }
                 }
@@ -174,4 +177,42 @@ struct set *load_set(char *filename, int input_size, int output_size)
 error_out:
         perror("[load_set()]");
         return NULL;
+}
+
+struct set *permute_set(struct set *s)
+{
+        struct set *ps = create_set(s->num_elements);
+        ps->num_elements = s->num_elements;
+
+        for (int i = 0; i < s->num_elements; i++) {
+                int pe = ((double)rand() / (double)RAND_MAX)
+                        * (s->num_elements);
+                struct element *e = s->elements[pe];
+
+                bool duplicate = false;
+                for (int j = 0; j < i; j++)
+                        if (ps->elements[j] == e)
+                                duplicate = true;
+
+                if (duplicate)
+                        i--;
+                else
+                        ps->elements[i] = e;
+        }
+
+        return ps;
+}
+
+struct set *randomize_set(struct set *s)
+{
+        struct set *rs = create_set(s->num_elements);
+        rs->num_elements = s->num_elements;
+
+        for (int i = 0; i < s->num_elements; i++) {
+                int re = ((double)rand() / (double)RAND_MAX)
+                        * (s->num_elements);
+                rs->elements[i] = s->elements[re];
+        }
+
+        return rs;
 }
