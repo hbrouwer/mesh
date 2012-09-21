@@ -21,12 +21,12 @@
 
 #include "vector.h"
 
-double act_fun_binary_sigmoid(struct vector *v, int i);
-double act_fun_binary_sigmoid_approx(struct vector *v, int i);
-double act_fun_binary_sigmoid_deriv(struct vector *v, int i);
+double act_fun_binary_logistic(struct vector *v, int i);
+double act_fun_binary_logistic_approx(struct vector *v, int i);
+double act_fun_binary_logistic_deriv(struct vector *v, int i);
 
-double act_fun_bipolar_sigmoid(struct vector *v, int i);
-double act_fun_bipolar_sigmoid_deriv(struct vector *v, int i);
+double act_fun_bipolar_logistic(struct vector *v, int i);
+double act_fun_bipolar_logistic_deriv(struct vector *v, int i);
 
 double act_fun_softmax(struct vector *v, int i);
 double act_fun_softmax_deriv(struct vector *v, int i);

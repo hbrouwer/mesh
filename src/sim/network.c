@@ -19,6 +19,7 @@
 #include <math.h> /* XXX: for fabs... */
 
 #include "act.h"
+#include "error.h"
 #include "network.h"
 #include "stats.h"
 #include "train.h"
@@ -33,7 +34,7 @@ struct network *create_network(char *name)
         int block_size = (strlen(name) + 1) * sizeof(char);
         if (!(n->name = malloc(block_size)))
                 goto error_out;
-        memset(n->name, 0, sizeof(block_size));
+        memset(n->name, 0, block_size);
         strncpy(n->name, name, strlen(name));
 
         n->groups = create_group_array(MAX_GROUPS);
@@ -414,8 +415,8 @@ struct network *load_network(char *filename)
                                 "set momentum scaling after (fraction of epochs): [%lf]");
                 load_double_parameter(buf, "WeightDecay %lf", &n->weight_decay,
                                 "set weight decay: [%lf] *** CHEAT ALERT ***");
-                load_double_parameter(buf, "MSEThreshold %lf", &n->mse_threshold,
-                                "set MSE threshold: [%lf]");
+                load_double_parameter(buf, "ErrorThreshold %lf", &n->error_threshold,
+                                "set error threshold: [%lf]");
 
                 load_int_parameter(buf, "MaxEpochs %d", &n->max_epochs,
                                 "set maximum number of epochs: [%d]");
@@ -432,8 +433,8 @@ struct network *load_network(char *filename)
 
                 load_learning_algorithm(buf, "LearningMethod %s", n,
                                 "set learning algorithm: [%s]");
-                load_error_measure(buf, "ErrorMeasure %s", n,
-                                "set error measure: [%s]");
+                load_error_function(buf, "ErrorFunction %s", n,
+                                "set error function: [%s]");
 
                 load_group(buf, "Group %s %d", n, input, output,
                                 "added group: [%s (%d)]");
@@ -486,34 +487,34 @@ void load_act_function(char *buf, char *fmt, struct network *n,
         if (sscanf(buf, fmt, tmp) == 0)
                 return;
 
-        /* binary sigmoid/logistic activation function */
-        if (strcmp(tmp, "binary_sigmoid") == 0)
+        /* binary logistic activation function */
+        if (strcmp(tmp, "binary_logistic") == 0)
                 if (!output) {
-                        n->act_fun = act_fun_binary_sigmoid;
-                        n->act_fun_deriv = act_fun_binary_sigmoid_deriv;
+                        n->act_fun = act_fun_binary_logistic;
+                        n->act_fun_deriv = act_fun_binary_logistic_deriv;
                 } else {
-                        n->out_act_fun = act_fun_binary_sigmoid;
-                        n->out_act_fun_deriv = act_fun_binary_sigmoid_deriv;
+                        n->out_act_fun = act_fun_binary_logistic;
+                        n->out_act_fun_deriv = act_fun_binary_logistic_deriv;
                 }
 
-        /* approximation of binary sigmoid/logistic function */
-        if (strcmp(tmp, "binary_sigmoid_approx") == 0)
+        /* approximation of binary logistic function */
+        if (strcmp(tmp, "binary_logistic_approx") == 0)
                 if (!output) {
-                        n->act_fun = act_fun_binary_sigmoid_approx;
-                        n->act_fun_deriv = act_fun_binary_sigmoid_deriv;
+                        n->act_fun = act_fun_binary_logistic_approx;
+                        n->act_fun_deriv = act_fun_binary_logistic_deriv;
                 } else {
-                        n->out_act_fun = act_fun_binary_sigmoid_approx;
-                        n->out_act_fun_deriv = act_fun_binary_sigmoid_deriv;
+                        n->out_act_fun = act_fun_binary_logistic_approx;
+                        n->out_act_fun_deriv = act_fun_binary_logistic_deriv;
                 }
 
-        /* bipolar sigmoid/logistic activation function */
-        if (strcmp(tmp, "bipolar_sigmoid") == 0)
+        /* bipolar logistic activation function */
+        if (strcmp(tmp, "bipolar_logistic") == 0)
                 if (!output) {
-                        n->act_fun = act_fun_bipolar_sigmoid;
-                        n->act_fun_deriv = act_fun_bipolar_sigmoid_deriv;
+                        n->act_fun = act_fun_bipolar_logistic;
+                        n->act_fun_deriv = act_fun_bipolar_logistic_deriv;
                 } else {
-                        n->out_act_fun = act_fun_bipolar_sigmoid;
-                        n->out_act_fun_deriv = act_fun_bipolar_sigmoid_deriv;
+                        n->out_act_fun = act_fun_bipolar_logistic;
+                        n->out_act_fun_deriv = act_fun_bipolar_logistic_deriv;
                 }
 
         /* softmax activation function */
@@ -594,22 +595,26 @@ void load_learning_algorithm(char *buf, char *fmt, struct network *n,
                 mprintf(msg, tmp);
 }
 
-void load_error_measure(char *buf, char *fmt, struct network *n,
+void load_error_function(char *buf, char *fmt, struct network *n,
                 char *msg)
 {
         char tmp[64];
         if (sscanf(buf, fmt, tmp) == 0)
                 return;
 
-        /* sum squared error measure */
-        if (strcmp(tmp, "ss") == 0)
-                n->error_measure = ss_output_error;
+        /* sum of squares */
+        if (strcmp(tmp, "sse") == 0) {
+                n->error_fun = error_sum_of_squares;
+                n->error_fun_deriv = error_sum_of_squares_deriv;
+        }
 
-        /* cross-entropy error measure */
-        if (strcmp(tmp, "ce") == 0)
-                n->error_measure = ce_output_error;
+        /* cross-entropy */
+        if (strcmp(tmp, "cee") == 0) {
+                n->error_fun = error_cross_entropy;
+                n->error_fun_deriv = error_cross_entropy_deriv;
+        }
 
-        if (n->error_measure)
+        if (n->error_fun && n->error_fun_deriv)
                 mprintf(msg, tmp);
 }
 

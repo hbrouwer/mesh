@@ -33,7 +33,9 @@
 #define TRAIN_RANDOMIZED 2
 
 /*
- * Network
+ * ########################################################################
+ * ## Network                                                            ##
+ * ########################################################################
  */
 
 struct network
@@ -58,7 +60,7 @@ struct network
                                        after which to scale the momentum */
         double weight_decay;        /* weight decay */
 
-        double mse_threshold;       /* mean squared error threshold */
+        double error_threshold;     /* error threshold */
 
         int max_epochs;             /* maximum number of training epochs */
         int report_after;           /* number of training epochs after
@@ -79,8 +81,10 @@ struct network
         void (*learning_algorithm)  /* learning algorithm */
                 (struct network *n);
 
-        struct vector               /* error measure */
-                *(*error_measure) (struct network *n);
+        double (*error_fun)         /* error function */
+                (struct network *n);
+        struct vector               /* derivative of the error function */
+                *(*error_fun_deriv)(struct network *n);
 
         struct group *input;        /* input group for this network */
         struct group *output;       /* output group for this network */
@@ -119,18 +123,17 @@ struct network
 };
 
 /*
- * Group array
- */ 
+ * ########################################################################
+ * ## Groups                                                             ##
+ * ########################################################################
+ */
+
 struct group_array
 {
         int num_elements;          /* number of groups */
         int max_elements;          /* maximum number of groups */
         struct group **elements;   /* the actual groups */
 };
-
-/*
- * Neuronal group
- */
 
 struct group
 {
@@ -151,6 +154,12 @@ struct group
                                        for BPTT */
 };
 
+/*
+ * ########################################################################
+ * ## Projections                                                        ##
+ * ########################################################################
+ */
+
 struct projs_array
 {
         int num_elements;           /* number of projections */
@@ -159,9 +168,6 @@ struct projs_array
                 **elements;
 };
 
-/*
- * Group projection
- */
 struct projection
 {
         struct group *to;           /* the group towards which is projected */
@@ -178,8 +184,11 @@ struct projection
                                        projection for BPTT */
 };
 
+
 /*
- * Function prototypes
+ * ########################################################################
+ * ## Function prototypes                                                ##
+ * ########################################################################
  */
 
 struct network *create_network(char *name);
@@ -221,7 +230,7 @@ void load_act_function(char *buf, char *fmt, struct network *n,
                 bool output, char *msg);
 void load_learning_algorithm(char *buf, char *fmt, struct network *n,
                 char *msg);
-void load_error_measure(char *buf, char *fmt, struct network *n,
+void load_error_function(char *buf, char *fmt, struct network *n,
                 char *msg);
 void load_item_set(char *buf, char *fmt, struct network *n, bool train,
                 char *msg);

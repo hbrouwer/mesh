@@ -8,6 +8,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pendantic -O3")
 
 add_executable(mesh
         src/sim/act.c
+        src/sim/error.c
         src/sim/erps.c
         src/sim/ffn_unfold.c
         src/sim/main.c

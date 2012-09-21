@@ -26,16 +26,13 @@ void train_network(struct network *n);
 void test_network(struct network *n);
 void test_unfolded_network(struct network *n);
 
-void report_training_status(int epoch, double mse, struct network *n);
+void report_training_status(int epoch, double me, struct network *n);
 
 void feed_forward(struct network *n, struct group *g);
 double unit_activation(struct network *n, struct group *g, int u);
 
 void train_bp(struct network *n);
 void train_bptt(struct network *n);
-
-struct vector *ss_output_error(struct network *n);
-struct vector *ce_output_error(struct network *n);
 
 void scale_learning_rate(int epoch, struct network *n);
 void scale_momentum(int epoch, struct network *n);

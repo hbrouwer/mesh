@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-#include <math.h>
-
 #include "main.h"
 #include "math.h"
+
+#include <math.h>
 
 /*
  * Box-Muller transform for the generation of paris of normally distributed
@@ -49,19 +49,4 @@ double normrand(double mu, double sigma)
         }
 
         return rs1 * sigma + mu;
-}
-
-/*
- * Squared error (network error)
- */
-double squared_error(struct vector *output, struct vector *target)
-{
-        double se = 0.0;
-
-        for (int i = 0; i < output->size; i++)
-                se += pow(target->elements[i] - output->elements[i], 2.0);
-
-        // XXX: ???
-        // return (0.5) * se;
-        return se;
 }

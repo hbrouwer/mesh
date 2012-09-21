@@ -1,5 +1,5 @@
 /*
- * math.h
+ * error.h
  *
  * Copyright 2012 Harm Brouwer <me@hbrouwer.eu>
  *
@@ -16,11 +16,16 @@
  * limitations under the License.
  */
 
-#ifndef MATH_H
-#define MATH_H
+#ifndef ERROR_H
+#define ERROR_H
 
+#include "network.h"
 #include "vector.h"
 
-double normrand(double mu, double sigma);
+double error_sum_of_squares(struct network *n);
+struct vector *error_sum_of_squares_deriv(struct network *n);
 
-#endif /* MATH_H */
+double error_cross_entropy(struct network *n);
+struct vector *error_cross_entropy_deriv(struct network *n);
+
+#endif /* ERROR_H */

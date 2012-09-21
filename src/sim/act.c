@@ -23,10 +23,10 @@
 #include "vector.h"
 
 /*
- * Binary sigmoid or logistic activation function
+ * Binary logistic activation function
  */
 
-double act_fun_binary_sigmoid(struct vector *v, int i)
+double act_fun_binary_logistic(struct vector *v, int i)
 {
         double x = v->elements[i];
 
@@ -34,12 +34,12 @@ double act_fun_binary_sigmoid(struct vector *v, int i)
 }
 
 /*
- * Approximation of the binary sigmoid activation function, as described in:
+ * Approximation of the binary logistic activation function, as described in:
  *
  * Heinz, P. A. (1996). A tree-structured neural network for real time
  *   adaptive control. ICONIP'96, Hong Kong.
  */
-double act_fun_binary_sigmoid_approx(struct vector *v, int i)
+double act_fun_binary_logistic_approx(struct vector *v, int i)
 {
         double x = v->elements[i];
 
@@ -53,7 +53,7 @@ double act_fun_binary_sigmoid_approx(struct vector *v, int i)
                 return 0.0;
 }
 
-double act_fun_binary_sigmoid_deriv(struct vector *v, int i)
+double act_fun_binary_logistic_deriv(struct vector *v, int i)
 {
         double y = v->elements[i];
 
@@ -61,17 +61,17 @@ double act_fun_binary_sigmoid_deriv(struct vector *v, int i)
 }
 
 /*
- * Bipolar sigmoid or logistic activation function
+ * Bipolar logistic activation function
  */
 
-double act_fun_bipolar_sigmoid(struct vector *v, int i)
+double act_fun_bipolar_logistic(struct vector *v, int i)
 {
         double x = v->elements[i];
 
         return (-1.0) + 2.0 / (1.0 + exp(-x));
 }
 
-double act_fun_bipolar_sigmoid_deriv(struct vector *v, int i)
+double act_fun_bipolar_logistic_deriv(struct vector *v, int i)
 {
         double y = v->elements[i];
 
@@ -106,7 +106,7 @@ double act_fun_tanh(struct vector *v, int i)
 {
         double x = v->elements[i];
 
-        return 2.0 / (1.0 + exp((- 2.0) * x)) - 1.0;
+        return 2.0 / (1.0 + exp((-2.0) * x)) - 1.0;
 }
 
 /*
