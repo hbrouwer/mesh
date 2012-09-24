@@ -379,7 +379,7 @@ void ffn_attach_recurrent_groups(struct ffn_unfolded_network *un,
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
                 char *name = un->recur_groups->elements[i]->name;
                 struct group *g1 = find_group_by_name(n, name);
-                struct group *g2 = create_group(g1->name, g1->vector->size, false, true);
+                struct group *g2 = create_group(g1->name, g1->act, g1->vector->size, false, true);
 
                 /*
                  * Note: weight matrices are shared among recurrent

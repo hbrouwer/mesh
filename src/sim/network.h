@@ -68,23 +68,10 @@ struct network
 
         int history_length;         /* number of timesteps for BPTT */
 
-        double (*act_fun)           /* activation function for hidden groups */
-                (struct vector *, int);      
-        double (*act_fun_deriv)     /* derivative of the activation function */
-                (struct vector *, int); 
-
-        double (*out_act_fun)       /* activation function for the ouput group */
-                (struct vector *, int);
-        double (*out_act_fun_deriv) /* derivative of the activation function */
-                (struct vector *, int); 
-
         void (*learning_algorithm)  /* learning algorithm */
                 (struct network *n);
 
-        double (*error_fun)         /* error function */
-                (struct network *n);
-        struct vector               /* derivative of the error function */
-                *(*error_fun_deriv)(struct network *n);
+        struct error *error;        /* error function and its derivative */
 
         struct group *input;        /* input group for this network */
         struct group *output;       /* output group for this network */
@@ -141,6 +128,9 @@ struct group
 
         struct vector *vector;      /* the "neurons" of this group */
 
+        struct act *act;            /* activation function and its derivative
+                                       for thsi group */
+
         struct projs_array          /* incoming projections */
                 *inc_projs;
         struct projs_array          /* outgoing projections */
@@ -184,6 +174,35 @@ struct projection
                                        projection for BPTT */
 };
 
+/*
+ * ########################################################################
+ * ## Activation function and derivative                                 ##
+ * ########################################################################
+ */
+
+
+struct act 
+{
+        double (*fun)                /* activation function  */
+                (struct vector *, int);      
+        double (*deriv)              /* activation function derivative */
+                (struct vector *, int);         
+};
+
+/*
+ * ########################################################################
+ * ## Error function and derivative                                       ##
+ * ########################################################################
+ */
+
+
+struct error 
+{
+        double (*fun)               /* error function */
+                (struct network *n);
+        struct vector *(*deriv)     /* error function derivative */
+                (struct network *n);
+};
 
 /*
  * ########################################################################
@@ -199,7 +218,8 @@ struct group_array *create_group_array(int max_elements);
 void increase_group_array_size(struct group_array *gs);
 void dispose_group_array(struct group_array *gs);
 
-struct group *create_group(char *name, int size, bool bias, bool recurrent);
+struct group *create_group(char *name, struct act *act,
+                int size, bool bias, bool recurrent);
 void attach_bias_group(struct network *n, struct group *g);
 /* void dispose_groups(struct group *g); */
 void dispose_groups(struct group_array *groups);
@@ -226,8 +246,6 @@ struct network *load_network(char *filename);
 
 void load_double_parameter(char *buf, char *fmt, double *par, char *msg);
 void load_int_parameter(char *buf, char *fmt, int *par, char *msg);
-void load_act_function(char *buf, char *fmt, struct network *n,
-                bool output, char *msg);
 void load_learning_algorithm(char *buf, char *fmt, struct network *n,
                 char *msg);
 void load_error_function(char *buf, char *fmt, struct network *n,
@@ -236,6 +254,8 @@ void load_item_set(char *buf, char *fmt, struct network *n, bool train,
                 char *msg);
 void load_group(char *buf, char *fmt, struct network *n, char *input,
                 char *output, char *msg);
+struct act *load_activation_function(char *act_fun);
+void load_bias(char *buf, char *fmt, struct network *n, char *msg);
 void load_projection(char *buf, char *fmt, struct network *n, char *msg);
 void load_elman_projection(char *buf, char *fmt, struct network *n,
                 char *msg);

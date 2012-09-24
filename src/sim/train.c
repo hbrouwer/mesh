@@ -61,7 +61,7 @@ void test_network(struct network *n)
                                 copy_vector(n->target, e->targets[j]);
                                 
                                 /* compute error */
-                                me += n->error_fun(n);
+                                me += n->error->fun(n);
 
                                 print_vector(n->target);
                                 print_vector(n->output->vector);
@@ -117,12 +117,12 @@ void test_unfolded_network(struct network *n)
                                 copy_vector(nsp->target, e->targets[j]);
 
                                 /* compute error */
-                                me += n->error_fun(n);
+                                me += n->error->fun(n);
 
                                 print_vector(nsp->target);
                                 print_vector(nsp->output->vector);
                                 
-                        } 
+                        }
                         his++;
                 }
         }
@@ -159,13 +159,7 @@ void feed_forward(struct network *n, struct group *g)
                 struct group *rg = g->out_projs->elements[i]->to;
                 for (int j = 0; j < rg->vector->size; j++) {
                         rg->vector->elements[j] = unit_activation(n, rg, j);
-                        if (rg != n->output) {
-                                rg->vector->elements[j] =
-                                        n->act_fun(rg->vector, j);
-                        } else {
-                                rg->vector->elements[j] =
-                                        n->out_act_fun(rg->vector, j);
-                        }
+                        rg->vector->elements[j] = rg->act->fun(rg->vector, j);
                 }
         }
 
@@ -227,12 +221,12 @@ void train_bp(struct network *n)
                                         copy_vector(n->target, e->targets[j]);
 
                                         /* backpropagate error */
-                                        struct vector *error = n->error_fun_deriv(n);
+                                        struct vector *error = n->error->deriv(n);
                                         backpropagate_error(n, n->output, error);
                                         dispose_vector(error);
                                         
                                         /* compute error */
-                                        me += n->error_fun(n);
+                                        me += n->error->fun(n);
                                 }
                         }
                 }
@@ -312,12 +306,12 @@ void train_bptt(struct network *n)
 
                         if (his == un->stack_size) {
                                 /* backpropagate error */
-                                struct vector *error = nsp->error_fun_deriv(nsp);
+                                struct vector *error = nsp->error->deriv(nsp);
                                 backpropagate_error(nsp, nsp->output, error);
                                 dispose_vector(error);
 
                                 /* compute error */
-                                me += n->error_fun(nsp);
+                                me += n->error->fun(nsp);
 
                                 /* sum deltas over unfolded network */
                                 ffn_sum_deltas(un);
@@ -414,10 +408,10 @@ struct vector *group_error(struct network *n, struct group *g)
                         struct projection *p = g->out_projs->elements[j];
                         error->elements[i] += p->error->elements[i];
                 }
-                
+
                 double act_deriv;
                 if (g != n->input)
-                        act_deriv = n->act_fun_deriv(g->vector, i);
+                        act_deriv = g->act->deriv(g->vector, i);
                 else 
                         act_deriv = g->vector->elements[i];
 

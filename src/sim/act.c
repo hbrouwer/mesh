@@ -23,37 +23,19 @@
 #include "vector.h"
 
 /*
- * Binary logistic activation function
+ * ########################################################################
+ * ## Binary sigmoid function                                            ##
+ * ########################################################################
  */
 
-double act_fun_binary_logistic(struct vector *v, int i)
+double act_fun_binary_sigmoid(struct vector *v, int i)
 {
         double x = v->elements[i];
 
         return 1.0 / (1.0 + exp(-x));
 }
 
-/*
- * Approximation of the binary logistic activation function, as described in:
- *
- * Heinz, P. A. (1996). A tree-structured neural network for real time
- *   adaptive control. ICONIP'96, Hong Kong.
- */
-double act_fun_binary_logistic_approx(struct vector *v, int i)
-{
-        double x = v->elements[i];
-
-        x = x / 4.1;
-
-        if (x >= 1.0)
-                return 1.0;
-        if (1.0 < x && x < 1.0)
-                return 0.5 + x * (1.0 - fabs(x) / 2.0);
-        if (x <= -1.0)
-                return 0.0;
-}
-
-double act_fun_binary_logistic_deriv(struct vector *v, int i)
+double act_fun_binary_sigmoid_deriv(struct vector *v, int i)
 {
         double y = v->elements[i];
 
@@ -61,17 +43,19 @@ double act_fun_binary_logistic_deriv(struct vector *v, int i)
 }
 
 /*
- * Bipolar logistic activation function
+ * ########################################################################
+ * ## Bipolar sigmoid function                                           ##
+ * ########################################################################
  */
 
-double act_fun_bipolar_logistic(struct vector *v, int i)
+double act_fun_bipolar_sigmoid(struct vector *v, int i)
 {
         double x = v->elements[i];
 
         return (-1.0) + 2.0 / (1.0 + exp(-x));
 }
 
-double act_fun_bipolar_logistic_deriv(struct vector *v, int i)
+double act_fun_bipolar_sigmoid_deriv(struct vector *v, int i)
 {
         double y = v->elements[i];
 
@@ -79,7 +63,9 @@ double act_fun_bipolar_logistic_deriv(struct vector *v, int i)
 }
 
 /*
- * Softmax activation function
+ * ########################################################################
+ * ## Softmax function                                                   ##
+ * ########################################################################
  */
 
 double act_fun_softmax(struct vector *v, int i)
@@ -99,35 +85,16 @@ double act_fun_softmax_deriv(struct vector *v, int i)
 }
 
 /*
- * Hyperbolic tangent activation function
+ * ########################################################################
+ * ## Hyperbolic tangent function                                        ##
+ * ########################################################################
  */
 
 double act_fun_tanh(struct vector *v, int i)
 {
         double x = v->elements[i];
 
-        return 2.0 / (1.0 + exp((-2.0) * x)) - 1.0;
-}
-
-/*
- * Approximation of the hyperbolic tangent function, as described in:
- *
- * Anguita, D., Parodi, G., and Zunino, R. (1993). Speed improvement of the
- *   back-propagation on current-generation workstations. In proceedings of
- *   the world Congress on Neural Networking, Portland, Oregon, 3, 165-168.
- */
-double act_fun_tanh_approx(struct vector *v, int i)
-{
-        double x = v->elements[i];
-
-        if (x > 1.92033)
-                return 0.96016;
-        if (0.0 < x && x <= 1.92033)
-                return 0.96016 - 0.26037 * pow((x - 1.92033), 2.0);
-        if (-1.92033 < x && x < 0.0)
-                return 0.26037 * pow((x + 1.92033), 2.0) - 0.96016;
-        if (x <= -1.92033)
-                return -0.96016;
+        return tanh(x);
 }
 
 double act_fun_tanh_deriv(struct vector *v, int i)
@@ -138,7 +105,9 @@ double act_fun_tanh_deriv(struct vector *v, int i)
 }
 
 /*
- * Linear or identity activation function
+ * ########################################################################
+ * ## Linear function                                                    ##
+ * ########################################################################
  */
 
 double act_fun_linear(struct vector *v, int i)
@@ -154,19 +123,22 @@ double act_fun_linear_deriv(struct vector *v, int i)
 }
 
 /*
- * Squash activation function
+ * ########################################################################
+ * ## Step function                                                      ##
+ * ########################################################################
  */
 
-double act_fun_squash(struct vector *v, int i)
+double act_fun_step(struct vector *v, int i)
 {
         double x = v->elements[i];
 
-        return x / (1.0 + fabs(x));
+        if (x >= 0.0)
+                return 1.0;
+        else
+                return 0.0;
 }
 
-double act_fun_squash_deriv(struct vector *v, int i)
+double act_fun_step_deriv(struct vector *v, int i)
 {
-        double y = v->elements[i];
-
-        return pow(1.0 - fabs(y), 2.0);
+        return 1.0;
 }

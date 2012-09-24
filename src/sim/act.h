@@ -21,24 +21,22 @@
 
 #include "vector.h"
 
-double act_fun_binary_logistic(struct vector *v, int i);
-double act_fun_binary_logistic_approx(struct vector *v, int i);
-double act_fun_binary_logistic_deriv(struct vector *v, int i);
+double act_fun_binary_sigmoid(struct vector *v, int i);
+double act_fun_binary_sigmoid_deriv(struct vector *v, int i);
 
-double act_fun_bipolar_logistic(struct vector *v, int i);
-double act_fun_bipolar_logistic_deriv(struct vector *v, int i);
+double act_fun_bipolar_sigmoid(struct vector *v, int i);
+double act_fun_bipolar_sigmoid_deriv(struct vector *v, int i);
 
 double act_fun_softmax(struct vector *v, int i);
 double act_fun_softmax_deriv(struct vector *v, int i);
 
 double act_fun_tanh(struct vector *v, int i);
-double act_fun_tanh_approx(struct vector *v, int i);
 double act_fun_tanh_deriv(struct vector *v, int i);
 
 double act_fun_linear(struct vector *v, int i);
 double act_fun_linear_deriv(struct vector *v, int i);
 
-double act_fun_squash(struct vector *v, int i);
-double act_fun_squash_deriv(struct vector *v, int i);
+double act_fun_step(struct vector *v, int i);
+double act_fun_step_deriv(struct vector *v, int i);
 
 #endif /* ACT_H */

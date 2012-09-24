@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-#include <math.h> /* XXX: for fabs... */
+#include <math.h>
 
 #include "act.h"
 #include "error.h"
@@ -135,7 +135,8 @@ void dispose_group_array(struct group_array *gs)
         free(gs);
 }
 
-struct group *create_group(char *name, int size, bool bias, bool recurrent)
+struct group *create_group(char *name, struct act *act, int size, bool bias, 
+                bool recurrent)
 {
         struct group *g;
         if (!(g = malloc(sizeof(struct group))))
@@ -149,6 +150,7 @@ struct group *create_group(char *name, int size, bool bias, bool recurrent)
         strncpy(g->name, name, strlen(name));
 
         g->vector = create_vector(size);
+        g->act = act;
 
         g->inc_projs = create_projs_array(MAX_PROJS);
         g->out_projs = create_projs_array(MAX_PROJS);
@@ -175,7 +177,7 @@ void attach_bias_group(struct network *n, struct group *g)
         memset(tmp, 0, sizeof(block_size));
 
         sprintf(tmp, "%s_bias", g->name);
-        struct group *bg = create_group(tmp, 1, true, false);
+        struct group *bg = create_group(tmp, g->act, 1, true, false);
 
         free(tmp);
 
@@ -244,6 +246,8 @@ void dispose_groups(struct group_array *groups)
 
                 free(g->name);
                 dispose_vector(g->vector);
+                if (!g->bias)
+                        free(g->act);
 
                 for (int j = 0; j < g->inc_projs->num_elements; j++)
                         dispose_projection(g->inc_projs->elements[j]);
@@ -426,18 +430,16 @@ struct network *load_network(char *filename)
                 load_int_parameter(buf, "HistoryLength %d", &n->history_length,
                                 "set BPTT history length: [%d]");
 
-                load_act_function(buf, "ActFunc %s", n, false,
-                                "set hidden activation function: [%s]");
-                load_act_function(buf, "OutActFunc %s", n, true,
-                                "set output activation function: [%s]");
-
                 load_learning_algorithm(buf, "LearningMethod %s", n,
                                 "set learning algorithm: [%s]");
                 load_error_function(buf, "ErrorFunction %s", n,
                                 "set error function: [%s]");
 
-                load_group(buf, "Group %s %d", n, input, output,
-                                "added group: [%s (%d)]");
+                load_group(buf, "Group %s %s %d", n, input, output,
+                                "added group: [%s (%s:%d)]");
+
+                load_bias(buf, "AttachBias %s", n,
+                                "attached bias to group: [%s]");
 
                 load_projection(buf, "Projection %s %s", n,
                                 "added projection: [%s -> %s]");
@@ -480,102 +482,6 @@ void load_int_parameter(char *buf, char *fmt, int *par, char *msg)
                 mprintf(msg, *par);
 }
 
-void load_act_function(char *buf, char *fmt, struct network *n,
-                bool output, char *msg)
-{
-        char tmp[64];
-        if (sscanf(buf, fmt, tmp) == 0)
-                return;
-
-        /* binary logistic activation function */
-        if (strcmp(tmp, "binary_logistic") == 0)
-                if (!output) {
-                        n->act_fun = act_fun_binary_logistic;
-                        n->act_fun_deriv = act_fun_binary_logistic_deriv;
-                } else {
-                        n->out_act_fun = act_fun_binary_logistic;
-                        n->out_act_fun_deriv = act_fun_binary_logistic_deriv;
-                }
-
-        /* approximation of binary logistic function */
-        if (strcmp(tmp, "binary_logistic_approx") == 0)
-                if (!output) {
-                        n->act_fun = act_fun_binary_logistic_approx;
-                        n->act_fun_deriv = act_fun_binary_logistic_deriv;
-                } else {
-                        n->out_act_fun = act_fun_binary_logistic_approx;
-                        n->out_act_fun_deriv = act_fun_binary_logistic_deriv;
-                }
-
-        /* bipolar logistic activation function */
-        if (strcmp(tmp, "bipolar_logistic") == 0)
-                if (!output) {
-                        n->act_fun = act_fun_bipolar_logistic;
-                        n->act_fun_deriv = act_fun_bipolar_logistic_deriv;
-                } else {
-                        n->out_act_fun = act_fun_bipolar_logistic;
-                        n->out_act_fun_deriv = act_fun_bipolar_logistic_deriv;
-                }
-
-        /* softmax activation function */
-        if (strcmp(tmp, "softmax") == 0)
-                if (!output) {
-                        n->act_fun = act_fun_softmax;
-                        n->act_fun_deriv = act_fun_softmax_deriv;
-                } else {
-                        n->out_act_fun = act_fun_softmax;
-                        n->out_act_fun_deriv = act_fun_softmax_deriv;
-                }
-
-        /* hyperbolic tangent activation function */
-        if (strcmp(tmp, "tanh") == 0)
-                if (!output) {
-                        n->act_fun = act_fun_tanh;
-                        n->act_fun_deriv = act_fun_tanh_deriv;
-                } else {
-                        n->out_act_fun = act_fun_tanh;
-                        n->out_act_fun_deriv = act_fun_tanh_deriv;
-                }
-
-        /* approximation of hyperbolic tangent function */
-        if (strcmp(tmp, "tanh_approx") == 0)
-                if (!output) {
-                        n->act_fun = act_fun_tanh_approx;
-                        n->act_fun_deriv = act_fun_tanh_deriv;
-                } else {
-                        n->out_act_fun = act_fun_tanh_approx;
-                        n->out_act_fun_deriv = act_fun_tanh_deriv;
-                }
-
-        /* linear/identity activation function */
-        if (strcmp(tmp, "linear") == 0)
-                if (!output) {
-                        n->act_fun = act_fun_linear;
-                        n->act_fun_deriv = act_fun_linear_deriv;
-                } else {
-                        n->out_act_fun = act_fun_linear;
-                        n->out_act_fun_deriv = act_fun_linear_deriv;
-                }
-
-        /* squash activation function */
-        if (strcmp(tmp, "squash") == 0)
-                if (!output) {
-                        n->act_fun = act_fun_squash;
-                        n->act_fun_deriv = act_fun_squash_deriv;
-                } else {
-                        n->out_act_fun = act_fun_squash;
-                        n->out_act_fun_deriv = act_fun_squash_deriv;
-                }
-
-        if (!output) {
-                if (n->act_fun != NULL && n->act_fun_deriv != NULL)
-                        mprintf(msg, tmp);
-        } else {
-                if (n->out_act_fun != NULL && n->out_act_fun_deriv != NULL)
-                        mprintf(msg, tmp);
-        }
-}
-
 void load_learning_algorithm(char *buf, char *fmt, struct network *n,
                 char *msg)
 {
@@ -598,24 +504,37 @@ void load_learning_algorithm(char *buf, char *fmt, struct network *n,
 void load_error_function(char *buf, char *fmt, struct network *n,
                 char *msg)
 {
+        struct error *e;
+        if (!(e = malloc(sizeof(struct error))))
+                goto error_out;
+        memset(e, 0, sizeof(struct error));
+
         char tmp[64];
         if (sscanf(buf, fmt, tmp) == 0)
                 return;
 
         /* sum of squares */
         if (strcmp(tmp, "sse") == 0) {
-                n->error_fun = error_sum_of_squares;
-                n->error_fun_deriv = error_sum_of_squares_deriv;
+                e->fun = error_sum_of_squares;
+                e->deriv = error_sum_of_squares_deriv;
         }
 
         /* cross-entropy */
         if (strcmp(tmp, "cee") == 0) {
-                n->error_fun = error_cross_entropy;
-                n->error_fun_deriv = error_cross_entropy_deriv;
+                e->fun = error_cross_entropy;
+                e->deriv = error_cross_entropy_deriv;
         }
 
-        if (n->error_fun && n->error_fun_deriv)
+        n->error = e;
+
+        if (n->error)
                 mprintf(msg, tmp);
+
+        return;
+
+error_out:
+        perror("[load_error_function()]");
+        return;
 }
 
 void load_item_set(char *buf, char *fmt, struct network *n, bool train,
@@ -648,16 +567,17 @@ void load_item_set(char *buf, char *fmt, struct network *n, bool train,
 void load_group(char *buf, char *fmt, struct network *n, char *input,
                 char *output, char *msg)
 {
-        char tmp[64];
+        char tmp1[64], tmp2[64], tmp3[64];
         int tmp_int;
-        if (sscanf(buf, fmt, tmp, &tmp_int) == 0)
+        if (sscanf(buf, fmt, tmp1, tmp2, &tmp_int) == 0)
                 return;
 
-        struct group *g = create_group(tmp, tmp_int, false, false);
+        struct act *act = load_activation_function(tmp2);
+        struct group *g = create_group(tmp1, act, tmp_int, false, false);
 
-        if (strcmp(tmp, input) == 0)
+        if (strcmp(tmp1, input) == 0)
                 n->input = g;
-        if (strcmp(tmp, output) == 0) {
+        if (strcmp(tmp1, output) == 0) {
                 n->output = g;
                 /* also create a target vector */
                 n->target = create_vector(g->vector->size);
@@ -667,11 +587,76 @@ void load_group(char *buf, char *fmt, struct network *n, char *input,
         if (n->groups->num_elements == n->groups->max_elements)
                 increase_group_array_size(n->groups);
 
-        if (strcmp(tmp, input) != 0)
-                attach_bias_group(n, g);
-
-        mprintf(msg, tmp, tmp_int);
+        mprintf(msg, tmp1, tmp2, tmp_int);
 }
+
+struct act *load_activation_function(char *act_fun)
+{
+        struct act *a;
+        if (!(a = malloc(sizeof(struct act))))
+                goto error_out;
+        memset(a, 0, sizeof(struct act));
+
+        /* binary sigmoid function */
+        if (strcmp(act_fun, "binary_sigmoid") == 0) {
+                a->fun = act_fun_binary_sigmoid;
+                a->deriv = act_fun_binary_sigmoid_deriv;
+        }
+
+        /* bipolar sigmoid function */
+        if (strcmp(act_fun, "bipolar_sigmoid") == 0) {
+                a->fun = act_fun_bipolar_sigmoid;
+                a->deriv = act_fun_bipolar_sigmoid_deriv;
+        }
+
+        /* softmax activation function */
+        if (strcmp(act_fun, "softmax") == 0) {
+                a->fun = act_fun_softmax;
+                a->deriv = act_fun_softmax_deriv;
+        }
+
+        /* hyperbolic tangent function */
+        if (strcmp(act_fun, "tanh") == 0) {
+                a->fun = act_fun_tanh;
+                a->deriv = act_fun_tanh_deriv;
+        }
+
+        /* linear function */
+        if (strcmp(act_fun, "linear") == 0) {
+                a->fun = act_fun_linear;
+                a->deriv = act_fun_linear_deriv;
+        }
+
+        /* step function */
+        if (strcmp(act_fun, "step") == 0) {
+                a->fun = act_fun_step;
+                a->deriv = act_fun_step_deriv;
+        }        
+
+        return a;
+
+error_out:
+        perror("[load_activation_function()]");
+        return NULL;
+}
+
+void load_bias(char *buf, char *fmt, struct network *n, char *msg)
+{
+        char tmp1[64];
+        if (sscanf(buf, fmt, tmp1) == 0)
+                return;
+
+        struct group *g = find_group_by_name(n, tmp1);
+        if (g == NULL) {
+                eprintf("cannot set bias--group (%s) unknown", tmp1);
+                return;
+        }
+
+        attach_bias_group(n, g);
+
+        mprintf(msg, tmp1);
+}
+
 
 void load_projection(char *buf, char *fmt, struct network *n, char *msg)
 {

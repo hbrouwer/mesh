@@ -23,39 +23,48 @@
 #include <math.h>
 
 /*
- * Sum of squares error
+ * ########################################################################
+ * ## Sum of squares error                                               ##
+ * ########################################################################
  */
 
 double error_sum_of_squares(struct network *n)
 {
         double se = 0.0;
 
-        for (int i = 0; i < n->output->vector->size; i++)
-                se += pow(n->target->elements[i]
-                                - n->output->vector->elements[i], 2.0);
+        for (int i = 0; i < n->output->vector->size; i++) {
+                double t = n->target->elements[i];
+                double o = n->output->vector->elements[i];
+
+                se += pow(t - o, 2.0);
+        }
 
         return 0.5 * se;
 }
 
 struct vector *error_sum_of_squares_deriv(struct network *n)
 {
-        struct vector *error = create_vector(n->target->size);
+        struct vector *e = create_vector(n->target->size);
 
         for (int i = 0; i < n->output->vector->size; i++) {
-                double act = n->output->vector->elements[i];
-                double err = n->target->elements[i] - act;
-                error->elements[i] = err
-                        * n->out_act_fun_deriv(n->output->vector, i);
+                double t = n->target->elements[i];
+                double o = n->output->vector->elements[i];
+
+                e->elements[i] = t - o;
+                e->elements[i] *= n->output->act->deriv(n->output->vector, i);
         }
 
-        return error;
+        return e;
 }
 
 /*
- * Cross entropy error
+ * ########################################################################
+ * ## Cross entropy error                                                ##
+ * ########################################################################
  */
 
-/*** EXPERIMENTAL ***/
+/* XXX: no idea if this is correct */
+
 double error_cross_entropy(struct network *n)
 {
         double ce = 0.0;
@@ -91,12 +100,14 @@ double error_cross_entropy(struct network *n)
 
 struct vector *error_cross_entropy_deriv(struct network *n)
 {
-        struct vector *error = create_vector(n->target->size);
+        struct vector *e = create_vector(n->target->size);
 
         for (int i = 0; i < n->output->vector->size; i++) {
-                double act = n->output->vector->elements[i];
-                error->elements[i] = n->target->elements[i] - act;
+                double t = n->target->elements[i];
+                double o = n->output->vector->elements[i];
+
+                e->elements[i] = t - o;
         }
 
-        return error;
+        return e;
 }
