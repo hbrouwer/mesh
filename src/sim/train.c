@@ -47,9 +47,9 @@ void test_network(struct network *n)
         for (int i = 0; i < n->test_set->num_elements; i++) {
                 struct element *e = n->test_set->elements[i];
                 
-                /* reset Elman groups */
+                /* reset context groups */
                 if (n->srn)
-                        reset_elman_groups(n);
+                        reset_context_groups(n);
 
                 /* present all events for this item */
                 rprintf("testing item: %d -- \"%s\"", i, e->name);
@@ -117,7 +117,7 @@ void test_unfolded_network(struct network *n)
                                 copy_vector(nsp->target, e->targets[j]);
 
                                 /* compute error */
-                                me += n->error->fun(n);
+                                me += n->error->fun(nsp);
 
                                 print_vector(nsp->target);
                                 print_vector(nsp->output->vector);
@@ -145,9 +145,9 @@ void report_training_status(int epoch, double me, struct network *n)
 
 void feed_forward(struct network *n, struct group *g)
 {
-        /* copy previous vector to Elman group (if there is one)*/
-        if (g->elman_proj)
-                copy_vector(g->elman_proj->vector, g->vector);
+        /* copy previous vector into Elman-context chain (if there is one)*/
+        if (g->context_group)
+                shift_context_group_chain(n, g, g->vector);
 
         /* propagate to outgoing projections */
         for (int i = 0; i < g->out_projs->num_elements; i++) {
@@ -207,9 +207,9 @@ void train_bp(struct network *n)
                 for (int i = 0; i < training_set->num_elements; i++) {
                         struct element *e = training_set->elements[i];
 
-                        /* reset Elman groups */
+                        /* reset context groups */
                         if (n->srn)
-                                reset_elman_groups(n);
+                                reset_context_groups(n);
 
                         /* present all events for this item */
                         for (int j = 0; j < e->num_events; j++) {

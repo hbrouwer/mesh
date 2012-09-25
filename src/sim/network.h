@@ -44,7 +44,7 @@ struct network
 
         bool srn;                   /* flags whether this network is an SRN */
 
-        unsigned int random_seed;   /* seed for the random number generator */
+        int random_seed;            /* seed for the random number generator */
         double random_mu;           /* mu for random matrices */
         double random_sigma;        /* sigma for random matrices */
 
@@ -136,7 +136,8 @@ struct group
         struct projs_array          /* outgoing projections */
                 *out_projs; 
 
-        struct group *elman_proj;   /* context group for Elman-type topologies */
+        struct group                /* context group for Elman-type topologies */
+                *context_group;
 
         bool bias;                  /* flags whether this is a bias group */
 
@@ -224,7 +225,9 @@ void attach_bias_group(struct network *n, struct group *g);
 /* void dispose_groups(struct group *g); */
 void dispose_groups(struct group_array *groups);
 
-void reset_elman_groups(struct network *n);
+void shift_context_group_chain(struct network *n, struct group *g,
+                struct vector *v);
+void reset_context_groups(struct network *n);
 void reset_recurrent_groups(struct network *n);
 
 struct projs_array *create_projs_array(int max_elements);

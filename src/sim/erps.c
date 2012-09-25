@@ -39,9 +39,9 @@ void compute_erp_correlates(struct network *n)
         for (int i = 0; i < n->test_set->num_elements; i++) {
                 struct element *e = n->test_set->elements[i];
 
-                /* reset Elman groups */
+                /* reset context groups */
                 if (n->srn)
-                        reset_elman_groups(n);
+                        reset_context_groups(n);
 
                 zero_out_vector(pb);
                 zero_out_vector(pw);

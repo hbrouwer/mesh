@@ -105,7 +105,8 @@ struct ffn_unfolded_network *ffn_init_unfolded_network(struct network *n)
                 if (i == 0) {
                         ffn_attach_recurrent_groups(un, un->stack[0]);
                 } else {
-                        ffn_connect_duplicate_networks(un, un->stack[i - 1], un->stack[i]);
+                        ffn_connect_duplicate_networks(un, un->stack[i - 1],
+                                        un->stack[i]);
                 }
         }
 
@@ -178,6 +179,7 @@ struct group *ffn_duplicate_group(struct group *g)
         strncpy(dg->name, g->name, strlen(g->name));
 
         dg->vector = create_vector(g->vector->size);
+        dg->act = g->act;
 
         dg->inc_projs = create_projs_array(g->inc_projs->max_elements);
         dg->inc_projs->num_elements = g->inc_projs->num_elements;
@@ -341,6 +343,7 @@ struct projection *ffn_duplicate_projection(
 
 error_out:
         perror("[ffn_duplicate_projection()]");
+        return NULL;
 }
 
 void ffn_dispose_duplicate_projection(struct projection *dp)

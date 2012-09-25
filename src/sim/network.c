@@ -261,12 +261,21 @@ void dispose_groups(struct group_array *groups)
         }
 }
 
-void reset_elman_groups(struct network *n)
+void shift_context_group_chain(struct network *n, struct group *g,
+                struct vector *v)
+{
+        if (g->context_group)
+                shift_context_group_chain(n, g->context_group, g->vector);
+        
+        copy_vector(g->vector, v);
+}
+
+void reset_context_groups(struct network *n)
 {
         for (int i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
-                if (g->elman_proj) {
-                        g = g->elman_proj;
+                if (g->context_group) {
+                        g = g->context_group;
                         for (int j = 0; j < g->vector->size; j++)
                                 g->vector->elements[j] = 0.5;
                 }
@@ -567,7 +576,7 @@ void load_item_set(char *buf, char *fmt, struct network *n, bool train,
 void load_group(char *buf, char *fmt, struct network *n, char *input,
                 char *output, char *msg)
 {
-        char tmp1[64], tmp2[64], tmp3[64];
+        char tmp1[64], tmp2[64];
         int tmp_int;
         if (sscanf(buf, fmt, tmp1, tmp2, &tmp_int) == 0)
                 return;
@@ -755,9 +764,9 @@ void load_elman_projection(char *buf, char *fmt, struct network *n,
 
         n->srn = true;
 
-        fg->elman_proj = tg;
+        fg->context_group = tg;
 
-        reset_elman_groups(n);
+        reset_context_groups(n);
 
         mprintf(msg, tmp1, tmp2);
 }

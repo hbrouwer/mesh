@@ -151,7 +151,7 @@ struct set *load_set(char *filename, int input_size, int output_size)
                                 }
                         }
 
-                        if (tokens = strtok(NULL, " ")) {
+                        if ((tokens = strtok(NULL, " ")) != NULL) {
                                 targets[i] = create_vector(output_size);
                                 if (strcmp(tokens, "Target") == 0) {
                                         for (int j = 0; j < output_size; j++) {
