@@ -17,7 +17,6 @@
  */
 
 #include "error.h"
-#include "math.h"
 
 #include <float.h>
 #include <math.h>
@@ -63,7 +62,7 @@ struct vector *error_sum_of_squares_deriv(struct network *n)
  * ########################################################################
  */
 
-/* XXX: no idea if this is correct */
+/* XXX: no idea if this handles the +Inf and -Inf limits correctly */
 
 double error_cross_entropy(struct network *n)
 {

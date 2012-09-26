@@ -19,9 +19,53 @@
 #include "bp.h"
 
 /*
- * This provides an implementation of the backpropagation (BP) algorithm.
+ * This provides an implementation of the backpropagation (BP) algorithm
+ * (Rumelhart, Hinton, & Williams, 1986). BP minimizes the network's error
+ * E, given some error function. A commonly used error function is sum 
+ * squared error, which is defined as:
  *
+ *     E = 0.5 * sum_j (y_j - d_j)^2
  *
+ * where y_j is the observed activation level for output unit j, and d_j
+ * its target activation level. To minimize this error function, we first
+ * determine the error derivative EA_j, which defines how fast the error at
+ * unit j changes as a function of its activation level:
+ *
+ *     EA_j = @E / @y_j = y_j - d_j
+ *
+ * Provided EA_j, we can compute how the error changes as function of the
+ * the net input to unit j. We term this quantity EI_j, and define it as:
+ *
+ *     EI_j = @E / @x_j = EA_j * f'(y_j)
+ *
+ * where f' is the derivative of the activation function used.  We can use
+ * the EI quantities of all units of the group towards which unit j belongs
+ * to compute the error derivative EA_i for a unit i that is connected to
+ * all units in that group. The error derivative EA_i for unit i is simply
+ * the sum of all EI_j quantities multiplied by the weight W_ij of the
+ * connection between each unit j and unit i:
+ *
+ *     EA_i = @E / @y_i
+ *          = sum_j ((@E / @x_j) * (@x_j / @y_i)
+ *          = sum_j (EI_j * w_ij)
+ *
+ * We can repeat this procedure to compute the EA quantities for as many
+ * preceding groups as required. Provided the error derivative EA_j for
+ * a unit j, we can also obtain EI_j for that unit, which we can in turn use
+ * to compute how fast the error changes with respect to a weight w_ij on
+ * the connection between unit j in the output layer, and unit i in
+ * a preceding layer:
+ *
+ *     EW_ij = @E / @w_ij = (@E / @x_j) * (@x_j / @w_ij) = EI_j * Y_i
+ *
+ * This can then be used to update the respective weight W_ij by means of:
+ *
+ *     W_ij = e * EW_ij
+ *
+ * References
+ *
+ * Rumelhart, D. E., Hinton, G. E., & Williams, R. J. (1986). Learning
+ *     representations by back-propagating errors. Nature, 323, 553-536.
  */
 
 void bp_backpropagate_error(struct network *n, struct group *g,
@@ -75,6 +119,12 @@ struct vector *bp_sum_group_error(struct network *n, struct group *g)
 
         return e;
 }
+
+/*
+ * ########################################################################
+ * ## Weight adjustment                                                  ##
+ * ########################################################################
+ */
 
 void bp_adjust_weights(struct network *n, struct group *g)
 {

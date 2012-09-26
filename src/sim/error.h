@@ -20,7 +20,6 @@
 #define ERROR_H
 
 #include "network.h"
-#include "vector.h"
 
 double error_sum_of_squares(struct network *n);
 struct vector *error_sum_of_squares_deriv(struct network *n);
