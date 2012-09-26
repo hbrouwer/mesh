@@ -289,6 +289,11 @@ void bp_adjust_projection_weights(struct network *n, struct group *g,
                 }
 
 
+        /*
+         * Make a copy of the weight deltas for the application of momentum
+         * and weight decay upon next update, and reset the the current
+         * weight deltas.
+         */
         copy_matrix(p->prev_deltas, p->deltas);
-        zero_out_matrix(p->deltas);        
+        zero_out_matrix(p->deltas);
 }
