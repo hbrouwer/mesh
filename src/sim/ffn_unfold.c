@@ -17,7 +17,6 @@
  */
 
 #include "ffn_unfold.h"
-#include "train.h"
 #include "vector.h"
 
 /*

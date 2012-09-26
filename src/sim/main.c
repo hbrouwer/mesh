@@ -18,12 +18,11 @@
 
 #include <stdarg.h>
 
-#include "ffn_unfold.h"
-
+#include "engine.h"
 #include "erps.h"
+#include "ffn_unfold.h"
 #include "main.h"
 #include "network.h"
-#include "train.h"
 
 int main(int argc, char **argv)
 {
@@ -85,7 +84,7 @@ int main(int argc, char **argv)
         initialize_network(n);
         if (!n->load_weights)
                 train_network(n);
-        if (n->learning_algorithm == train_bp) {
+        if (n->learning_algorithm == train_network_bp) {
                 test_network(n);
                 if (n->compute_erps)
                         compute_erp_correlates(n);

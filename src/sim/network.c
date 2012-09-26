@@ -19,10 +19,10 @@
 #include <math.h>
 
 #include "act.h"
+#include "engine.h"
 #include "error.h"
 #include "network.h"
 #include "stats.h"
-#include "train.h"
 
 struct network *create_network(char *name)
 {
@@ -56,7 +56,7 @@ void initialize_network(struct network *n)
                 randomize_weight_matrices(n->input, n);
 
         /* initialize unfolded network */
-        if (n->learning_algorithm == train_bptt)
+        if (n->learning_algorithm == train_network_bptt)
                 n->unfolded_net = ffn_init_unfolded_network(n);
 
         if (!n->unfolded_net && n->load_weights)
@@ -498,13 +498,13 @@ void load_learning_algorithm(char *buf, char *fmt, struct network *n,
         if (sscanf(buf, fmt, tmp) == 0)
                 return;
 
-        /* 'standard' backpropagation */
+        /* backpropagation */
         if (strncmp(tmp, "bp", 2) == 0)
-                n->learning_algorithm = train_bp;
+                n->learning_algorithm = train_network_bp;
 
         /* backpropagation through time */
         if (strncmp(tmp, "bptt", 4) == 0)
-                n->learning_algorithm = train_bptt;
+                n->learning_algorithm = train_network_bptt;
                         
         if (n->learning_algorithm)
                 mprintf(msg, tmp);

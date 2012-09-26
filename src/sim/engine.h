@@ -1,5 +1,5 @@
 /*
- * train.h
+ * engine.h
  *
  * Copyright 2012 Harm Brouwer <me@hbrouwer.eu>
  *
@@ -16,32 +16,19 @@
  * limitations under the License.
  */
 
-#ifndef TRAIN_H
-#define TRAIN_H
+#ifndef ENGINE_H
+#define ENGINE_H
 
 #include "network.h"
-#include "vector.h"
 
 void train_network(struct network *n);
-void test_network(struct network *n);
-void test_unfolded_network(struct network *n);
-
-void train_bp(struct network *n);
-void train_bptt(struct network *n);
+void train_network_bp(struct network *n);
+void train_network_bptt(struct network *n);
 
 void scale_learning_rate(int epoch, struct network *n);
 void scale_momentum(int epoch, struct network *n);
 
-void backpropagate_error(struct network *n, struct group *g,
-                struct vector *error);
+void test_network(struct network *n);
+void test_unfolded_network(struct network *n);
 
-void comp_proj_deltas_and_error(struct network *n, struct projection *p, 
-                struct vector *error);
-
-struct vector *group_error(struct network *n, struct group *g);
-
-void adjust_weights(struct network *n, struct group *g);
-void adjust_projection_weights(struct network *n, struct group *g,
-                struct projection *p);
-
-#endif /* TRAIN_H */
+#endif /* ENGINE_H */

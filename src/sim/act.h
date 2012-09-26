@@ -19,7 +19,11 @@
 #ifndef ACT_H
 #define ACT_H
 
+#include "network.h"
 #include "vector.h"
+
+void feed_forward(struct network *n, struct group *g);
+double unit_net_input(struct network *n, struct group *g, int u);
 
 double act_fun_binary_sigmoid(struct vector *v, int i);
 double act_fun_binary_sigmoid_deriv(struct vector *v, int i);

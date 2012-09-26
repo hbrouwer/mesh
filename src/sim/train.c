@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+#include "act.h"
 #include "error.h"
 #include "ffn_unfold.h"
 #include "math.h"
@@ -23,6 +24,45 @@
 #include "train.h"
 
 #include <math.h>
+
+/*
+ * This provides an implementation of the backpropagation (BP) algorithm
+ * (Rumelhart, Hinton, & Williams, 1986), and its backpropagation through
+ * time (BPTT) extension.
+ * 
+ * Let j be a unit in one of network's groups, and i a unit in a group
+ * projecting to it. The net input x_j to unit j is defined as:
+ *
+ *     x_j = sum_i (y_i * w_ij)
+ * 
+ * where y_i is the activation level of unit i in the projecting group, and
+ * w_ij the weight of the connection between unit j and unit i. The
+ * activation level y_j of unit j is then defined as:
+ *
+ *    y_j = f(x_j)
+ *
+ * where f is a non-linear activation function, such as the commonly used
+ * sigmoid function:
+ *
+ *    y_j = 1 / (1 + e^(-x_j))
+ *
+ * When activation is propagated from the input group to the output group
+ * of the network, the network's error for a given input pattern is defined
+ * as:
+ *
+ *    E = 0.5 * sum_j (o_j - t_j)^2
+ *
+ * where o_j is the observed activation level of unit j, and t_j its target
+ * activation level.
+ *
+ */
+
+/*
+ * References
+ *
+ * Rumelhart, D. E., Hinton, G. E., & Williams, R. J. (1986). Learning
+ *   representations by back-propagating errors. Nature, 323, pp. 533-536.
+ */
 
 /*
  * ########################################################################
@@ -132,57 +172,6 @@ void test_unfolded_network(struct network *n)
         pprintf("error: [%lf]", me);
 }
 
-void report_training_status(int epoch, double me, struct network *n)
-{
-        pprintf("epoch: [%d] | error: [%lf]", epoch, me);
-}
-
-/*
- * ########################################################################
- * ## Feed forward                                                       ##
- * ########################################################################
- */
-
-void feed_forward(struct network *n, struct group *g)
-{
-        /* copy previous vector into Elman-context chain (if there is one)*/
-        if (g->context_group)
-                shift_context_group_chain(n, g, g->vector);
-
-        /* propagate to outgoing projections */
-        for (int i = 0; i < g->out_projs->num_elements; i++) {
-                /* skip recurrent groups */
-                if (g->out_projs->elements[i]->recurrent)
-                        continue;
-
-                /* compute unit activations */
-                struct group *rg = g->out_projs->elements[i]->to;
-                for (int j = 0; j < rg->vector->size; j++) {
-                        rg->vector->elements[j] = unit_activation(n, rg, j);
-                        rg->vector->elements[j] = rg->act->fun(rg->vector, j);
-                }
-        }
-
-        /* recursively repeat the above for all outgoing projections*/
-        for (int i = 0; i < g->out_projs->num_elements; i++)
-                if (!g->out_projs->elements[i]->recurrent)
-                        feed_forward(n, g->out_projs->elements[i]->to);
-}
-
-double unit_activation(struct network *n, struct group *g, int u)
-{
-        /* sum the weighted net activation of a unit */
-        double act = 0.0;
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
-                struct group *pg = g->inc_projs->elements[i]->to;
-                struct matrix *w = g->inc_projs->elements[i]->weights;
-                for (int j = 0; j < pg->vector->size; j++)
-                        act += w->elements[j][u] * pg->vector->elements[j];
-        }
-
-        return act;
-}
-
 /*
  * ########################################################################
  * ## Backpropagation (BP) training                                      ##
@@ -234,7 +223,7 @@ void train_bp(struct network *n)
                 /* compute and report mean error */
                 me /= training_set->num_elements;
                 if (epoch == 1 || epoch % n->report_after == 0)
-                        report_training_status(epoch, me, n);
+                        pprintf("epoch: [%d] | error: [%lf]", epoch, me);
 
                 /* stop training if threshold is reached */
                 if (me < n->error_threshold)
@@ -324,7 +313,7 @@ void train_bptt(struct network *n)
                 /* compute and report mean error */
                 me /= training_set->num_elements;
                 if (epoch == 1 || epoch % n->report_after == 0)
-                        report_training_status(epoch, me, n);
+                        pprintf("epoch: [%d] | error: [%lf]", epoch, me);
 
                 /* stop training if threshold is reached */
                 if (me < n->error_threshold)
@@ -335,6 +324,12 @@ void train_bptt(struct network *n)
                 scale_momentum(epoch,n);
         }
 }
+
+/*
+ * ########################################################################
+ * ## Learning rate and momentum scaling                                 ##
+ * ########################################################################
+ */
 
 /* learning rate rescaling */
 void scale_learning_rate(int epoch, struct network *n)
