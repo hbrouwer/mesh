@@ -984,16 +984,12 @@ void print_projection_weights_compact(double range, double minimum,
                 struct matrix *m = g->inc_projs->elements[i]->weights;
 
                 for (int r = 0; r < m->rows; r++) {
-                        printf("[ ");
                         for (int c = 0; c < m->cols; c++) {
                                 double val = m->elements[r][c] + fabs(minimum);
 
                                 print_value_as_symbols(val / range);
-
-                                if (c < m->cols - 1)
-                                        printf(" | ");
                         }
-                        printf(" ]\n");
+                        printf("\n");
                 }
                 
                 printf("\n");
@@ -1002,23 +998,28 @@ void print_projection_weights_compact(double range, double minimum,
         }
 }
 
-/*
- * ++
- *  +
- *  -
- * --
- */
-
 void print_value_as_symbols(double value)
 {
-        if (value >= 0.75)
-                printf("++");
-        if (value >= 0.50 && value < 0.75)
-                printf(" +");
-        if (value >= 0.25 && value < 0.50)
-                printf(" -");
-        if (value < 0.25)
-                printf("--");
+        if (value >= 0.90)
+                printf("\x1b[48;05;232m  \x1b[0m");
+        if (value >= 0.80 && value < 0.90)
+                printf("\x1b[48;05;196m  \x1b[0m");
+        if (value >= 0.70 && value < 0.80)
+                printf("\x1b[48;05;124m  \x1b[0m");
+        if (value >= 0.60 && value < 0.70)
+                printf("\x1b[48;05;88m  \x1b[0m");
+        if (value >= 0.50 && value < 0.60)
+                printf("\x1b[48;05;52m  \x1b[0m");
+        if (value >= 0.40 && value < 0.50)
+                printf("\x1b[48;05;21m  \x1b[0m");
+        if (value >= 0.30 && value < 0.40)
+                printf("\x1b[48;05;20m  \x1b[0m");
+        if (value >= 0.20 && value < 0.30)
+                printf("\x1b[48;05;19m  \x1b[0m");
+        if (value >= 0.10 && value < 0.20)
+                printf("\x1b[48;05;18m  \x1b[0m");
+        if (value < 0.10)
+                printf("\x1b[48;05;17m  \x1b[0m");
 }
 
 void print_weight_stats(struct network *n)

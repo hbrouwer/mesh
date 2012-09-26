@@ -28,6 +28,7 @@ int main(int argc, char **argv)
 {
         struct network *n = NULL;
         bool net_spec = false;
+        bool print_stats = false;
 
         cprintf("");
         mprintf("MESH %s", VERSION);
@@ -56,6 +57,10 @@ int main(int argc, char **argv)
                                 n->weights_file = argv[i];
                                 n->load_weights = true;
                         }
+                }
+
+                if (strcmp(argv[i], "--print_stats") == 0) {
+                        print_stats = true;
                 }
 
                 if (strcmp(argv[i], "--compute_erps") == 0)
@@ -92,10 +97,20 @@ int main(int argc, char **argv)
                 test_unfolded_network(n);
         }
 
+        /* save weights */
         if (n->save_weights && !n->unfolded_net)
                 save_weights(n);
         if (n->save_weights && n->unfolded_net)
                 save_weights(n->unfolded_net->stack[0]);
+
+        if (print_stats && !n->unfolded_net) {
+                print_weights(n);
+                print_weight_stats(n);
+        }
+        if (print_stats && n->unfolded_net) {
+                print_weights(n->unfolded_net->stack[0]);
+                print_weight_stats(n->unfolded_net->stack[0]);
+        }
 
         mprintf("Cleaning up...");
         dispose_network(n);
@@ -126,6 +141,7 @@ void print_version()
         cprintf("%s\n", VERSION);
 }
 
+/* print console message */
 void cprintf(const char *fmt, ...)
 {
         va_list args;
@@ -136,6 +152,7 @@ void cprintf(const char *fmt, ...)
         fprintf(stderr, "\n");
 }
 
+/* print program message */
 void mprintf(const char *fmt, ...)
 {
         va_list args;
@@ -147,6 +164,7 @@ void mprintf(const char *fmt, ...)
         fprintf(stderr, "\n");
 }
 
+/* print error message */
 void eprintf(const char *fmt, ...)
 {
         va_list args;
@@ -158,6 +176,7 @@ void eprintf(const char *fmt, ...)
         fprintf(stderr, "\n");
 }
 
+/* print progress message */
 void pprintf(const char *fmt, ...)
 {
         va_list args;
@@ -169,6 +188,7 @@ void pprintf(const char *fmt, ...)
         fprintf(stderr, "\n");
 }
 
+/* print report message */
 void rprintf(const char *fmt, ...)
 {
         va_list args;
