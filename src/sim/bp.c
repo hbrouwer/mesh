@@ -19,10 +19,10 @@
 #include "bp.h"
 
 /*
- * This provides an implementation of the backpropagation (BP) algorithm
- * (Rumelhart, Hinton, & Williams, 1986). BP minimizes the network's error
- * E, given some error function. A commonly used error function is sum 
- * squared error, which is defined as:
+ * This implements of the backpropagation (BP) algorithm (Rumelhart, Hinton,
+ * & Williams, 1986). BP minimizes the network's error E, given some error
+ * function. A commonly used error function is sum squared error, which is
+ * defined as:
  *
  *     E = 0.5 * sum_j (y_j - d_j)^2
  *
@@ -60,7 +60,10 @@
  *
  * This can then be used to update the respective weight W_ij by means of:
  *
- *     W_ij = e * EW_ij
+ *     W_ij = Wij + e * EW_ij + a * EW_ij(t-1) - d * EW_ij(t-1)
+ *
+ * Where e is a learning rate, a is momentum, d is weight decay, and 
+ * EW_ij(t-1) is the previous weight delta EW_ij between unit i and unit j.
  *
  * References
  *
@@ -68,51 +71,126 @@
  *     representations by back-propagating errors. Nature, 323, 553-536.
  */
 
+/*
+ * ########################################################################
+ * ## Error backpropagation                                              ##
+ * ########################################################################
+ */
+
+/*
+ * This is the main BP function. Provided a group g, and a vector e with
+ * errors EI for that group's units, it first computes the error derivates
+ * EA and weight deltas EW for each projection to g. In case of unfolded
+ * networks, which are used for BP through time, a group may project to
+ * multiple later groups, which means that an error derivative EA_i for
+ * a unit i in that group, may depend on multiple projections. Therefore, we
+ * need to sum the EA_i values for all outgoing projections of the group to
+ * which unit i belongs, before we can determine EI_i. Once we have obtained
+ * all EI values for a projecting group, we recursively backpropagate that
+ * error to earlier groups.
+ */
+
 void bp_backpropagate_error(struct network *n, struct group *g,
                 struct vector *e)
 {
+        /*
+         * For each group that projects to g, compute the error derivates
+         * EA and weight deltas EW with respect to g.
+         */
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
+                
+                /* 
+                 * Clean previous error for this projection. Do not touch
+                 * weight deltas, as these can cumulate over multiple
+                 * backpropagation sweeps.
+                 */
                 zero_out_vector(p->error);
-                bp_projection_deltas_and_error(n, p, e);
+
+                bp_projection_error_and_deltas(n, p, e);
         }
 
+        /*
+         * Sum the error derivatives for each group that projects towards
+         * g, compute EI quantities for each units in that group, and
+         * recursively backpropagate that error to earlier groups.
+         */
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
                 struct group *ng = g->inc_projs->elements[i]->to;
-                struct vector *ge = bp_sum_group_error(n, ng);
+                
+                struct vector *ge = bp_group_error(n, ng);
                 bp_backpropagate_error(n, ng, ge);
+
                 dispose_vector(ge);
         }
 }
 
-void bp_projection_deltas_and_error(struct network *n, struct projection *p,
+/* 
+ * This function computes the error derivates EA and weight deltas EW for
+ * a given projection p between g' and g. 
+ */
+
+void bp_projection_error_and_deltas(struct network *n, struct projection *p,
                 struct vector *e)
 {
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < e->size; j++) {
-                        p->error->elements[i] += p->weights->elements[i][j]
-                                * e->elements[j];
-                        p->deltas->elements[i][j] += p->to->vector->elements[i]
-                                * e->elements[j];
+                        /*
+                         * Compute how the error changes as a function of
+                         * the output of unit i:
+                         *
+                         * EA_i = sum_j (EI_j * W_ij)
+                         */
+                        p->error->elements[i] += e->elements[j]
+                                * p->weights->elements[i][j];
+
+                        /*
+                         * Compute how the error changes as a function of
+                         * the weight on the connection between unit i and
+                         * unit j:
+                         *
+                         * E_Wij += EI_j * Y_i
+                         */
+                        p->deltas->elements[i][j] += e->elements[j]
+                                * p->to->vector->elements[i];
                 }
         }        
 }
 
-struct vector *bp_sum_group_error(struct network *n, struct group *g)
+/*
+ * This function compute the EI quantities for a group g. We first sum for
+ * each of its units i, the error derivates EA_i for all of its outgoing
+ * projections.  Next, we obtain EI_i by multiplying the summed EA_i
+ * quantities with f'(Y_i). However, if g is the network's input group, EI_i
+ * is simply the summed EA_i.
+ */
+
+struct vector *bp_group_error(struct network *n, struct group *g)
 {
         struct vector *e = create_vector(g->vector->size);
 
         for (int i = 0; i < g->vector->size; i++) {
+                /* 
+                 * Sum error derivates EA_i for all outgoing projections
+                 * of the current group.
+                 */
                 for (int j = 0; j < g->out_projs->num_elements; j++) {
                         struct projection *p = g->out_projs->elements[j];
                         e->elements[i] += p->error->elements[i];
                 }
 
+                /*
+                 * Compute how the error changes as function of the net
+                 * input to unit i. 
+                 *
+                 * EI_i = EA_i * f'(y_i)
+                 */
                 double act_deriv;
-                if (g != n->input)
+                if (g != n->input) {
                         act_deriv = g->act->deriv(g->vector, i);
-                else 
+                } else {
                         act_deriv = g->vector->elements[i];
+                }
 
                 e->elements[i] *= act_deriv;
         }
@@ -126,28 +204,67 @@ struct vector *bp_sum_group_error(struct network *n, struct group *g)
  * ########################################################################
  */
 
+/*
+ * This recursively adjusts the weights of all incoming projections of a
+ * group g.
+ */
+
 void bp_adjust_weights(struct network *n, struct group *g)
 {
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
-                bp_adjust_projection_weights(n, g, g->inc_projs->elements[i]);
-                if (!g->inc_projs->elements[i]->recurrent)
-                        bp_adjust_weights(n, g->inc_projs->elements[i]->to);
+                struct projection *p = g->inc_projs->elements[i];
+                
+                bp_adjust_projection_weights(n, g, p);
+
+                /*
+                 * During BPTT, we want to only adjust weights
+                 * in the network of the current timestep.
+                 */
+                if (p->recurrent)
+                        continue;
+
+                bp_adjust_weights(n, p->to);
         }        
 }
+
+/*
+ * This adjusts the weights of a projection p between a group g' and g.
+ */
 
 void bp_adjust_projection_weights(struct network *n, struct group *g,
                 struct projection *p)
 {
         for (int i = 0; i < p->to->vector->size; i++)
-                for (int j = 0; j < g->vector->size; j++)
+                for (int j = 0; j < g->vector->size; j++) {
+                        /*
+                         * Adjust the weight between unit i in group g'
+                         * and unit j in group g. 
+                         *
+                         * First, we apply learning:
+                         *
+                         * W_ij = W_ij + e * EW_ij
+                         */
                         p->weights->elements[i][j] += 
-                                n->learning_rate
-                                * p->deltas->elements[i][j]
-                                - n->weight_decay
-                                * p->prev_deltas->elements[i][j]
-                                + n->momentum
-                                * p->prev_deltas->elements[i][j];
-        
+                                n->learning_rate * p->deltas->elements[i][j];
+
+                        /*
+                         * Next, we apply momentum:
+                         *
+                         * W_ij = W_ij + a * EW_ij(t-1)
+                         */
+                        p->weights->elements[i][j] +=
+                                n->momentum * p->prev_deltas->elements[i][j];
+
+                        /*
+                         * Finally, we apply weight decay:
+                         *
+                         * W_ij = W_ij - d * EW_ij(t-1)
+                         */
+                        p->weights->elements[i][j] -=
+                                n->weight_decay * p->prev_deltas->elements[i][j];
+                }
+
+
         copy_matrix(p->prev_deltas, p->deltas);
         zero_out_matrix(p->deltas);        
 }
