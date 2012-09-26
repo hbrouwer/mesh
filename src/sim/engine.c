@@ -24,7 +24,7 @@ void train_network(struct network *n)
 {
         mprintf("starting training of network: [%s]", n->name);
 
-        n->learning_algorithm(n);        
+        n->learning_algorithm(n);
 }
 
 void train_network_bp(struct network *n)
@@ -59,7 +59,8 @@ void train_network_bp(struct network *n)
                                         copy_vector(n->target, e->targets[j]);
 
                                         /* backpropagate error */
-                                        struct vector *error = n->error->deriv(n);
+                                        struct vector *error = bp_output_error(n);
+                                                // n->error->deriv(n);
                                         bp_backpropagate_error(n, n->output, error);
                                         dispose_vector(error);
                                         
@@ -138,7 +139,8 @@ void train_network_bptt(struct network *n)
 
                         if (his == un->stack_size) {
                                 /* backpropagate error */
-                                struct vector *error = nsp->error->deriv(nsp);
+                                struct vector *error = bp_output_error(nsp);
+                                        //nsp->error->deriv(nsp);
                                 bp_backpropagate_error(nsp, nsp->output, error);
                                 dispose_vector(error);
 

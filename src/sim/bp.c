@@ -17,6 +17,7 @@
  */
 
 #include "bp.h"
+#include "error.h"
 
 /*
  * This implements of the backpropagation (BP) algorithm (Rumelhart, Hinton,
@@ -76,6 +77,29 @@
  * ## Error backpropagation                                              ##
  * ########################################################################
  */
+
+/*
+ * This computes EI_j quantities for all units j in the output layer.
+ */
+
+struct vector *bp_output_error(struct network *n)
+{
+        struct vector *e = n->error->deriv(n);
+
+        /*
+         * If the error function E that is being minimized is sum of 
+         * squares, we multiply EA_j with f'(y_i). For cross-entropy
+         * error, the f'(y_i) is cancelled out.
+         */
+        if (n->error->fun == error_sum_of_squares) {
+                for (int i = 0; i < e->size; i++) {
+                        struct group *g = n->output;
+                        e->elements[i] *= g->act->deriv(g->vector, i);
+                }
+        }
+
+        return e;
+}
 
 /*
  * This is the main BP function. Provided a group g, and a vector e with
@@ -154,7 +178,7 @@ void bp_projection_error_and_deltas(struct network *n, struct projection *p,
                         p->deltas->elements[i][j] += e->elements[j]
                                 * p->to->vector->elements[i];
                 }
-        }        
+        }
 }
 
 /*

@@ -21,6 +21,8 @@
 
 #include "network.h"
 
+struct vector *bp_output_error(struct network *n);
+
 void bp_backpropagate_error(struct network *n, struct group *g,
                 struct vector *e);
 

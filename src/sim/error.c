@@ -50,7 +50,6 @@ struct vector *error_sum_of_squares_deriv(struct network *n)
                 double o = n->output->vector->elements[i];
 
                 e->elements[i] = t - o;
-                e->elements[i] *= n->output->act->deriv(n->output->vector, i);
         }
 
         return e;
