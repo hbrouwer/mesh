@@ -20,12 +20,22 @@
 #include "bp.h"
 #include "engine.h"
 
+/*
+ * ########################################################################
+ * ## Network training                                                   ##
+ * ########################################################################
+ */
+
 void train_network(struct network *n)
 {
         mprintf("starting training of network: [%s]", n->name);
 
         n->learning_algorithm(n);
 }
+
+/*
+ * This function implements backpropagation (BP) training.
+ */
 
 void train_network_bp(struct network *n)
 {
@@ -60,7 +70,6 @@ void train_network_bp(struct network *n)
 
                                         /* backpropagate error */
                                         struct vector *error = bp_output_error(n);
-                                                // n->error->deriv(n);
                                         bp_backpropagate_error(n, n->output, error);
                                         dispose_vector(error);
                                         
@@ -87,6 +96,10 @@ void train_network_bp(struct network *n)
                 scale_momentum(epoch,n);
         }
 }
+
+/*
+ * This function implements backpropagation through time (BPTT) training.
+ */
 
 void train_network_bptt(struct network *n)
 {
@@ -140,7 +153,6 @@ void train_network_bptt(struct network *n)
                         if (his == un->stack_size) {
                                 /* backpropagate error */
                                 struct vector *error = bp_output_error(nsp);
-                                        //nsp->error->deriv(nsp);
                                 bp_backpropagate_error(nsp, nsp->output, error);
                                 dispose_vector(error);
 
@@ -170,6 +182,14 @@ void train_network_bptt(struct network *n)
         }
 }
 
+
+
+/*
+ * ########################################################################
+ * ## Learning rate and Momentum scaling                                 ##
+ * ########################################################################
+ */
+
 void scale_learning_rate(int epoch, struct network *n)
 {
         int scale_after = n->lr_scale_after * n->max_epochs;
@@ -191,6 +211,12 @@ void scale_momentum(int epoch, struct network *n)
                                 mn, n->momentum);
         }
 }
+
+/*
+ * ########################################################################
+ * ## Network testing                                                    ##
+ * ########################################################################
+ */
 
 void test_network(struct network *n)
 {
