@@ -169,11 +169,13 @@ void eprintf(const char *fmt, ...)
 {
         va_list args;
 
+        fprintf(stderr, "\x1b[38;05;1m");
         fprintf(stderr, "!!! ERROR: ");
         va_start(args, fmt);
         vfprintf(stderr, fmt, args);
         va_end(args);
         fprintf(stderr, "\n");
+        fprintf(stderr, "\x1b[0m");
 }
 
 /* print progress message */

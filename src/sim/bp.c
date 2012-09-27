@@ -205,7 +205,7 @@ struct vector *bp_group_error(struct network *n, struct group *g)
 
                 /*
                  * Compute how the error changes as function of the net
-                 * input to unit i. 
+                 * input to unit i: 
                  *
                  * EI_i = EA_i * f'(y_i)
                  */

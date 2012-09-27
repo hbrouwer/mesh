@@ -19,6 +19,7 @@
 #include "act.h"
 #include "engine.h"
 #include "erps.h"
+#include "pprint.h"
 
 #include <math.h>
 
@@ -28,9 +29,9 @@ void compute_erp_correlates(struct network *n)
 
         /* find "Wernicke" and "Broca" */
         struct group *w, *b;
-        if (!(w = find_group_by_name(n, "wernicke")))
+        if (!(w = find_group_by_name(n, "hidden")))
                 goto error_out;
-        if (!(b = find_group_by_name(n, "broca")))
+        if (!(b = find_group_by_name(n, "output")))
                 goto error_out;
 
         struct vector *pw = create_vector(w->vector->size);
@@ -47,15 +48,14 @@ void compute_erp_correlates(struct network *n)
                 zero_out_vector(pb);
                 zero_out_vector(pw);
 
-                rprintf("computing ERP correlates for item: %d -- \"%s\"\n", i, e->name);
+                rprintf("\n\nI: \"%s\"", e->name);
                 char *tokens = strtok(e->name, " ");
 
                 for (int j = 0; j < e->num_events; j++) {
                         copy_vector(n->input->vector, e->inputs[j]);
                         feed_forward(n, n->input);
 
-                        // double n400_correlate = compute_n400_correlate(w->vector, pw);
-                        double n400_correlate = 0.0;
+                        double n400_correlate = compute_n400_correlate(w->vector, pw);
                         double p600_correlate = compute_p600_correlate(b->vector, pb);
 
                         /*
@@ -68,7 +68,19 @@ void compute_erp_correlates(struct network *n)
                         print_vector(b->vector);
                         */
 
-                        printf("%s\n%f\t%f\n\n", tokens, n400_correlate, p600_correlate);
+                        printf("\n%s\t\tN400: %f\t\tP600: %f\n", tokens, n400_correlate, p600_correlate);
+
+                        pprint_vector(pw);
+                        pprint_vector(w->vector);
+
+                        if(e->targets[j]) {
+                                printf("\n");
+                                printf("T: ");
+                                pprint_vector(e->targets[j]);
+                                printf("O: ");
+                                pprint_vector(n->output->vector);
+                                printf("\n\n");
+                        }
 
                         copy_vector(pw, w->vector);
                         copy_vector(pb, b->vector);

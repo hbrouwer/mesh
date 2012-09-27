@@ -234,7 +234,7 @@ void test_network(struct network *n)
                         reset_context_groups(n);
 
                 /* present all events for this item */
-                rprintf("\ntesting item: %d -- \"%s\"", i, e->name);
+                rprintf("\nI: \"%s\"", e->name);
                 for (int j = 0; j < e->num_events; j++) {
                         copy_vector(n->input->vector, e->inputs[j]);
                         feed_forward(n, n->input);
@@ -281,7 +281,7 @@ void test_unfolded_network(struct network *n)
                 reset_recurrent_groups(nsp);
 
                 /* present all events for this item */
-                rprintf("\ntesting item: %d -- \"%s\"", i, e->name);
+                rprintf("\nI: \"%s\"", e->name);
                 for (int j = 0; j < e->num_events; j++) {
                         /* cycle network stack if necessary */
                         if (his == un->stack_size) {
