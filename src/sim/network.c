@@ -1001,9 +1001,9 @@ void print_projection_weights_compact(double range, double minimum,
 void print_value_as_symbols(double value)
 {
         if (value >= 0.90)
-                printf("\x1b[48;05;232m  \x1b[0m");
-        if (value >= 0.80 && value < 0.90)
                 printf("\x1b[48;05;196m  \x1b[0m");
+        if (value >= 0.80 && value < 0.90)
+                printf("\x1b[48;05;160m  \x1b[0m");
         if (value >= 0.70 && value < 0.80)
                 printf("\x1b[48;05;124m  \x1b[0m");
         if (value >= 0.60 && value < 0.70)

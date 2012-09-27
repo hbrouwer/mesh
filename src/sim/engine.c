@@ -19,6 +19,7 @@
 #include "act.h"
 #include "bp.h"
 #include "engine.h"
+#include "pprint.h"
 
 /*
  * ########################################################################
@@ -233,7 +234,7 @@ void test_network(struct network *n)
                         reset_context_groups(n);
 
                 /* present all events for this item */
-                rprintf("testing item: %d -- \"%s\"", i, e->name);
+                rprintf("\ntesting item: %d -- \"%s\"", i, e->name);
                 for (int j = 0; j < e->num_events; j++) {
                         copy_vector(n->input->vector, e->inputs[j]);
                         feed_forward(n, n->input);
@@ -244,8 +245,10 @@ void test_network(struct network *n)
                                 /* compute error */
                                 me += n->error->fun(n);
 
-                                print_vector(n->target);
-                                print_vector(n->output->vector);
+                                printf("T: ");
+                                pprint_vector(n->target);
+                                printf("O: ");
+                                pprint_vector(n->output->vector);
                         }
                 }
         }
@@ -278,7 +281,7 @@ void test_unfolded_network(struct network *n)
                 reset_recurrent_groups(nsp);
 
                 /* present all events for this item */
-                rprintf("testing item: %d -- \"%s\"", i, e->name);
+                rprintf("\ntesting item: %d -- \"%s\"", i, e->name);
                 for (int j = 0; j < e->num_events; j++) {
                         /* cycle network stack if necessary */
                         if (his == un->stack_size) {
@@ -300,8 +303,10 @@ void test_unfolded_network(struct network *n)
                                 /* compute error */
                                 me += n->error->fun(nsp);
 
-                                print_vector(nsp->target);
-                                print_vector(nsp->output->vector);
+                                printf("T: ");
+                                pprint_vector(nsp->target);
+                                printf("O: ");
+                                pprint_vector(nsp->output->vector);
                                 
                         }
                         his++;
