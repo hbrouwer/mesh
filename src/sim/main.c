@@ -31,10 +31,10 @@ int main(int argc, char **argv)
         bool print_stats = false;
 
         cprintf("");
-        mprintf("MESH %s", VERSION);
-        mprintf("(c) 2012 Harm Brouwer <me@hbrouwer.eu>");
-        mprintf("Center for Language and Cognition, University of Groningen &");
-        mprintf("Netherlands Organisation for Scientific Research (NWO)");
+        cprintf("MESH %s", VERSION);
+        cprintf("(c) 2012 Harm Brouwer <me@hbrouwer.eu>");
+        cprintf("Center for Language and Cognition, University of Groningen &");
+        cprintf("Netherlands Organisation for Scientific Research (NWO)");
         cprintf("");
 
         for (int i = 1; i < argc; i++) {

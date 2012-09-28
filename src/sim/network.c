@@ -965,14 +965,5 @@ void print_weight_stats(struct network *n)
 {
         struct weight_stats *ws = weight_statistics(n);
 
-        printf("___weight statistics___\n");
-        printf("mean      : %f\n", ws->mean);
-        printf("mean abs. : %f\n", ws->mean_abs);
-        printf("mean dist.: %f\n", ws->mean_dist);
-        printf("variance  : %f\n", ws->variance);
-        printf("minimum   : %f\n", ws->minimum);
-        printf("maximum   : %f\n", ws->maximum);
-        printf("\n");
-
-        free(ws);
+        pprint_weight_stats(ws);
 }

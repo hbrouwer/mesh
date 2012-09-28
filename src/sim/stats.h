@@ -28,8 +28,8 @@ struct weight_stats
         double mean_abs;   /* absolute mean */
         double mean_dist;  /* mean distance */
         double variance;   /* variance */
-        double minimum;    /* maximum */
-        double maximum;    /* minimum */
+        double minimum;    /* minimum */
+        double maximum;    /* maximum */
 };
 
 struct weight_stats *weight_statistics(struct network *n);
