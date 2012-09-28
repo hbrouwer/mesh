@@ -16,16 +16,12 @@
  * limitations under the License.
  */
 
-#ifndef PRINT_H
-#define PRINT_H
+#ifndef PPRINT_H
+#define PPRINT_H
 
 #include "vector.h"
 
 void pprint_vector(struct vector *v);
-
 void pprint_value_as_color(int scheme, double v);
-void pprint_value_scheme_blue_red(double v);
-void pprint_value_scheme_blue_yellow(double v);
-void pprint_value_scheme_grayscale(double v);
 
-#endif /* PRINT_H */
+#endif /* PPRINT_H */
