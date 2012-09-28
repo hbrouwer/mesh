@@ -237,7 +237,12 @@ void bp_adjust_weights(struct network *n, struct group *g)
 {
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
-                
+
+                /* skip frozen projections */
+                if (p->frozen)
+                        continue;
+
+                /* adjust weights */
                 bp_adjust_projection_weights(n, g, p);
 
                 /*

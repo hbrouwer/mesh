@@ -92,7 +92,7 @@ struct network
 
         /*
          * ################################################################
-         * ## Data structure for unfolded feed forward networks.         ##
+         * ## Data structure for unfolded feed forward networks          ##
          * ################################################################
          */
 
@@ -101,7 +101,7 @@ struct network
 
         /*
          * ################################################################
-         * ## Flag from Event-Relation Potential correlate computation.  ##
+         * ## Flag for Event-Relation Potential correlate computation    ##
          * ################################################################
          */
 
@@ -164,6 +164,9 @@ struct projection
         struct group *to;           /* the group towards which is projected */
 
         struct matrix *weights;     /* projection weights */
+
+        bool frozen;                /* flags whether weights for this projection
+                                       are frozen */
 
         struct vector *error;       /* projection error for BP */
 
@@ -260,6 +263,8 @@ void load_group(char *buf, char *fmt, struct network *n, char *input,
 struct act *load_activation_function(char *act_fun);
 void load_bias(char *buf, char *fmt, struct network *n, char *msg);
 void load_projection(char *buf, char *fmt, struct network *n, char *msg);
+void load_freeze_projection(char *buf, char *fmt, struct network *n,
+                char *msg);
 void load_elman_projection(char *buf, char *fmt, struct network *n,
                 char *msg);
 void load_recurrent_group(char *buf, char *fmt, struct network *n,

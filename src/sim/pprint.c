@@ -27,6 +27,9 @@
 
 void pprint_vector(struct vector *v)
 {
+        /* 
+         * Determine vector minimum and maximum.
+         */
         double min = v->elements[0];
         double max = v->elements[0];
         
@@ -37,8 +40,8 @@ void pprint_vector(struct vector *v)
                         max = v->elements[i];
         }
 
+        /* scale vector values */
         for (int i = 0; i < v->size; i++) {
-               
                 /*
                  * Scale value into [0,1] interval.
                  */
@@ -63,7 +66,7 @@ void pprint_vector(struct vector *v)
                 else if (v->elements[i] >= -1.0 && v->elements[i] <= 1.0)
                         val = (v->elements[i] + 1.0) / 2.0;
 
-                pprint_value_as_color(SCHEME_BLUE_YELLOW, val);
+                pprint_value_as_color(SCHEME_BLUE_RED, val);
         }
         printf("\n");
 }
@@ -77,6 +80,10 @@ void pprint_value_as_color(int scheme, double v)
         if (scheme == SCHEME_GRAYSCALE)
                 pprint_value_scheme_grayscale(v);
 }
+
+/*
+ * Blue-to-red scheme. 
+ */
 
 void pprint_value_scheme_blue_red(double v)
 {
@@ -102,6 +109,10 @@ void pprint_value_scheme_blue_red(double v)
                 printf("\x1b[48;05;021m%s\x1b[0m", VALUE_SYMBOL);
 }
 
+/*
+ * Blue-to-yellow scheme.
+ */
+
 void pprint_value_scheme_blue_yellow(double v)
 {
         if (v >= 0.90)
@@ -125,6 +136,10 @@ void pprint_value_scheme_blue_yellow(double v)
         if (v < 0.10)
                 printf("\x1b[48;05;051m%s\x1b[0m", VALUE_SYMBOL);
 }
+
+/*
+ * Grayscale scheme.
+ */
 
 void pprint_value_scheme_grayscale(double v)
 {

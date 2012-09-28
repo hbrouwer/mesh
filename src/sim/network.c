@@ -452,6 +452,8 @@ struct network *load_network(char *filename)
 
                 load_projection(buf, "Projection %s %s", n,
                                 "added projection: [%s -> %s]");
+                load_freeze_projection(buf, "FreezeProjection %s %s", n,
+                                "froze projection: [%s -> %s]");
 
                 load_recurrent_group(buf, "RecurrentGroup %s", n,
                                 "added recurrent projection: [%s <=> %s]");
@@ -710,6 +712,38 @@ void load_projection(char *buf, char *fmt, struct network *n, char *msg)
                                 false);
         if (tg->inc_projs->num_elements == tg->out_projs->max_elements)
                 increase_projs_array_size(tg->inc_projs);
+
+        mprintf(msg, tmp1, tmp2);
+}
+
+void load_freeze_projection(char *buf, char *fmt, struct network *n,
+                char *msg)
+{
+        char tmp1[64], tmp2[64];
+        if (sscanf(buf, fmt, tmp1, tmp2) == 0)
+                return;
+
+        struct group *fg = find_group_by_name(n, tmp1);
+        struct group *tg = find_group_by_name(n, tmp2);
+
+        if (fg == NULL) {
+                eprintf("cannot freeze projection--'from' group (%s) unknown",
+                                tmp1);
+                return;
+        }
+        if (tg == NULL) {
+                eprintf("cannot freeze projection--'to' group (%s) unknown",
+                                tmp2);
+                return;
+        }
+
+        for (int i = 0; i < fg->out_projs->num_elements; i++)
+                if (fg->out_projs->elements[i]->to == tg)
+                        fg->out_projs->elements[i]->frozen = true;
+
+        for (int i = 0; i < tg->inc_projs->num_elements; i++)
+                if (tg->inc_projs->elements[i]->to == fg)
+                        tg->inc_projs->elements[i]->frozen = true;
 
         mprintf(msg, tmp1, tmp2);
 }
