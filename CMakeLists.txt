@@ -22,8 +22,8 @@ add_executable(mesh
         src/sim/network.c
         src/sim/vector.c)
 
-add_executable(cl
-        src/tools/cmp_layer.c
-        src/sim/math.c
-        src/sim/matrix.c
-        src/sim/vector.c)
+#add_executable(cl
+#        src/tools/cmp_layer.c
+#        src/sim/math.c
+#        src/sim/matrix.c
+#        src/sim/vector.c)

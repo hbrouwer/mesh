@@ -65,7 +65,7 @@ void pprint_matrix(struct matrix *m)
         for (int i = 0; i < m->rows; i++) {
                 for (int j = 0; j < m->cols; j++) {
                         double sv = pprint_scale_value(m->elements[i][j], min, max);
-                        pprint_value_as_color(sv, SCHEME_GRAY_ORANGE);
+                        pprint_value_as_color(sv, SCHEME_BLUE_RED);
                 }
                 printf("\n");
         }
