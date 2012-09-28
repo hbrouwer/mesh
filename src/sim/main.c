@@ -87,8 +87,7 @@ int main(int argc, char **argv)
                 goto exit_success;
 
         initialize_network(n);
-        if (!n->load_weights)
-                train_network(n);
+        train_network(n);
         if (n->learning_algorithm == train_network_bp) {
                 test_network(n);
                 if (n->compute_erps)

@@ -29,9 +29,9 @@ void compute_erp_correlates(struct network *n)
 
         /* find "Wernicke" and "Broca" */
         struct group *w, *b;
-        if (!(w = find_group_by_name(n, "hidden")))
+        if (!(w = find_group_by_name(n, "wernicke_hidden")))
                 goto error_out;
-        if (!(b = find_group_by_name(n, "output")))
+        if (!(b = find_group_by_name(n, "broca_hidden")))
                 goto error_out;
 
         struct vector *pw = create_vector(w->vector->size);
@@ -69,6 +69,11 @@ void compute_erp_correlates(struct network *n)
                         */
 
                         printf("\n%s\t\tN400: %f\t\tP600: %f\n", tokens, n400_correlate, p600_correlate);
+
+                        struct group *gr;
+                        gr = find_group_by_name(n, "wernicke");
+                        pprint_vector(gr->vector);
+                        printf("\n");
 
                         pprint_vector(pw);
                         pprint_vector(w->vector);

@@ -39,6 +39,9 @@ void randomize_matrix(struct matrix *m, double mu, double sigma);
 void binary_randomize_matrix(struct matrix *m);
 void zero_out_matrix(struct matrix *m);
 
+double matrix_minimum(struct matrix *m);
+double matrix_maximum(struct matrix *m);
+
 void print_matrix(struct matrix *m);
 
 #endif /* MATRIX_H */

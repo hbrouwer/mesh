@@ -4,7 +4,7 @@ project(mesh)
 
 include(CheckIncludeFile)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pendantic -Wall -O3")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pendantic -Wall -O3 -march=core2")
 
 add_executable(mesh
         src/sim/act.c

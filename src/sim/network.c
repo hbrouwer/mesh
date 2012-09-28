@@ -22,6 +22,7 @@
 #include "engine.h"
 #include "error.h"
 #include "network.h"
+#include "pprint.h"
 #include "stats.h"
 
 struct network *create_network(char *name)
@@ -52,8 +53,7 @@ void initialize_network(struct network *n)
 
         srand(n->random_seed);
 
-        if (!n->load_weights)
-                randomize_weight_matrices(n->input, n);
+        randomize_weight_matrices(n->input, n);
 
         /* initialize unfolded network */
         if (n->learning_algorithm == train_network_bptt)
@@ -941,55 +941,9 @@ void save_weight_matrices(struct group *g, FILE *fd)
  * ########################################################################
  */
 
-void print_units(struct network *n)
-{
-        printf("\n");
-        print_group_units_compact(n->output);
-        printf("\n");
-}
-
-void print_group_units(struct group *g)
-{
-        for (int i = 0; i < g->vector->size; i++)
-                printf("%s(%d)\t", g->name, i);
-        printf("\n");
-        print_vector(g->vector);
-        printf("\n");
-
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
-                struct group *ng = g->inc_projs->elements[i]->to;
-                print_group_units(ng);
-        }
-}
-
-void print_group_units_compact(struct group *g)
-{
-        printf("%s:\n", g->name);
-        printf("[ ");
-        for (int i = 0; i < g->vector->size; i++) {
-                double val = g->vector->elements[i];
-
-                print_value_as_symbols(val);
-
-                if (i < g->vector->size - 1)
-                        printf (" | ");
-        }
-
-        printf(" ]\n\n");
-
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
-                struct group *ng = g->inc_projs->elements[i]->to;
-                print_group_units_compact(ng);
-        }
-}
-
 void print_weights(struct network *n)
 {
-        printf("\n");
-        struct weight_stats *ws = gather_weight_stats(n);
-        double range = ws->maximum - ws->minimum;
-        print_projection_weights_compact(range, ws->minimum, n->output);
-        printf("\n");
+        print_projection_weights(n->output);
 }
 
 void print_projection_weights(struct group *g)
@@ -999,7 +953,7 @@ void print_projection_weights(struct group *g)
 
                 printf("%s -> %s\n", ng->name, g->name);
 
-                print_matrix(g->inc_projs->elements[i]->weights);
+                pprint_matrix(g->inc_projs->elements[i]->weights);
 
                 printf("\n");
 
@@ -1007,58 +961,9 @@ void print_projection_weights(struct group *g)
         }
 }
 
-void print_projection_weights_compact(double range, double minimum, 
-                struct group *g)
-{
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
-                struct group *ng = g->inc_projs->elements[i]->to;
-
-                printf("%s -> %s\n", ng->name, g->name);
-
-                struct matrix *m = g->inc_projs->elements[i]->weights;
-
-                for (int r = 0; r < m->rows; r++) {
-                        for (int c = 0; c < m->cols; c++) {
-                                double val = m->elements[r][c] + fabs(minimum);
-
-                                print_value_as_symbols(val / range);
-                        }
-                        printf("\n");
-                }
-                
-                printf("\n");
-
-                print_projection_weights_compact(range, minimum, ng);
-        }
-}
-
-void print_value_as_symbols(double value)
-{
-        if (value >= 0.90)
-                printf("\x1b[48;05;196m  \x1b[0m");
-        if (value >= 0.80 && value < 0.90)
-                printf("\x1b[48;05;160m  \x1b[0m");
-        if (value >= 0.70 && value < 0.80)
-                printf("\x1b[48;05;124m  \x1b[0m");
-        if (value >= 0.60 && value < 0.70)
-                printf("\x1b[48;05;88m  \x1b[0m");
-        if (value >= 0.50 && value < 0.60)
-                printf("\x1b[48;05;52m  \x1b[0m");
-        if (value >= 0.40 && value < 0.50)
-                printf("\x1b[48;05;21m  \x1b[0m");
-        if (value >= 0.30 && value < 0.40)
-                printf("\x1b[48;05;20m  \x1b[0m");
-        if (value >= 0.20 && value < 0.30)
-                printf("\x1b[48;05;19m  \x1b[0m");
-        if (value >= 0.10 && value < 0.20)
-                printf("\x1b[48;05;18m  \x1b[0m");
-        if (value < 0.10)
-                printf("\x1b[48;05;17m  \x1b[0m");
-}
-
 void print_weight_stats(struct network *n)
 {
-        struct weight_stats *ws = gather_weight_stats(n);
+        struct weight_stats *ws = weight_statistics(n);
 
         printf("___weight statistics___\n");
         printf("mean      : %f\n", ws->mean);

@@ -108,6 +108,30 @@ void zero_out_matrix(struct matrix *m)
                         m->elements[i][j] = 0.0;
 }
 
+double matrix_minimum(struct matrix *m)
+{
+        double min = m->elements[0][0];
+
+        for (int i = 0; i < m->rows; i++)
+                for (int j = 0; j < m->cols; j++)
+                        if (m->elements[i][j] < min)
+                                min = m->elements[i][j];
+
+        return min;
+}
+
+double matrix_maximum(struct matrix *m)
+{
+        double max = m->elements[0][0];
+
+        for (int i = 0; i < m->rows; i++)
+                for (int j = 0; j < m->cols; j++)
+                        if (m->elements[i][j] > max)
+                                max = m->elements[i][j];
+
+        return max;
+}
+
 void print_matrix(struct matrix *m)
 {
         for (int i = 0; i < m->rows; i++) {

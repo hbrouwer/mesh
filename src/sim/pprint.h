@@ -20,8 +20,12 @@
 #define PPRINT_H
 
 #include "vector.h"
+#include "matrix.h"
 
 void pprint_vector(struct vector *v);
-void pprint_value_as_color(int scheme, double v);
+void pprint_matrix(struct matrix *m);
+
+double pprint_scale_value(double v, double min, double max);
+void pprint_value_as_color(double v, int scheme);
 
 #endif /* PPRINT_H */

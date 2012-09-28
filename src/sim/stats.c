@@ -21,80 +21,113 @@
 #include "matrix.h"
 #include "stats.h"
 
-struct weight_stats *gather_weight_stats(struct network *n)
+/*
+ * ########################################################################
+ * ## Weight statistics                                                  ##
+ * ########################################################################
+ */
+
+/*
+ * Compute weight statistics.
+ */ 
+
+struct weight_stats *weight_statistics(struct network *n)
 {
         struct weight_stats *ws;
-
         if (!(ws = malloc(sizeof(struct weight_stats))))
                 goto error_out;
         memset(ws, 0, sizeof(struct weight_stats));
 
-        gather_proj_weight_stats(ws, n->output);
+        /* collect weight statistics */
+        collect_weight_statistics(ws, n->output);
 
-        ws->mean = ws->mean / ws->num_weights;
-        ws->mean_abs = ws->mean_abs / ws->num_weights;
+        /* compute means */
+        ws->mean /= ws->num_weights;
+        ws->mean_abs /= ws->num_weights;
 
-        gather_proj_weight_md_stats(ws, n->output);
+        /* collect mean dependent statistics */
+        collect_mean_dependent_ws(ws, n->output);
 
-        ws->mean_dist = ws->mean_dist / ws->num_weights;
-        ws->variance = ws->variance / (ws->num_weights - 1); /* <- sample variance */
-
-        /*
-        if (ws->num_weights > 1) {
-                ws->mean_dist =
-                        ws->mean_dist / ws->num_weights;
-                ws->variance =
-                        ws->variance / (ws->num_weights - 1);
-        } else {
-                ws->variance = 0.0;
-        }
-        */
+        /* compute mean dependent measures */
+        ws->mean_dist /= ws->num_weights;
+        ws->variance /= (ws->num_weights - 1);
 
         return ws;
 
 error_out:
-        perror("[gather_weight_stats()]");
+        perror("[weight_statistics()]");
         return NULL;
 }
 
-void gather_proj_weight_stats(struct weight_stats *ws, struct group *g)
+/*
+ * Collect weight statistics.
+ */
+
+void collect_weight_statistics(struct weight_stats *ws, struct group *g)
 {
+        /*
+         * Recursively collect weight statistics for all groups that
+         * project to the current group.
+         */ 
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
-                struct matrix *m = p->weights;
-                for (int r = 0; r < m->rows; r++) {
-                        for (int c = 0; c < m->cols; c++) {
-                                ws->num_weights++;
-                                
-                                ws->mean += m->elements[r][c];
-                                ws->mean_abs += fabs(m->elements[r][c]);
-                                
-                                if (m->elements[r][c] < ws->minimum)
-                                        ws->minimum = m->elements[r][c];
-                                if (m->elements[r][c] > ws->maximum)
-                                        ws->maximum = m->elements[r][c];
+                struct matrix *w = p->weights;
 
+                for (int r = 0; r < w->rows; r++) {
+                        for (int c = 0; c < w->cols; c++) {
+                                /* number of weights */
+                                ws->num_weights++;
+
+                                /* means */
+                                ws->mean += w->elements[r][c];
+                                ws->mean_abs += fabs(w->elements[r][c]);
+
+                                /* minimum */
+                                if (w->elements[r][c] < ws->minimum)
+                                        ws->minimum = w->elements[r][c];
+
+                                /* maximum */
+                                if (w->elements[r][c] > ws->maximum)
+                                        ws->maximum = w->elements[r][c];
                         }
                 }
 
-                gather_proj_weight_stats(ws, g->inc_projs->elements[i]->to);
+                /*
+                 * Collect weight statistics for all groups
+                 * that project to this group.
+                 */
+                collect_weight_statistics(ws, p->to);
         }
 }
 
-void gather_proj_weight_md_stats(struct weight_stats *ws, struct group *g)
+/*
+ * Collect mean dependent weight statistics.
+ */
+
+void collect_mean_dependent_ws(struct weight_stats *ws, struct group *g)
 {
+        /* 
+         * Recursively collect mean dependent weight statistics for all
+         * groups that project to the current group.
+         */
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
-                struct matrix *m = p->weights;
-                for (int r = 0; r < m->rows; r++) {
-                        for (int c = 0; c < m->cols; c++) {
-                                ws->mean_dist +=
-                                        fabs(m->elements[r][c] - ws->mean);
-                                ws->variance +=
-                                        pow(m->elements[r][c] - ws->mean, 2.0);
+                struct matrix *w = p->weights;
+
+                for (int r = 0; r < w->rows; r++) {
+                        for (int c = 0; c < w->cols; c++) {
+                                /* mean distance */
+                                ws->mean_dist += fabs(w->elements[r][c] - ws->mean);
+
+                                /* variance */
+                                ws->variance += pow(w->elements[r][c] - ws->mean, 2.0);
                         }
                 }
 
-                gather_proj_weight_md_stats(ws, g->inc_projs->elements[i]->to);
+                /*
+                 * Collect mean dependent weight statistics for all
+                 * groups that project to this group.
+                 */
+                collect_mean_dependent_ws(ws, p->to);
         }
 }

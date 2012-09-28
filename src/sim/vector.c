@@ -67,6 +67,28 @@ void zero_out_vector(struct vector *v)
                 v->elements[i] = 0.0;
 }
 
+double vector_minimum(struct vector *v)
+{
+        double min = v->elements[0];
+
+        for (int i = 0; i < v->size; i++)
+                if (v->elements[i] < min)
+                        min = v->elements[i];
+
+        return min;
+}
+
+double vector_maximum(struct vector *v)
+{
+        double max = v->elements[0];
+
+        for (int i = 0; i < v->size; i++)
+                if (v->elements[i] > max)
+                        max = v->elements[i];
+
+        return max;
+}
+
 void print_vector(struct vector *v)
 {
         for (int i = 0; i < v->size; i++)

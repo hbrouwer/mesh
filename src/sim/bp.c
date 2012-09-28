@@ -237,13 +237,19 @@ void bp_adjust_weights(struct network *n, struct group *g)
 {
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
-
-                /* skip frozen projections */
-                if (p->frozen)
-                        continue;
-
-                /* adjust weights */
-                bp_adjust_projection_weights(n, g, p);
+                /*
+                 * Adjust weights if projection is not frozen.
+                 */
+                if (!p->frozen)
+                        bp_adjust_projection_weights(n, g, p);
+        
+                /*
+                 * Make a copy of the weight deltas for the application of
+                 * momentum and weight decay upon next update, and reset the
+                 * the current weight deltas.
+                 */
+                copy_matrix(p->prev_deltas, p->deltas);
+                zero_out_matrix(p->deltas);
 
                 /*
                  * During BPTT, we want to only adjust weights
@@ -263,7 +269,7 @@ void bp_adjust_weights(struct network *n, struct group *g)
 void bp_adjust_projection_weights(struct network *n, struct group *g,
                 struct projection *p)
 {
-        for (int i = 0; i < p->to->vector->size; i++)
+        for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
                         /*
                          * Adjust the weight between unit i in group g'
@@ -292,13 +298,5 @@ void bp_adjust_projection_weights(struct network *n, struct group *g,
                         p->weights->elements[i][j] -=
                                 n->weight_decay * p->prev_deltas->elements[i][j];
                 }
-
-
-        /*
-         * Make a copy of the weight deltas for the application of momentum
-         * and weight decay upon next update, and reset the the current
-         * weight deltas.
-         */
-        copy_matrix(p->prev_deltas, p->deltas);
-        zero_out_matrix(p->deltas);
+        }
 }

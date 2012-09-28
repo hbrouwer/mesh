@@ -23,17 +23,17 @@
 
 struct weight_stats
 {
-        int num_weights;
-        double mean;
-        double mean_abs;
-        double mean_dist;
-        double variance;
-        double minimum;
-        double maximum;
+        int num_weights;   /* number of weights */
+        double mean;       /* mean */
+        double mean_abs;   /* absolute mean */
+        double mean_dist;  /* mean distance */
+        double variance;   /* variance */
+        double minimum;    /* maximum */
+        double maximum;    /* minimum */
 };
 
-struct weight_stats *gather_weight_stats(struct network *n);
-void gather_proj_weight_stats(struct weight_stats *ws, struct group *g);
-void gather_proj_weight_md_stats(struct weight_stats *ws, struct group *g);
+struct weight_stats *weight_statistics(struct network *n);
+void collect_weight_statistics(struct weight_stats *ws, struct group *g);
+void collect_mean_dependent_ws(struct weight_stats *ws, struct group *g);
 
 #endif /* STATS_H */

@@ -27,62 +27,84 @@
 #define SCHEME_SPACEPIGS 3
 #define SCHEME_MOODY_BLUES 4
 #define SCHEME_FOR_JOHN 5
+#define SCHEME_GRAY_ORANGE 6
 
 int PALETTE_BLUE_RED[10]    = {196, 160, 124, 88, 52, 17, 18, 19, 20, 21};
 int PALETTE_BLUE_YELLOW[10] = {226, 220, 214, 208, 202, 27, 33, 39, 45, 51};
-int PALETTE_GRAYSCALE[10]   = {255, 253, 251, 249, 247, 245, 243, 239, 237};
+int PALETTE_GRAYSCALE[10]   = {255, 253, 251, 249, 247, 245, 243, 241, 239, 237};
 int PALETTE_SPACEPIGS[10]   = {82, 77, 113, 108, 144, 139, 175, 170, 206, 201};
+int PALETTE_MOODY_BLUES[10] = {129, 128, 127, 91, 90, 55, 54, 19, 20, 21};
 int PALETTE_FOR_JOHN[10]    = {46, 40, 34, 28, 64, 100, 136, 166, 202, 196};
+int PALETTE_GRAY_ORANGE[10] = {220, 221, 222, 223, 224, 255, 253, 251, 249, 247};
+
+/*
+ * Pretty print vector.
+ */
 
 void pprint_vector(struct vector *v)
 {
-        /* 
-         * Determine vector minimum and maximum.
-         */
-        double min = v->elements[0];
-        double max = v->elements[0];
-        
-        for (int i = 1; i < v->size; i++) {
-                if (v->elements[i] < min)
-                        min = v->elements[i];
-                if (v->elements[i] > max)
-                        max = v->elements[i];
-        }
-
-        /* scale vector values */
+        double min = vector_minimum(v);
+        double max = vector_maximum(v);
+       
         for (int i = 0; i < v->size; i++) {
-                /*
-                 * Scale value into [0,1] interval.
-                 */
-                double val;
-                if (max > min)
-                        val = (v->elements[i] - min) / (max - min);
-                /*
-                 * If we are dealing with a one-unit vector, or with a
-                 * vector of which all units have the same value, we
-                 * somehow have to determine whether this value is high
-                 * or low.
-                 *
-                 * If value is in the interval [0,1], the scaled value
-                 * is simply the original value:
-                 */
-                else if (v->elements[i] >= 0.0 && v->elements[i] <= 1.0)
-                        val = v->elements[i];
-                /*
-                 * If value is in the interval [-1,1], we scale the value
-                 * into the [0,1] interval.
-                 */
-                else if (v->elements[i] >= -1.0 && v->elements[i] <= 1.0)
-                        val = (v->elements[i] + 1.0) / 2.0;
-
-                pprint_value_as_color(SCHEME_SPACEPIGS, val);
+                double sv = pprint_scale_value(v->elements[i], min, max);
+                pprint_value_as_color(sv, SCHEME_BLUE_RED);
         }
         printf("\n");
 }
 
-void pprint_value_as_color(int scheme, double v)
+/*
+ * Pretty print matrix.
+ */
+
+void pprint_matrix(struct matrix *m)
+{
+        double min = matrix_minimum(m);
+        double max = matrix_maximum(m);
+
+        for (int i = 0; i < m->rows; i++) {
+                for (int j = 0; j < m->cols; j++) {
+                        double sv = pprint_scale_value(m->elements[i][j], min, max);
+                        pprint_value_as_color(sv, SCHEME_GRAY_ORANGE);
+                }
+                printf("\n");
+        }
+}
+
+double pprint_scale_value(double v, double min, double max)
+{
+        double sv;
+
+        /*
+         * Scale value into [0,1] interval.
+         */
+        if (max > min)
+                sv = (v - min) / (max - min);
+        /*
+         * If we are dealing with a one-unit vector, or with a
+         * vector of which all units have the same value, we
+         * somehow have to determine whether this value is high
+         * or low.
+         *
+         * If value is in the interval [0,1], the scaled value
+         * is simply the original value:
+         */
+        else if (v >= 0.0 && v <= 1.0)
+                sv = v;
+        /*
+         * If value is in the interval [-1,1], we scale the value
+         * into the [0,1] interval.
+         */
+        else if (v >= -1.0 && v <= 1.0)
+                sv = (v + 1.0) / 2.0;
+
+        return sv;
+}
+
+void pprint_value_as_color(double v, int scheme)
 {
         int *palette;
+
         if (scheme == SCHEME_BLUE_RED)
                 palette = PALETTE_BLUE_RED;
         if (scheme == SCHEME_BLUE_YELLOW)
@@ -91,12 +113,12 @@ void pprint_value_as_color(int scheme, double v)
                 palette = PALETTE_GRAYSCALE;
         if (scheme == SCHEME_SPACEPIGS)
                 palette = PALETTE_SPACEPIGS;
-        /*
         if (scheme == SCHEME_MOODY_BLUES)
-                pprint_value_scheme_moody_blues(v);
-                */
+                palette = PALETTE_MOODY_BLUES;
         if (scheme == SCHEME_FOR_JOHN)
                 palette = PALETTE_FOR_JOHN;
+        if (scheme == SCHEME_GRAY_ORANGE)
+                palette = PALETTE_GRAY_ORANGE;
 
         if (v >= 0.90)
                 printf("\x1b[48;05;%dm%s\x1b[0m", palette[0], VALUE_SYMBOL);

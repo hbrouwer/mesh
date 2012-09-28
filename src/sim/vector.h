@@ -32,6 +32,9 @@ void copy_vector(struct vector *v1, struct vector *v2);
 void randomize_vector(struct vector *v, double mu, double sigma);
 void zero_out_vector(struct vector *v);
 
+double vector_minimum(struct vector *v);
+double vector_maximum(struct vector *v);
+
 void print_vector(struct vector *v);
 
 #endif /* VECTOR_H */

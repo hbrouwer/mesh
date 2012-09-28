@@ -279,14 +279,8 @@ void save_weights(struct network *n);
 void save_weight_matrices(struct group *g, FILE *fd);
 
 /* experimental */
-void print_units(struct network *n);
-void print_group_units(struct group *g);
-void print_group_units_compact(struct group *g);
 void print_weights(struct network *n);
 void print_projection_weights(struct group *g);
-void print_projection_weights_compact(double range, double minimum,
-                struct group *g);
-void print_value_as_symbols(double value);
 void print_weight_stats(struct network *n);
 
 #endif /* NETWORK_H */
