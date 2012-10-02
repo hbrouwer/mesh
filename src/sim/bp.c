@@ -55,7 +55,7 @@
  * We can repeat this procedure to compute the EA quantities for as many
  * preceding groups as required. Provided the error derivative EA_j for
  * a unit j, we can also obtain EI_j for that unit, which we can in turn use
- * to compute how fast the error changes with respect to a weight w_ij on
+ * to compute how fast the error changes with respect to a weight W_ij on
  * the connection between unit j in the output layer, and unit i in
  * a preceding layer:
  *
@@ -69,17 +69,26 @@
  *
  * where DW_ij is defined as:
  *
- *     DW_ij(t) = e * EW_ij + a * DW_ij(t-1) - d * DW_ij(t-1)
+ *     DW_ij(t) = e * EW_ij + a * DW_ij(t-1) - d * W_ij
  *
- * and e is a learning rate, a is momentum, d is weight decay, and  
- * DW_ij(t-1) is the previous weight change on the connection between unit i
- * and unit j.
+ * and where, in turn, e is a learning rate coefficient, a is a momentum
+ * coeffecieint, d is weight decay coefficient, and  DW_ij(t-1) is the
+ * previous weight change on the connection between unit i and unit j.
  *
  * References
  *
  * Rumelhart, D. E., Hinton, G. E., & Williams, R. J. (1986). Learning
  *     representations by back-propagating errors. Nature, 323, 553-536.
  */
+
+/*
+ * Flat spot correction constant. See:
+ *
+ * Fahlman, S. E. (1988). An empirical study of learning speed in back-
+ *     propagation networks. Technical report CMU-CS-88-162. School of
+ *     Computer Science, Caernie Mellon University, Pittsburgh, PA 15213.
+ */
+#define BP_FLAT_SPOT_CORRECTION 0.1
 
 /*
  * ########################################################################
@@ -103,7 +112,7 @@ struct vector *bp_output_error(struct network *n)
         if (n->error->fun == error_sum_of_squares) {
                 for (int i = 0; i < e->size; i++) {
                         struct group *g = n->output;
-                        e->elements[i] *= g->act->deriv(g->vector, i);
+                        e->elements[i] *= g->act->deriv(g->vector, i) + BP_FLAT_SPOT_CORRECTION;
                 }
         }
 
@@ -127,7 +136,7 @@ void bp_backpropagate_error(struct network *n, struct group *g,
                 struct vector *e)
 {
         /*
-         * For each group that projects to g, compute the error derivates
+         * For each group that projects to g, compute the error derivatives
          * EA and weight deltas EW with respect to g.
          */
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
@@ -220,7 +229,7 @@ struct vector *bp_group_error(struct network *n, struct group *g)
                  */
                 double act_deriv;
                 if (g != n->input) {
-                        act_deriv = g->act->deriv(g->vector, i);
+                        act_deriv = g->act->deriv(g->vector, i) + BP_FLAT_SPOT_CORRECTION;
                 } else {
                         act_deriv = g->vector->elements[i];
                 }
@@ -291,22 +300,22 @@ void bp_adjust_projection_weights(struct network *n, struct group *g,
                          */
                         double weight_change = n->learning_rate
                                 * p->deltas->elements[i][j];
-
+                        
                         /*
                          * Next, we apply momentum:
                          *
-                         * W_ij = W_ij + a * DW_ij(t-1)
+                         * DW_ij = DW_ij + a * DW_ij(t-1)
                          */
                         weight_change += n->momentum
                                 * p->prev_weight_changes->elements[i][j];
-
+                        
                         /*
                          * Finally, we apply weight decay:
                          *
-                         * W_ij = W_ij - d * DW_ij(t-1)
+                         * DW_ij = DW_ij - d * W_ij
                          */
-                        weight_change -= n->weight_decay
-                                * p->prev_weight_changes->elements[i][j];
+                        weight_change -= n->weight_decay 
+                                * p->weights->elements[i][j];
 
                         /*
                          * Adjust the weight:
