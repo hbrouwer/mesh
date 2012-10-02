@@ -47,15 +47,15 @@ int main(int argc, char **argv)
 
                 if (strcmp(argv[i], "--save_weights") == 0) {
                         if (++i < argc) {
-                                n->weights_file = argv[i];
                                 n->save_weights = true;
+                                n->save_weights_file = argv[i];
                         }
                 }
 
                 if (strcmp(argv[i], "--load_weights") == 0) {
                         if (++i < argc) {
-                                n->weights_file = argv[i];
                                 n->load_weights = true;
+                                n->load_weights_file = argv[i];
                         }
                 }
 

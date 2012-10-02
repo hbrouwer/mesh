@@ -62,6 +62,8 @@ struct network
 
         double error_threshold;     /* error threshold */
 
+        int batch_size;             /* size of batch after which to update
+                                       weights */
         int max_epochs;             /* maximum number of training epochs */
         int report_after;           /* number of training epochs after
                                        which to report status */
@@ -84,11 +86,13 @@ struct network
         int training_order;         /* order in which training items are
                                        presented */
 
-        char *weights_file;         /* weights file name */
         bool save_weights;          /* flags whether the weight matrices should
                                        be saved after training */
+        char *save_weights_file;    /* file to which weights should be saved */
+
         bool load_weights;          /* flags whether weight matrices should be
                                        loaded */
+        char *load_weights_file;    /* file from which weights should be loaded */
 
         /*
          * ################################################################
@@ -171,8 +175,9 @@ struct projection
         struct vector *error;       /* projection error for BP */
 
         struct matrix *deltas;      /* projection deltas for BP */
-        struct matrix *prev_deltas; /* previous projection deltas for momentum
-                                       in BP */
+        struct matrix *prev_deltas; /* previous projection deltas for BP */
+        struct matrix               /* previous weight changes */
+                *prev_weight_changes;
 
         bool recurrent;             /* flags whether this is a recurrent
                                        projection for BPTT */
@@ -243,6 +248,7 @@ struct projection *create_projection(
                 struct vector *error,
                 struct matrix *deltas,
                 struct matrix *prev_deltas,
+                struct matrix *prev_weight_changes,
                 bool recurrent);
 void dispose_projection(struct projection *p);
 

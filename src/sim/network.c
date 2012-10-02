@@ -40,6 +40,11 @@ struct network *create_network(char *name)
 
         n->groups = create_group_array(MAX_GROUPS);
 
+        block_size = sizeof(struct error);
+        if (!(n->error = malloc(block_size)))
+                goto error_out;
+        memset(n->error, 0, block_size);
+
         return n;
 
 error_out:
@@ -54,6 +59,9 @@ void initialize_network(struct network *n)
         srand(n->random_seed);
 
         randomize_weight_matrices(n->input, n);
+
+        if (n->batch_size == 0)
+                n->batch_size = n->training_set->num_elements;
 
         /* initialize unfolded network */
         if (n->learning_algorithm == train_network_bptt)
@@ -73,6 +81,7 @@ void initialize_network(struct network *n)
 void dispose_network(struct network *n)
 {
         free(n->name);
+        free(n->error);
         /* dispose_group_array(n->groups); */
 
         if (n->unfolded_net)
@@ -196,16 +205,19 @@ void attach_bias_group(struct network *n, struct group *g)
         struct matrix *prev_deltas = create_matrix(
                         bg->vector->size,
                         g->vector->size);
+        struct matrix *prev_weight_changes = create_matrix(
+                        bg->vector->size,
+                        g->vector->size);
 
         bg->out_projs->elements[bg->out_projs->num_elements++] =
                 create_projection(g, weights, error, deltas, prev_deltas,
-                                false);
+                                prev_weight_changes, false);
         if (bg->out_projs->num_elements == bg->out_projs->max_elements)
                 increase_projs_array_size(bg->out_projs);
         
         g->inc_projs->elements[g->inc_projs->num_elements++] =
                 create_projection(bg, weights, error, deltas, prev_deltas,
-                                false);
+                                prev_weight_changes, false);
         if (g->inc_projs->num_elements == g->out_projs->max_elements)
                 increase_projs_array_size(g->inc_projs);
 
@@ -345,6 +357,7 @@ struct projection *create_projection(
                 struct vector *error,
                 struct matrix *deltas,
                 struct matrix *prev_deltas,
+                struct matrix *prev_weight_changes,
                 bool recurrent)
 {
         struct projection *p;
@@ -358,6 +371,7 @@ struct projection *create_projection(
         p->error = error;
         p->deltas = deltas;
         p->prev_deltas = prev_deltas;
+        p->prev_weight_changes = prev_weight_changes;
         p->recurrent = recurrent;
 
         return p;
@@ -373,6 +387,7 @@ void dispose_projection(struct projection *p)
         dispose_vector(p->error);
         dispose_matrix(p->deltas);
         dispose_matrix(p->prev_deltas);
+        dispose_matrix(p->prev_weight_changes);
 
         free(p);
 }
@@ -431,6 +446,8 @@ struct network *load_network(char *filename)
                 load_double_parameter(buf, "ErrorThreshold %lf", &n->error_threshold,
                                 "set error threshold: [%lf]");
 
+                load_int_parameter(buf, "BatchSize %d", &n->batch_size,
+                                "set batch size: [%d]");
                 load_int_parameter(buf, "MaxEpochs %d", &n->max_epochs,
                                 "set maximum number of epochs: [%d]");
                 load_int_parameter(buf, "ReportAfter %d", &n->report_after,
@@ -515,36 +532,25 @@ void load_learning_algorithm(char *buf, char *fmt, struct network *n,
 void load_error_function(char *buf, char *fmt, struct network *n,
                 char *msg)
 {
-        struct error *e;
-        if (!(e = malloc(sizeof(struct error))))
-                goto error_out;
-        memset(e, 0, sizeof(struct error));
-
         char tmp[64];
         if (sscanf(buf, fmt, tmp) == 0)
                 return;
 
         /* sum of squares */
         if (strcmp(tmp, "sse") == 0) {
-                e->fun = error_sum_of_squares;
-                e->deriv = error_sum_of_squares_deriv;
+                n->error->fun = error_sum_of_squares;
+                n->error->deriv = error_sum_of_squares_deriv;
         }
 
         /* cross-entropy */
         if (strcmp(tmp, "cee") == 0) {
-                e->fun = error_cross_entropy;
-                e->deriv = error_cross_entropy_deriv;
+                n->error->fun = error_cross_entropy;
+                n->error->deriv = error_cross_entropy_deriv;
         }
-
-        n->error = e;
 
         if (n->error)
                 mprintf(msg, tmp);
 
-        return;
-
-error_out:
-        perror("[load_error_function()]");
         return;
 }
 
@@ -700,16 +706,19 @@ void load_projection(char *buf, char *fmt, struct network *n, char *msg)
         struct matrix *prev_deltas = create_matrix(
                         fg->vector->size,
                         tg->vector->size);
+        struct matrix *prev_weight_changes = create_matrix(
+                        fg->vector->size,
+                        tg->vector->size);
 
         fg->out_projs->elements[fg->out_projs->num_elements++] =
                 create_projection(tg, weights, error, deltas, prev_deltas,
-                                false);
+                                prev_weight_changes, false);
         if (fg->out_projs->num_elements == fg->out_projs->max_elements)
                 increase_projs_array_size(fg->out_projs);
         
         tg->inc_projs->elements[tg->inc_projs->num_elements++] =
                 create_projection(fg, weights, error, deltas, prev_deltas,
-                                false);
+                                prev_weight_changes, false);
         if (tg->inc_projs->num_elements == tg->out_projs->max_elements)
                 increase_projs_array_size(tg->inc_projs);
 
@@ -836,7 +845,7 @@ struct group *find_group_by_name(struct network *n, char *name)
 void load_weights(struct network *n)
 {
         FILE *fd;
-        if (!(fd = fopen(n->weights_file, "r")))
+        if (!(fd = fopen(n->load_weights_file, "r")))
                 goto error_out;
 
         char buf[4096];
@@ -890,7 +899,7 @@ error_out:
 void save_weights(struct network *n)
 {
         FILE *fd;
-        if (!(fd = fopen(n->weights_file, "w")))
+        if (!(fd = fopen(n->save_weights_file, "w")))
                 goto error_out;
 
         save_weight_matrices(n->input, fd);

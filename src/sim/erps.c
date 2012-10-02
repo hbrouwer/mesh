@@ -29,7 +29,7 @@ void compute_erp_correlates(struct network *n)
 
         /* find "Wernicke" and "Broca" */
         struct group *w, *b;
-        if (!(w = find_group_by_name(n, "wernicke_hidden")))
+        if (!(w = find_group_by_name(n, "wernicke")))
                 goto error_out;
         if (!(b = find_group_by_name(n, "broca_hidden")))
                 goto error_out;
@@ -53,6 +53,7 @@ void compute_erp_correlates(struct network *n)
 
                 for (int j = 0; j < e->num_events; j++) {
                         copy_vector(n->input->vector, e->inputs[j]);
+                   
                         feed_forward(n, n->input);
 
                         double n400_correlate = compute_n400_correlate(w->vector, pw);
@@ -75,9 +76,23 @@ void compute_erp_correlates(struct network *n)
                         pprint_vector(gr->vector);
                         printf("\n");
 
+                        if (j == e->num_events - 1) {
+                        double diffsum = 0.0;
+                        for (int i = 0; i < w->vector->size; i++) {
+                                diffsum += fabs(pw->elements[i] - w->vector->elements[i]);
+                                printf("%.2f --> %.2f | %.2f\n", pw->elements[i], w->vector->elements[i],
+                                                fabs(pw->elements[i] - w->vector->elements[i]));
+                        }
+                        printf("diff_sum: %.2f\n", diffsum / w->vector->size);
+                        }
+
+
+                                        /*
                         pprint_vector(pw);
                         pprint_vector(w->vector);
+                        */
 
+                        /*
                         if(e->targets[j]) {
                                 printf("\n");
                                 printf("T: ");
@@ -86,6 +101,7 @@ void compute_erp_correlates(struct network *n)
                                 pprint_vector(n->output->vector);
                                 printf("\n\n");
                         }
+                        */
 
                         copy_vector(pw, w->vector);
                         copy_vector(pb, b->vector);
@@ -104,11 +120,14 @@ error_out:
 /*
 double compute_n400_correlate(struct vector *v, struct vector *pv)
 {
-        double sa = 0.0;
-        for (int i = 0; i < v->size; i++)
-                sa += v->elements[i] + 1;
+        double csa = 0.0;
+        double psa = 0.0;
+        for (int i = 0; i < v->size; i++) {
+                csa += fabs(v->elements[i]);
+                psa += fabs(pv->elements[i]);
+        }
 
-        return sa / v->size;
+        return (csa / v->size) - (psa / v->size);
 }
 */
 

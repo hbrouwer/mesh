@@ -40,22 +40,27 @@ void train_network(struct network *n)
 
 void train_network_bp(struct network *n)
 {
+        int elem = 0;
         for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
                 double me = 0.0;
-                
+
                 /* determine order of training items */
-                struct set *training_set;
-                if (n->training_order == TRAIN_ORDERED)
-                        training_set = n->training_set;
                 if (n->training_order == TRAIN_PERMUTED)
-                        training_set = permute_set(n->training_set);
+                        permute_set(n->training_set);
                 if (n->training_order == TRAIN_RANDOMIZED)
-                        training_set = randomize_set(n->training_set);
+                        randomize_set(n->training_set);
 
                 /* present all training items */
-                for (int i = 0; i < training_set->num_elements; i++) {
-                        struct element *e = training_set->elements[i];
+                for (int i = 0; i < n->batch_size; i++) {
+                        struct element *e = n->training_set->elements[elem++];
 
+                        /* 
+                         * Restart at the beginning of the training
+                         * set, if required.
+                         */
+                        if (elem == n->training_set->num_elements)
+                                elem = 0;
+                        
                         /* reset context groups */
                         if (n->srn)
                                 reset_context_groups(n);
@@ -73,7 +78,7 @@ void train_network_bp(struct network *n)
                                         struct vector *error = bp_output_error(n);
                                         bp_backpropagate_error(n, n->output, error);
                                         dispose_vector(error);
-                                        
+
                                         /* compute error */
                                         me += n->error->fun(n);
                                 }
@@ -81,7 +86,7 @@ void train_network_bp(struct network *n)
                 }
 
                 /* compute and report mean error */
-                me /= training_set->num_elements;
+                me /= n->batch_size;
                 if (epoch == 1 || epoch % n->report_after == 0)
                         pprintf("epoch: [%d] | error: [%lf]", epoch, me);
 
@@ -102,27 +107,34 @@ void train_network_bp(struct network *n)
  * This function implements backpropagation through time (BPTT) training.
  */
 
+// XXX: As always -- check logic...
+
 void train_network_bptt(struct network *n)
 {
         struct ffn_unfolded_network *un = n->unfolded_net;
         struct network *nsp = un->stack[0];
 
+        int elem = 0;
         for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
                 double me = 0.0;
                 int his = 0;
 
                 /* determine order of training items */
-                struct set *training_set;
-                if (n->training_order == TRAIN_ORDERED)
-                        training_set = n->training_set;
                 if (n->training_order == TRAIN_PERMUTED)
-                        training_set = permute_set(n->training_set);
+                        permute_set(n->training_set);
                 if (n->training_order == TRAIN_RANDOMIZED)
-                        training_set = randomize_set(n->training_set);
+                        randomize_set(n->training_set);
 
                 /* present all training items */
-                for (int i = 0; i < training_set->num_elements; i++) {
-                        struct element *e = training_set->elements[i];
+                for (int i = 0; i < n->batch_size; i++) {
+                        struct element *e = n->training_set->elements[elem++];
+
+                        /* 
+                         * Restart at the beginning of the training
+                         * set, if required.
+                         */
+                        if (elem == n->training_set->num_elements)
+                                elem = 0;
 
                         /*
                          * reset recurrent groups
@@ -139,37 +151,32 @@ void train_network_bptt(struct network *n)
                                         ffn_cycle_stack(un);
                                         nsp = un->stack[--his];
                                 } else {
-                                        nsp = un->stack[his];
+                                        nsp = un->stack[his++];
                                 }
 
                                 copy_vector(nsp->input->vector, e->inputs[j]);
-                                if (e->targets[j])
-                                        copy_vector(nsp->target, e->targets[j]);
-
                                 feed_forward(nsp, nsp->input);
 
-                                his++;
-                        }
+                                /* 
+                                 * Inject error if a target is specified
+                                 * and history is full.
+                                 */
+                                if (e->targets[j] && his == un->stack_size) {
+                                        copy_vector(nsp->target, e->targets[j]);
 
-                        if (his == un->stack_size) {
-                                /* backpropagate error */
-                                struct vector *error = bp_output_error(nsp);
-                                bp_backpropagate_error(nsp, nsp->output, error);
-                                dispose_vector(error);
+                                        /* backpropagate error */
+                                        struct vector *error = bp_output_error(nsp);
+                                        bp_backpropagate_error(nsp, nsp->output, error);
+                                        dispose_vector(error);
 
-                                /* compute error */
-                                me += n->error->fun(nsp);
-
-                                /* sum deltas over unfolded network */
-                                ffn_sum_deltas(un);
-
-                                /* adjust weights */
-                                bp_adjust_weights(un->stack[0], un->stack[0]->output);
+                                        /* compute error */
+                                        me += n->error->fun(nsp);
+                                }
                         }
                 }
 
                 /* compute and report mean error */
-                me /= training_set->num_elements;
+                me /= n->batch_size;
                 if (epoch == 1 || epoch % n->report_after == 0)
                         pprintf("epoch: [%d] | error: [%lf]", epoch, me);
 
@@ -177,13 +184,17 @@ void train_network_bptt(struct network *n)
                 if (me < n->error_threshold)
                         break;
 
+                /* sum deltas over unfolded network */
+                ffn_sum_deltas(un);
+
+                /* adjust weights */
+                bp_adjust_weights(un->stack[0], un->stack[0]->output);
+
                 /* scale LR and Momentum */
                 scale_learning_rate(epoch,n);
                 scale_momentum(epoch,n);
         }
 }
-
-
 
 /*
  * ########################################################################
@@ -222,13 +233,13 @@ void scale_momentum(int epoch, struct network *n)
 void test_network(struct network *n)
 {
         mprintf("starting testing of network: [%s]", n->name);
-        
+
         double me = 0.0;
 
         /* present all test items */
         for (int i = 0; i < n->test_set->num_elements; i++) {
                 struct element *e = n->test_set->elements[i];
-                
+
                 /* reset context groups */
                 if (n->srn)
                         reset_context_groups(n);
@@ -241,7 +252,7 @@ void test_network(struct network *n)
 
                         if (e->targets[j] != NULL) {
                                 copy_vector(n->target, e->targets[j]);
-                                
+
                                 /* compute error */
                                 me += n->error->fun(n);
 
@@ -307,7 +318,7 @@ void test_unfolded_network(struct network *n)
                                 pprint_vector(nsp->target);
                                 printf("O: ");
                                 pprint_vector(nsp->output->vector);
-                                
+
                         }
                         his++;
                 }

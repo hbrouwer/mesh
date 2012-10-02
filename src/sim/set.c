@@ -90,6 +90,8 @@ error_out:
 
 void dispose_element(struct element *e)
 {
+        free(e->name);
+
         for (int i = 0; i < e->num_events; i++) {
                 if (e->inputs[i])
                         dispose_vector(e->inputs[i]);
@@ -200,7 +202,13 @@ struct set *permute_set(struct set *s)
                         ps->elements[i] = e;
         }
 
-        return ps;
+        for (int i = 0; i < s->num_elements; i++)
+                s->elements[i] = ps->elements[i];
+
+        free(ps->elements);
+        free(ps);
+
+        return s;
 }
 
 struct set *randomize_set(struct set *s)
@@ -214,5 +222,11 @@ struct set *randomize_set(struct set *s)
                 rs->elements[i] = s->elements[re];
         }
 
-        return rs;
+        for (int i = 0; i < s->num_elements; i++)
+                s->elements[i] = rs->elements[i];
+
+        free(rs->elements);
+        free(rs);
+
+        return s;
 }

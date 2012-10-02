@@ -20,24 +20,26 @@
 #include "error.h"
 
 /*
- * This implements of the backpropagation (BP) algorithm (Rumelhart, Hinton,
+ * This implements the backpropagation (BP) algorithm (Rumelhart, Hinton,
  * & Williams, 1986). BP minimizes the network's error E, given some error
  * function. A commonly used error function is sum squared error, which is
  * defined as:
  *
  *     E = 0.5 * sum_j (y_j - d_j)^2
  *
- * where y_j is the observed activation level for output unit j, and d_j
- * its target activation level. To minimize this error function, we first
+ * where y_j is the observed activation level for output unit j, and d_j its
+ * target activation level. To minimize this error function, we first
  * determine the error derivative EA_j, which defines how fast the error at
  * unit j changes as a function of its activation level:
  *
- *     EA_j = @E / @y_j = y_j - d_j
+ *     EA_j = @E / @y_j
+ *          = y_j - d_j
  *
  * Provided EA_j, we can compute how the error changes as function of the
  * the net input to unit j. We term this quantity EI_j, and define it as:
  *
- *     EI_j = @E / @x_j = EA_j * f'(y_j)
+ *     EI_j = @E / @x_j 
+ *          = EA_j * f'(y_j)
  *
  * where f' is the derivative of the activation function used.  We can use
  * the EI quantities of all units of the group towards which unit j belongs
@@ -46,9 +48,9 @@
  * the sum of all EI_j quantities multiplied by the weight W_ij of the
  * connection between each unit j and unit i:
  *
- *     EA_i = @E / @y_i
- *          = sum_j ((@E / @x_j) * (@x_j / @y_i)
- *          = sum_j (EI_j * w_ij)
+ *     EA_i = @E / @y_i 
+ *          = sum_j ((@E / @x_j) * (@x_j / @y_i) 
+ *          = sum_j (EI_j * W_ij)
  *
  * We can repeat this procedure to compute the EA quantities for as many
  * preceding groups as required. Provided the error derivative EA_j for
@@ -57,14 +59,21 @@
  * the connection between unit j in the output layer, and unit i in
  * a preceding layer:
  *
- *     EW_ij = @E / @w_ij = (@E / @x_j) * (@x_j / @w_ij) = EI_j * Y_i
+ *     EW_ij = @E / @W_ij
+ *           = (@E / @x_j) * (@x_j / @w_ij)
+ *           = EI_j * Y_i
  *
  * This can then be used to update the respective weight W_ij by means of:
  *
- *     W_ij = Wij + e * EW_ij + a * EW_ij(t-1) - d * EW_ij(t-1)
+ *     W_ij = W_ij + DW_ij
  *
- * Where e is a learning rate, a is momentum, d is weight decay, and 
- * EW_ij(t-1) is the previous weight delta EW_ij between unit i and unit j.
+ * where DW_ij is defined as:
+ *
+ *     DW_ij(t) = e * EW_ij + a * DW_ij(t-1) - d * DW_ij(t-1)
+ *
+ * and e is a learning rate, a is momentum, d is weight decay, and  
+ * DW_ij(t-1) is the previous weight change on the connection between unit i
+ * and unit j.
  *
  * References
  *
@@ -103,7 +112,7 @@ struct vector *bp_output_error(struct network *n)
 
 /*
  * This is the main BP function. Provided a group g, and a vector e with
- * errors EI for that group's units, it first computes the error derivates
+ * errors EI for that group's units, it first computes the error derivatives
  * EA and weight deltas EW for each projection to g. In case of unfolded
  * networks, which are used for BP through time, a group may project to
  * multiple later groups, which means that an error derivative EA_i for
@@ -131,7 +140,7 @@ void bp_backpropagate_error(struct network *n, struct group *g,
                  */
                 zero_out_vector(p->error);
 
-                bp_projection_error_and_deltas(n, p, e);
+                bp_projection_error_and_weight_deltas(n, p, e);
         }
 
         /*
@@ -154,8 +163,8 @@ void bp_backpropagate_error(struct network *n, struct group *g,
  * a given projection p between g' and g. 
  */
 
-void bp_projection_error_and_deltas(struct network *n, struct projection *p,
-                struct vector *e)
+void bp_projection_error_and_weight_deltas(struct network *n, struct 
+                projection *p, struct vector *e)
 {
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < e->size; j++) {
@@ -259,7 +268,7 @@ void bp_adjust_weights(struct network *n, struct group *g)
                         continue;
 
                 bp_adjust_weights(n, p->to);
-        }        
+        }
 }
 
 /*
@@ -269,34 +278,47 @@ void bp_adjust_weights(struct network *n, struct group *g)
 void bp_adjust_projection_weights(struct network *n, struct group *g,
                 struct projection *p)
 {
+        /*
+         * Adjust the weight between unit i in group g'
+         * and unit j in group g.
+         */
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
                         /*
-                         * Adjust the weight between unit i in group g'
-                         * and unit j in group g. 
-                         *
                          * First, we apply learning:
                          *
-                         * W_ij = W_ij + e * EW_ij
+                         * DW_ij = e * EW_ij
                          */
-                        p->weights->elements[i][j] += 
-                                n->learning_rate * p->deltas->elements[i][j];
+                        double weight_change = n->learning_rate
+                                * p->deltas->elements[i][j];
 
                         /*
                          * Next, we apply momentum:
                          *
-                         * W_ij = W_ij + a * EW_ij(t-1)
+                         * W_ij = W_ij + a * DW_ij(t-1)
                          */
-                        p->weights->elements[i][j] +=
-                                n->momentum * p->prev_deltas->elements[i][j];
+                        weight_change += n->momentum
+                                * p->prev_weight_changes->elements[i][j];
 
                         /*
                          * Finally, we apply weight decay:
                          *
-                         * W_ij = W_ij - d * EW_ij(t-1)
+                         * W_ij = W_ij - d * DW_ij(t-1)
                          */
-                        p->weights->elements[i][j] -=
-                                n->weight_decay * p->prev_deltas->elements[i][j];
+                        weight_change -= n->weight_decay
+                                * p->prev_weight_changes->elements[i][j];
+
+                        /*
+                         * Adjust the weight:
+                         *
+                         * W_ij = W_ij + DW_ij
+                         */
+                        p->weights->elements[i][j] += weight_change;
+                        
+                        /* 
+                         * Store a copy of the weight change.
+                         */
+                        p->prev_weight_changes->elements[i][j] = weight_change;
                 }
         }
 }

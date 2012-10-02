@@ -26,8 +26,8 @@ struct vector *bp_output_error(struct network *n);
 void bp_backpropagate_error(struct network *n, struct group *g,
                 struct vector *e);
 
-void bp_projection_error_and_deltas(struct network *n, struct projection *p,
-                struct vector *e);
+void bp_projection_error_and_weight_deltas(struct network *n,
+                struct projection *p, struct vector *e);
 
 struct vector *bp_group_error(struct network *n, struct group *g);
 
