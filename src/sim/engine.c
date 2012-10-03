@@ -21,6 +21,8 @@
 #include "engine.h"
 #include "pprint.h"
 
+#include <math.h>
+
 /*
  * ########################################################################
  * ## Network training                                                   ##
@@ -88,7 +90,7 @@ void train_network_bp(struct network *n)
                 /* compute and report mean error */
                 me /= n->batch_size;
                 if (epoch == 1 || epoch % n->report_after == 0)
-                        pprintf("epoch: [%d] | error: [%lf]", epoch, me);
+                        pprintf("epoch: [%d] | error: [%f]", epoch, me);
 
                 /* stop training if threshold is reached */
                 if (me < n->error_threshold)
@@ -98,8 +100,8 @@ void train_network_bp(struct network *n)
                 bp_adjust_weights(n, n->output);
 
                 /* scale LR and Momentum */
-                scale_learning_rate(epoch,n);
-                scale_momentum(epoch,n);
+                scale_learning_rate(epoch, n);
+                scale_momentum(epoch, n);
         }
 }
 
@@ -178,7 +180,7 @@ void train_network_bptt(struct network *n)
                 /* compute and report mean error */
                 me /= n->batch_size;
                 if (epoch == 1 || epoch % n->report_after == 0)
-                        pprintf("epoch: [%d] | error: [%lf]", epoch, me);
+                        pprintf("epoch: [%d] | error: [%f]", epoch, me);
 
                 /* stop training if threshold is reached */
                 if (me < n->error_threshold)
@@ -191,8 +193,8 @@ void train_network_bptt(struct network *n)
                 bp_adjust_weights(un->stack[0], un->stack[0]->output);
 
                 /* scale LR and Momentum */
-                scale_learning_rate(epoch,n);
-                scale_momentum(epoch,n);
+                scale_learning_rate(epoch, n);
+                scale_momentum(epoch, n);
         }
 }
 

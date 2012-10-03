@@ -81,6 +81,7 @@ void initialize_network(struct network *n)
 void dispose_network(struct network *n)
 {
         free(n->name);
+
         free(n->error);
         /* dispose_group_array(n->groups); */
 

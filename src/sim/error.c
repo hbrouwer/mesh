@@ -32,10 +32,10 @@ double error_sum_of_squares(struct network *n)
         double se = 0.0;
 
         for (int i = 0; i < n->output->vector->size; i++) {
-                double t = n->target->elements[i];
-                double o = n->output->vector->elements[i];
+                double y = n->output->vector->elements[i];
+                double d = n->target->elements[i];
 
-                se += pow(t - o, 2.0);
+                se += pow(y - d, 2.0);
         }
 
         return 0.5 * se;
@@ -46,10 +46,10 @@ struct vector *error_sum_of_squares_deriv(struct network *n)
         struct vector *e = create_vector(n->target->size);
 
         for (int i = 0; i < n->output->vector->size; i++) {
-                double t = n->target->elements[i];
-                double o = n->output->vector->elements[i];
+                double y = n->output->vector->elements[i];
+                double d = n->target->elements[i];
 
-                e->elements[i] = t - o;
+                e->elements[i] = y - d;
         }
 
         return e;
@@ -68,28 +68,28 @@ double error_cross_entropy(struct network *n)
         double ce = 0.0;
 
         for (int i = 0; i < n->output->vector->size; i++) {
-                double t = n->target->elements[i];
-                double o = n->output->vector->elements[i];
+                double y = n->output->vector->elements[i];
+                double d = n->target->elements[i];
 
                 /* target is zero */
-                if (t == 0.0) {
-                        if (o == 1.0)
+                if (d == 0.0) {
+                        if (y == 1.0)
                                 ce += DBL_MAX;
                         else
-                                ce += -log(1.0 - o);
+                                ce += -log(1.0 - y);
 
                 /* target is one */
-                } else if (t == 1.0) {
-                        if (o == 0.0)
+                } else if (d == 1.0) {
+                        if (y == 0.0)
                                 ce += DBL_MAX;
                         else
-                                ce += -log(o);
-                
+                                ce += -log(y);
+               
                 /* otherwise */
                 } else {
-                        ce += t * log(t / o)
-                                + (1.0 - t)
-                                + log((1.0 - t) / (1.0 - o));
+                        ce += log(d / y) * d
+                                + log((1.0 - d) / (1.0 - y))
+                                * (1.0 - d);
                 }
         }
 
@@ -101,10 +101,10 @@ struct vector *error_cross_entropy_deriv(struct network *n)
         struct vector *e = create_vector(n->target->size);
 
         for (int i = 0; i < n->output->vector->size; i++) {
-                double t = n->target->elements[i];
-                double o = n->output->vector->elements[i];
-
-                e->elements[i] = t - o;
+                double y = n->output->vector->elements[i];
+                double d = n->target->elements[i];
+                               
+                e->elements[i] = y - d;
         }
 
         return e;

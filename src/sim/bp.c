@@ -19,6 +19,8 @@
 #include "bp.h"
 #include "error.h"
 
+#include <math.h>
+
 /*
  * This implements the backpropagation (BP) algorithm (Rumelhart, Hinton,
  * & Williams, 1986). BP minimizes the network's error E, given some error
@@ -49,7 +51,7 @@
  * connection between each unit j and unit i:
  *
  *     EA_i = @E / @y_i 
- *          = sum_j ((@E / @x_j) * (@x_j / @y_i) 
+ *          = sum_j ((@E / @x_j) * (@x_j / @y_i)
  *          = sum_j (EI_j * W_ij)
  *
  * We can repeat this procedure to compute the EA quantities for as many
@@ -69,7 +71,7 @@
  *
  * where DW_ij is defined as:
  *
- *     DW_ij(t) = e * EW_ij + a * DW_ij(t-1) - d * W_ij
+ *     DW_ij(t) = -e * EW_ij + a * DW_ij(t-1) - d * W_ij
  *
  * and where, in turn, e is a learning rate coefficient, a is a momentum
  * coeffecieint, d is weight decay coefficient, and  DW_ij(t-1) is the
@@ -112,7 +114,8 @@ struct vector *bp_output_error(struct network *n)
         if (n->error->fun == error_sum_of_squares) {
                 for (int i = 0; i < e->size; i++) {
                         struct group *g = n->output;
-                        e->elements[i] *= g->act->deriv(g->vector, i) + BP_FLAT_SPOT_CORRECTION;
+                        e->elements[i] *= g->act->deriv(g->vector, i)
+                                + BP_FLAT_SPOT_CORRECTION;
                 }
         }
 
@@ -229,7 +232,8 @@ struct vector *bp_group_error(struct network *n, struct group *g)
                  */
                 double act_deriv;
                 if (g != n->input) {
-                        act_deriv = g->act->deriv(g->vector, i) + BP_FLAT_SPOT_CORRECTION;
+                        act_deriv = g->act->deriv(g->vector, i)
+                                + BP_FLAT_SPOT_CORRECTION;
                 } else {
                         act_deriv = g->vector->elements[i];
                 }
@@ -296,11 +300,11 @@ void bp_adjust_projection_weights(struct network *n, struct group *g,
                         /*
                          * First, we apply learning:
                          *
-                         * DW_ij = e * EW_ij
+                         * DW_ij = -e * EW_ij
                          */
-                        double weight_change = n->learning_rate
+                        double weight_change = -n->learning_rate
                                 * p->deltas->elements[i][j];
-                        
+
                         /*
                          * Next, we apply momentum:
                          *

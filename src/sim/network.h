@@ -86,6 +86,12 @@ struct network
         int training_order;         /* order in which training items are
                                        presented */
 
+        /*
+         * ################################################################
+         * ## Variables for saving and loading weight matrices           ##
+         * ################################################################
+         */        
+
         bool save_weights;          /* flags whether the weight matrices should
                                        be saved after training */
         char *save_weights_file;    /* file to which weights should be saved */
@@ -200,10 +206,9 @@ struct act
 
 /*
  * ########################################################################
- * ## Error function and derivative                                       ##
+ * ## Error function and derivative                                      ##
  * ########################################################################
  */
-
 
 struct error 
 {
