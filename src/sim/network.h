@@ -41,7 +41,6 @@
 struct network
 {
         char *name;                 /* name of the network */
-
         bool srn;                   /* flags whether this network is an SRN */
 
         int random_seed;            /* seed for the random number generator */
@@ -199,13 +198,12 @@ struct projection
  * ########################################################################
  */
 
-
 struct act 
 {
         double (*fun)                /* activation function  */
-                (struct vector *, int);      
+                (struct vector *, int);
         double (*deriv)              /* activation function derivative */
-                (struct vector *, int);         
+                (struct vector *, int);
 };
 
 /*
@@ -230,12 +228,13 @@ struct error
 
 struct status
 {
-        int epoch;
-        double error;
-        double weight_cost;
-        double gradient_linearity;
-        double last_weight_change_length;
-        double delta_length;
+        int epoch;                  /* current training epoch */
+        double error;               /* network error */
+        double weight_cost;         /* weight cost */
+        double gradient_linearity;  /* gradient linearity */
+        double                      /* length of last weight changes vector */ 
+                last_weight_changes_length;
+        double deltas_length;       /* length of weight deltas vector */
 };
 
 /*

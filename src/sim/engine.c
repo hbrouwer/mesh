@@ -85,25 +85,23 @@ void train_network_bp(struct network *n)
                         }
                 }
 
-                /* compute and report mean error */
+                /* 
+                 * Compute mean error and stop training 
+                 * if threshold is reached.
+                 */
                 me /= n->batch_size;
-
-                /* stop training if threshold is reached */
                 if (me < n->error_threshold)
                         break;
 
                 /* update weights */
                 n->update_algorithm(n);
 
+                /* report progress */
                 if (epoch == 1 || epoch % n->report_after == 0) {
                         n->status->epoch = epoch;
                         n->status->error = me;
                         print_training_progress(n);
                 }
-                        /*
-                        pprintf("epoch: [%d] | error: [%f] | %f | %f |", epoch, me,
-                                        n->status->weight_cost, n->status->gradient_linearity);
-                                        */
 
                 /* scale LR and Momentum */
                 scale_learning_rate(epoch, n);
@@ -185,12 +183,11 @@ void train_network_bptt(struct network *n)
                         }
                 }
 
-                /* compute and report mean error */
+                /* 
+                 * Compute mean error and stop training 
+                 * if threshold is reached.
+                 */                
                 me /= n->batch_size;
-                if (epoch == 1 || epoch % n->report_after == 0)
-                        pprintf("epoch: [%d] | error: [%f]", epoch, me);
-
-                /* stop training if threshold is reached */
                 if (me < n->error_threshold)
                         break;
 
@@ -200,15 +197,26 @@ void train_network_bptt(struct network *n)
                 /* update weights */
                 n->update_algorithm(n);
 
+                /* report progress */
+                if (epoch == 1 || epoch % n->report_after == 0) {
+                        n->status->epoch = epoch;
+                        n->status->error = me;
+                        print_training_progress(n);
+                }
+
                 /* scale LR and Momentum */
                 scale_learning_rate(epoch, n);
                 scale_momentum(epoch, n);
         }
 }
 
+/*
+ * Print training progress.
+ */
+
 void print_training_progress(struct network *n)
 {
-        pprintf("epoch: %d | error: %f | wc: %f | gl: %f",
+        pprintf("epoch: %d | error: %lf | wc: %lf | gl: %lf",
                         n->status->epoch,
                         n->status->error,
                         n->status->weight_cost,

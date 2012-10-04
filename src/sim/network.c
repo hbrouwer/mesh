@@ -624,7 +624,7 @@ struct act *load_activation_function(char *act_fun)
         if (strcmp(act_fun, "step") == 0) {
                 a->fun = act_fun_step;
                 a->deriv = act_fun_step_deriv;
-        }        
+        }
 
         return a;
 

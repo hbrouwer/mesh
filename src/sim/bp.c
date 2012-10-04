@@ -34,14 +34,12 @@
  * determine the error derivative EA_j, which defines how fast the error at
  * unit j changes as a function of that unit's activation level:
  *
- *     EA_j = @E / @y_j
- *          = y_j - d_j
+ *     EA_j = @E / @y_j = y_j - d_j
  *
  * Provided EA_j, we can compute how the error changes as function of the
  * the net input to unit j. We term this quantity EI_j, and define it as:
  *
- *     EI_j = @E / @x_j 
- *          = EA_j * f'(y_j)
+ *     EI_j = @E / @x_j = EA_j * f'(y_j)
  *
  * where f' is the derivative of the activation function used.  We can use
  * the EI quantities of all units of the group towards which unit j belongs
@@ -50,9 +48,8 @@
  * the sum of all EI_j quantities multiplied by the weight W_ij of the
  * connection between each unit j and unit i:
  *
- *     EA_i = @E / @y_i 
- *          = sum_j ((@E / @x_j) * (@x_j / @y_i)
- *          = sum_j (EI_j * W_ij)
+ *     EA_i = @E / @y_i = sum_j ((@E / @x_j) * (@x_j / @y_i) = sum_j (EI_j
+ *     * W_ij)
  *
  * We can repeat this procedure to compute the EA quantities for as many
  * preceding groups as required. Provided the error derivative EA_j for
@@ -61,21 +58,19 @@
  * the connection between unit j in the output layer, and unit i in
  * a preceding layer:
  *
- *     EW_ij = @E / @W_ij
- *           = (@E / @x_j) * (@x_j / @w_ij)
- *           = EI_j * Y_i
+ *     EW_ij = @E / @W_ij = (@E / @x_j) * (@x_j / @w_ij) = EI_j * Y_i
  *
  * This can then be used to update the respective weight W_ij by means of:
  *
  *     W_ij = W_ij + DW_ij
  *
- * where DW_ij is defined as:
+ * When using steepest descent weight updating, DW_ij is defined as:
  *
  *     DW_ij(t) = -e * EW_ij + a * DW_ij(t-1) - d * W_ij
  *
- * and where, in turn, e is a learning rate coefficient, a is a momentum
- * coeffecieint, d is weight decay coefficient, and  DW_ij(t-1) is the
- * previous weight change on the connection between unit i and unit j.
+ * where e is a learning rate coefficient, a is a momentum coefficient,
+ * d is weight decay coefficient, and  DW_ij(t-1) is the previous weight
+ * change on the connection between unit i and unit j.
  *
  * References
  *
@@ -256,14 +251,14 @@ void bp_update_steepest_descent(struct network *n)
 {
         n->status->weight_cost = 0.0;
         n->status->gradient_linearity = 0.0;
-        n->status->last_weight_change_length = 0.0;
-        n->status->delta_length = 0.0;
+        n->status->last_weight_changes_length = 0.0;
+        n->status->deltas_length = 0.0;
 
         bp_recursively_update_sd(n, n->output);
 
         n->status->gradient_linearity /=
-                sqrt(n->status->last_weight_change_length
-                                * n->status->delta_length);
+                sqrt(n->status->last_weight_changes_length
+                                * n->status->deltas_length);
 }
 
 /*
@@ -348,9 +343,9 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                         n->status->gradient_linearity -= 
                                 p->prev_weight_changes->elements[i][j]
                                 * p->deltas->elements[i][j];
-                        n->status->last_weight_change_length +=
+                        n->status->last_weight_changes_length +=
                                 pow(p->prev_weight_changes->elements[i][j], 2.0);
-                        n->status->delta_length +=
+                        n->status->deltas_length +=
                                 pow(p->deltas->elements[i][j], 2.0);
 
                         /* 
