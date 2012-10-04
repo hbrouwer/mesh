@@ -21,18 +21,18 @@
 
 #include "network.h"
 
-struct vector *bp_output_error(struct network *n);
-
 void bp_backpropagate_error(struct network *n, struct group *g,
                 struct vector *e);
 
 void bp_projection_error_and_weight_deltas(struct network *n,
                 struct projection *p, struct vector *e);
 
+struct vector *bp_output_error(struct group *g, struct vector *t);
 struct vector *bp_group_error(struct network *n, struct group *g);
 
-void bp_adjust_weights(struct network *n, struct group *g);
-void bp_adjust_projection_weights(struct network *n, struct group *g,
+void bp_update_steepest_descent(struct network *n);
+void bp_recursively_update_sd(struct network *n, struct group *g);
+void bp_update_projection_sd(struct network *n, struct group *g,
                 struct projection *p);
 
 #endif /* BP_H */

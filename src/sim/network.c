@@ -19,6 +19,7 @@
 #include <math.h>
 
 #include "act.h"
+#include "bp.h"
 #include "engine.h"
 #include "error.h"
 #include "network.h"
@@ -40,10 +41,10 @@ struct network *create_network(char *name)
 
         n->groups = create_group_array(MAX_GROUPS);
 
-        block_size = sizeof(struct error);
-        if (!(n->error = malloc(block_size)))
+        block_size = sizeof(struct status);
+        if (!(n->status = malloc(block_size)))
                 goto error_out;
-        memset(n->error, 0, block_size);
+        memset(n->status, 0, block_size);
 
         return n;
 
@@ -82,13 +83,11 @@ void dispose_network(struct network *n)
 {
         free(n->name);
 
-        free(n->error);
-        /* dispose_group_array(n->groups); */
+        free(n->status);
 
         if (n->unfolded_net)
                 ffn_dispose_unfolded_network(n->unfolded_net);
 
-        /* dispose_groups(n->output); */
         dispose_groups(n->groups);
         dispose_group_array(n->groups);
 
@@ -145,7 +144,12 @@ void dispose_group_array(struct group_array *gs)
         free(gs);
 }
 
-struct group *create_group(char *name, struct act *act, int size, bool bias, 
+struct group *create_group(
+                char *name,
+                struct act *act,
+                struct error *error,
+                int size,
+                bool bias, 
                 bool recurrent)
 {
         struct group *g;
@@ -161,6 +165,7 @@ struct group *create_group(char *name, struct act *act, int size, bool bias,
 
         g->vector = create_vector(size);
         g->act = act;
+        g->error = error;
 
         g->inc_projs = create_projs_array(MAX_PROJS);
         g->out_projs = create_projs_array(MAX_PROJS);
@@ -187,7 +192,7 @@ void attach_bias_group(struct network *n, struct group *g)
         memset(tmp, 0, sizeof(block_size));
 
         sprintf(tmp, "%s_bias", g->name);
-        struct group *bg = create_group(tmp, g->act, 1, true, false);
+        struct group *bg = create_group(tmp, g->act, g->error, 1, true, false);
 
         free(tmp);
 
@@ -229,29 +234,6 @@ error_out:
         return;
 }
 
-/*
-void dispose_groups(struct group *g)
-{
-        printf("%s\n", g->name);
-
-        for (int i = 0; i < g->inc_projs->num_elements; i++)
-                dispose_groups(g->inc_projs->elements[i]->to);
-
-        free(g->name);
-        dispose_vector(g->vector);
-
-        for (int i = 0; i < g->inc_projs->num_elements; i++)
-                dispose_projection(g->inc_projs->elements[i]);
-        for (int i = 0; i < g->out_projs->num_elements; i++)
-                free(g->out_projs->elements[i]);
-
-        dispose_projs_array(g->inc_projs);
-        dispose_projs_array(g->out_projs);
-
-        free(g);
-}
-*/
-
 void dispose_groups(struct group_array *groups)
 {
         for (int i = 0; i < groups->num_elements; i++) {
@@ -259,8 +241,10 @@ void dispose_groups(struct group_array *groups)
 
                 free(g->name);
                 dispose_vector(g->vector);
-                if (!g->bias)
+                if (!g->bias) {
                         free(g->act);
+                        free(g->error);
+                }
 
                 for (int j = 0; j < g->inc_projs->num_elements; j++)
                         dispose_projection(g->inc_projs->elements[j]);
@@ -443,7 +427,7 @@ struct network *load_network(char *filename)
                 load_double_parameter(buf, "MNScaleAfter %lf", &n->mn_scale_after,
                                 "set momentum scaling after (fraction of epochs): [%lf]");
                 load_double_parameter(buf, "WeightDecay %lf", &n->weight_decay,
-                                "set weight decay: [%lf] *** CHEAT ALERT ***");
+                                "set weight decay: [%lf]");
                 load_double_parameter(buf, "ErrorThreshold %lf", &n->error_threshold,
                                 "set error threshold: [%lf]");
 
@@ -459,11 +443,11 @@ struct network *load_network(char *filename)
 
                 load_learning_algorithm(buf, "LearningMethod %s", n,
                                 "set learning algorithm: [%s]");
-                load_error_function(buf, "ErrorFunction %s", n,
-                                "set error function: [%s]");
+                load_update_algorithm(buf, "UpdateMethod %s", n,
+                                "set update algorithm: [%s]");
 
-                load_group(buf, "Group %s %s %d", n, input, output,
-                                "added group: [%s (%s:%d)]");
+                load_group(buf, "Group %s %s %s %d", n, input, output,
+                                "added group: [%s (%s:%s:%d)]");
 
                 load_bias(buf, "AttachBias %s", n,
                                 "attached bias to group: [%s]");
@@ -530,29 +514,19 @@ void load_learning_algorithm(char *buf, char *fmt, struct network *n,
                 mprintf(msg, tmp);
 }
 
-void load_error_function(char *buf, char *fmt, struct network *n,
+void load_update_algorithm(char *buf, char *fmt, struct network *n,
                 char *msg)
 {
         char tmp[64];
         if (sscanf(buf, fmt, tmp) == 0)
                 return;
 
-        /* sum of squares */
-        if (strcmp(tmp, "sse") == 0) {
-                n->error->fun = error_sum_of_squares;
-                n->error->deriv = error_sum_of_squares_deriv;
-        }
+        /* steepest descent */
+        if (strncmp(tmp, "sd", 2) == 0)
+                n->update_algorithm = bp_update_steepest_descent;
 
-        /* cross-entropy */
-        if (strcmp(tmp, "cee") == 0) {
-                n->error->fun = error_cross_entropy;
-                n->error->deriv = error_cross_entropy_deriv;
-        }
-
-        if (n->error)
+        if (n->update_algorithm)
                 mprintf(msg, tmp);
-
-        return;
 }
 
 void load_item_set(char *buf, char *fmt, struct network *n, bool train,
@@ -585,13 +559,14 @@ void load_item_set(char *buf, char *fmt, struct network *n, bool train,
 void load_group(char *buf, char *fmt, struct network *n, char *input,
                 char *output, char *msg)
 {
-        char tmp1[64], tmp2[64];
+        char tmp1[64], tmp2[64], tmp3[64];
         int tmp_int;
-        if (sscanf(buf, fmt, tmp1, tmp2, &tmp_int) == 0)
+        if (sscanf(buf, fmt, tmp1, tmp2, tmp3, &tmp_int) == 0)
                 return;
 
         struct act *act = load_activation_function(tmp2);
-        struct group *g = create_group(tmp1, act, tmp_int, false, false);
+        struct error *error = load_error_function(tmp3);
+        struct group *g = create_group(tmp1, act, error, tmp_int, false, false);
 
         if (strcmp(tmp1, input) == 0)
                 n->input = g;
@@ -605,7 +580,7 @@ void load_group(char *buf, char *fmt, struct network *n, char *input,
         if (n->groups->num_elements == n->groups->max_elements)
                 increase_group_array_size(n->groups);
 
-        mprintf(msg, tmp1, tmp2, tmp_int);
+        mprintf(msg, tmp1, tmp2, tmp3, tmp_int);
 }
 
 struct act *load_activation_function(char *act_fun)
@@ -655,6 +630,38 @@ struct act *load_activation_function(char *act_fun)
 
 error_out:
         perror("[load_activation_function()]");
+        return NULL;
+}
+
+struct error *load_error_function(char *error_fun)
+{
+        struct error *e;
+        if (!(e = malloc(sizeof(struct error))))
+                goto error_out;
+        memset(e, 0, sizeof(struct error));
+
+        /* sum of squares */
+        if (strcmp(error_fun, "sum_squares") == 0) {
+                e->fun = error_sum_of_squares;
+                e->deriv = error_sum_of_squares_deriv;
+        }
+
+        /* cross-entropy */
+        if (strcmp(error_fun, "cross_entropy") == 0) {
+                e->fun = error_cross_entropy;
+                e->deriv = error_cross_entropy_deriv;
+        }
+
+        /* divergence */
+        if (strcmp(error_fun, "divergence") == 0) {
+                e->fun = error_divergence;
+                e->deriv = error_divergence_deriv;
+        }
+
+        return e;
+
+error_out:
+        perror("[load_error_function()]");
         return NULL;
 }
 

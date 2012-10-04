@@ -72,9 +72,9 @@ struct network
 
         void (*learning_algorithm)  /* learning algorithm */
                 (struct network *n);
-
-        struct error *error;        /* error function and its derivative */
-
+        void (*update_algorithm)    /* weight update algorithm */
+                (struct network *n);
+        
         struct group *input;        /* input group for this network */
         struct group *output;       /* output group for this network */
 
@@ -85,6 +85,8 @@ struct network
 
         int training_order;         /* order in which training items are
                                        presented */
+
+        struct status *status;      /* network status */
 
         /*
          * ################################################################
@@ -139,7 +141,9 @@ struct group
         struct vector *vector;      /* the "neurons" of this group */
 
         struct act *act;            /* activation function and its derivative
-                                       for thsi group */
+                                       for this group */
+        struct error *error;        /* error function and its derivative
+                                       for this group */
 
         struct projs_array          /* incoming projections */
                 *inc_projs;
@@ -213,9 +217,25 @@ struct act
 struct error 
 {
         double (*fun)               /* error function */
-                (struct network *n);
+                (struct vector *o, struct vector *t);
         struct vector *(*deriv)     /* error function derivative */
-                (struct network *n);
+                (struct vector *o, struct vector *t);
+};
+
+/*
+ * ########################################################################
+ * ## Network status                                                     ##
+ * ########################################################################
+ */
+
+struct status
+{
+        int epoch;
+        double error;
+        double weight_cost;
+        double gradient_linearity;
+        double last_weight_change_length;
+        double delta_length;
 };
 
 /*
@@ -232,10 +252,14 @@ struct group_array *create_group_array(int max_elements);
 void increase_group_array_size(struct group_array *gs);
 void dispose_group_array(struct group_array *gs);
 
-struct group *create_group(char *name, struct act *act,
-                int size, bool bias, bool recurrent);
+struct group *create_group(
+                char *name,
+                struct act *act,
+                struct error *error,
+                int size,
+                bool bias, 
+                bool recurrent);
 void attach_bias_group(struct network *n, struct group *g);
-/* void dispose_groups(struct group *g); */
 void dispose_groups(struct group_array *groups);
 
 void shift_context_group_chain(struct network *n, struct group *g,
@@ -265,13 +289,14 @@ void load_double_parameter(char *buf, char *fmt, double *par, char *msg);
 void load_int_parameter(char *buf, char *fmt, int *par, char *msg);
 void load_learning_algorithm(char *buf, char *fmt, struct network *n,
                 char *msg);
-void load_error_function(char *buf, char *fmt, struct network *n,
+void load_update_algorithm(char *buf, char *fmt, struct network *n,
                 char *msg);
 void load_item_set(char *buf, char *fmt, struct network *n, bool train,
                 char *msg);
 void load_group(char *buf, char *fmt, struct network *n, char *input,
                 char *output, char *msg);
 struct act *load_activation_function(char *act_fun);
+struct error *load_error_function(char *error_fun);
 void load_bias(char *buf, char *fmt, struct network *n, char *msg);
 void load_projection(char *buf, char *fmt, struct network *n, char *msg);
 void load_freeze_projection(char *buf, char *fmt, struct network *n,

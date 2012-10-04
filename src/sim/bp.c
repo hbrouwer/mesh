@@ -32,7 +32,7 @@
  * where y_j is the observed activation level for output unit j, and d_j its
  * target activation level. To minimize this error function, we first
  * determine the error derivative EA_j, which defines how fast the error at
- * unit j changes as a function of its activation level:
+ * unit j changes as a function of that unit's activation level:
  *
  *     EA_j = @E / @y_j
  *          = y_j - d_j
@@ -84,7 +84,9 @@
  */
 
 /*
- * Flat spot correction constant. See:
+ * Flat spot correction constant. This constant is added to the activation
+ * function derivative f'(y_j) to avoid that it approaches zero when y_j
+ * is near 1.0 or 0.0. See:
  *
  * Fahlman, S. E. (1988). An empirical study of learning speed in back-
  *     propagation networks. Technical report CMU-CS-88-162. School of
@@ -97,30 +99,6 @@
  * ## Error backpropagation                                              ##
  * ########################################################################
  */
-
-/*
- * This computes EI_j quantities for all units j in the output layer.
- */
-
-struct vector *bp_output_error(struct network *n)
-{
-        struct vector *e = n->error->deriv(n);
-
-        /*
-         * If the error function E that is being minimized is sum of 
-         * squares, we multiply EA_j with f'(y_i). For cross-entropy
-         * error, the f'(y_i) is cancelled out.
-         */
-        if (n->error->fun == error_sum_of_squares) {
-                for (int i = 0; i < e->size; i++) {
-                        struct group *g = n->output;
-                        e->elements[i] *= g->act->deriv(g->vector, i)
-                                + BP_FLAT_SPOT_CORRECTION;
-                }
-        }
-
-        return e;
-}
 
 /*
  * This is the main BP function. Provided a group g, and a vector e with
@@ -203,6 +181,30 @@ void bp_projection_error_and_weight_deltas(struct network *n, struct
 }
 
 /*
+ * This computes EI_j quantities for all units j in the output layer.
+ */
+
+struct vector *bp_output_error(struct group *g, struct vector *t)
+{
+        /*
+         * First, compute error derivates EA_j for all units in the output
+         * layer.
+         */
+        struct vector *e = g->error->deriv(g->vector, t);
+
+        /*
+         * Multiply all EA_j quantities with f'(y_i) to obtain EI_j for
+         * each unit.
+         */
+        for (int i = 0; i < e->size; i++) {
+                e->elements[i] *= g->act->deriv(g->vector, i)
+                        + BP_FLAT_SPOT_CORRECTION;
+        }
+
+        return e;
+}
+
+/*
  * This function compute the EI quantities for a group g. We first sum for
  * each of its units i, the error derivates EA_i for all of its outgoing
  * projections.  Next, we obtain EI_i by multiplying the summed EA_i
@@ -246,16 +248,30 @@ struct vector *bp_group_error(struct network *n, struct group *g)
 
 /*
  * ########################################################################
- * ## Weight adjustment                                                  ##
+ * ## Steepest descent weight update                                     ##
  * ########################################################################
  */
+
+void bp_update_steepest_descent(struct network *n)
+{
+        n->status->weight_cost = 0.0;
+        n->status->gradient_linearity = 0.0;
+        n->status->last_weight_change_length = 0.0;
+        n->status->delta_length = 0.0;
+
+        bp_recursively_update_sd(n, n->output);
+
+        n->status->gradient_linearity /=
+                sqrt(n->status->last_weight_change_length
+                                * n->status->delta_length);
+}
 
 /*
  * This recursively adjusts the weights of all incoming projections of a
  * group g.
  */
 
-void bp_adjust_weights(struct network *n, struct group *g)
+void bp_recursively_update_sd(struct network *n, struct group *g)
 {
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
@@ -263,12 +279,11 @@ void bp_adjust_weights(struct network *n, struct group *g)
                  * Adjust weights if projection is not frozen.
                  */
                 if (!p->frozen)
-                        bp_adjust_projection_weights(n, g, p);
-        
+                        bp_update_projection_sd(n, g, p);
+                
                 /*
-                 * Make a copy of the weight deltas for the application of
-                 * momentum and weight decay upon next update, and reset the
-                 * the current weight deltas.
+                 * Make a copy of the weight deltas, and reset the the
+                 * current weight deltas.
                  */
                 copy_matrix(p->prev_deltas, p->deltas);
                 zero_out_matrix(p->deltas);
@@ -280,7 +295,7 @@ void bp_adjust_weights(struct network *n, struct group *g)
                 if (p->recurrent)
                         continue;
 
-                bp_adjust_weights(n, p->to);
+                bp_recursively_update_sd(n, p->to);
         }
 }
 
@@ -288,7 +303,7 @@ void bp_adjust_weights(struct network *n, struct group *g)
  * This adjusts the weights of a projection p between a group g' and g.
  */
 
-void bp_adjust_projection_weights(struct network *n, struct group *g,
+void bp_update_projection_sd(struct network *n, struct group *g,
                 struct projection *p)
 {
         /*
@@ -327,7 +342,17 @@ void bp_adjust_projection_weights(struct network *n, struct group *g,
                          * W_ij = W_ij + DW_ij
                          */
                         p->weights->elements[i][j] += weight_change;
-                        
+                       
+                        n->status->weight_cost +=
+                                pow(p->weights->elements[i][j], 2.0);
+                        n->status->gradient_linearity -= 
+                                p->prev_weight_changes->elements[i][j]
+                                * p->deltas->elements[i][j];
+                        n->status->last_weight_change_length +=
+                                pow(p->prev_weight_changes->elements[i][j], 2.0);
+                        n->status->delta_length +=
+                                pow(p->deltas->elements[i][j], 2.0);
+
                         /* 
                          * Store a copy of the weight change.
                          */

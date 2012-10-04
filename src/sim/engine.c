@@ -21,8 +21,6 @@
 #include "engine.h"
 #include "pprint.h"
 
-#include <math.h>
-
 /*
  * ########################################################################
  * ## Network training                                                   ##
@@ -77,27 +75,35 @@ void train_network_bp(struct network *n)
                                         copy_vector(n->target, e->targets[j]);
 
                                         /* backpropagate error */
-                                        struct vector *error = bp_output_error(n);
+                                        struct vector *error = bp_output_error(n->output, n->target);
                                         bp_backpropagate_error(n, n->output, error);
                                         dispose_vector(error);
 
                                         /* compute error */
-                                        me += n->error->fun(n);
+                                        me += n->output->error->fun(n->output->vector, n->target);
                                 }
                         }
                 }
 
                 /* compute and report mean error */
                 me /= n->batch_size;
-                if (epoch == 1 || epoch % n->report_after == 0)
-                        pprintf("epoch: [%d] | error: [%f]", epoch, me);
 
                 /* stop training if threshold is reached */
                 if (me < n->error_threshold)
                         break;
 
-                /* adjust weights */
-                bp_adjust_weights(n, n->output);
+                /* update weights */
+                n->update_algorithm(n);
+
+                if (epoch == 1 || epoch % n->report_after == 0) {
+                        n->status->epoch = epoch;
+                        n->status->error = me;
+                        print_training_progress(n);
+                }
+                        /*
+                        pprintf("epoch: [%d] | error: [%f] | %f | %f |", epoch, me,
+                                        n->status->weight_cost, n->status->gradient_linearity);
+                                        */
 
                 /* scale LR and Momentum */
                 scale_learning_rate(epoch, n);
@@ -153,7 +159,7 @@ void train_network_bptt(struct network *n)
                                         ffn_cycle_stack(un);
                                         nsp = un->stack[--his];
                                 } else {
-                                        nsp = un->stack[his++];
+                                        nsp = un->stack[his];
                                 }
 
                                 copy_vector(nsp->input->vector, e->inputs[j]);
@@ -163,17 +169,19 @@ void train_network_bptt(struct network *n)
                                  * Inject error if a target is specified
                                  * and history is full.
                                  */
-                                if (e->targets[j] && his == un->stack_size) {
+                                if (e->targets[j] && his == un->stack_size - 1) {
                                         copy_vector(nsp->target, e->targets[j]);
 
                                         /* backpropagate error */
-                                        struct vector *error = bp_output_error(nsp);
+                                        struct vector *error = bp_output_error(nsp->output, nsp->target);
                                         bp_backpropagate_error(nsp, nsp->output, error);
                                         dispose_vector(error);
 
                                         /* compute error */
-                                        me += n->error->fun(nsp);
+                                        me += n->output->error->fun(nsp->output->vector, nsp->target);
                                 }
+
+                                his++;
                         }
                 }
 
@@ -189,13 +197,22 @@ void train_network_bptt(struct network *n)
                 /* sum deltas over unfolded network */
                 ffn_sum_deltas(un);
 
-                /* adjust weights */
-                bp_adjust_weights(un->stack[0], un->stack[0]->output);
+                /* update weights */
+                n->update_algorithm(n);
 
                 /* scale LR and Momentum */
                 scale_learning_rate(epoch, n);
                 scale_momentum(epoch, n);
         }
+}
+
+void print_training_progress(struct network *n)
+{
+        pprintf("epoch: %d | error: %f | wc: %f | gl: %f",
+                        n->status->epoch,
+                        n->status->error,
+                        n->status->weight_cost,
+                        n->status->gradient_linearity);
 }
 
 /*
@@ -256,7 +273,7 @@ void test_network(struct network *n)
                                 copy_vector(n->target, e->targets[j]);
 
                                 /* compute error */
-                                me += n->error->fun(n);
+                                me += n->output->error->fun(n->output->vector, n->target);
 
                                 printf("T: ");
                                 pprint_vector(n->target);
@@ -270,6 +287,8 @@ void test_network(struct network *n)
         me /= n->test_set->num_elements;
         pprintf("error: [%lf]", me);
 }
+
+// XXX: As always -- check logic...
 
 void test_unfolded_network(struct network *n)
 {
@@ -305,16 +324,13 @@ void test_unfolded_network(struct network *n)
                         }
 
                         copy_vector(nsp->input->vector, e->inputs[j]);
-                        if (e->targets[j])
-                                copy_vector(nsp->target, e->targets[j]);
-
                         feed_forward(nsp, nsp->input);
 
-                        if (e->targets[j]) {
+                        if (e->targets[j] && his == un->stack_size - 1) {
                                 copy_vector(nsp->target, e->targets[j]);
 
                                 /* compute error */
-                                me += n->error->fun(nsp);
+                                me += n->output->error->fun(nsp->output->vector, nsp->target);
 
                                 printf("T: ");
                                 pprint_vector(nsp->target);
@@ -322,6 +338,7 @@ void test_unfolded_network(struct network *n)
                                 pprint_vector(nsp->output->vector);
 
                         }
+
                         his++;
                 }
         }

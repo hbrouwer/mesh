@@ -25,6 +25,8 @@ void train_network(struct network *n);
 void train_network_bp(struct network *n);
 void train_network_bptt(struct network *n);
 
+void print_training_progress(struct network *n);
+
 void scale_learning_rate(int epoch, struct network *n);
 void scale_momentum(int epoch, struct network *n);
 
