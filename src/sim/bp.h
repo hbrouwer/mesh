@@ -35,14 +35,22 @@ void bp_projection_error_and_weight_gradients(struct network *n,
 struct vector *bp_output_error(struct group *g, struct vector *t);
 struct vector *bp_group_error(struct network *n, struct group *g);
 
+/* steepest descent */
 void bp_update_steepest_descent(struct network *n);
 void bp_recursively_update_sd(struct network *n, struct group *g);
 void bp_update_projection_sd(struct network *n, struct group *g,
                 struct projection *p);
 
+/* resilient propagation */
 void bp_update_rprop(struct network *n);
 void bp_recursively_update_rprop(struct network *n, struct group *g);
 void bp_update_projection_rprop(struct network *n, struct group *g,
+                struct projection *p);
+
+/* quick-propagation */
+void bp_update_qprop(struct network *n);
+void bp_recursively_update_qprop(struct network *n, struct group *g);
+void bp_update_projection_qprop(struct network *n, struct group *g,
                 struct projection *p);
 
 #endif /* BP_H */

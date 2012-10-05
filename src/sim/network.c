@@ -570,6 +570,11 @@ void load_update_algorithm(char *buf, char *fmt, struct network *n,
                 n->rp_type = IRPROP_MINUS;
         }        
 
+        if (strcmp(tmp, "qprop") == 0) {
+                n->update_algorithm = bp_update_qprop;
+        }
+
+
         if (n->update_algorithm)
                 mprintf(msg, tmp);
 }

@@ -608,3 +608,115 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                 }
         }
 }
+
+/*
+ * ########################################################################
+ * ## Quick-propagation weight updating                                  ##
+ * ########################################################################
+ */
+
+#define QP_MAX_STEP_SIZE 1.75
+
+void bp_update_qprop(struct network *n)
+{
+        n->status->weight_cost = 0.0;
+        n->status->gradient_linearity = 0.0;
+        n->status->last_weight_deltas_length = 0.0;
+        n->status->gradients_length = 0.0;
+
+        bp_recursively_update_qprop(n, n->output);
+
+        n->status->gradient_linearity /=
+                sqrt(n->status->last_weight_deltas_length
+                                * n->status->gradients_length);
+}
+
+void bp_recursively_update_qprop(struct network *n, struct group *g)
+{
+        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+                struct projection *p = g->inc_projs->elements[i];
+                /*
+                 * Adjust weights if projection is not frozen.
+                 */
+                if (!p->frozen)
+                        bp_update_projection_qprop(n, g, p);
+                
+                /*
+                 * Make a copy of the weight gradients, and reset the the
+                 * current weight gradients.
+                 */
+                copy_matrix(p->prev_gradients, p->gradients);
+                zero_out_matrix(p->gradients);
+
+                /*
+                 * During BPTT, we want to only adjust weights
+                 * in the network of the current timestep.
+                 */
+                if (p->recurrent)
+                        continue;
+
+                bp_recursively_update_qprop(n, p->to);
+        }
+}
+
+void bp_update_projection_qprop(struct network *n, struct group *g,
+                struct projection *p)
+{
+        /*
+         * Adjust the weight between unit i in group g'
+         * and unit j in group g.
+         */
+        for (int i = 0; i < p->to->vector->size; i++) {
+                for (int j = 0; j < g->vector->size; j++) {
+                        double weight_delta = 0.0;
+
+                        if (p->prev_weight_deltas->elements[i][j] > 0.0) {
+                                weight_delta = p->gradients->elements[i][j] /
+                                        (p->prev_gradients->elements[i][j]
+                                                - p->gradients->elements[i][j]);
+                                weight_delta *= p->prev_weight_deltas->elements[i][j];
+
+                                if (p->prev_gradients->elements[i][j]
+                                        * p->gradients->elements[i][j] > 0.0) {
+                                        weight_delta += n->learning_rate * p->gradients->elements[i][j];
+                                }
+
+                                if (weight_delta > QP_MAX_STEP_SIZE 
+                                                * p->prev_weight_deltas->elements[i][j]) {
+                                        weight_delta = QP_MAX_STEP_SIZE * 
+                                                p->prev_weight_deltas->elements[i][j];
+                                }
+                        } else {
+                                weight_delta = -0.01 * p->gradients->elements[i][j];
+                                        //-n->learning_rate * p->gradients->elements[i][j];
+                        }
+
+                        weight_delta -= n->weight_decay * p->weights->elements[i][j];
+
+                        /*
+                         * Adjust the weight:
+                         *
+                         * w_ij = w_ij + DW_ij
+                         */
+                        p->weights->elements[i][j] += weight_delta;
+
+                        /********************************/
+
+                        n->status->weight_cost +=
+                                pow(p->weights->elements[i][j], 2.0);
+                        n->status->gradient_linearity -= 
+                                p->prev_weight_deltas->elements[i][j]
+                                * p->gradients->elements[i][j];
+                        n->status->last_weight_deltas_length +=
+                                pow(p->prev_weight_deltas->elements[i][j], 2.0);
+                        n->status->gradients_length +=
+                                pow(p->gradients->elements[i][j], 2.0);
+
+                        /* 
+                         * Store a copy of the weight change.
+                         */
+                        p->prev_weight_deltas->elements[i][j] = weight_delta;
+
+                }
+        }
+}
