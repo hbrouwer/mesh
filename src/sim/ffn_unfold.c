@@ -84,9 +84,9 @@ struct ffn_unfolded_network *ffn_init_unfolded_network(struct network *n)
                 goto error_out;
         memset(un->recur_weights, 0, block_size);
 
-        if (!(un->recur_prev_weight_changes = malloc(block_size)))
+        if (!(un->recur_prev_weight_deltas = malloc(block_size)))
                 goto error_out;
-        memset(un->recur_prev_weight_changes, 0, block_size);
+        memset(un->recur_prev_weight_deltas, 0, block_size);
 
         if (!(un->recur_rp_update_values = malloc(block_size)))
                 goto error_out;
@@ -100,7 +100,7 @@ struct ffn_unfolded_network *ffn_init_unfolded_network(struct network *n)
                 randomize_matrix(un->recur_weights[i],
                                 n->random_mu, n->random_sigma);
 
-                un->recur_prev_weight_changes[i] = create_matrix(
+                un->recur_prev_weight_deltas[i] = create_matrix(
                                 g->vector->size,
                                 g->vector->size);
 
@@ -143,11 +143,11 @@ void ffn_dispose_unfolded_network(struct ffn_unfolded_network *un)
 
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
                 dispose_matrix(un->recur_weights[i]);
-                dispose_matrix(un->recur_prev_weight_changes[i]);
+                dispose_matrix(un->recur_prev_weight_deltas[i]);
                 dispose_matrix(un->recur_rp_update_values[i]);
         }
         free(un->recur_weights);
-        free(un->recur_prev_weight_changes);
+        free(un->recur_prev_weight_deltas);
 
         dispose_group_array(un->recur_groups);
         
@@ -245,21 +245,21 @@ struct group *ffn_duplicate_groups(struct network *n, struct network *dn,
                  */
                 struct vector *error = create_vector(
                                 bg->vector->size);
-                struct matrix *deltas = create_matrix(
+                struct matrix *gradients = create_matrix(
                                 bg->vector->size,
                                 g->vector->size);
-                struct matrix *prev_deltas = create_matrix(
+                struct matrix *prev_gradients = create_matrix(
                                 bg->vector->size,
                                 g->vector->size);
 
                 dg->inc_projs->elements[i] = ffn_duplicate_projection(
-                                g->inc_projs->elements[i], error, deltas,
-                                prev_deltas);
+                                g->inc_projs->elements[i], error, gradients,
+                                prev_gradients);
                 dg->inc_projs->elements[i]->to = dbg;
 
                 dbg->out_projs->elements[0] = ffn_duplicate_projection(
-                                bg->out_projs->elements[0], error, deltas,
-                                prev_deltas);
+                                bg->out_projs->elements[0], error, gradients,
+                                prev_gradients);
                 dbg->out_projs->elements[0]->to = dg;
         }
 
@@ -276,16 +276,16 @@ struct group *ffn_duplicate_groups(struct network *n, struct network *dn,
                  */
                 struct vector *error = create_vector(
                                 g->vector->size);
-                struct matrix *deltas = create_matrix(
+                struct matrix *gradients = create_matrix(
                                 g->vector->size,
                                 g2->vector->size);
-                struct matrix *prev_deltas = create_matrix(
+                struct matrix *prev_gradients = create_matrix(
                                 g->vector->size,
                                 g2->vector->size);
 
                 dg->out_projs->elements[i] = ffn_duplicate_projection(
-                                g->out_projs->elements[i], error, deltas, 
-                                prev_deltas);
+                                g->out_projs->elements[i], error, gradients, 
+                                prev_gradients);
                 struct group *rg = ffn_duplicate_groups(n, dn, g2);
                 dg->out_projs->elements[i]->to = rg;
 
@@ -294,7 +294,7 @@ struct group *ffn_duplicate_groups(struct network *n, struct network *dn,
                                 rg->inc_projs->elements[j] = 
                                         ffn_duplicate_projection(
                                                         g2->inc_projs->elements[j], 
-                                                        error, deltas, prev_deltas);
+                                                        error, gradients, prev_gradients);
                                 rg->inc_projs->elements[j]->to = dg;
                         }
                  }
@@ -330,8 +330,8 @@ void ffn_dispose_duplicate_groups(struct group *dg)
 struct projection *ffn_duplicate_projection(
                 struct projection *p,
                 struct vector *error,
-                struct matrix *deltas,
-                struct matrix *prev_deltas)
+                struct matrix *gradients,
+                struct matrix *prev_gradients)
 {
         struct projection *dp;
         if (!(dp = malloc(sizeof(struct projection))))
@@ -340,9 +340,9 @@ struct projection *ffn_duplicate_projection(
 
         dp->weights = p->weights; /* <-- shared weights */
         dp->error = error;
-        dp->deltas = deltas;
-        dp->prev_deltas = prev_deltas;
-        dp->prev_weight_changes = p->prev_weight_changes;
+        dp->gradients = gradients;
+        dp->prev_gradients = prev_gradients;
+        dp->prev_weight_deltas = p->prev_weight_deltas;
         dp->rp_update_values = p->rp_update_values;
 
         return dp;
@@ -355,8 +355,8 @@ error_out:
 void ffn_dispose_duplicate_projection(struct projection *dp)
 {
         dispose_vector(dp->error);
-        dispose_matrix(dp->deltas);
-        dispose_matrix(dp->prev_deltas);
+        dispose_matrix(dp->gradients);
+        dispose_matrix(dp->prev_gradients);
         
         free(dp);
 }
@@ -397,23 +397,23 @@ void ffn_attach_recurrent_groups(struct ffn_unfolded_network *un,
                  */
                 struct vector *error = create_vector(
                                 g1->vector->size);
-                struct matrix *deltas = create_matrix(
+                struct matrix *gradients = create_matrix(
                                 g1->vector->size,
                                 g2->vector->size);
-                struct matrix *prev_deltas = create_matrix(
+                struct matrix *prev_gradients = create_matrix(
                                 g1->vector->size,
                                 g2->vector->size);
 
                 g2->out_projs->elements[g2->out_projs->num_elements++] =
                         create_projection(g1, un->recur_weights[i], error,
-                                        deltas, prev_deltas, un->recur_prev_weight_changes[i],
+                                        gradients, prev_gradients, un->recur_prev_weight_deltas[i],
                                         un->recur_rp_update_values[i], true);
                 if (g2->out_projs->num_elements == g2->out_projs->max_elements)
                         increase_projs_array_size(g2->out_projs);
 
                 g1->inc_projs->elements[g1->inc_projs->num_elements++] = 
                         create_projection(g2, un->recur_weights[i], error,
-                                        deltas, prev_deltas, un->recur_prev_weight_changes[i],
+                                        gradients, prev_gradients, un->recur_prev_weight_deltas[i],
                                         un->recur_rp_update_values[i], true);
                 if (g1->inc_projs->num_elements == g1->inc_projs->max_elements)
                         increase_projs_array_size(g1->inc_projs);
@@ -461,23 +461,23 @@ void ffn_connect_duplicate_networks(struct ffn_unfolded_network *un,
                  */                
                 struct vector *error = create_vector(
                                 g1->vector->size);
-                struct matrix *deltas = create_matrix(
+                struct matrix *gradients = create_matrix(
                                 g1->vector->size,
                                 g2->vector->size);
-                struct matrix *prev_deltas = create_matrix(
+                struct matrix *prev_gradients = create_matrix(
                                 g1->vector->size,
                                 g2->vector->size);
 
                 g1->out_projs->elements[g1->out_projs->num_elements++] =
                         create_projection(g2, un->recur_weights[i], error,
-                                        deltas, prev_deltas, un->recur_prev_weight_changes[i],
+                                        gradients, prev_gradients, un->recur_prev_weight_deltas[i],
                                         un->recur_rp_update_values[i], true);
                 if (g1->out_projs->num_elements == g1->out_projs->max_elements)
                         increase_projs_array_size(g1->out_projs);
 
                 g2->inc_projs->elements[g2->inc_projs->num_elements++] = 
                         create_projection(g1, un->recur_weights[i], error,
-                                        deltas, prev_deltas, un->recur_prev_weight_changes[i],
+                                        gradients, prev_gradients, un->recur_prev_weight_deltas[i],
                                         un->recur_rp_update_values[i], true);
                 if (g2->inc_projs->num_elements == g2->inc_projs->max_elements)
                         increase_projs_array_size(g2->inc_projs);
@@ -507,28 +507,28 @@ void ffn_disconnect_duplicate_networks(struct ffn_unfolded_network *un,
         }
 }
 
-void ffn_sum_deltas(struct ffn_unfolded_network *un)
+void ffn_sum_gradients(struct ffn_unfolded_network *un)
 {
         for (int i = 1; i < un->stack_size; i++)
-                ffn_add_deltas(un->stack[0]->output, un->stack[i]->output);
+                ffn_add_gradients(un->stack[0]->output, un->stack[i]->output);
 }
 
-void ffn_add_deltas(struct group *g1, struct group *g2)
+void ffn_add_gradients(struct group *g1, struct group *g2)
 {
         for (int i = 0; i < g1->inc_projs->num_elements; i++) {
                 struct projection *p1 = g1->inc_projs->elements[i];
                 struct projection *p2 = g2->inc_projs->elements[i];
                 
-                for (int r = 0; r < p1->deltas->rows; r++)
-                        for (int c = 0; c < p1->deltas->cols; c++)
-                                p1->deltas->elements[r][c] +=
-                                        p2->deltas->elements[r][c];
+                for (int r = 0; r < p1->gradients->rows; r++)
+                        for (int c = 0; c < p1->gradients->cols; c++)
+                                p1->gradients->elements[r][c] +=
+                                        p2->gradients->elements[r][c];
 
-                copy_matrix(p2->deltas, p2->prev_deltas);
-                zero_out_matrix(p2->deltas);
+                copy_matrix(p2->gradients, p2->prev_gradients);
+                zero_out_matrix(p2->gradients);
 
                 if (!p1->recurrent)
-                        ffn_add_deltas(p1->to, p2->to);
+                        ffn_add_gradients(p1->to, p2->to);
         }
 }
 
@@ -611,8 +611,8 @@ void ffn_cycle_stack(struct ffn_unfolded_network *un)
                 j = g->out_projs->num_elements - 1;
                 g->out_projs->elements[j]->to = g2;
                 g->out_projs->elements[j]->error = p->error;
-                g->out_projs->elements[j]->deltas = p->deltas;
-                g->out_projs->elements[j]->prev_deltas = p->prev_deltas;
+                g->out_projs->elements[j]->gradients = p->gradients;
+                g->out_projs->elements[j]->prev_gradients = p->prev_gradients;
         }
         
         /* step 5 */

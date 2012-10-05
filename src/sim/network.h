@@ -187,11 +187,11 @@ struct projection
                                        are frozen */
 
         struct vector *error;       /* projection error for BP */
-
-        struct matrix *deltas;      /* projection deltas for BP */
-        struct matrix *prev_deltas; /* previous projection deltas for BP */
-        struct matrix               /* previous weight changes */
-                *prev_weight_changes;
+        struct matrix *gradients;   /* projection gradients for BP */
+        struct matrix               /* previous projection gradients for BP */
+                *prev_gradients;
+        struct matrix               /* previous weight deltas */
+                *prev_weight_deltas;
         struct matrix               /* update values for Rprop */
                 *rp_update_values;
 
@@ -241,8 +241,8 @@ struct status
         double weight_cost;         /* weight cost */
         double gradient_linearity;  /* gradient linearity */
         double                      /* length of last weight changes vector */ 
-                last_weight_changes_length;
-        double deltas_length;       /* length of weight deltas vector */
+                last_weight_deltas_length;
+        double gradients_length;    /* length of weight gradients vector */
 };
 
 /*
@@ -282,9 +282,9 @@ struct projection *create_projection(
                 struct group *to,
                 struct matrix *weights,
                 struct vector *error,
-                struct matrix *deltas,
-                struct matrix *prev_deltas,
-                struct matrix *prev_weight_changes,
+                struct matrix *gradients,
+                struct matrix *prev_gradients,
+                struct matrix *prev_weight_deltas,
                 struct matrix *rp_update_values,
                 bool recurrent);
 void dispose_projection(struct projection *p);

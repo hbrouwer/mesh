@@ -99,7 +99,7 @@
 /*
  * This is the main BP function. Provided a group g, and a vector e with
  * errors EI for that group's units, it first computes the error derivatives
- * EA and weight deltas EW for each projection to g. In case of unfolded
+ * EA and weight gradients EW for each projection to g. In case of unfolded
  * networks, which are used for BP through time, a group may project to
  * multiple later groups, which means that an error derivative EA_i for
  * a unit i in that group, may depend on multiple projections. Therefore, we
@@ -114,19 +114,19 @@ void bp_backpropagate_error(struct network *n, struct group *g,
 {
         /*
          * For each group that projects to g, compute the error derivatives
-         * EA and weight deltas EW with respect to g.
+         * EA and weight gradients EW with respect to g.
          */
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
                 
                 /* 
                  * Clean previous error for this projection. Do not touch
-                 * weight deltas, as these can cumulate over multiple
+                 * weight gradients, as these can cumulate over multiple
                  * backpropagation sweeps.
                  */
                 zero_out_vector(p->error);
 
-                bp_projection_error_and_weight_deltas(n, p, e);
+                bp_projection_error_and_weight_gradients(n, p, e);
         }
 
         /*
@@ -145,11 +145,11 @@ void bp_backpropagate_error(struct network *n, struct group *g,
 }
 
 /* 
- * This function computes the error derivates EA and weight deltas EW for
+ * This function computes the error derivates EA and weight gradients EW for
  * a given projection p between g' and g. 
  */
 
-void bp_projection_error_and_weight_deltas(struct network *n, struct 
+void bp_projection_error_and_weight_gradients(struct network *n, struct 
                 projection *p, struct vector *e)
 {
         for (int i = 0; i < p->to->vector->size; i++) {
@@ -168,9 +168,9 @@ void bp_projection_error_and_weight_deltas(struct network *n, struct
                          * the weight on the connection between unit i and
                          * unit j:
                          *
-                         * E_Wij += EI_j * Y_i
+                         * EW_ij += EI_j * Y_i
                          */
-                        p->deltas->elements[i][j] += e->elements[j]
+                        p->gradients->elements[i][j] += e->elements[j]
                                 * p->to->vector->elements[i];
                 }
         }
@@ -252,14 +252,14 @@ void bp_update_steepest_descent(struct network *n)
 {
         n->status->weight_cost = 0.0;
         n->status->gradient_linearity = 0.0;
-        n->status->last_weight_changes_length = 0.0;
-        n->status->deltas_length = 0.0;
+        n->status->last_weight_deltas_length = 0.0;
+        n->status->gradients_length = 0.0;
 
         bp_recursively_update_sd(n, n->output);
 
         n->status->gradient_linearity /=
-                sqrt(n->status->last_weight_changes_length
-                                * n->status->deltas_length);
+                sqrt(n->status->last_weight_deltas_length
+                                * n->status->gradients_length);
 }
 
 /*
@@ -278,11 +278,11 @@ void bp_recursively_update_sd(struct network *n, struct group *g)
                         bp_update_projection_sd(n, g, p);
                 
                 /*
-                 * Make a copy of the weight deltas, and reset the the
-                 * current weight deltas.
+                 * Make a copy of the weight gradients, and reset the the
+                 * current weight gradients.
                  */
-                copy_matrix(p->prev_deltas, p->deltas);
-                zero_out_matrix(p->deltas);
+                copy_matrix(p->prev_gradients, p->gradients);
+                zero_out_matrix(p->gradients);
 
                 /*
                  * During BPTT, we want to only adjust weights
@@ -313,23 +313,23 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                          *
                          * DW_ij = -e * EW_ij
                          */
-                        double weight_change = -n->learning_rate
-                                * p->deltas->elements[i][j];
+                        double weight_delta = -n->learning_rate
+                                * p->gradients->elements[i][j];
 
                         /*
                          * Next, we apply momentum:
                          *
                          * DW_ij = DW_ij + a * DW_ij(t-1)
                          */
-                        weight_change += n->momentum
-                                * p->prev_weight_changes->elements[i][j];
+                        weight_delta += n->momentum
+                                * p->prev_weight_deltas->elements[i][j];
                         
                         /*
                          * Finally, we apply weight decay:
                          *
                          * DW_ij = DW_ij - d * W_ij
                          */
-                        weight_change -= n->weight_decay 
+                        weight_delta -= n->weight_decay 
                                 * p->weights->elements[i][j];
 
                         /*
@@ -337,22 +337,22 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                          *
                          * w_ij = w_ij + DW_ij
                          */
-                        p->weights->elements[i][j] += weight_change;
+                        p->weights->elements[i][j] += weight_delta;
                        
                         n->status->weight_cost +=
                                 pow(p->weights->elements[i][j], 2.0);
                         n->status->gradient_linearity -= 
-                                p->prev_weight_changes->elements[i][j]
-                                * p->deltas->elements[i][j];
-                        n->status->last_weight_changes_length +=
-                                pow(p->prev_weight_changes->elements[i][j], 2.0);
-                        n->status->deltas_length +=
-                                pow(p->deltas->elements[i][j], 2.0);
+                                p->prev_weight_deltas->elements[i][j]
+                                * p->gradients->elements[i][j];
+                        n->status->last_weight_deltas_length +=
+                                pow(p->prev_weight_deltas->elements[i][j], 2.0);
+                        n->status->gradients_length +=
+                                pow(p->gradients->elements[i][j], 2.0);
 
                         /* 
                          * Store a copy of the weight change.
                          */
-                        p->prev_weight_changes->elements[i][j] = weight_change;
+                        p->prev_weight_deltas->elements[i][j] = weight_delta;
                 }
         }
 }
@@ -366,7 +366,7 @@ void bp_update_projection_sd(struct network *n, struct group *g,
 /*
  * This implements resilient backpropagation (Rprop) (see Igel & Husken,
  * 2000). In Rprop, weight adjustments are made on the basis of the sign of
- * the partial derivative @E/@w_ij, and weight deltas are determined for
+ * the partial derivative @E/@w_ij, and weight step-sizes are determined for
  * each weight individually. An Rprop update iteration can be divided into
  * two stages. In the first stage, the "update value" u_ij for each weight
  * w_ij is computed:
@@ -441,8 +441,8 @@ void bp_update_rprop(struct network *n)
 {
         n->status->weight_cost = 0.0;
         n->status->gradient_linearity = 0.0;
-        n->status->last_weight_changes_length = 0.0;
-        n->status->deltas_length = 0.0;
+        n->status->last_weight_deltas_length = 0.0;
+        n->status->gradients_length = 0.0;
 
         n->rp_eta_plus = 1.2;
         n->rp_eta_minus = 0.5;
@@ -450,8 +450,8 @@ void bp_update_rprop(struct network *n)
         bp_recursively_update_rprop(n, n->output);
 
         n->status->gradient_linearity /=
-                sqrt(n->status->last_weight_changes_length
-                                * n->status->deltas_length);
+                sqrt(n->status->last_weight_deltas_length
+                                * n->status->gradients_length);
 }
 
 void bp_recursively_update_rprop(struct network *n, struct group *g)
@@ -465,11 +465,11 @@ void bp_recursively_update_rprop(struct network *n, struct group *g)
                         bp_update_projection_rprop(n, g, p);
                 
                 /*
-                 * Make a copy of the weight deltas, and reset the the
-                 * current weight deltas.
+                 * Make a copy of the weight gradients, and reset the the
+                 * current weight gradients.
                  */
-                copy_matrix(p->prev_deltas, p->deltas);
-                zero_out_matrix(p->deltas);
+                copy_matrix(p->prev_gradients, p->gradients);
+                zero_out_matrix(p->gradients);
 
                 /*
                  * During BPTT, we want to only adjust weights
@@ -491,15 +491,15 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
          */
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
-                        double weight_change = 0.0;
+                        double weight_delta = 0.0;
 
                         /*
                          * Sign of @E/@w_ij has not changed:
                          * 
                          * @E/@w_ij(t-1) * @E/@w_ij(t) > 0
                          */
-                        if (p->prev_deltas->elements[i][j]
-                                        * p->deltas->elements[i][j] > 0.0) {
+                        if (p->prev_gradients->elements[i][j]
+                                        * p->gradients->elements[i][j] > 0.0) {
 
                                 /*
                                  * Bind update value u_ij to u_max.
@@ -515,17 +515,17 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  *
                                  * w_ij = w_ij + DW_ij
                                  */
-                                weight_change = -sign(p->deltas->elements[i][j]) 
+                                weight_delta = -sign(p->gradients->elements[i][j]) 
                                         * p->rp_update_values->elements[i][j];
-                                p->weights->elements[i][j] += weight_change;
+                                p->weights->elements[i][j] += weight_delta;
 
                         /*
                          * Sign of @E/@w_ij has changed:
                          * 
                          * @E/@w_ij(t-1) * @E/@w_ij(t) < 0
                          */
-                        } else if (p->prev_deltas->elements[i][j]
-                                        * p->deltas->elements[i][j] < 0.0) {
+                        } else if (p->prev_gradients->elements[i][j]
+                                        * p->gradients->elements[i][j] < 0.0) {
 
                                 /*
                                  * Bind update value u_ij to u_min.
@@ -539,7 +539,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  */
                                 if (n->rp_type == RPROP_PLUS)
                                         p->weights->elements[i][j] -=
-                                                p->prev_weight_changes->elements[i][j];
+                                                p->prev_weight_deltas->elements[i][j];
 
                                 /*
                                  * Perform weight backtracking for iRPROP+.
@@ -547,14 +547,14 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                 if (n->rp_type == IRPROP_PLUS)
                                         if (n->status->error > n->status->prev_error)
                                                 p->weights->elements[i][j] -=
-                                                        p->prev_weight_changes->elements[i][j];
+                                                        p->prev_weight_deltas->elements[i][j];
 
                                 /*
                                  * Set @E/@w_ij(t) to 0 for all Rprop
                                  * flavours except RPROP_MINUS.
                                  */
                                 if (n->rp_type != RPROP_MINUS)
-                                        p->deltas->elements[i][j] = 0.0;
+                                        p->gradients->elements[i][j] = 0.0;
 
                                 /* 
                                  * Perform weight change for RPROP- and
@@ -565,9 +565,9 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  * w_ij = w_ij + DW_ij
                                  */
                                 if (n->rp_type == RPROP_MINUS || n->rp_type == IRPROP_MINUS) {
-                                        weight_change = -sign(p->deltas->elements[i][j]) *
+                                        weight_delta = -sign(p->gradients->elements[i][j]) *
                                                 p->rp_update_values->elements[i][j];
-                                        p->weights->elements[i][j] += weight_change;
+                                        p->weights->elements[i][j] += weight_delta;
                                 }
 
                         /*
@@ -575,8 +575,8 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                          *
                          * @E/@w_ij(t-1) * @E/@w_ij(t) = 0
                          */
-                        } else if (p->prev_deltas->elements[i][j]
-                                        * p->deltas->elements[i][j] == 0.0) {
+                        } else if (p->prev_gradients->elements[i][j]
+                                        * p->gradients->elements[i][j] == 0.0) {
                                 /*
                                  * Perform weight update:
                                  *
@@ -584,9 +584,9 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  *
                                  * w_ij = w_ij + DW_ij
                                  */
-                                weight_change = -sign(p->deltas->elements[i][j])
+                                weight_delta = -sign(p->gradients->elements[i][j])
                                         * p->rp_update_values->elements[i][j];
-                                p->weights->elements[i][j] += weight_change;
+                                p->weights->elements[i][j] += weight_delta;
                         }
 
                         /********************************/
@@ -594,17 +594,17 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                         n->status->weight_cost +=
                                 pow(p->weights->elements[i][j], 2.0);
                         n->status->gradient_linearity -= 
-                                p->prev_weight_changes->elements[i][j]
-                                * p->deltas->elements[i][j];
-                        n->status->last_weight_changes_length +=
-                                pow(p->prev_weight_changes->elements[i][j], 2.0);
-                        n->status->deltas_length +=
-                                pow(p->deltas->elements[i][j], 2.0);
+                                p->prev_weight_deltas->elements[i][j]
+                                * p->gradients->elements[i][j];
+                        n->status->last_weight_deltas_length +=
+                                pow(p->prev_weight_deltas->elements[i][j], 2.0);
+                        n->status->gradients_length +=
+                                pow(p->gradients->elements[i][j], 2.0);
 
                         /* 
                          * Store a copy of the weight change.
                          */
-                        p->prev_weight_changes->elements[i][j] = weight_change;
+                        p->prev_weight_deltas->elements[i][j] = weight_delta;
                 }
         }
 }

@@ -197,8 +197,8 @@ void train_network_bptt(struct network *n)
                 if (me < n->error_threshold)
                         break;
 
-                /* sum deltas over unfolded network */
-                ffn_sum_deltas(un);
+                /* sum gradients over unfolded network */
+                ffn_sum_gradients(un);
 
                 /* update weights */
                 n->update_algorithm(n);

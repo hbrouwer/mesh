@@ -209,13 +209,13 @@ void attach_bias_group(struct network *n, struct group *g)
                         g->vector->size);
         struct vector *error = create_vector(
                         bg->vector->size);
-        struct matrix *deltas = create_matrix(
+        struct matrix *gradients = create_matrix(
                         bg->vector->size,
                         g->vector->size);
-        struct matrix *prev_deltas = create_matrix(
+        struct matrix *prev_gradients = create_matrix(
                         bg->vector->size,
                         g->vector->size);
-        struct matrix *prev_weight_changes = create_matrix(
+        struct matrix *prev_weight_deltas = create_matrix(
                         bg->vector->size,
                         g->vector->size);
         struct matrix *rp_update_values = create_matrix(
@@ -223,14 +223,14 @@ void attach_bias_group(struct network *n, struct group *g)
                         g->vector->size);
 
         bg->out_projs->elements[bg->out_projs->num_elements++] =
-                create_projection(g, weights, error, deltas, prev_deltas,
-                                prev_weight_changes, rp_update_values, false);
+                create_projection(g, weights, error, gradients, prev_gradients,
+                                prev_weight_deltas, rp_update_values, false);
         if (bg->out_projs->num_elements == bg->out_projs->max_elements)
                 increase_projs_array_size(bg->out_projs);
         
         g->inc_projs->elements[g->inc_projs->num_elements++] =
-                create_projection(bg, weights, error, deltas, prev_deltas,
-                                prev_weight_changes, rp_update_values, false);
+                create_projection(bg, weights, error, gradients, prev_gradients,
+                                prev_weight_deltas, rp_update_values, false);
         if (g->inc_projs->num_elements == g->out_projs->max_elements)
                 increase_projs_array_size(g->inc_projs);
 
@@ -347,9 +347,9 @@ struct projection *create_projection(
                 struct group *to,
                 struct matrix *weights,
                 struct vector *error,
-                struct matrix *deltas,
-                struct matrix *prev_deltas,
-                struct matrix *prev_weight_changes,
+                struct matrix *gradients,
+                struct matrix *prev_gradients,
+                struct matrix *prev_weight_deltas,
                 struct matrix *rp_update_values,
                 bool recurrent)
 {
@@ -362,9 +362,9 @@ struct projection *create_projection(
         p->to = to;
         p->weights = weights;
         p->error = error;
-        p->deltas = deltas;
-        p->prev_deltas = prev_deltas;
-        p->prev_weight_changes = prev_weight_changes;
+        p->gradients = gradients;
+        p->prev_gradients = prev_gradients;
+        p->prev_weight_deltas = prev_weight_deltas;
         p->rp_update_values = rp_update_values;
         p->recurrent = recurrent;
 
@@ -379,9 +379,9 @@ void dispose_projection(struct projection *p)
 {
         dispose_matrix(p->weights);
         dispose_vector(p->error);
-        dispose_matrix(p->deltas);
-        dispose_matrix(p->prev_deltas);
-        dispose_matrix(p->prev_weight_changes);
+        dispose_matrix(p->gradients);
+        dispose_matrix(p->prev_gradients);
+        dispose_matrix(p->prev_weight_deltas);
         dispose_matrix(p->rp_update_values);
 
         free(p);
@@ -753,13 +753,13 @@ void load_projection(char *buf, char *fmt, struct network *n, char *msg)
                         tg->vector->size);
         struct vector *error = create_vector(
                         fg->vector->size);
-        struct matrix *deltas = create_matrix(
+        struct matrix *gradients = create_matrix(
                         fg->vector->size,
                         tg->vector->size);
-        struct matrix *prev_deltas = create_matrix(
+        struct matrix *prev_gradients = create_matrix(
                         fg->vector->size,
                         tg->vector->size);
-        struct matrix *prev_weight_changes = create_matrix(
+        struct matrix *prev_weight_deltas = create_matrix(
                         fg->vector->size,
                         tg->vector->size);
         struct matrix *rp_update_values = create_matrix(
@@ -767,14 +767,14 @@ void load_projection(char *buf, char *fmt, struct network *n, char *msg)
                         tg->vector->size);
 
         fg->out_projs->elements[fg->out_projs->num_elements++] =
-                create_projection(tg, weights, error, deltas, prev_deltas,
-                                prev_weight_changes, rp_update_values, false);
+                create_projection(tg, weights, error, gradients, prev_gradients,
+                                prev_weight_deltas, rp_update_values, false);
         if (fg->out_projs->num_elements == fg->out_projs->max_elements)
                 increase_projs_array_size(fg->out_projs);
         
         tg->inc_projs->elements[tg->inc_projs->num_elements++] =
-                create_projection(fg, weights, error, deltas, prev_deltas,
-                                prev_weight_changes, rp_update_values, false);
+                create_projection(fg, weights, error, gradients, prev_gradients,
+                                prev_weight_deltas, rp_update_values, false);
         if (tg->inc_projs->num_elements == tg->out_projs->max_elements)
                 increase_projs_array_size(tg->inc_projs);
 

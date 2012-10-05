@@ -36,7 +36,7 @@ struct ffn_unfolded_network
         struct matrix             /* weights for recurrent connections */
                 **recur_weights;
         struct matrix             /* previous weight changes for recurrent connections */
-                **recur_prev_weight_changes;
+                **recur_prev_weight_deltas;
         struct matrix             /* previous rprop update values for recurrent connection */
                 **recur_rp_update_values;
         int stack_size;           /* size of the network 'state' stack */
@@ -58,8 +58,8 @@ void ffn_dispose_duplicate_groups(struct group *dg);
 struct projection *ffn_duplicate_projection(
                 struct projection *p,
                 struct vector *error,
-                struct matrix *deltas,
-                struct matrix *prev_deltas);
+                struct matrix *gradients,
+                struct matrix *prev_gradients);
 void ffn_dispose_duplicate_projection(struct projection *dp);
 
 struct group_array *ffn_recurrent_groups(struct network *n);
@@ -75,8 +75,8 @@ void ffn_connect_duplicate_networks(struct ffn_unfolded_network *un,
 void ffn_disconnect_duplicate_networks(struct ffn_unfolded_network *un,
                 struct network *n1, struct network *n2);
 
-void ffn_sum_deltas(struct ffn_unfolded_network *un);
-void ffn_add_deltas(struct group *g1, struct group *g2);
+void ffn_sum_gradients(struct ffn_unfolded_network *un);
+void ffn_add_gradients(struct group *g1, struct group *g2);
 
 void ffn_cycle_stack(struct ffn_unfolded_network *un);
 
