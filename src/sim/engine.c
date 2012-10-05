@@ -90,8 +90,13 @@ void train_network_bp(struct network *n)
                  * if threshold is reached.
                  */
                 me /= n->batch_size;
-                if (me < n->error_threshold)
+                if (me < n->error_threshold) {
+                        n->status->epoch = epoch;
+                        n->status->prev_error = n->status->error;
+                        n->status->error = me;
+                        print_training_progress(n);
                         break;
+                }
 
                 /* update weights */
                 n->update_algorithm(n);
@@ -99,6 +104,7 @@ void train_network_bp(struct network *n)
                 /* report progress */
                 if (epoch == 1 || epoch % n->report_after == 0) {
                         n->status->epoch = epoch;
+                        n->status->prev_error = n->status->error;
                         n->status->error = me;
                         print_training_progress(n);
                 }
@@ -200,6 +206,7 @@ void train_network_bptt(struct network *n)
                 /* report progress */
                 if (epoch == 1 || epoch % n->report_after == 0) {
                         n->status->epoch = epoch;
+                        n->status->prev_error = n->status->error;
                         n->status->error = me;
                         print_training_progress(n);
                 }

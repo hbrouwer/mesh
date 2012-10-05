@@ -19,6 +19,11 @@
 #ifndef BP_H
 #define BP_H
 
+#define RPROP_PLUS 0
+#define RPROP_MINUS 1
+#define IRPROP_PLUS 2
+#define IRPROP_MINUS 3
+
 #include "network.h"
 
 void bp_backpropagate_error(struct network *n, struct group *g,
@@ -33,6 +38,11 @@ struct vector *bp_group_error(struct network *n, struct group *g);
 void bp_update_steepest_descent(struct network *n);
 void bp_recursively_update_sd(struct network *n, struct group *g);
 void bp_update_projection_sd(struct network *n, struct group *g,
+                struct projection *p);
+
+void bp_update_rprop(struct network *n);
+void bp_recursively_update_rprop(struct network *n, struct group *g);
+void bp_update_projection_rprop(struct network *n, struct group *g,
                 struct projection *p);
 
 #endif /* BP_H */

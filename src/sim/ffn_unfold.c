@@ -83,20 +83,32 @@ struct ffn_unfolded_network *ffn_init_unfolded_network(struct network *n)
         if (!(un->recur_weights = malloc(block_size)))
                 goto error_out;
         memset(un->recur_weights, 0, block_size);
+
         if (!(un->recur_prev_weight_changes = malloc(block_size)))
                 goto error_out;
         memset(un->recur_prev_weight_changes, 0, block_size);
+
+        if (!(un->recur_rp_update_values = malloc(block_size)))
+                goto error_out;
+        memset(un->recur_rp_update_values, 0, block_size);
 
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
                 struct group *g = un->recur_groups->elements[i];
                 un->recur_weights[i] = create_matrix(
                                 g->vector->size,
                                 g->vector->size);
+                randomize_matrix(un->recur_weights[i],
+                                n->random_mu, n->random_sigma);
+
                 un->recur_prev_weight_changes[i] = create_matrix(
                                 g->vector->size,
                                 g->vector->size);
-                randomize_matrix(un->recur_weights[i],
-                                n->random_mu, n->random_sigma);
+
+                un->recur_rp_update_values[i] = create_matrix(
+                                g->vector->size,
+                                g->vector->size);
+                fill_matrix_with_value(un->recur_rp_update_values[i],
+                                n->rp_init_update);
         }
 
         un->stack_size = n->history_length + 1;
@@ -132,6 +144,7 @@ void ffn_dispose_unfolded_network(struct ffn_unfolded_network *un)
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
                 dispose_matrix(un->recur_weights[i]);
                 dispose_matrix(un->recur_prev_weight_changes[i]);
+                dispose_matrix(un->recur_rp_update_values[i]);
         }
         free(un->recur_weights);
         free(un->recur_prev_weight_changes);
@@ -314,26 +327,6 @@ void ffn_dispose_duplicate_groups(struct group *dg)
         free(dg);
 }
 
-/*
-void ffn_dispose_duplicate_groups(struct group *dg)
-{
-        for (int i = 0; i < dg->out_projs->num_elements; i++) {
-                ffn_dispose_duplicate_groups(dg->out_projs->elements[i]->to);
-                ffn_dispose_duplicate_projection(dg->out_projs->elements[i]);
-        }
-        dispose_projs_array(dg->out_projs);
-
-        for (int i = 0; i < dg->inc_projs->num_elements; i++)
-                free(dg->inc_projs->elements[i]);
-        dispose_projs_array(dg->inc_projs);
-
-        free(dg->name);
-        dispose_vector(dg->vector);
-
-        free(dg);
-}
-*/
-
 struct projection *ffn_duplicate_projection(
                 struct projection *p,
                 struct vector *error,
@@ -350,6 +343,7 @@ struct projection *ffn_duplicate_projection(
         dp->deltas = deltas;
         dp->prev_deltas = prev_deltas;
         dp->prev_weight_changes = p->prev_weight_changes;
+        dp->rp_update_values = p->rp_update_values;
 
         return dp;
 
@@ -412,13 +406,15 @@ void ffn_attach_recurrent_groups(struct ffn_unfolded_network *un,
 
                 g2->out_projs->elements[g2->out_projs->num_elements++] =
                         create_projection(g1, un->recur_weights[i], error,
-                                        deltas, prev_deltas, un->recur_prev_weight_changes[i], true);
+                                        deltas, prev_deltas, un->recur_prev_weight_changes[i],
+                                        un->recur_rp_update_values[i], true);
                 if (g2->out_projs->num_elements == g2->out_projs->max_elements)
                         increase_projs_array_size(g2->out_projs);
 
                 g1->inc_projs->elements[g1->inc_projs->num_elements++] = 
                         create_projection(g2, un->recur_weights[i], error,
-                                        deltas, prev_deltas, un->recur_prev_weight_changes[i], true);
+                                        deltas, prev_deltas, un->recur_prev_weight_changes[i],
+                                        un->recur_rp_update_values[i], true);
                 if (g1->inc_projs->num_elements == g1->inc_projs->max_elements)
                         increase_projs_array_size(g1->inc_projs);
         }
@@ -474,13 +470,15 @@ void ffn_connect_duplicate_networks(struct ffn_unfolded_network *un,
 
                 g1->out_projs->elements[g1->out_projs->num_elements++] =
                         create_projection(g2, un->recur_weights[i], error,
-                                        deltas, prev_deltas, un->recur_prev_weight_changes[i], true);
+                                        deltas, prev_deltas, un->recur_prev_weight_changes[i],
+                                        un->recur_rp_update_values[i], true);
                 if (g1->out_projs->num_elements == g1->out_projs->max_elements)
                         increase_projs_array_size(g1->out_projs);
 
                 g2->inc_projs->elements[g2->inc_projs->num_elements++] = 
                         create_projection(g1, un->recur_weights[i], error,
-                                        deltas, prev_deltas, un->recur_prev_weight_changes[i], true);
+                                        deltas, prev_deltas, un->recur_prev_weight_changes[i],
+                                        un->recur_rp_update_values[i], true);
                 if (g2->inc_projs->num_elements == g2->inc_projs->max_elements)
                         increase_projs_array_size(g2->inc_projs);
         }

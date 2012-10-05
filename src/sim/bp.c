@@ -18,6 +18,7 @@
 
 #include "bp.h"
 #include "error.h"
+#include "math.h"
 
 #include <math.h>
 
@@ -45,11 +46,11 @@
  * the EI quantities of all units of the group towards which unit j belongs
  * to compute the error derivative EA_i for a unit i that is connected to
  * all units in that group. The error derivative EA_i for unit i is simply
- * the sum of all EI_j quantities multiplied by the weight W_ij of the
+ * the sum of all EI_j quantities multiplied by the weight w_ij of the
  * connection between each unit j and unit i:
  *
  *     EA_i = @E / @y_i = sum_j ((@E / @x_j) * (@x_j / @y_i) = sum_j (EI_j
- *     * W_ij)
+ *     * w_ij)
  *
  * We can repeat this procedure to compute the EA quantities for as many
  * preceding groups as required. Provided the error derivative EA_j for
@@ -58,7 +59,7 @@
  * the connection between unit j in the output layer, and unit i in
  * a preceding layer:
  *
- *     EW_ij = @E / @W_ij = (@E / @x_j) * (@x_j / @w_ij) = EI_j * Y_i
+ *     EW_ij = @E / @w_ij = (@E / @x_j) * (@x_j / @w_ij) = EI_j * Y_i
  *
  * This can then be used to update the respective weight W_ij by means of:
  *
@@ -66,7 +67,7 @@
  *
  * When using steepest descent weight updating, DW_ij is defined as:
  *
- *     DW_ij(t) = -e * EW_ij + a * DW_ij(t-1) - d * W_ij
+ *     DW_ij(t) = -e * EW_ij + a * DW_ij(t-1) - d * w_ij
  *
  * where e is a learning rate coefficient, a is a momentum coefficient,
  * d is weight decay coefficient, and  DW_ij(t-1) is the previous weight
@@ -243,7 +244,7 @@ struct vector *bp_group_error(struct network *n, struct group *g)
 
 /*
  * ########################################################################
- * ## Steepest descent weight update                                     ##
+ * ## Steepest descent weight updating                                   ##
  * ########################################################################
  */
 
@@ -334,10 +335,262 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                         /*
                          * Adjust the weight:
                          *
-                         * W_ij = W_ij + DW_ij
+                         * w_ij = w_ij + DW_ij
                          */
                         p->weights->elements[i][j] += weight_change;
                        
+                        n->status->weight_cost +=
+                                pow(p->weights->elements[i][j], 2.0);
+                        n->status->gradient_linearity -= 
+                                p->prev_weight_changes->elements[i][j]
+                                * p->deltas->elements[i][j];
+                        n->status->last_weight_changes_length +=
+                                pow(p->prev_weight_changes->elements[i][j], 2.0);
+                        n->status->deltas_length +=
+                                pow(p->deltas->elements[i][j], 2.0);
+
+                        /* 
+                         * Store a copy of the weight change.
+                         */
+                        p->prev_weight_changes->elements[i][j] = weight_change;
+                }
+        }
+}
+
+/*
+ * ########################################################################
+ * ## Resilient backpropagation weight updating                          ##
+ * ########################################################################
+ */
+
+/*
+ * This implements resilient backpropagation (Rprop) (see Igel & Husken,
+ * 2000). In Rprop, weight adjustments are made on the basis of the sign of
+ * the partial derivative @E/@w_ij, and weight deltas are determined for
+ * each weight individually. An Rprop update iteration can be divided into
+ * two stages. In the first stage, the "update value" u_ij for each weight
+ * w_ij is computed:
+ *
+ *           | eta_plus * u_ij(t-1)   , if @E/@w_ij(t-1) * @E/@w_ij(t) > 0
+ *           |
+ * u_ij(t) = | eta_minus * u_ij(t-1)  , if @E/@w_ij(t-1) * @E/@w_ij(t) < 0
+ *           |
+ *           | u_ij(t-1)              , otherwise
+ *
+ * where eta_plus and eta_minus are defined as:
+ *
+ *    0 < eta_minus < 1 < eta_plus.
+ *
+ * and u_ij(t) is bounded by u_max and u_min. The second stage of an Rprop
+ * iteration depends on the particular Rprop flavour. Four Rprop flavours
+ * are implemented (see Igel & Husken, 2000):
+ *
+ * (1) RPROP+ (rprop with weight-backtracking)
+ *
+ *     After computing the "update value" u_ij for each weight w_ij, the
+ *     second stage depends on whether the sign of @E/@w_ij has changed
+ *     from timestep t-1 to t. If it has not changed, we perform a regular
+ *     weight update:
+ *
+ *         if @E/@w_ij(t-1) > @E/@w_ij(t) > 0 then
+ *
+ *            DW_ij(t) = -sign(@E/@w_ij(t)) * u_ij(t)
+ *
+ *     where sign(x) returns +1 if x is positive and -1 if x is negative.
+ *     If, on the other hand, the sign has changed, we revert the previous
+ *     weight update (weight backtracking), and reset the partial derivative
+ *     @E/@w_ij(t) to 0, so that the u_ij will not be adjusted on the next 
+ *     iteration:
+ *
+ *         if @E/@w_ij(t-1) > @E/@w_ij(t) > 0 then
+ *
+ *            DW_ij(t) = -DW_ij(t-1)
+ *
+ *            @E/@W_ij(t) = 0
+ *
+ *     Finally, weights are updated by means of: 
+ *
+ *          w_ij = w_ij + u_ij(t).
+ *
+ * (2) RPROP- (rprop without weight-backtracking)
+ *
+ *     A variation on RPROP+ in which weight backtracking is omitted, and
+ *     in which E@/@W_ij(t) is not reset to 0 when its sign has changed.
+ *
+ * (3) iRPROP+ ("modified" rprop with weight-backtracking)
+ *
+ *     A variation on RPROP+ in which weight backtracking is only performed
+ *     if the overall error goes up from timestep t-1 to t.
+ *
+ * (4) iRPROP- ("modified" Rprop without weight-backtracking)
+ *
+ *     A variation on RPROP- in which E@/@W_ij(t) is reset to 0 when its
+ *     sign has changed.
+ *
+ * References
+ *
+ * Igel, C., & Husken, M. (2000). Improving the Rprop Algorithm. Proceedings
+ *     of the Second International Symposium on Neural Computation, NC'2000,
+ *     pp. 115-121, ICSC, Academic Press, 2000.
+ */
+
+#define RP_MAX_STEP_SIZE 50.0
+#define RP_MIN_STEP_SIZE 1e-6
+
+void bp_update_rprop(struct network *n)
+{
+        n->status->weight_cost = 0.0;
+        n->status->gradient_linearity = 0.0;
+        n->status->last_weight_changes_length = 0.0;
+        n->status->deltas_length = 0.0;
+
+        n->rp_eta_plus = 1.2;
+        n->rp_eta_minus = 0.5;
+
+        bp_recursively_update_rprop(n, n->output);
+
+        n->status->gradient_linearity /=
+                sqrt(n->status->last_weight_changes_length
+                                * n->status->deltas_length);
+}
+
+void bp_recursively_update_rprop(struct network *n, struct group *g)
+{
+        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+                struct projection *p = g->inc_projs->elements[i];
+                /*
+                 * Adjust weights if projection is not frozen.
+                 */
+                if (!p->frozen)
+                        bp_update_projection_rprop(n, g, p);
+                
+                /*
+                 * Make a copy of the weight deltas, and reset the the
+                 * current weight deltas.
+                 */
+                copy_matrix(p->prev_deltas, p->deltas);
+                zero_out_matrix(p->deltas);
+
+                /*
+                 * During BPTT, we want to only adjust weights
+                 * in the network of the current timestep.
+                 */
+                if (p->recurrent)
+                        continue;
+
+                bp_recursively_update_rprop(n, p->to);
+        }
+}
+
+void bp_update_projection_rprop(struct network *n, struct group *g,
+                struct projection *p)
+{
+        /*
+         * Adjust the weight between unit i in group g'
+         * and unit j in group g.
+         */
+        for (int i = 0; i < p->to->vector->size; i++) {
+                for (int j = 0; j < g->vector->size; j++) {
+                        double weight_change = 0.0;
+
+                        /*
+                         * Sign of @E/@w_ij has not changed:
+                         * 
+                         * @E/@w_ij(t-1) * @E/@w_ij(t) > 0
+                         */
+                        if (p->prev_deltas->elements[i][j]
+                                        * p->deltas->elements[i][j] > 0.0) {
+
+                                /*
+                                 * Bind update value u_ij to u_max.
+                                 */
+                                p->rp_update_values->elements[i][j] = minimum(
+                                                p->rp_update_values->elements[i][j] * n->rp_eta_plus,
+                                                RP_MAX_STEP_SIZE);
+
+                                /*
+                                 * Perform weight update:
+                                 *
+                                 * DW_ij = -sign(@E/@w_ij(t)) * u_ij(t)
+                                 *
+                                 * w_ij = w_ij + DW_ij
+                                 */
+                                weight_change = -sign(p->deltas->elements[i][j]) 
+                                        * p->rp_update_values->elements[i][j];
+                                p->weights->elements[i][j] += weight_change;
+
+                        /*
+                         * Sign of @E/@w_ij has changed:
+                         * 
+                         * @E/@w_ij(t-1) * @E/@w_ij(t) < 0
+                         */
+                        } else if (p->prev_deltas->elements[i][j]
+                                        * p->deltas->elements[i][j] < 0.0) {
+
+                                /*
+                                 * Bind update value u_ij to u_min.
+                                 */
+                                p->rp_update_values->elements[i][j] = maximum(
+                                                p->rp_update_values->elements[i][j] * n->rp_eta_minus,
+                                                RP_MIN_STEP_SIZE);
+
+                                /*
+                                 * Perform weight backtracking for RPROP+.
+                                 */
+                                if (n->rp_type == RPROP_PLUS)
+                                        p->weights->elements[i][j] -=
+                                                p->prev_weight_changes->elements[i][j];
+
+                                /*
+                                 * Perform weight backtracking for iRPROP+.
+                                 */
+                                if (n->rp_type == IRPROP_PLUS)
+                                        if (n->status->error > n->status->prev_error)
+                                                p->weights->elements[i][j] -=
+                                                        p->prev_weight_changes->elements[i][j];
+
+                                /*
+                                 * Set @E/@w_ij(t) to 0 for all Rprop
+                                 * flavours except RPROP_MINUS.
+                                 */
+                                if (n->rp_type != RPROP_MINUS)
+                                        p->deltas->elements[i][j] = 0.0;
+
+                                /* 
+                                 * Perform weight change for RPROP- and
+                                 * iRPROP-:
+                                 * 
+                                 * DW_ij = -sign(@E/@w_ij(t)) * u_ij(t)
+                                 *
+                                 * w_ij = w_ij + DW_ij
+                                 */
+                                if (n->rp_type == RPROP_MINUS || n->rp_type == IRPROP_MINUS) {
+                                        weight_change = -sign(p->deltas->elements[i][j]) *
+                                                p->rp_update_values->elements[i][j];
+                                        p->weights->elements[i][j] += weight_change;
+                                }
+
+                        /*
+                         * Otherwise:
+                         *
+                         * @E/@w_ij(t-1) * @E/@w_ij(t) = 0
+                         */
+                        } else if (p->prev_deltas->elements[i][j]
+                                        * p->deltas->elements[i][j] == 0.0) {
+                                /*
+                                 * Perform weight update:
+                                 *
+                                 * DW_ij = -sign(@E/@w_ij(t)) * u_ij(t)
+                                 *
+                                 * w_ij = w_ij + DW_ij
+                                 */
+                                weight_change = -sign(p->deltas->elements[i][j])
+                                        * p->rp_update_values->elements[i][j];
+                                p->weights->elements[i][j] += weight_change;
+                        }
+
+                        /********************************/
+
                         n->status->weight_cost +=
                                 pow(p->weights->elements[i][j], 2.0);
                         n->status->gradient_linearity -= 

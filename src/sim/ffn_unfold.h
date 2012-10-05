@@ -37,6 +37,8 @@ struct ffn_unfolded_network
                 **recur_weights;
         struct matrix             /* previous weight changes for recurrent connections */
                 **recur_prev_weight_changes;
+        struct matrix             /* previous rprop update values for recurrent connection */
+                **recur_rp_update_values;
         int stack_size;           /* size of the network 'state' stack */
         struct network **stack;   /* stack for different 'states' of the
                                      network */

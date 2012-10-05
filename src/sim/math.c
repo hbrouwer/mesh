@@ -21,13 +21,37 @@
 
 #include <math.h>
 
+double minimum(double x, double y)
+{
+        if (x <= y)
+                return x;
+        else
+                return y;
+}
+
+double maximum(double x, double y)
+{
+        if (x >= y)
+                return x;
+        else
+                return y;
+}
+
+double sign(double x)
+{
+        if (x == fabs(x))
+                return 1.0;
+        else
+                return -1.0;
+}
+
 /*
- * Box-Muller transform for the generation of paris of normally distributed
+ * Box-Muller transform for the generation of pairs of normally distributed
  * random numbers. See:
  *
  * Box, G. E. P. and Muller, M. E. (1958). A note on the generation of
- *   random normal deviates. The Annals of Mathematical Statistics, 29 (2),
- *   610-611.
+ *     random normal deviates. The Annals of Mathematical Statistics, 29 
+ *     (2), 610-611.
  */
 double normrand(double mu, double sigma)
 {

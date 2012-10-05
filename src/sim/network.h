@@ -59,6 +59,11 @@ struct network
                                        after which to scale the momentum */
         double weight_decay;        /* weight decay */
 
+        double rp_init_update;      /* */
+        double rp_eta_plus;         /* */
+        double rp_eta_minus;        /* */
+        int rp_type;                /* */
+
         double error_threshold;     /* error threshold */
 
         int batch_size;             /* size of batch after which to update
@@ -187,6 +192,8 @@ struct projection
         struct matrix *prev_deltas; /* previous projection deltas for BP */
         struct matrix               /* previous weight changes */
                 *prev_weight_changes;
+        struct matrix               /* update values for Rprop */
+                *rp_update_values;
 
         bool recurrent;             /* flags whether this is a recurrent
                                        projection for BPTT */
@@ -230,6 +237,7 @@ struct status
 {
         int epoch;                  /* current training epoch */
         double error;               /* network error */
+        double prev_error;          /* previous network error */
         double weight_cost;         /* weight cost */
         double gradient_linearity;  /* gradient linearity */
         double                      /* length of last weight changes vector */ 
@@ -277,10 +285,12 @@ struct projection *create_projection(
                 struct matrix *deltas,
                 struct matrix *prev_deltas,
                 struct matrix *prev_weight_changes,
+                struct matrix *rp_update_values,
                 bool recurrent);
 void dispose_projection(struct projection *p);
 
 void randomize_weight_matrices(struct group *g, struct network *n);
+void initialize_update_values(struct group *g, struct network *n);
 
 struct network *load_network(char *filename);
 

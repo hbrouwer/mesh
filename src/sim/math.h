@@ -21,6 +21,10 @@
 
 #include "vector.h"
 
+double minimum(double x, double y);
+double maximum(double x, double y);
+double sign(double x);
+
 double normrand(double mu, double sigma);
 
 #endif /* MATH_H */

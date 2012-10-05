@@ -29,7 +29,7 @@
  */
 
 /*
- * This function propagates activation forward from a group g.  Let j be
+ * This function propagates activation forward from a group g. Let j be
  * a unit in one of the network's groups, and i a unit in a group projecting
  * to it. The net input x_j to unit j is defined as:
  *

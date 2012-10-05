@@ -61,6 +61,10 @@ void initialize_network(struct network *n)
 
         randomize_weight_matrices(n->input, n);
 
+        /* for rprop */
+        n->rp_init_update = 0.1;
+        initialize_update_values(n->input, n);
+
         if (n->batch_size == 0)
                 n->batch_size = n->training_set->num_elements;
 
@@ -214,16 +218,19 @@ void attach_bias_group(struct network *n, struct group *g)
         struct matrix *prev_weight_changes = create_matrix(
                         bg->vector->size,
                         g->vector->size);
+        struct matrix *rp_update_values = create_matrix(
+                        bg->vector->size,
+                        g->vector->size);
 
         bg->out_projs->elements[bg->out_projs->num_elements++] =
                 create_projection(g, weights, error, deltas, prev_deltas,
-                                prev_weight_changes, false);
+                                prev_weight_changes, rp_update_values, false);
         if (bg->out_projs->num_elements == bg->out_projs->max_elements)
                 increase_projs_array_size(bg->out_projs);
         
         g->inc_projs->elements[g->inc_projs->num_elements++] =
                 create_projection(bg, weights, error, deltas, prev_deltas,
-                                prev_weight_changes, false);
+                                prev_weight_changes, rp_update_values, false);
         if (g->inc_projs->num_elements == g->out_projs->max_elements)
                 increase_projs_array_size(g->inc_projs);
 
@@ -343,6 +350,7 @@ struct projection *create_projection(
                 struct matrix *deltas,
                 struct matrix *prev_deltas,
                 struct matrix *prev_weight_changes,
+                struct matrix *rp_update_values,
                 bool recurrent)
 {
         struct projection *p;
@@ -357,6 +365,7 @@ struct projection *create_projection(
         p->deltas = deltas;
         p->prev_deltas = prev_deltas;
         p->prev_weight_changes = prev_weight_changes;
+        p->rp_update_values = rp_update_values;
         p->recurrent = recurrent;
 
         return p;
@@ -373,6 +382,7 @@ void dispose_projection(struct projection *p)
         dispose_matrix(p->deltas);
         dispose_matrix(p->prev_deltas);
         dispose_matrix(p->prev_weight_changes);
+        dispose_matrix(p->rp_update_values);
 
         free(p);
 }
@@ -385,6 +395,16 @@ void randomize_weight_matrices(struct group *g, struct network *n)
 
         for (int i = 0; i < g->out_projs->num_elements; i++)
                 randomize_weight_matrices(g->out_projs->elements[i]->to, n);
+}
+
+void initialize_update_values(struct group *g, struct network *n)
+{
+        for (int i = 0; i < g->inc_projs->num_elements; i++)
+                fill_matrix_with_value(g->inc_projs->elements[i]->rp_update_values,
+                                n->rp_init_update);
+
+        for (int i = 0; i < g->out_projs->num_elements; i++)
+                initialize_update_values(g->out_projs->elements[i]->to, n);
 }
 
 struct network *load_network(char *filename)
@@ -522,8 +542,33 @@ void load_update_algorithm(char *buf, char *fmt, struct network *n,
                 return;
 
         /* steepest descent */
-        if (strncmp(tmp, "sd", 2) == 0)
+        if (strcmp(tmp, "steepest") == 0)
                 n->update_algorithm = bp_update_steepest_descent;
+
+        if (strcmp(tmp, "rprop+") == 0) {
+                n->update_algorithm = bp_update_rprop;
+                n->rp_type = RPROP_PLUS;
+        }
+
+        if (strcmp(tmp, "rprop+") == 0) {
+                n->update_algorithm = bp_update_rprop;
+                n->rp_type = RPROP_PLUS;
+        }
+
+        if (strcmp(tmp, "rprop-") == 0) {
+                n->update_algorithm = bp_update_rprop;
+                n->rp_type = RPROP_MINUS;
+        }
+
+        if (strcmp(tmp, "irprop+") == 0) {
+                n->update_algorithm = bp_update_rprop;
+                n->rp_type = IRPROP_PLUS;
+        }
+
+        if (strcmp(tmp, "irprop-") == 0) {
+                n->update_algorithm = bp_update_rprop;
+                n->rp_type = IRPROP_MINUS;
+        }        
 
         if (n->update_algorithm)
                 mprintf(msg, tmp);
@@ -717,16 +762,19 @@ void load_projection(char *buf, char *fmt, struct network *n, char *msg)
         struct matrix *prev_weight_changes = create_matrix(
                         fg->vector->size,
                         tg->vector->size);
+        struct matrix *rp_update_values = create_matrix(
+                        fg->vector->size,
+                        tg->vector->size);
 
         fg->out_projs->elements[fg->out_projs->num_elements++] =
                 create_projection(tg, weights, error, deltas, prev_deltas,
-                                prev_weight_changes, false);
+                                prev_weight_changes, rp_update_values, false);
         if (fg->out_projs->num_elements == fg->out_projs->max_elements)
                 increase_projs_array_size(fg->out_projs);
         
         tg->inc_projs->elements[tg->inc_projs->num_elements++] =
                 create_projection(fg, weights, error, deltas, prev_deltas,
-                                prev_weight_changes, false);
+                                prev_weight_changes, rp_update_values, false);
         if (tg->inc_projs->num_elements == tg->out_projs->max_elements)
                 increase_projs_array_size(tg->inc_projs);
 

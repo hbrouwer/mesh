@@ -108,6 +108,13 @@ void zero_out_matrix(struct matrix *m)
                         m->elements[i][j] = 0.0;
 }
 
+void fill_matrix_with_value(struct matrix *m, double v)
+{
+        for (int i = 0; i < m->rows; i++)
+                for (int j = 0; j < m->cols; j++)
+                        m->elements[i][j] = v;
+}
+
 double matrix_minimum(struct matrix *m)
 {
         double min = m->elements[0][0];
