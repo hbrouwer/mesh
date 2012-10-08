@@ -494,6 +494,14 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                         double weight_delta = 0.0;
 
                         /*
+                         * First, apply weight decay:
+                         *
+                         * DW_ij = DW_ij - d * W_ij
+                         */
+                        weight_delta -= n->weight_decay 
+                                * p->weights->elements[i][j];
+
+                        /*
                          * Sign of @E/@w_ij has not changed:
                          * 
                          * @E/@w_ij(t-1) * @E/@w_ij(t) > 0
@@ -515,7 +523,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  *
                                  * w_ij = w_ij + DW_ij
                                  */
-                                weight_delta = -sign(p->gradients->elements[i][j]) 
+                                weight_delta += -sign(p->gradients->elements[i][j]) 
                                         * p->rp_update_values->elements[i][j];
                                 p->weights->elements[i][j] += weight_delta;
 
@@ -565,7 +573,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  * w_ij = w_ij + DW_ij
                                  */
                                 if (n->rp_type == RPROP_MINUS || n->rp_type == IRPROP_MINUS) {
-                                        weight_delta = -sign(p->gradients->elements[i][j]) *
+                                        weight_delta += -sign(p->gradients->elements[i][j]) *
                                                 p->rp_update_values->elements[i][j];
                                         p->weights->elements[i][j] += weight_delta;
                                 }
@@ -584,7 +592,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  *
                                  * w_ij = w_ij + DW_ij
                                  */
-                                weight_delta = -sign(p->gradients->elements[i][j])
+                                weight_delta += -sign(p->gradients->elements[i][j])
                                         * p->rp_update_values->elements[i][j];
                                 p->weights->elements[i][j] += weight_delta;
                         }
@@ -613,6 +621,40 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
  * ########################################################################
  * ## Quick-propagation weight updating                                  ##
  * ########################################################################
+ */
+
+/*
+ * This implements Quickprop backpropagation (Fahlman, 1988). Quickprop is
+ * a second order learning method that draws upon two assumptions:
+ *
+ *     (1) The error versus weight curve for each weight can be approximated
+ *         by a parabola whose arms open upwards.
+ *
+ *     (2) The change in the error gradient, as seen by each weight is not
+ *         affected by all the other weights that are changing at the same
+ *         time.
+ *
+ * For each weight, previous and current error gradients, as well as the
+ * weight deltas at the timesteps at which these gradients were measured are
+ * used to determine a parabola. On each update, weights are adjusted to
+ * jump to the minimum of this parabola:
+ *
+ *     DW_ij(t) = EW_ij(t) / (EW_ij(t-1) - EW(t)) * DW_ij(t-1)
+ *
+ * At t=0, this process is bootstrapped by using steepest descent, which is
+ * is also used in case a previous weight delta equals 0. Weight updates are
+ * bounded by a max step size u. If a weight step is larger than u times the
+ * previous step for that weight, u times the previous weight delta is used
+ * instead. Moreover, the negative of the learning rate times the current
+ * error gradient is included in the current weight delta if the gradient
+ * has the same sign as the previous gradient. Weight decay is applied to
+ * limit the sizes of the weights.
+ *
+ * References
+ *
+ * Fahlman, S. E. (1988). An empirical study of learning speed in back-
+ *     propagation networks. Technical report CMU-CS-88-162. School of
+ *     Computer Science, Caernie Mellon University, Pittsburgh, PA 15213.
  */
 
 #define QP_MAX_STEP_SIZE 1.75
@@ -662,6 +704,8 @@ void bp_recursively_update_qprop(struct network *n, struct group *g)
 void bp_update_projection_qprop(struct network *n, struct group *g,
                 struct projection *p)
 {
+        double shrink_factor = QP_MAX_STEP_SIZE / (1.0 + QP_MAX_STEP_SIZE);
+
         /*
          * Adjust the weight between unit i in group g'
          * and unit j in group g.
@@ -669,29 +713,117 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
                         double weight_delta = 0.0;
-
+                        
+                        /*
+                         * Previous weight delta was positive:
+                         *
+                         * @DW_ij(t-1) > 0
+                         */
                         if (p->prev_weight_deltas->elements[i][j] > 0.0) {
-                                weight_delta = p->gradients->elements[i][j] /
-                                        (p->prev_gradients->elements[i][j]
-                                                - p->gradients->elements[i][j]);
-                                weight_delta *= p->prev_weight_deltas->elements[i][j];
+                                /*
+                                 * If current gradient is negative, include
+                                 * the negative of the learning rate times
+                                 * the gradient in the weight delta.
+                                 */ 
+                                if (p->gradients->elements[i][j] < 0.0)
+                                        weight_delta += -n->learning_rate
+                                                * p->gradients->elements[i][j];
+                                
+                                /*
+                                 * If current gradient is larger than the
+                                 * max step size times the previous
+                                 * gradient, take a step of the maximum size
+                                 * times the previous weight delta.
+                                 */
+                                if (p->gradients->elements[i][j] <
+                                                shrink_factor * p->prev_gradients->elements[i][j]) {
+                                        weight_delta += QP_MAX_STEP_SIZE
+                                                * p->prev_weight_deltas->elements[i][j];
+                                /*
+                                 * Otherwise, use the quadratic estimate:
+                                 *
+                                 * @DW_ij(t) = EW_ij(t) 
+                                 *     / (EW_ij(t-1) - EW_ij(t)
+                                 *     * @DW_ij(t-1)
+                                 */
+                                } else {
+                                        weight_delta += p->gradients->elements[i][j]
+                                                / (p->prev_gradients->elements[i][j] 
+                                                                - p->gradients->elements[i][j])
+                                                * p->prev_weight_deltas->elements[i][j];
+                                }
+                        
+                        /*
+                         * Previous weight delta was negative:
+                         *
+                         * @DW_ij(t-1) < 0
+                         */
+                        } else if (p->prev_weight_deltas->elements[i][j] < 0.0) {
+                                /*
+                                 * If current gradient is positive, include
+                                 * the negative of the learning rate times
+                                 * the gradient in the weight delta.
+                                 */
+                                if (p->gradients->elements[i][j] > 0.0)
+                                        weight_delta += -n->learning_rate
+                                                * p->gradients->elements[i][j];
 
-                                if (p->prev_gradients->elements[i][j]
-                                        * p->gradients->elements[i][j] > 0.0) {
-                                        weight_delta += n->learning_rate * p->gradients->elements[i][j];
+                                /*
+                                 * If current gradient is larger than the
+                                 * max step size times the previous
+                                 * gradient, take a step of the maximum size
+                                 * times the previous weight delta.
+                                 */
+                                if (p->gradients->elements[i][j] >
+                                                shrink_factor * p->prev_gradients->elements[i][j]) {
+                                        weight_delta += QP_MAX_STEP_SIZE
+                                                * p->prev_weight_deltas->elements[i][j];
+                                /*
+                                 * Otherwise, use the quadratic estimate:
+                                 *
+                                 * @DW_ij(t) = EW_ij(t) 
+                                 *     / (EW_ij(t-1) - EW_ij(t)
+                                 *     * @DW_ij(t-1)
+                                 */
+                                } else {
+                                        weight_delta += p->gradients->elements[i][j]
+                                                / (p->prev_gradients->elements[i][j] 
+                                                                - p->gradients->elements[i][j])
+                                                * p->prev_weight_deltas->elements[i][j];
                                 }
 
-                                if (weight_delta > QP_MAX_STEP_SIZE 
-                                                * p->prev_weight_deltas->elements[i][j]) {
-                                        weight_delta = QP_MAX_STEP_SIZE * 
-                                                p->prev_weight_deltas->elements[i][j];
-                                }
+                        /*
+                         * Previous weight delta was zero:
+                         *
+                         * @DW_ij(t-1) = 0
+                         */
                         } else {
-                                weight_delta = -0.01 * p->gradients->elements[i][j];
-                                        //-n->learning_rate * p->gradients->elements[i][j];
+                                /*
+                                 * Use steepest descent.
+                                 *
+                                 * First, we apply learning:
+                                 *
+                                 * DW_ij = -e * EW_ij
+                                 */
+                                weight_delta += -n->learning_rate
+                                        * p->gradients->elements[i][j];
+
+                                /*
+                                 * Next, we apply momentum:
+                                 *
+                                 * DW_ij = DW_ij + a * DW_ij(t-1)
+                                 */
+                                weight_delta += n->momentum
+                                        * p->prev_weight_deltas->elements[i][j];
                         }
 
-                        weight_delta -= n->weight_decay * p->weights->elements[i][j];
+                        /*
+                         * Apply weight decay:
+                         *
+                         * DW_ij = DW_ij - d * W_ij
+                         */
+                        weight_delta -= n->weight_decay 
+                                * p->weights->elements[i][j];
 
                         /*
                          * Adjust the weight:
@@ -716,7 +848,6 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                          * Store a copy of the weight change.
                          */
                         p->prev_weight_deltas->elements[i][j] = weight_delta;
-
                 }
         }
 }
