@@ -169,6 +169,8 @@ void bp_projection_error_and_weight_gradients(struct network *n, struct
                          * unit j:
                          *
                          * EW_ij += EI_j * Y_i
+                         *
+                         * Note: gadients sum over an epoch.
                          */
                         p->gradients->elements[i][j] += e->elements[j]
                                 * p->to->vector->elements[i];
@@ -246,6 +248,14 @@ struct vector *bp_group_error(struct network *n, struct group *g)
  * ########################################################################
  * ## Steepest descent weight updating                                   ##
  * ########################################################################
+ */
+
+/*
+ * This implements steepest (or gradient) descent backpropagation. Steepest
+ * descent is a first-order optimization algorithm for finding the nearest
+ * local minimum of a function. On each weight update, a step is taken that
+ * is proportional to the negative of the gradient of the function that is
+ * being minimized.
  */
 
 void bp_update_steepest_descent(struct network *n)
@@ -338,7 +348,9 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                          * w_ij = w_ij + DW_ij
                          */
                         p->weights->elements[i][j] += weight_delta;
-                       
+                        
+                        /********************************/
+
                         n->status->weight_cost +=
                                 pow(p->weights->elements[i][j], 2.0);
                         n->status->gradient_linearity -= 
@@ -348,6 +360,8 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                                 pow(p->prev_weight_deltas->elements[i][j], 2.0);
                         n->status->gradients_length +=
                                 pow(p->gradients->elements[i][j], 2.0);
+
+                        /********************************/
 
                         /* 
                          * Store a copy of the weight change.
@@ -609,6 +623,8 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                         n->status->gradients_length +=
                                 pow(p->gradients->elements[i][j], 2.0);
 
+                        /********************************/
+
                         /* 
                          * Store a copy of the weight change.
                          */
@@ -619,7 +635,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
 
 /*
  * ########################################################################
- * ## Quick-propagation weight updating                                  ##
+ * ## Quickprop weight updating                                          ##
  * ########################################################################
  */
 
@@ -730,7 +746,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                                 * p->gradients->elements[i][j];
                                 
                                 /*
-                                 * If current gradient is larger than the
+                                 * If current gradient is smaller than the
                                  * max step size times the previous
                                  * gradient, take a step of the maximum size
                                  * times the previous weight delta.
@@ -843,6 +859,8 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                 pow(p->prev_weight_deltas->elements[i][j], 2.0);
                         n->status->gradients_length +=
                                 pow(p->gradients->elements[i][j], 2.0);
+
+                        /********************************/
 
                         /* 
                          * Store a copy of the weight change.
