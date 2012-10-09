@@ -1051,7 +1051,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                                 /*
                                  * De_ij = kappa
                                  */
-                                lr_delta += n->dbd_rate_increment;
+                                lr_delta = n->dbd_rate_increment;
 
                         /*
                          * Current gradient and average of past gradients
@@ -1064,7 +1064,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                                 /*
                                  * De_ij = -phi * e_ij(t)
                                  */
-                                lr_delta += -n->dbd_rate_decrement
+                                lr_delta = -n->dbd_rate_decrement
                                         * p->dyn_learning_pars->elements[i][j];
                         }
 
