@@ -61,9 +61,9 @@ void initialize_network(struct network *n)
 
         randomize_weight_matrices(n->input, n);
 
-        /* for rprop */
+        /* for Rprop and DBD */
         n->rp_init_update = 0.1;
-        initialize_update_values(n->input, n);
+        initialize_dyn_learning_pars(n->input, n);
 
         if (n->batch_size == 0)
                 n->batch_size = n->training_set->num_elements;
@@ -218,19 +218,19 @@ void attach_bias_group(struct network *n, struct group *g)
         struct matrix *prev_weight_deltas = create_matrix(
                         bg->vector->size,
                         g->vector->size);
-        struct matrix *rp_update_values = create_matrix(
+        struct matrix *dyn_learning_pars = create_matrix(
                         bg->vector->size,
                         g->vector->size);
 
         bg->out_projs->elements[bg->out_projs->num_elements++] =
                 create_projection(g, weights, error, gradients, prev_gradients,
-                                prev_weight_deltas, rp_update_values, false);
+                                prev_weight_deltas, dyn_learning_pars, false);
         if (bg->out_projs->num_elements == bg->out_projs->max_elements)
                 increase_projs_array_size(bg->out_projs);
         
         g->inc_projs->elements[g->inc_projs->num_elements++] =
                 create_projection(bg, weights, error, gradients, prev_gradients,
-                                prev_weight_deltas, rp_update_values, false);
+                                prev_weight_deltas, dyn_learning_pars, false);
         if (g->inc_projs->num_elements == g->out_projs->max_elements)
                 increase_projs_array_size(g->inc_projs);
 
@@ -350,7 +350,7 @@ struct projection *create_projection(
                 struct matrix *gradients,
                 struct matrix *prev_gradients,
                 struct matrix *prev_weight_deltas,
-                struct matrix *rp_update_values,
+                struct matrix *dyn_learning_pars,
                 bool recurrent)
 {
         struct projection *p;
@@ -365,7 +365,7 @@ struct projection *create_projection(
         p->gradients = gradients;
         p->prev_gradients = prev_gradients;
         p->prev_weight_deltas = prev_weight_deltas;
-        p->rp_update_values = rp_update_values;
+        p->dyn_learning_pars = dyn_learning_pars;
         p->recurrent = recurrent;
 
         return p;
@@ -382,7 +382,7 @@ void dispose_projection(struct projection *p)
         dispose_matrix(p->gradients);
         dispose_matrix(p->prev_gradients);
         dispose_matrix(p->prev_weight_deltas);
-        dispose_matrix(p->rp_update_values);
+        dispose_matrix(p->dyn_learning_pars);
 
         free(p);
 }
@@ -397,14 +397,20 @@ void randomize_weight_matrices(struct group *g, struct network *n)
                 randomize_weight_matrices(g->out_projs->elements[i]->to, n);
 }
 
-void initialize_update_values(struct group *g, struct network *n)
+void initialize_dyn_learning_pars(struct group *g, struct network *n)
 {
+        double v = 0.0;
+        if (n->update_algorithm == bp_update_dbd) {
+                v = n->learning_rate;
+        } else {
+                v = n->rp_init_update;
+        }
+
         for (int i = 0; i < g->inc_projs->num_elements; i++)
-                fill_matrix_with_value(g->inc_projs->elements[i]->rp_update_values,
-                                n->rp_init_update);
+                fill_matrix_with_value(g->inc_projs->elements[i]->dyn_learning_pars, v);
 
         for (int i = 0; i < g->out_projs->num_elements; i++)
-                initialize_update_values(g->out_projs->elements[i]->to, n);
+                initialize_dyn_learning_pars(g->out_projs->elements[i]->to, n);
 }
 
 struct network *load_network(char *filename)
@@ -543,7 +549,7 @@ void load_update_algorithm(char *buf, char *fmt, struct network *n,
 
         /* steepest descent */
         if (strcmp(tmp, "steepest") == 0)
-                n->update_algorithm = bp_update_steepest_descent;
+                n->update_algorithm = bp_update_sd;
 
         if (strcmp(tmp, "rprop+") == 0) {
                 n->update_algorithm = bp_update_rprop;
@@ -574,6 +580,9 @@ void load_update_algorithm(char *buf, char *fmt, struct network *n,
                 n->update_algorithm = bp_update_qprop;
         }
 
+        if (strcmp(tmp, "dbd") == 0) {
+                n->update_algorithm = bp_update_dbd;
+        }
 
         if (n->update_algorithm)
                 mprintf(msg, tmp);
@@ -767,19 +776,19 @@ void load_projection(char *buf, char *fmt, struct network *n, char *msg)
         struct matrix *prev_weight_deltas = create_matrix(
                         fg->vector->size,
                         tg->vector->size);
-        struct matrix *rp_update_values = create_matrix(
+        struct matrix *dyn_learning_pars = create_matrix(
                         fg->vector->size,
                         tg->vector->size);
 
         fg->out_projs->elements[fg->out_projs->num_elements++] =
                 create_projection(tg, weights, error, gradients, prev_gradients,
-                                prev_weight_deltas, rp_update_values, false);
+                                prev_weight_deltas, dyn_learning_pars, false);
         if (fg->out_projs->num_elements == fg->out_projs->max_elements)
                 increase_projs_array_size(fg->out_projs);
         
         tg->inc_projs->elements[tg->inc_projs->num_elements++] =
                 create_projection(fg, weights, error, gradients, prev_gradients,
-                                prev_weight_deltas, rp_update_values, false);
+                                prev_weight_deltas, dyn_learning_pars, false);
         if (tg->inc_projs->num_elements == tg->out_projs->max_elements)
                 increase_projs_array_size(tg->inc_projs);
 
@@ -1036,4 +1045,18 @@ void print_weight_stats(struct network *n)
         struct weight_stats *ws = weight_statistics(n);
 
         pprint_weight_stats(ws);
+}
+
+void print_network_topology(struct network *n)
+{
+        print_groups(n->output);
+}
+
+void print_groups(struct group *g)
+{
+        printf("\n%s: ", g->name);
+        pprint_vector(g->vector);
+
+        for (int i = 0; i < g->inc_projs->num_elements; i++)
+                print_groups(g->inc_projs->elements[i]->to);
 }

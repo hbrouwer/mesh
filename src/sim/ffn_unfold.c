@@ -88,9 +88,9 @@ struct ffn_unfolded_network *ffn_init_unfolded_network(struct network *n)
                 goto error_out;
         memset(un->recur_prev_weight_deltas, 0, block_size);
 
-        if (!(un->recur_rp_update_values = malloc(block_size)))
+        if (!(un->recur_dyn_learning_pars = malloc(block_size)))
                 goto error_out;
-        memset(un->recur_rp_update_values, 0, block_size);
+        memset(un->recur_dyn_learning_pars, 0, block_size);
 
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
                 struct group *g = un->recur_groups->elements[i];
@@ -104,10 +104,10 @@ struct ffn_unfolded_network *ffn_init_unfolded_network(struct network *n)
                                 g->vector->size,
                                 g->vector->size);
 
-                un->recur_rp_update_values[i] = create_matrix(
+                un->recur_dyn_learning_pars[i] = create_matrix(
                                 g->vector->size,
                                 g->vector->size);
-                fill_matrix_with_value(un->recur_rp_update_values[i],
+                fill_matrix_with_value(un->recur_dyn_learning_pars[i],
                                 n->rp_init_update);
         }
 
@@ -144,7 +144,7 @@ void ffn_dispose_unfolded_network(struct ffn_unfolded_network *un)
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
                 dispose_matrix(un->recur_weights[i]);
                 dispose_matrix(un->recur_prev_weight_deltas[i]);
-                dispose_matrix(un->recur_rp_update_values[i]);
+                dispose_matrix(un->recur_dyn_learning_pars[i]);
         }
         free(un->recur_weights);
         free(un->recur_prev_weight_deltas);
@@ -343,7 +343,7 @@ struct projection *ffn_duplicate_projection(
         dp->gradients = gradients;
         dp->prev_gradients = prev_gradients;
         dp->prev_weight_deltas = p->prev_weight_deltas;
-        dp->rp_update_values = p->rp_update_values;
+        dp->dyn_learning_pars = p->dyn_learning_pars;
 
         return dp;
 
@@ -407,14 +407,14 @@ void ffn_attach_recurrent_groups(struct ffn_unfolded_network *un,
                 g2->out_projs->elements[g2->out_projs->num_elements++] =
                         create_projection(g1, un->recur_weights[i], error,
                                         gradients, prev_gradients, un->recur_prev_weight_deltas[i],
-                                        un->recur_rp_update_values[i], true);
+                                        un->recur_dyn_learning_pars[i], true);
                 if (g2->out_projs->num_elements == g2->out_projs->max_elements)
                         increase_projs_array_size(g2->out_projs);
 
                 g1->inc_projs->elements[g1->inc_projs->num_elements++] = 
                         create_projection(g2, un->recur_weights[i], error,
                                         gradients, prev_gradients, un->recur_prev_weight_deltas[i],
-                                        un->recur_rp_update_values[i], true);
+                                        un->recur_dyn_learning_pars[i], true);
                 if (g1->inc_projs->num_elements == g1->inc_projs->max_elements)
                         increase_projs_array_size(g1->inc_projs);
         }
@@ -471,14 +471,14 @@ void ffn_connect_duplicate_networks(struct ffn_unfolded_network *un,
                 g1->out_projs->elements[g1->out_projs->num_elements++] =
                         create_projection(g2, un->recur_weights[i], error,
                                         gradients, prev_gradients, un->recur_prev_weight_deltas[i],
-                                        un->recur_rp_update_values[i], true);
+                                        un->recur_dyn_learning_pars[i], true);
                 if (g1->out_projs->num_elements == g1->out_projs->max_elements)
                         increase_projs_array_size(g1->out_projs);
 
                 g2->inc_projs->elements[g2->inc_projs->num_elements++] = 
                         create_projection(g1, un->recur_weights[i], error,
                                         gradients, prev_gradients, un->recur_prev_weight_deltas[i],
-                                        un->recur_rp_update_values[i], true);
+                                        un->recur_dyn_learning_pars[i], true);
                 if (g2->inc_projs->num_elements == g2->inc_projs->max_elements)
                         increase_projs_array_size(g2->inc_projs);
         }

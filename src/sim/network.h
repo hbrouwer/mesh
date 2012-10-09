@@ -64,6 +64,9 @@ struct network
         double rp_eta_minus;        /* */
         int rp_type;                /* */
 
+        double dbd_rate_increment;  /* learning rate increment factor for DBD */
+        double dbd_rate_decrement;  /* learning rate decrement factor for DBD */
+
         double error_threshold;     /* error threshold */
 
         int batch_size;             /* size of batch after which to update
@@ -192,8 +195,8 @@ struct projection
                 *prev_gradients;
         struct matrix               /* previous weight deltas */
                 *prev_weight_deltas;
-        struct matrix               /* update values for Rprop */
-                *rp_update_values;
+        struct matrix               /* update values for Rprop or learning rates for DBD */
+                *dyn_learning_pars;
 
         bool recurrent;             /* flags whether this is a recurrent
                                        projection for BPTT */
@@ -285,12 +288,12 @@ struct projection *create_projection(
                 struct matrix *gradients,
                 struct matrix *prev_gradients,
                 struct matrix *prev_weight_deltas,
-                struct matrix *rp_update_values,
+                struct matrix *dyn_learning_pars,
                 bool recurrent);
 void dispose_projection(struct projection *p);
 
 void randomize_weight_matrices(struct group *g, struct network *n);
-void initialize_update_values(struct group *g, struct network *n);
+void initialize_dyn_learning_pars(struct group *g, struct network *n);
 
 struct network *load_network(char *filename);
 
@@ -327,5 +330,8 @@ void save_weight_matrices(struct group *g, FILE *fd);
 void print_weights(struct network *n);
 void print_projection_weights(struct group *g);
 void print_weight_stats(struct network *n);
+
+void print_network_topology(struct network *n);
+void print_groups(struct group *g);
 
 #endif /* NETWORK_H */

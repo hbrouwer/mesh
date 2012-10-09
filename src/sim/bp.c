@@ -258,7 +258,7 @@ struct vector *bp_group_error(struct network *n, struct group *g)
  * being minimized.
  */
 
-void bp_update_steepest_descent(struct network *n)
+void bp_update_sd(struct network *n)
 {
         n->status->weight_cost = 0.0;
         n->status->gradient_linearity = 0.0;
@@ -318,12 +318,14 @@ void bp_update_projection_sd(struct network *n, struct group *g,
          */
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
+                        double weight_delta = 0.0;
+
                         /*
                          * First, we apply learning:
                          *
                          * DW_ij = -e * EW_ij
                          */
-                        double weight_delta = -n->learning_rate
+                        weight_delta += -n->learning_rate
                                 * p->gradients->elements[i][j];
 
                         /*
@@ -526,8 +528,8 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                 /*
                                  * Bind update value u_ij to u_max.
                                  */
-                                p->rp_update_values->elements[i][j] = minimum(
-                                                p->rp_update_values->elements[i][j] * n->rp_eta_plus,
+                                p->dyn_learning_pars->elements[i][j] = minimum(
+                                                p->dyn_learning_pars->elements[i][j] * n->rp_eta_plus,
                                                 RP_MAX_STEP_SIZE);
 
                                 /*
@@ -538,7 +540,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  * w_ij = w_ij + DW_ij
                                  */
                                 weight_delta += -sign(p->gradients->elements[i][j]) 
-                                        * p->rp_update_values->elements[i][j];
+                                        * p->dyn_learning_pars->elements[i][j];
                                 p->weights->elements[i][j] += weight_delta;
 
                         /*
@@ -552,8 +554,8 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                 /*
                                  * Bind update value u_ij to u_min.
                                  */
-                                p->rp_update_values->elements[i][j] = maximum(
-                                                p->rp_update_values->elements[i][j] * n->rp_eta_minus,
+                                p->dyn_learning_pars->elements[i][j] = maximum(
+                                                p->dyn_learning_pars->elements[i][j] * n->rp_eta_minus,
                                                 RP_MIN_STEP_SIZE);
 
                                 /*
@@ -588,7 +590,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  */
                                 if (n->rp_type == RPROP_MINUS || n->rp_type == IRPROP_MINUS) {
                                         weight_delta += -sign(p->gradients->elements[i][j]) *
-                                                p->rp_update_values->elements[i][j];
+                                                p->dyn_learning_pars->elements[i][j];
                                         p->weights->elements[i][j] += weight_delta;
                                 }
 
@@ -607,7 +609,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  * w_ij = w_ij + DW_ij
                                  */
                                 weight_delta += -sign(p->gradients->elements[i][j])
-                                        * p->rp_update_values->elements[i][j];
+                                        * p->dyn_learning_pars->elements[i][j];
                                 p->weights->elements[i][j] += weight_delta;
                         }
 
@@ -866,6 +868,232 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                          * Store a copy of the weight change.
                          */
                         p->prev_weight_deltas->elements[i][j] = weight_delta;
+                }
+        }
+}
+
+/*
+ * ########################################################################
+ * ## Delta-Bar-Delta weight updating                                    ##
+ * ########################################################################
+ */
+
+/*
+ * This implements Delta-Bar-Delta (DBD) backpropagation (Jacobs, 1988). In
+ * DBD backpropagation, each weight has its own learning rate that is
+ * updated together with its corresponding weight. Hence, in essence, DBD
+ * adds a learning rate update rule to steepest descent. Upon each update,
+ * the change in the update rule for weight is defined as:
+ *
+ *                | kappa            , if EW_ij_bar(t-1) * EW_ij(t) > 0
+ *                |
+ *     De_ij(t) = | -phi * e_ij(t)   , if EW_ij_bar(t-1) * EW_ij(t) < 0
+ *                |
+ *                | 0                , otherwise
+ *
+ * where EW_ij_bar(t) is the exponential average of the current and past
+ * gradients, which is defined as:
+ *
+ *     EW_ij_bar(t) = (1 - theta) * EW_ij + theta * EW_ij_bar(t-1)
+ *
+ * and has theta as its base, and time as its exponent. Hence, if the
+ * current gradient and the average of the past gradients have the same sign,
+ * the learning rate is incremented by kappa. If they have opposite signs,
+ * by contrast, the learning rate is decremented by phi times its current
+ * value.
+ 
+ * References
+ *
+ * Jacobs, R. A. (1988). Increased Rates of Convergence Through Learning
+ *     Rate Adapation. Neural Networks, 1, pp. 295-307.
+ */
+
+#define DBD_BASE 0.7
+
+void bp_update_dbd(struct network *n)
+{
+        n->status->weight_cost = 0.0;
+        n->status->gradient_linearity = 0.0;
+        n->status->last_weight_deltas_length = 0.0;
+        n->status->gradients_length = 0.0;
+
+        n->dbd_rate_increment = 0.1;
+        n->dbd_rate_decrement = 0.9;
+
+        bp_recursively_update_dbd(n, n->output);
+
+        n->status->gradient_linearity /=
+                sqrt(n->status->last_weight_deltas_length
+                                * n->status->gradients_length);
+}
+
+/*
+ * This recursively adjusts the weights and their learning rates of all 
+ * incoming projections of a group g.
+ */
+
+void bp_recursively_update_dbd(struct network *n, struct group *g)
+{
+        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+                struct projection *p = g->inc_projs->elements[i];
+                /*
+                 * Adjust weights if projection is not frozen.
+                 */
+                if (!p->frozen)
+                        bp_update_projection_dbd(n, g, p);
+                
+                /*
+                 * Make a copy of the weight gradients, and reset the the
+                 * current weight gradients.
+                 */
+                // copy_matrix(p->prev_gradients, p->gradients);
+                zero_out_matrix(p->gradients);
+
+                /*
+                 * During BPTT, we want to only adjust weights
+                 * in the network of the current timestep.
+                 */
+                if (p->recurrent)
+                        continue;
+
+                bp_recursively_update_dbd(n, p->to);
+        }
+}
+
+/*
+ * This adjusts the weights and their learning rates of a projection p 
+ * between a group g' and g.
+ */
+
+void bp_update_projection_dbd(struct network *n, struct group *g,
+                struct projection *p)
+{
+        /*
+         * Adjust the weight and its learning rate between unit i in group g'
+         * and unit j in group g.
+         */
+        for (int i = 0; i < p->to->vector->size; i++) {
+                for (int j = 0; j < g->vector->size; j++) {
+                        /*
+                         * ################################################
+                         * ## Update weight                              ##
+                         * ################################################
+                         */
+
+                        double weight_delta = 0.0;
+
+                        /*
+                         * First, we apply learning:
+                         *
+                         * DW_ij = -e * EW_ij
+                         */
+                        weight_delta += -p->dyn_learning_pars->elements[i][j]
+                                * p->gradients->elements[i][j];
+
+                        /*
+                         * Next, we apply momentum:
+                         *
+                         * DW_ij = DW_ij + a * DW_ij(t-1)
+                         */
+                        weight_delta += n->momentum
+                                * p->prev_weight_deltas->elements[i][j];
+                        
+                        /*
+                         * Finally, we apply weight decay:
+                         *
+                         * DW_ij = DW_ij - d * W_ij
+                         */
+                        weight_delta -= n->weight_decay 
+                                * p->weights->elements[i][j];
+
+                        /*
+                         * Adjust the weight:
+                         *
+                         * w_ij = w_ij + DW_ij
+                         */
+                        p->weights->elements[i][j] += weight_delta;
+                        
+                        /********************************/
+
+                        n->status->weight_cost +=
+                                pow(p->weights->elements[i][j], 2.0);
+                        n->status->gradient_linearity -= 
+                                p->prev_weight_deltas->elements[i][j]
+                                * p->gradients->elements[i][j];
+                        n->status->last_weight_deltas_length +=
+                                pow(p->prev_weight_deltas->elements[i][j], 2.0);
+                        n->status->gradients_length +=
+                                pow(p->gradients->elements[i][j], 2.0);
+
+                        /********************************/
+
+                        /* 
+                         * Store a copy of the weight change.
+                         */
+                        p->prev_weight_deltas->elements[i][j] = weight_delta;
+
+                        /*
+                         * ################################################
+                         * ## Update learning rate                       ##
+                         * ################################################
+                         */
+
+                        double lr_delta = 0.0;
+
+                        /*
+                         * Current gradient and average of past gradients
+                         * have same sign:
+                         *
+                         * EW_ij_bar(t-1) * EW_ij(t) > 0
+                         */
+                        if (p->prev_gradients->elements[i][j]
+                                        * p->gradients->elements[i][j] > 0.0) {
+                                /*
+                                 * De_ij = kappa
+                                 */
+                                lr_delta += n->dbd_rate_increment;
+
+                        /*
+                         * Current gradient and average of past gradients
+                         * have opposite sign:
+                         *
+                         * EW_ij_bar(t-1) * EW_ij(t) < 0
+                         */
+                        } else if (p->prev_gradients->elements[i][j]
+                                        * p->gradients->elements[i][j] < 0.0) {
+                                /*
+                                 * De_ij = -phi * e_ij(t)
+                                 */
+                                lr_delta += -n->dbd_rate_decrement
+                                        * p->dyn_learning_pars->elements[i][j];
+                        }
+
+                        /*
+                         * Adjust the learning rate:
+                         *
+                         * e_ij = e_ij + De_ij
+                         */
+                        p->dyn_learning_pars->elements[i][j] += lr_delta;
+
+                        /*
+                         * Determine the exponential average of the current
+                         * and past gradients:
+                         * 
+                         * EW_ij_bar(t) = (1 - theta) * EW_ij
+                         *     + theta * EW_ij_bar(t-1)
+                         *
+                         * Note: EW_ij_bar(t-1) is stored in the
+                         * prev_gradients matrix of the projection.
+                         */
+                        double exp_average = (1.0 - DBD_BASE)
+                                * p->gradients->elements[i][j]
+                                + DBD_BASE * p->prev_gradients->elements[i][i];
+
+                        /*
+                         * Store a copy of the current exponentional 
+                         * average.
+                         */
+                        p->prev_gradients->elements[i][j] = exp_average;
                 }
         }
 }

@@ -29,9 +29,10 @@ int main(int argc, char **argv)
         struct network *n = NULL;
         bool net_spec = false;
         bool print_stats = false;
+        bool print_network = false;
 
         cprintf("");
-        cprintf("MESH %s", VERSION);
+        cprintf("MESH version %s", VERSION);
         cprintf("(c) 2012 Harm Brouwer <me@hbrouwer.eu>");
         cprintf("Center for Language and Cognition, University of Groningen &");
         cprintf("Netherlands Organisation for Scientific Research (NWO)");
@@ -61,6 +62,10 @@ int main(int argc, char **argv)
 
                 if (strcmp(argv[i], "--print_stats") == 0) {
                         print_stats = true;
+                }
+
+                if (strcmp(argv[i], "--print_network") == 0) {
+                        print_network = true;
                 }
 
                 if (strcmp(argv[i], "--compute_erps") == 0)
@@ -111,6 +116,10 @@ int main(int argc, char **argv)
                 print_weight_stats(n->unfolded_net->stack[0]);
         }
 
+        if (print_network && !n->unfolded_net) {
+                print_network_topology(n);
+        }
+
         mprintf("Cleaning up...");
         dispose_network(n);
 
@@ -144,11 +153,12 @@ void print_version()
 void cprintf(const char *fmt, ...)
 {
         va_list args;
-
+        fprintf(stderr, "\x1b[38;05;14m");
         va_start(args, fmt);
         vfprintf(stderr, fmt, args);
         va_end(args);
         fprintf(stderr, "\n");
+        fprintf(stderr, "\x1b[0m");
 }
 
 /* print program message */
