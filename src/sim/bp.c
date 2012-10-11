@@ -35,12 +35,15 @@
  * determine the error derivative EA_j, which defines how fast the error at
  * unit j changes as a function of that unit's activation level:
  *
- *     EA_j = @E / @y_j = y_j - d_j
+ *     EA_j = @E / @y_j 
+ *          = y_j - d_j
  *
  * Provided EA_j, we can compute how the error changes as function of the
  * the net input to unit j. We term this quantity EI_j, and define it as:
  *
- *     EI_j = @E / @x_j = EA_j * f'(y_j)
+ *     EI_j = @E / @x_j 
+ *          = @E / @y_j * @y_j / @x_j 
+ *          = EA_j * f'(y_j)
  *
  * where f' is the derivative of the activation function used.  We can use
  * the EI quantities of all units of the group towards which unit j belongs
@@ -49,8 +52,9 @@
  * the sum of all EI_j quantities multiplied by the weight w_ij of the
  * connection between each unit j and unit i:
  *
- *     EA_i = @E / @y_i = sum_j ((@E / @x_j) * (@x_j / @y_i) = sum_j (EI_j
- *     * w_ij)
+ *     EA_i = @E / @y_i
+ *          = sum_j ((@E / @x_j) * (@x_j / @y_i) 
+ *          = sum_j (EI_j * w_ij)
  *
  * We can repeat this procedure to compute the EA quantities for as many
  * preceding groups as required. Provided the error derivative EA_j for
@@ -59,11 +63,13 @@
  * the connection between unit j in the output layer, and unit i in
  * a preceding layer:
  *
- *     EW_ij = @E / @w_ij = (@E / @x_j) * (@x_j / @w_ij) = EI_j * Y_i
+ *     EW_ij = @E / @w_ij 
+ *           = (@E / @x_j) * (@x_j / @w_ij) 
+ *           = EI_j * Y_i
  *
  * This can then be used to update the respective weight W_ij by means of:
  *
- *     W_ij = W_ij + DW_ij
+ *     w_ij = w_ij + DW_ij
  *
  * When using steepest descent weight updating, DW_ij is defined as:
  *
@@ -288,7 +294,7 @@ void bp_recursively_update_sd(struct network *n, struct group *g)
                         bp_update_projection_sd(n, g, p);
                 
                 /*
-                 * Make a copy of the weight gradients, and reset the the
+                 * Make a copy of the weight gradients, and reset the
                  * current weight gradients.
                  */
                 copy_matrix(p->prev_gradients, p->gradients);
@@ -382,10 +388,9 @@ void bp_update_projection_sd(struct network *n, struct group *g,
 /*
  * This implements resilient backpropagation (Rprop) (see Igel & Husken,
  * 2000). In Rprop, weight adjustments are made on the basis of the sign of
- * the partial derivative @E/@w_ij, and weight step-sizes are determined for
- * each weight individually. An Rprop update iteration can be divided into
- * two stages. In the first stage, the "update value" u_ij for each weight
- * w_ij is computed:
+ * the partial derivative @E/@w_ij. An Rprop update iteration can be divided
+ * into two stages. In the first stage, the "update value" u_ij for each 
+ * weight w_ij is computed:
  *
  *           | eta_plus * u_ij(t-1)   , if @E/@w_ij(t-1) * @E/@w_ij(t) > 0
  *           |
@@ -481,7 +486,7 @@ void bp_recursively_update_rprop(struct network *n, struct group *g)
                         bp_update_projection_rprop(n, g, p);
                 
                 /*
-                 * Make a copy of the weight gradients, and reset the the
+                 * Make a copy of the weight gradients, and reset the
                  * current weight gradients.
                  */
                 copy_matrix(p->prev_gradients, p->gradients);
@@ -665,8 +670,8 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
  * previous step for that weight, u times the previous weight delta is used
  * instead. Moreover, the negative of the learning rate times the current
  * error gradient is included in the current weight delta if the gradient
- * has the same sign as the previous gradient. Weight decay is applied to
- * limit the sizes of the weights.
+ * has the same sign as the previous gradient, and weight decay is applied
+ * to limit the sizes of the weights.
  *
  * References
  *
@@ -702,7 +707,7 @@ void bp_recursively_update_qprop(struct network *n, struct group *g)
                         bp_update_projection_qprop(n, g, p);
                 
                 /*
-                 * Make a copy of the weight gradients, and reset the the
+                 * Make a copy of the weight gradients, and reset the
                  * current weight gradients.
                  */
                 copy_matrix(p->prev_gradients, p->gradients);
@@ -735,7 +740,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                         /*
                          * Previous weight delta was positive:
                          *
-                         * @DW_ij(t-1) > 0
+                         * DW_ij(t-1) > 0
                          */
                         if (p->prev_weight_deltas->elements[i][j] > 0.0) {
                                 /*
@@ -774,7 +779,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                         /*
                          * Previous weight delta was negative:
                          *
-                         * @DW_ij(t-1) < 0
+                         * DW_ij(t-1) < 0
                          */
                         } else if (p->prev_weight_deltas->elements[i][j] < 0.0) {
                                 /*
@@ -813,7 +818,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                         /*
                          * Previous weight delta was zero:
                          *
-                         * @DW_ij(t-1) = 0
+                         * DW_ij(t-1) = 0
                          */
                         } else {
                                 /*
@@ -943,10 +948,8 @@ void bp_recursively_update_dbd(struct network *n, struct group *g)
                         bp_update_projection_dbd(n, g, p);
                 
                 /*
-                 * Make a copy of the weight gradients, and reset the the
-                 * current weight gradients.
+                 * Reset the current weight gradients.
                  */
-                // copy_matrix(p->prev_gradients, p->gradients);
                 zero_out_matrix(p->gradients);
 
                 /*
@@ -974,6 +977,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
          */
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
+
                         /*
                          * ################################################
                          * ## Update weight                              ##
@@ -1045,6 +1049,9 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                          * have same sign:
                          *
                          * EW_ij_bar(t-1) * EW_ij(t) > 0
+                         *
+                         * Note: EW_ij_bar(t-1) is stored in the
+                         * prev_gradients matrix of the projection.
                          */
                         if (p->prev_gradients->elements[i][j]
                                         * p->gradients->elements[i][j] > 0.0) {
@@ -1081,9 +1088,6 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                          * 
                          * EW_ij_bar(t) = (1 - theta) * EW_ij
                          *     + theta * EW_ij_bar(t-1)
-                         *
-                         * Note: EW_ij_bar(t-1) is stored in the
-                         * prev_gradients matrix of the projection.
                          */
                         double exp_average = (1.0 - DBD_BASE)
                                 * p->gradients->elements[i][j]

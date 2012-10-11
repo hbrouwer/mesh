@@ -39,7 +39,9 @@ double maximum(double x, double y)
 
 double sign(double x)
 {
-        if (x == fabs(x))
+        if (x == 0.0)
+                return 0.0;
+        else if (x == fabs(x))
                 return 1.0;
         else
                 return -1.0;
