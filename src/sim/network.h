@@ -148,9 +148,10 @@ struct group
 {
         char *name;                 /* name of the group */
         struct vector *vector;      /* the "neurons" of this group */
-        struct act *act;            /* activation function and its derivative
+        struct vector *error;       /* error vector for this group */
+        struct act_fun *act_fun;    /* activation function and its derivative
                                        for this group */
-        struct error *error;        /* error function and its derivative
+        struct err_fun *err_fun;    /* error function and its derivative
                                        for this group */
         struct projs_array          /* array of incoming projections */
                 *inc_projs;
@@ -201,7 +202,7 @@ struct projection
  * ########################################################################
  */
 
-struct act 
+struct act_fun 
 {
         double (*fun)                /* activation function  */
                 (struct vector *, int);
@@ -215,12 +216,12 @@ struct act
  * ########################################################################
  */
 
-struct error 
+struct err_fun
 {
         double (*fun)               /* error function */
-                (struct vector *o, struct vector *t);
-        struct vector *(*deriv)     /* error function derivative */
-                (struct vector *o, struct vector *t);
+                (struct group *g, struct vector *t);
+        void(*deriv)                /* error function derivative */
+                (struct group *g, struct vector *t);
 };
 
 /*
@@ -258,8 +259,8 @@ void dispose_group_array(struct group_array *gs);
 
 struct group *create_group(
                 char *name,
-                struct act *act,
-                struct error *error,
+                struct act_fun *act_fun,
+                struct err_fun *err_fun,
                 int size,
                 bool bias, 
                 bool recurrent);
@@ -303,8 +304,8 @@ void load_item_set(char *buf, char *fmt, struct network *n, bool train,
                 char *msg);
 void load_group(char *buf, char *fmt, struct network *n, char *input,
                 char *output, char *msg);
-struct act *load_activation_function(char *act_fun);
-struct error *load_error_function(char *error_fun);
+struct act_fun *load_activation_function(char *act_fun);
+struct err_fun *load_error_function(char *err_fun);
 void load_bias(char *buf, char *fmt, struct network *n, char *msg);
 void load_projection(char *buf, char *fmt, struct network *n, char *msg);
 void load_freeze_projection(char *buf, char *fmt, struct network *n,

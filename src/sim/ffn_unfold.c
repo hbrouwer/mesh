@@ -200,8 +200,9 @@ struct group *ffn_duplicate_group(struct group *g)
         strncpy(dg->name, g->name, strlen(g->name));
 
         dg->vector = create_vector(g->vector->size);
-        dg->act = g->act;
-        dg->error = g->error;
+        dg->error = create_vector(g->vector->size);
+        dg->act_fun = g->act_fun;
+        dg->err_fun = g->err_fun;
 
         dg->inc_projs = create_projs_array(g->inc_projs->max_elements);
         dg->inc_projs->num_elements = g->inc_projs->num_elements;
@@ -388,7 +389,7 @@ void ffn_attach_recurrent_groups(struct ffn_unfolded_network *un,
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
                 char *name = un->recur_groups->elements[i]->name;
                 struct group *g1 = find_group_by_name(n, name);
-                struct group *g2 = create_group(g1->name, g1->act, g1->error,
+                struct group *g2 = create_group(g1->name, g1->act_fun, g1->err_fun,
                                 g1->vector->size, false, true);
 
                 /*

@@ -87,7 +87,7 @@ void feed_forward(struct network *n, struct group *g)
                          * x_j = sum_i (y_i * w_ij)
                          *
                          * Note: A unit can receive activation from units
-                         * in more than one projecting group.
+                         * in different projecting groups.
                          */
                         for (int x = 0; x < rg->inc_projs->num_elements; x++) {
                                 struct group *pg = rg->inc_projs->elements[x]->to;
@@ -102,7 +102,7 @@ void feed_forward(struct network *n, struct group *g)
                          *
                          * y_j = f(x_j)
                          */
-                        rg->vector->elements[j] = rg->act->fun(rg->vector, j);
+                        rg->vector->elements[j] = rg->act_fun->fun(rg->vector, j);
                 }
         }
 

@@ -26,12 +26,12 @@
  * ########################################################################
  */
 
-double error_sum_of_squares(struct vector *o, struct vector *t)
+double error_sum_of_squares(struct group *g, struct vector *t)
 {
         double se = 0.0;
 
-        for (int i = 0; i < o->size; i++) {
-                double y = o->elements[i];
+        for (int i = 0; i < g->vector->size; i++) {
+                double y = g->vector->elements[i];
                 double d = t->elements[i];
 
                 se += pow(y - d, 2.0);
@@ -40,18 +40,14 @@ double error_sum_of_squares(struct vector *o, struct vector *t)
         return 0.5 * se;
 }
 
-struct vector *error_sum_of_squares_deriv(struct vector *o, struct vector *t)
+void error_sum_of_squares_deriv(struct group *g, struct vector *t)
 {
-        struct vector *e = create_vector(o->size);
-
-        for (int i = 0; i < o->size; i++) {
-                double y = o->elements[i];
+        for (int i = 0; i < g->vector->size; i++) {
+                double y = g->vector->elements[i];
                 double d = t->elements[i];
 
-                e->elements[i] = y - d;
+                g->error->elements[i] = y - d;
         }
-
-        return e;
 }
 
 /*
@@ -67,12 +63,12 @@ struct vector *error_sum_of_squares_deriv(struct vector *o, struct vector *t)
 #define LARGE_VALUE 1e10
 #define SMALL_VALUE 1e-10
 
-double error_cross_entropy(struct vector *o, struct vector *t)
+double error_cross_entropy(struct group *g, struct vector *t)
 {
         double ce = 0.0;
 
-        for (int i = 0; i < o->size; i++) {
-                double y = o->elements[i];
+        for (int i = 0; i < g->vector->size; i++) {
+                double y = g->vector->elements[i];
                 double d = t->elements[i];
 
                 if (d == 0.0) {
@@ -99,33 +95,29 @@ double error_cross_entropy(struct vector *o, struct vector *t)
         return ce;
 }
 
-struct vector *error_cross_entropy_deriv(struct vector *o, struct vector *t)
+void error_cross_entropy_deriv(struct group *g, struct vector *t)
 {
-        struct vector *e = create_vector(o->size);
-
-        for (int i = 0; i < o->size; i++) {
-                double y = o->elements[i];
+        for (int i = 0; i < g->vector->size; i++) {
+                double y = g->vector->elements[i];
                 double d = t->elements[i];
 
                 if (d == 0.0) {
                         if (1.0 - y <= SMALL_VALUE)
-                                e->elements[i] = LARGE_VALUE;
+                                g->error->elements[i] = LARGE_VALUE;
                         else
-                                e->elements[i] = 1.0 / (1.0 - y);
+                                g->error->elements[i] = 1.0 / (1.0 - y);
                 } else if (d == 1) {
                         if (y <= SMALL_VALUE)
-                                e->elements[i] = -LARGE_VALUE;
+                                g->error->elements[i] = -LARGE_VALUE;
                         else
-                                e->elements[i] = -1.0 / y;
+                                g->error->elements[i] = -1.0 / y;
                 } else {
                         if (y * (1.0 - y) <= SMALL_VALUE)
-                                e->elements[i] = (y - d) * LARGE_VALUE;
+                                g->error->elements[i] = (y - d) * LARGE_VALUE;
                         else
-                                e->elements[i] = (y - d) / (y * (1.0 - d));
+                                g->error->elements[i] = (y - d) / (y * (1.0 - d));
                 }
         }
-
-        return e;
 }
 
 /*
@@ -138,12 +130,12 @@ struct vector *error_cross_entropy_deriv(struct vector *o, struct vector *t)
  * Formulas and limit handling adapted from LENS source code.
  */
 
-double error_divergence(struct vector *o, struct vector *t)
+double error_divergence(struct group *g, struct vector *t)
 {
         double de = 0.0;
 
-        for (int i = 0; i < o->size; i++) {
-                double y = o->elements[i];
+        for (int i = 0; i < g->vector->size; i++) {
+                double y = g->vector->elements[i];
                 double d = t->elements[i];
 
                 if (d == 0.0) {
@@ -158,22 +150,18 @@ double error_divergence(struct vector *o, struct vector *t)
         return de;
 }
 
-struct vector *error_divergence_deriv(struct vector *o, struct vector *t)
+void error_divergence_deriv(struct group *g, struct vector *t)
 {
-        struct vector *e = create_vector(o->size);
-
-        for (int i = 0; i < o->size; i++) {
-                double y = o->elements[i];
+        for (int i = 0; i < g->vector->size; i++) {
+                double y = g->vector->elements[i];
                 double d = t->elements[i];
 
                 if (d == 0) {
-                        e->elements[i] = 0.0;
+                        g->error->elements[i] = 0.0;
                 } else if (y <= SMALL_VALUE) {
-                        e->elements[i] = -d * LARGE_VALUE;
+                        g->error->elements[i] = -d * LARGE_VALUE;
                 } else {
-                        e->elements[i] = -d / y;
+                        g->error->elements[i] = -d / y;
                 }
         }
-
-        return e;
 }

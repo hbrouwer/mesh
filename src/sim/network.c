@@ -196,8 +196,8 @@ void dispose_group_array(struct group_array *gs)
 
 struct group *create_group(
                 char *name,
-                struct act *act,
-                struct error *error,
+                struct act_fun *act_fun,
+                struct err_fun *err_fun,
                 int size,
                 bool bias, 
                 bool recurrent)
@@ -214,8 +214,10 @@ struct group *create_group(
         strncpy(g->name, name, strlen(name));
 
         g->vector = create_vector(size);
-        g->act = act;
-        g->error = error;
+        g->error = create_vector(size);
+
+        g->act_fun = act_fun;
+        g->err_fun = err_fun;
 
         g->inc_projs = create_projs_array(MAX_PROJS);
         g->out_projs = create_projs_array(MAX_PROJS);
@@ -249,7 +251,7 @@ void attach_bias_group(struct network *n, struct group *g)
         memset(tmp, 0, sizeof(block_size));
 
         sprintf(tmp, "%s_bias", g->name);
-        struct group *bg = create_group(tmp, g->act, g->error, 1, true, false);
+        struct group *bg = create_group(tmp, g->act_fun, g->err_fun, 1, true, false);
 
         free(tmp);
 
@@ -320,9 +322,10 @@ void dispose_group(struct group *g)
 {
         free(g->name);
         dispose_vector(g->vector);
+        dispose_vector(g->error);
         if (!g->bias) {
-                free(g->act);
-                free(g->error);
+                free(g->act_fun);
+                free(g->err_fun);
         }
 
         for (int j = 0; j < g->inc_projs->num_elements; j++)
@@ -773,9 +776,9 @@ void load_group(char *buf, char *fmt, struct network *n, char *input,
         if (sscanf(buf, fmt, tmp1, tmp2, tmp3, &tmp_int) == 0)
                 return;
 
-        struct act *act = load_activation_function(tmp2);
-        struct error *error = load_error_function(tmp3);
-        struct group *g = create_group(tmp1, act, error, tmp_int, false, false);
+        struct act_fun *act_fun = load_activation_function(tmp2);
+        struct err_fun *err_fun = load_error_function(tmp3);
+        struct group *g = create_group(tmp1, act_fun, err_fun, tmp_int, false, false);
 
         if (strcmp(tmp1, input) == 0)
                 n->input = g;
@@ -787,12 +790,12 @@ void load_group(char *buf, char *fmt, struct network *n, char *input,
         mprintf(msg, tmp1, tmp2, tmp3, tmp_int);
 }
 
-struct act *load_activation_function(char *act_fun)
+struct act_fun *load_activation_function(char *act_fun)
 {
-        struct act *a;
-        if (!(a = malloc(sizeof(struct act))))
+        struct act_fun *a;
+        if (!(a = malloc(sizeof(struct act_fun))))
                 goto error_out;
-        memset(a, 0, sizeof(struct act));
+        memset(a, 0, sizeof(struct act_fun));
 
         /* binary sigmoid function */
         if (strcmp(act_fun, "binary_sigmoid") == 0) {
@@ -837,27 +840,27 @@ error_out:
         return NULL;
 }
 
-struct error *load_error_function(char *error_fun)
+struct err_fun *load_error_function(char *err_fun)
 {
-        struct error *e;
-        if (!(e = malloc(sizeof(struct error))))
+        struct err_fun *e;
+        if (!(e = malloc(sizeof(struct err_fun))))
                 goto error_out;
-        memset(e, 0, sizeof(struct error));
+        memset(e, 0, sizeof(struct err_fun));
 
         /* sum of squares */
-        if (strcmp(error_fun, "sum_squares") == 0) {
+        if (strcmp(err_fun, "sum_squares") == 0) {
                 e->fun = error_sum_of_squares;
                 e->deriv = error_sum_of_squares_deriv;
         }
 
         /* cross-entropy */
-        if (strcmp(error_fun, "cross_entropy") == 0) {
+        if (strcmp(err_fun, "cross_entropy") == 0) {
                 e->fun = error_cross_entropy;
                 e->deriv = error_cross_entropy_deriv;
         }
 
         /* divergence */
-        if (strcmp(error_fun, "divergence") == 0) {
+        if (strcmp(err_fun, "divergence") == 0) {
                 e->fun = error_divergence;
                 e->deriv = error_divergence_deriv;
         }

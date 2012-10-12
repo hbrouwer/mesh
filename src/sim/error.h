@@ -21,13 +21,13 @@
 
 #include "network.h"
 
-double error_sum_of_squares(struct vector *o, struct vector *t);
-struct vector *error_sum_of_squares_deriv(struct vector *o, struct vector *t);
+double error_sum_of_squares(struct group *g, struct vector *t);
+void error_sum_of_squares_deriv(struct group *g, struct vector *t);
 
-double error_cross_entropy(struct vector *o, struct vector *t);
-struct vector *error_cross_entropy_deriv(struct vector *o, struct vector *t);
+double error_cross_entropy(struct group *g, struct vector *t);
+void error_cross_entropy_deriv(struct group *g, struct vector *t);
 
-double error_divergence(struct vector *o, struct vector *t);
-struct vector *error_divergence_deriv(struct vector *o, struct vector *t);
+double error_divergence(struct group *g, struct vector *t);
+void error_divergence_deriv(struct group *g, struct vector *t);
 
 #endif /* ERROR_H */

@@ -103,6 +103,28 @@
  */
 
 /*
+ * This computes EI_j quantities for all units j in the output layer.
+ */
+
+void bp_output_error(struct group *g, struct vector *t)
+{
+        /*
+         * First, compute error derivates EA_j for all units in the output
+         * layer.
+         */
+        g->err_fun->deriv(g, t);
+
+        /*
+         * Multiply all EA_j quantities with f'(y_i) to obtain EI_j for
+         * each unit.
+         */
+        for (int i = 0; i < g->error->size; i++) {
+                g->error->elements[i] *= g->act_fun->deriv(g->vector, i)
+                        + BP_FLAT_SPOT_CORRECTION;
+        }
+}
+
+/*
  * This is the main BP function. Provided a group g, and a vector e with
  * errors EI for that group's units, it first computes the error derivatives
  * EA and weight gradients EW for each projection to g. In case of unfolded
@@ -115,8 +137,7 @@
  * error to earlier groups.
  */
 
-void bp_backpropagate_error(struct network *n, struct group *g,
-                struct vector *e)
+void bp_backpropagate_error(struct network *n, struct group *g)
 {
         /*
          * For each group that projects to g, compute the error derivatives
@@ -132,122 +153,77 @@ void bp_backpropagate_error(struct network *n, struct group *g,
                  */
                 zero_out_vector(p->error);
 
-                bp_projection_error_and_weight_gradients(n, p, e);
+                /*
+                 * Compute error derivatives EA and weight gradients EW for
+                 * the current projection between g' and g.
+                 */
+                for (int x = 0; x < p->to->vector->size; x++) {
+                        for (int z = 0; z < g->error->size; z++) {
+                                /*
+                                 * Compute how the error changes as a function of
+                                 * the output of unit i:
+                                 *
+                                 * EA_i = sum_j (EI_j * W_ij)
+                                 */
+                                p->error->elements[x] += g->error->elements[z]
+                                        * p->weights->elements[x][z];
+
+                                /*
+                                 * Compute how the error changes as a function of
+                                 * the weight on the connection between unit i and
+                                 * unit j:
+                                 *
+                                 * EW_ij += EI_j * Y_i
+                                 *
+                                 * Note: gadients sum over an epoch.
+                                 */
+                                p->gradients->elements[x][z] += g->error->elements[z]
+                                        * p->to->vector->elements[x];
+                        }
+                }
         }
 
         /*
          * Sum the error derivatives for each group that projects towards
-         * g, compute EI quantities for each units in that group, and
+         * g, compute EI quantities for each unit in that group, and
          * recursively backpropagate that error to earlier groups.
          */
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
                 struct group *ng = g->inc_projs->elements[i]->to;
-                
-                struct vector *ge = bp_group_error(n, ng);
-                bp_backpropagate_error(n, ng, ge);
+                zero_out_vector(ng->error);
 
-                dispose_vector(ge);
-        }
-}
-
-/* 
- * This function computes the error derivates EA and weight gradients EW for
- * a given projection p between g' and g. 
- */
-
-void bp_projection_error_and_weight_gradients(struct network *n, struct 
-                projection *p, struct vector *e)
-{
-        for (int i = 0; i < p->to->vector->size; i++) {
-                for (int j = 0; j < e->size; j++) {
-                        /*
-                         * Compute how the error changes as a function of
-                         * the output of unit i:
-                         *
-                         * EA_i = sum_j (EI_j * W_ij)
+                for (int x = 0; x < ng->vector->size; x++) {
+                        /* 
+                         * Sum error derivates EA_i for all outgoing
+                         * projections of the current group.
                          */
-                        p->error->elements[i] += e->elements[j]
-                                * p->weights->elements[i][j];
+                        for (int z = 0; z < ng->out_projs->num_elements; z++) {
+                                struct projection *p = ng->out_projs->elements[z];
+                                ng->error->elements[x] += p->error->elements[x];
+                        }
 
                         /*
-                         * Compute how the error changes as a function of
-                         * the weight on the connection between unit i and
-                         * unit j:
+                         * Compute how the error changes as function of the
+                         * net input to unit i: 
                          *
-                         * EW_ij += EI_j * Y_i
-                         *
-                         * Note: gadients sum over an epoch.
+                         * EI_i = EA_i * f'(y_i)
                          */
-                        p->gradients->elements[i][j] += e->elements[j]
-                                * p->to->vector->elements[i];
-                }
-        }
-}
+                        double act_deriv;
+                        if (ng != n->input) {
+                                act_deriv = ng->act_fun->deriv(ng->vector, x)
+                                        + BP_FLAT_SPOT_CORRECTION;
+                        } else {
+                                act_deriv = ng->vector->elements[x];
+                        }
 
-/*
- * This computes EI_j quantities for all units j in the output layer.
- */
-
-struct vector *bp_output_error(struct group *g, struct vector *t)
-{
-        /*
-         * First, compute error derivates EA_j for all units in the output
-         * layer.
-         */
-        struct vector *e = g->error->deriv(g->vector, t);
-
-        /*
-         * Multiply all EA_j quantities with f'(y_i) to obtain EI_j for
-         * each unit.
-         */
-        for (int i = 0; i < e->size; i++) {
-                e->elements[i] *= g->act->deriv(g->vector, i)
-                        + BP_FLAT_SPOT_CORRECTION;
-        }
-
-        return e;
-}
-
-/*
- * This function compute the EI quantities for a group g. We first sum for
- * each of its units i, the error derivates EA_i for all of its outgoing
- * projections.  Next, we obtain EI_i by multiplying the summed EA_i
- * quantities with f'(Y_i). However, if g is the network's input group, EI_i
- * is simply the summed EA_i.
- */
-
-struct vector *bp_group_error(struct network *n, struct group *g)
-{
-        struct vector *e = create_vector(g->vector->size);
-
-        for (int i = 0; i < g->vector->size; i++) {
-                /* 
-                 * Sum error derivates EA_i for all outgoing projections
-                 * of the current group.
-                 */
-                for (int j = 0; j < g->out_projs->num_elements; j++) {
-                        struct projection *p = g->out_projs->elements[j];
-                        e->elements[i] += p->error->elements[i];
+                        ng->error->elements[x] *= act_deriv;
                 }
 
                 /*
-                 * Compute how the error changes as function of the net
-                 * input to unit i: 
-                 *
-                 * EI_i = EA_i * f'(y_i)
+                 * Backpropagate error.
                  */
-                double act_deriv;
-                if (g != n->input) {
-                        act_deriv = g->act->deriv(g->vector, i)
-                                + BP_FLAT_SPOT_CORRECTION;
-                } else {
-                        act_deriv = g->vector->elements[i];
-                }
-
-                e->elements[i] *= act_deriv;
+                bp_backpropagate_error(n, ng);
         }
-
-        return e;
 }
 
 /*
