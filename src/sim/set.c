@@ -41,6 +41,13 @@ error_out:
         return NULL;
 }
 
+void add_to_set(struct set *s, struct element *e)
+{
+        s->elements[s->num_elements++] = e;
+        if (s->num_elements == s->max_elements)
+                increase_set_size(s);
+}
+
 void increase_set_size(struct set *s)
 {
         s->max_elements = s->max_elements + MAX_ELEMENTS;
@@ -166,10 +173,8 @@ struct set *load_set(char *filename, int input_size, int output_size)
                         }
                 }
 
-                s->elements[s->num_elements++] =
-                        create_element(name, num_events, inputs, targets);
-                if (s->num_elements == s->max_elements)
-                        increase_set_size(s);
+                struct element *e = create_element(name, num_events, inputs, targets);
+                add_to_set(s, e);
         }
 
         fclose(fd);

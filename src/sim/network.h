@@ -252,6 +252,7 @@ void initialize_network(struct network *n);
 void dispose_network(struct network *n);
 
 struct group_array *create_group_array(int max_elements);
+void add_to_group_array(struct group_array *gs, struct group *g);
 void increase_group_array_size(struct group_array *gs);
 void dispose_group_array(struct group_array *gs);
 
@@ -272,6 +273,7 @@ void reset_context_groups(struct network *n);
 void reset_recurrent_groups(struct network *n);
 
 struct projs_array *create_projs_array(int max_elements);
+void add_to_projs_array(struct projs_array *ps, struct projection *p);
 void increase_projs_array_size(struct projs_array *ps);
 void dispose_projs_array(struct projs_array *ps);
 

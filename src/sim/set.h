@@ -39,6 +39,7 @@ struct element
 };
 
 struct set *create_set(int max_elements);
+void add_to_set(struct set *s, struct element *e);
 void increase_set_size(struct set *s);
 void dispose_set(struct set *s);
 

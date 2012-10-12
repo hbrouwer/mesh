@@ -146,6 +146,17 @@ error_out:
 }
 
 /*
+ * Adds a group to a group array.
+ */
+
+void add_to_group_array(struct group_array *gs, struct group *g)
+{
+        gs->elements[gs->num_elements++] = g;
+        if (gs->num_elements == gs->max_elements)
+                increase_group_array_size(gs);
+}
+
+/*
  * Increases the size of a group array.
  */
 
@@ -245,9 +256,7 @@ void attach_bias_group(struct network *n, struct group *g)
         /* 
          * Add it to the network's group array.
          */
-        n->groups->elements[n->groups->num_elements++] = bg;
-        if (n->groups->num_elements == n->groups->max_elements)
-                increase_group_array_size(n->groups);
+        add_to_group_array(n->groups, bg);
 
         /* weight matrix */
         struct matrix *weights = create_matrix(
@@ -282,21 +291,19 @@ void attach_bias_group(struct network *n, struct group *g)
          * Create a projection from the bias group to the bias receiving 
          * group.
          */
-        bg->out_projs->elements[bg->out_projs->num_elements++] =
-                create_projection(g, weights, error, gradients, prev_gradients,
+        struct projection *op;
+        op = create_projection(g, weights, error, gradients, prev_gradients,
                                 prev_weight_deltas, dyn_learning_pars, false);
-        if (bg->out_projs->num_elements == bg->out_projs->max_elements)
-                increase_projs_array_size(bg->out_projs);
+        add_to_projs_array(bg->out_projs, op);
         
         /*
          * Create a projection from the bias receiving group to the bias
          * group.
          */
-        g->inc_projs->elements[g->inc_projs->num_elements++] =
-                create_projection(bg, weights, error, gradients, prev_gradients,
+        struct projection *ip;
+        ip = create_projection(bg, weights, error, gradients, prev_gradients,
                                 prev_weight_deltas, dyn_learning_pars, false);
-        if (g->inc_projs->num_elements == g->out_projs->max_elements)
-                increase_projs_array_size(g->inc_projs);
+        add_to_projs_array(g->inc_projs, ip);
 
         return;
 
@@ -327,7 +334,6 @@ void dispose_group(struct group *g)
         dispose_projs_array(g->out_projs);
 
         free(g);
-
 }
 
 
@@ -408,6 +414,17 @@ error_out:
         perror("[create_projs_array()]");
         return NULL;
 
+}
+
+/*
+ * Adds a projection to a projection array.
+ */
+
+void add_to_projs_array(struct projs_array *ps, struct projection *p)
+{
+        ps->elements[ps->num_elements++] = p;
+        if (ps->num_elements == ps->max_elements)
+                increase_projs_array_size(ps);
 }
 
 /*
@@ -765,9 +782,7 @@ void load_group(char *buf, char *fmt, struct network *n, char *input,
         if (strcmp(tmp1, output) == 0)
                 n->output = g;
 
-        n->groups->elements[n->groups->num_elements++] = g;
-        if (n->groups->num_elements == n->groups->max_elements)
-                increase_group_array_size(n->groups);
+        add_to_group_array(n->groups, g);
 
         mprintf(msg, tmp1, tmp2, tmp3, tmp_int);
 }
@@ -910,17 +925,15 @@ void load_projection(char *buf, char *fmt, struct network *n, char *msg)
                         fg->vector->size,
                         tg->vector->size);
 
-        fg->out_projs->elements[fg->out_projs->num_elements++] =
-                create_projection(tg, weights, error, gradients, prev_gradients,
-                                prev_weight_deltas, dyn_learning_pars, false);
-        if (fg->out_projs->num_elements == fg->out_projs->max_elements)
-                increase_projs_array_size(fg->out_projs);
-        
-        tg->inc_projs->elements[tg->inc_projs->num_elements++] =
-                create_projection(fg, weights, error, gradients, prev_gradients,
-                                prev_weight_deltas, dyn_learning_pars, false);
-        if (tg->inc_projs->num_elements == tg->out_projs->max_elements)
-                increase_projs_array_size(tg->inc_projs);
+        struct projection *op;
+        op = create_projection(tg, weights, error, gradients, prev_gradients,
+                        prev_weight_deltas, dyn_learning_pars, false);
+        add_to_projs_array(fg->out_projs, op);
+
+        struct projection *ip;
+        ip = create_projection(fg, weights, error, gradients, prev_gradients,
+                        prev_weight_deltas, dyn_learning_pars, false);
+        add_to_projs_array(tg->inc_projs, ip);
 
         mprintf(msg, tmp1, tmp2);
 }
