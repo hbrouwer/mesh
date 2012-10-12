@@ -47,17 +47,13 @@ int main(int argc, char **argv)
                 }
 
                 if (strcmp(argv[i], "--save_weights") == 0) {
-                        if (++i < argc) {
-                                n->save_weights = true;
+                        if (++i < argc)
                                 n->save_weights_file = argv[i];
-                        }
                 }
 
                 if (strcmp(argv[i], "--load_weights") == 0) {
-                        if (++i < argc) {
-                                n->load_weights = true;
+                        if (++i < argc)
                                 n->load_weights_file = argv[i];
-                        }
                 }
 
                 if (strcmp(argv[i], "--print_stats") == 0) {
@@ -102,9 +98,9 @@ int main(int argc, char **argv)
         }
 
         /* save weights */
-        if (n->save_weights && !n->unfolded_net)
+        if (n->save_weights_file && !n->unfolded_net)
                 save_weights(n);
-        if (n->save_weights && n->unfolded_net)
+        if (n->save_weights_file && n->unfolded_net)
                 save_weights(n->unfolded_net->stack[0]);
 
         if (print_stats && !n->unfolded_net) {

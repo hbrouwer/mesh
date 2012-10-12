@@ -360,14 +360,14 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                         /********************************/
 
                         n->status->weight_cost +=
-                                pow(p->weights->elements[i][j], 2.0);
+                                square(p->weights->elements[i][j]);
                         n->status->gradient_linearity -= 
                                 p->prev_weight_deltas->elements[i][j]
                                 * p->gradients->elements[i][j];
                         n->status->last_weight_deltas_length +=
-                                pow(p->prev_weight_deltas->elements[i][j], 2.0);
+                                square(p->prev_weight_deltas->elements[i][j]);
                         n->status->gradients_length +=
-                                pow(p->gradients->elements[i][j], 2.0);
+                                square(p->gradients->elements[i][j]);
 
                         /********************************/
 
@@ -621,14 +621,14 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                         /********************************/
 
                         n->status->weight_cost +=
-                                pow(p->weights->elements[i][j], 2.0);
+                                square(p->weights->elements[i][j]);
                         n->status->gradient_linearity -= 
                                 p->prev_weight_deltas->elements[i][j]
                                 * p->gradients->elements[i][j];
                         n->status->last_weight_deltas_length +=
-                                pow(p->prev_weight_deltas->elements[i][j], 2.0);
+                                square(p->prev_weight_deltas->elements[i][j]);
                         n->status->gradients_length +=
-                                pow(p->gradients->elements[i][j], 2.0);
+                                square(p->gradients->elements[i][j]);
 
                         /********************************/
 
@@ -858,14 +858,14 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                         /********************************/
 
                         n->status->weight_cost +=
-                                pow(p->weights->elements[i][j], 2.0);
+                                square(p->weights->elements[i][j]);
                         n->status->gradient_linearity -= 
                                 p->prev_weight_deltas->elements[i][j]
                                 * p->gradients->elements[i][j];
                         n->status->last_weight_deltas_length +=
-                                pow(p->prev_weight_deltas->elements[i][j], 2.0);
+                                square(p->prev_weight_deltas->elements[i][j]);
                         n->status->gradients_length +=
-                                pow(p->gradients->elements[i][j], 2.0);
+                                square(p->gradients->elements[i][j]);
 
                         /********************************/
 

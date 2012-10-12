@@ -22,7 +22,7 @@
 struct vector
 {
         int size;                   /* vector size */
-        double *elements;           /* individual values */
+        double *elements;           /* values */
 };
 
 struct vector *create_vector(int size);
@@ -31,6 +31,7 @@ void copy_vector(struct vector *v1, struct vector *v2);
 
 void randomize_vector(struct vector *v, double mu, double sigma);
 void zero_out_vector(struct vector *v);
+void fill_vector_with_value(struct vector *v, double val);
 
 double vector_minimum(struct vector *v);
 double vector_maximum(struct vector *v);

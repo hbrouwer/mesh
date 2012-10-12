@@ -71,12 +71,37 @@ void feed_forward(struct network *n, struct group *g)
                         continue;
 
                 /*
-                 * Compute net input and activation level for each group
-                 * that the current group projects to.
+                 * Compute net input and activation level for the units in 
+                 * each group that the current group projects to.
                  */
                 struct group *rg = g->out_projs->elements[i]->to;
                 for (int j = 0; j < rg->vector->size; j++) {
-                        rg->vector->elements[j] = unit_net_input(n, rg, j);
+                        /* 
+                         * Reset the activation level of the current unit.
+                         */ 
+                        rg->vector->elements[j] = 0.0;
+
+                        /*
+                         * Determine the net input to the current unit:
+                         *
+                         * x_j = sum_i (y_i * w_ij)
+                         *
+                         * Note: A unit can receive activation from units
+                         * in more than one projecting group.
+                         */
+                        for (int x = 0; x < rg->inc_projs->num_elements; x++) {
+                                struct group *pg = rg->inc_projs->elements[x]->to;
+                                struct matrix *w = rg->inc_projs->elements[x]->weights;
+                                for (int z = 0; z < pg->vector->size; z++)
+                                        rg->vector->elements[j] += pg->vector->elements[z]
+                                                * w->elements[z][j];
+                        }
+
+                        /*
+                         * Apply an activation function to the net input.
+                         *
+                         * y_j = f(x_j)
+                         */
                         rg->vector->elements[j] = rg->act->fun(rg->vector, j);
                 }
         }
@@ -91,25 +116,6 @@ void feed_forward(struct network *n, struct group *g)
         for (int i = 0; i < g->out_projs->num_elements; i++)
                 if (!g->out_projs->elements[i]->recurrent)
                         feed_forward(n, g->out_projs->elements[i]->to);
-}
-
-
-/* 
- * Compute the summed, weighted net input to a unit.
- */
-
-double unit_net_input(struct network *n, struct group *g, int u)
-{
-        double act = 0.0;
-
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
-                struct group *pg = g->inc_projs->elements[i]->to;
-                struct matrix *w = g->inc_projs->elements[i]->weights;
-                for (int j = 0; j < pg->vector->size; j++)
-                        act += w->elements[j][u] * pg->vector->elements[j];
-        }
-
-        return act;
 }
 
 /*

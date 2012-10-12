@@ -25,7 +25,7 @@ struct matrix
 {
         int rows;                   /* number of rows */
         int cols;                   /* number of columns */
-        double **elements;          /* individual values */
+        double **elements;          /* values */
 };
 
 struct matrix *create_matrix(int rows, int cols);
@@ -38,7 +38,7 @@ struct vector *column_to_vector(struct matrix *m, int col);
 void randomize_matrix(struct matrix *m, double mu, double sigma);
 void binary_randomize_matrix(struct matrix *m);
 void zero_out_matrix(struct matrix *m);
-void fill_matrix_with_value(struct matrix *m, double v);
+void fill_matrix_with_value(struct matrix *m, double val);
 
 double matrix_minimum(struct matrix *m);
 double matrix_maximum(struct matrix *m);

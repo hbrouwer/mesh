@@ -19,6 +19,7 @@
 #include "act.h"
 #include "engine.h"
 #include "erps.h"
+#include "math.h"
 #include "pprint.h"
 
 #include <math.h>
@@ -42,7 +43,7 @@ void compute_erp_correlates(struct network *n)
                 struct element *e = n->test_set->elements[i];
 
                 /* reset context groups */
-                if (n->srn)
+                if (n->type == TYPE_SRN)
                         reset_context_groups(n);
 
                 zero_out_vector(pb);
@@ -135,7 +136,7 @@ double compute_n400_correlate(struct vector *v, struct vector *pv)
 {
         double ab = 0.0;
         for (int i = 0; i < v->size; i++)
-                ab += pow(v->elements[i] - pv->elements[i], 2.0);
+                ab += square(v->elements[i] - pv->elements[i]);
 
         return sqrt(ab);
 }
@@ -144,7 +145,7 @@ double compute_p600_correlate(struct vector *v, struct vector *pv)
 {
         double ab = 0.0;
         for (int i = 0; i < v->size; i++)
-                ab += pow(v->elements[i] - pv->elements[i], 2.0);
+                ab += square(v->elements[i] - pv->elements[i]);
 
         return sqrt(ab);
 }
