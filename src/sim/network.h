@@ -54,6 +54,8 @@ struct network
         struct group *input;        /* input group for this network */
         struct group *output;       /* output group for this network */
 
+        bool use_act_lookup;        /* use activation lookup vectors */
+
         /* ## Random numbers ########################################### */
 
         int random_seed;            /* seed for the random number
@@ -204,10 +206,11 @@ struct projection
 
 struct act_fun 
 {
-        double (*fun)                /* activation function  */
+        double (*fun)               /* activation function  */
                 (struct vector *, int);
-        double (*deriv)              /* activation function derivative */
+        double (*deriv)             /* activation function derivative */
                 (struct vector *, int);
+        struct vector *lookup;      /* activation lookup vector */
 };
 
 /*
@@ -291,6 +294,7 @@ void dispose_projection(struct projection *p);
 
 void randomize_weight_matrices(struct group *g, struct network *n);
 void initialize_dyn_learning_pars(struct group *g, struct network *n);
+void initialize_act_lookup_vectors(struct network *n);
 
 struct network *load_network(char *filename);
 

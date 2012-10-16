@@ -116,6 +116,10 @@ void train_network_bp(struct network *n)
  */
 
 // XXX: As always -- check logic...
+/*
+ * XXX: Check Williams & Peng (1990): BPTT(h;h') that captures both
+ * epochwise/BPTT(h;h) and trucated/BPTT(h;1) backprop through time.
+ */
 
 void train_network_bptt(struct network *n)
 {

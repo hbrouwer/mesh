@@ -102,7 +102,12 @@ void feed_forward(struct network *n, struct group *g)
                          *
                          * y_j = f(x_j)
                          */
-                        rg->vector->elements[j] = rg->act_fun->fun(rg->vector, j);
+                        if (!n->use_act_lookup) {
+                                rg->vector->elements[j] = rg->act_fun->fun(rg->vector, j);
+                        } else {
+                                rg->vector->elements[j] = act_lookup(rg->vector->elements[j],
+                                                rg->act_fun->lookup);
+                        }
                 }
         }
 
@@ -116,6 +121,41 @@ void feed_forward(struct network *n, struct group *g)
         for (int i = 0; i < g->out_projs->num_elements; i++)
                 if (!g->out_projs->elements[i]->recurrent)
                         feed_forward(n, g->out_projs->elements[i]->to);
+}
+
+/*
+ * ########################################################################
+ * ## Activation lookup                                                  ##
+ * ########################################################################
+ */
+
+#define ACT_LOOKUP_MINIMUM -16
+#define ACT_LOOKUP_MAXIMUM 16
+#define ACT_LOOKUP_GRANULARITY 1024
+
+struct vector *create_act_lookup_vector(double (*fun)(struct vector *, int))
+{
+        double range = ACT_LOOKUP_MAXIMUM - ACT_LOOKUP_MINIMUM;
+        double step_size = range / ACT_LOOKUP_GRANULARITY;
+
+        struct vector *lv = create_vector(ACT_LOOKUP_GRANULARITY);
+
+        for (int i = 0; i < ACT_LOOKUP_GRANULARITY; i++) {
+                lv->elements[i] = ACT_LOOKUP_MINIMUM + i * step_size;
+                lv->elements[i] = fun(lv, i);
+        }
+
+        return lv;
+}
+
+double act_lookup(double x, struct vector *lv)
+{
+        double range = ACT_LOOKUP_MAXIMUM - ACT_LOOKUP_MINIMUM;
+        double step_size = range / ACT_LOOKUP_GRANULARITY;
+
+        int i = (ACT_LOOKUP_MAXIMUM + x) / step_size;
+
+        return lv->elements[i];
 }
 
 /*

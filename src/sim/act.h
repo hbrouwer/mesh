@@ -24,6 +24,9 @@
 
 void feed_forward(struct network *n, struct group *g);
 
+struct vector *create_act_lookup_vector(double (*fun)(struct vector *, int));
+double act_lookup(double x, struct vector *lv);
+
 double act_fun_binary_sigmoid(struct vector *v, int i);
 double act_fun_binary_sigmoid_deriv(struct vector *v, int i);
 

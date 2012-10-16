@@ -81,6 +81,10 @@ void initialize_network(struct network *n)
         n->rp_init_update = 0.1;
         initialize_dyn_learning_pars(n->input, n);
 
+        /* activation lookup */
+        if (n->use_act_lookup)
+                initialize_act_lookup_vectors(n);
+
         if (n->batch_size == 0)
                 n->batch_size = n->training_set->num_elements;
 
@@ -324,6 +328,8 @@ void dispose_group(struct group *g)
         dispose_vector(g->vector);
         dispose_vector(g->error);
         if (!g->bias) {
+                if (g->act_fun->lookup)
+                        dispose_vector(g->act_fun->lookup);
                 free(g->act_fun);
                 free(g->err_fun);
         }
@@ -551,6 +557,23 @@ void initialize_dyn_learning_pars(struct group *g, struct network *n)
         for (int i = 0; i < g->out_projs->num_elements; i++)
                 initialize_dyn_learning_pars(g->out_projs->elements[i]->to, n);
 }
+
+/*
+ * Initializes activation lookup vector.
+ */
+
+void initialize_act_lookup_vectors(struct network *n)
+{
+        for (int i = 0; i < n->groups->num_elements; i++) {
+                struct group *g = n->groups->elements[i];
+
+                if (g == n->input || g->bias)
+                        continue;
+
+                g->act_fun->lookup = create_act_lookup_vector(g->act_fun->fun);
+        }
+}
+
 
 /*
  * ########################################################################

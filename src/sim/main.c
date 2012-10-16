@@ -30,7 +30,7 @@ int main(int argc, char **argv)
         bool net_spec = false;
         bool print_stats = false;
         bool print_network = false;
-
+        
         cprintf("");
         cprintf("MESH version %s", VERSION);
         cprintf("(c) 2012 Harm Brouwer <me@hbrouwer.eu>");
@@ -44,6 +44,10 @@ int main(int argc, char **argv)
                                 n = load_network(argv[i]);
                                 net_spec = true;
                         }
+                }
+
+                if (strcmp(argv[i], "--use_act_lookup") == 0) {
+                        n->use_act_lookup = true;
                 }
 
                 if (strcmp(argv[i], "--save_weights") == 0) {
