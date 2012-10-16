@@ -133,27 +133,37 @@ void feed_forward(struct network *n, struct group *g)
 #define ACT_LOOKUP_MAXIMUM 16
 #define ACT_LOOKUP_GRANULARITY 1024
 
+double ACT_LOOKUP_STEP_SIZE = ((double)ACT_LOOKUP_MAXIMUM 
+                - ACT_LOOKUP_MINIMUM) / ACT_LOOKUP_GRANULARITY;
+
+/*
+ * Creates a lookup vector for the specified activation function.
+ */
+
 struct vector *create_act_lookup_vector(double (*fun)(struct vector *, int))
 {
-        double range = ACT_LOOKUP_MAXIMUM - ACT_LOOKUP_MINIMUM;
-        double step_size = range / ACT_LOOKUP_GRANULARITY;
-
         struct vector *lv = create_vector(ACT_LOOKUP_GRANULARITY);
 
         for (int i = 0; i < ACT_LOOKUP_GRANULARITY; i++) {
-                lv->elements[i] = ACT_LOOKUP_MINIMUM + i * step_size;
+                lv->elements[i] = ACT_LOOKUP_MINIMUM + i * ACT_LOOKUP_STEP_SIZE;
                 lv->elements[i] = fun(lv, i);
         }
 
         return lv;
 }
 
+/*
+ * Lookup the activation value for net input x in lookup vector lv.
+ */
+
 double act_lookup(double x, struct vector *lv)
 {
-        double range = ACT_LOOKUP_MAXIMUM - ACT_LOOKUP_MINIMUM;
-        double step_size = range / ACT_LOOKUP_GRANULARITY;
+        if (x < ACT_LOOKUP_MINIMUM)
+                x = ACT_LOOKUP_MINIMUM;
+        if (x > ACT_LOOKUP_MAXIMUM)
+                x = ACT_LOOKUP_MAXIMUM;
 
-        int i = (ACT_LOOKUP_MAXIMUM + x) / step_size;
+        int i = ((ACT_LOOKUP_MAXIMUM + x) / ACT_LOOKUP_STEP_SIZE) - 1;
 
         return lv->elements[i];
 }
