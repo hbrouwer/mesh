@@ -1,5 +1,5 @@
 /*
- * ffn_unfold.h
+ * rnn_unfold.h
  *
  * Copyright 2012 Harm Brouwer <me@hbrouwer.eu>
  *
@@ -16,20 +16,13 @@
  * limitations under the License.
  */
 
-#ifndef FFN_UNFOLD_H
-#define FFN_UNFOLD_H
+#ifndef RNN_UNFOLD_H
+#define RNN_UNFOLD_H
 
 #include "network.h"
 #include "vector.h"
 
-/*
- * ############################## WARNING #################################
- * ## Unfolding is only guaranteed to work properly for feed forward     ##
- * ## networks. Behavior is ill-defined when used on other topologies.   ##
- * ########################################################################
- */
-
-struct ffn_unfolded_network
+struct rnn_unfolded_network
 {
         struct group_array        /* recurrent groups in the network */
                 *recur_groups;    
@@ -44,40 +37,40 @@ struct ffn_unfolded_network
                                      network */
 };
 
-struct ffn_unfolded_network *ffn_init_unfolded_network(struct network *n);
-void ffn_dispose_unfolded_network(struct ffn_unfolded_network *un);
+struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n);
+void rnn_dispose_unfolded_network(struct rnn_unfolded_network *un);
 
-struct network *ffn_duplicate_network(struct network *n);
-void ffn_dispose_duplicate_network(struct network *n);
+struct network *rnn_duplicate_network(struct network *n);
+void rnn_dispose_duplicate_network(struct network *n);
 
-struct group *ffn_duplicate_group(struct group *g);
-struct group *ffn_duplicate_groups(struct network *n, struct network *dn,
+struct group *rnn_duplicate_group(struct group *g);
+struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
                 struct group *g);
-void ffn_dispose_duplicate_groups(struct group *dg);
+void rnn_dispose_duplicate_groups(struct group *dg);
 
-struct projection *ffn_duplicate_projection(
+struct projection *rnn_duplicate_projection(
                 struct projection *p,
                 struct vector *error,
                 struct matrix *gradients,
                 struct matrix *prev_gradients);
-void ffn_dispose_duplicate_projection(struct projection *dp);
+void rnn_dispose_duplicate_projection(struct projection *dp);
 
-struct group_array *ffn_recurrent_groups(struct network *n);
-void ffn_collect_recurrent_groups(struct group *g, struct group_array *gs);
+struct group_array *rnn_recurrent_groups(struct network *n);
+void rnn_collect_recurrent_groups(struct group *g, struct group_array *gs);
 
-void ffn_attach_recurrent_groups(struct ffn_unfolded_network *un,
+void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
                 struct network *n);
-void ffn_detach_recurrent_groups(struct ffn_unfolded_network *un,
+void rnn_detach_recurrent_groups(struct rnn_unfolded_network *un,
                 struct network *n);
 
-void ffn_connect_duplicate_networks(struct ffn_unfolded_network *un,
+void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,
                 struct network *n1, struct network *n2);
-void ffn_disconnect_duplicate_networks(struct ffn_unfolded_network *un,
+void rnn_disconnect_duplicate_networks(struct rnn_unfolded_network *un,
                 struct network *n1, struct network *n2);
 
-void ffn_sum_gradients(struct ffn_unfolded_network *un);
-void ffn_add_gradients(struct group *g1, struct group *g2);
+void rnn_sum_gradients(struct rnn_unfolded_network *un);
+void rnn_add_gradients(struct group *g1, struct group *g2);
 
-void ffn_cycle_stack(struct ffn_unfolded_network *un);
+void rnn_cycle_stack(struct rnn_unfolded_network *un);
 
-#endif /* FFN_UNFOLD_H */
+#endif /* RNN_UNFOLD_H */

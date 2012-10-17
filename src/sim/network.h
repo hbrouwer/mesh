@@ -19,9 +19,9 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-#include "ffn_unfold.h"
 #include "main.h"
 #include "matrix.h"
+#include "rnn_unfold.h"
 #include "set.h"
 #include "vector.h"
 
@@ -31,6 +31,7 @@
 /* network types */
 #define TYPE_FFN 0
 #define TYPE_SRN 1
+#define TYPE_RNN 2
 
 /* training orders */
 #define TRAIN_ORDERED 0
@@ -122,9 +123,9 @@ struct network
         char *save_weights_file;    /* file to which weights should be saved */
         char *load_weights_file;    /* file from which weights should be loaded */
 
-        /* ## Unfolded feed forward networks ########################### */
+        /* ## Unfolded recurrent network ############################### */
 
-        struct ffn_unfolded_network /* unfolded feed forward network */
+        struct rnn_unfolded_network /* unfolded recurrent network */
                 *unfolded_net;
 
         /* ## ERP correlates ########################################### */

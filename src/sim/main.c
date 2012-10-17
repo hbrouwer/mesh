@@ -20,9 +20,9 @@
 
 #include "engine.h"
 #include "erps.h"
-#include "ffn_unfold.h"
 #include "main.h"
 #include "network.h"
+#include "rnn_unfold.h"
 
 int main(int argc, char **argv)
 {

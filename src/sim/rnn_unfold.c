@@ -1,5 +1,5 @@
 /*
- * ffn_unfold.c
+ * rnn_unfold.c
  *
  * Copyright 2012 Harm Brouwer <me@hbrouwer.eu>
  *
@@ -16,18 +16,11 @@
  * limitations under the License.
  */
 
-#include "ffn_unfold.h"
 #include "vector.h"
-
-/*
- * ############################## WARNING #################################
- * ## Unfolding is only guaranteed to work properly for feed forward     ##
- * ## networks. Behavior is ill-defined when used on other topologies.   ##
- * ########################################################################
- */
+#include "rnn_unfold.h"
 
 /* 
- * Unfolding of feed forward networks for backpropagation through time.
+ * Unfolding of recurrent neural networks for backpropagation through time.
  * Assume a network with the following typology:
  * 
  * ###########
@@ -70,14 +63,14 @@
  *
  * The weight matrix [W] is the same across the recurrent projections.
  */
-struct ffn_unfolded_network *ffn_init_unfolded_network(struct network *n)
+struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
 {
-        struct ffn_unfolded_network *un;
-        if (!(un = malloc(sizeof(struct ffn_unfolded_network))))
+        struct rnn_unfolded_network *un;
+        if (!(un = malloc(sizeof(struct rnn_unfolded_network))))
                 goto error_out;
-        memset(un, 0, sizeof(struct ffn_unfolded_network));
+        memset(un, 0, sizeof(struct rnn_unfolded_network));
 
-        un->recur_groups = ffn_recurrent_groups(n);
+        un->recur_groups = rnn_recurrent_groups(n);
 
         int block_size = un->recur_groups->num_elements * sizeof(struct matrix *);
         if (!(un->recur_weights = malloc(block_size)))
@@ -118,11 +111,11 @@ struct ffn_unfolded_network *ffn_init_unfolded_network(struct network *n)
         memset(un->stack, 0, block_size);
 
         for (int i = 0; i < un->stack_size; i++) {
-                un->stack[i] = ffn_duplicate_network(n);
+                un->stack[i] = rnn_duplicate_network(n);
                 if (i == 0) {
-                        ffn_attach_recurrent_groups(un, un->stack[0]);
+                        rnn_attach_recurrent_groups(un, un->stack[0]);
                 } else {
-                        ffn_connect_duplicate_networks(un, un->stack[i - 1],
+                        rnn_connect_duplicate_networks(un, un->stack[i - 1],
                                         un->stack[i]);
                 }
         }
@@ -130,16 +123,16 @@ struct ffn_unfolded_network *ffn_init_unfolded_network(struct network *n)
         return un;
 
 error_out:
-        perror("[ffn_init_unfolded_network()]");
+        perror("[rnn_init_unfolded_network()]");
         return NULL;
 }
 
-void ffn_dispose_unfolded_network(struct ffn_unfolded_network *un)
+void rnn_dispose_unfolded_network(struct rnn_unfolded_network *un)
 {
         for (int i = 1; i < un->stack_size; i++)
-                ffn_disconnect_duplicate_networks(un, un->stack[i - 1], un->stack[i]);
+                rnn_disconnect_duplicate_networks(un, un->stack[i - 1], un->stack[i]);
 
-        ffn_detach_recurrent_groups(un, un->stack[0]);
+        rnn_detach_recurrent_groups(un, un->stack[0]);
 
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
                 dispose_matrix(un->recur_weights[i]);
@@ -152,13 +145,13 @@ void ffn_dispose_unfolded_network(struct ffn_unfolded_network *un)
         dispose_group_array(un->recur_groups);
         
         for (int i = 0; i < un->stack_size; i++)
-                ffn_dispose_duplicate_network(un->stack[i]);
+                rnn_dispose_duplicate_network(un->stack[i]);
         free(un->stack);
 
         free(un);
 }
 
-struct network *ffn_duplicate_network(struct network *n)
+struct network *rnn_duplicate_network(struct network *n)
 {
         struct network *dn;
         if (!(dn = malloc(sizeof(struct network))))
@@ -167,25 +160,25 @@ struct network *ffn_duplicate_network(struct network *n)
         memcpy(dn, n, sizeof(struct network));
 
         dn->groups = create_group_array(n->groups->max_elements);
-        ffn_duplicate_groups(n, dn, n->input);
+        rnn_duplicate_groups(n, dn, n->input);
 
         return dn;
 
 error_out:
-        perror("[ffn_duplicate_network()])");
+        perror("[rnn_duplicate_network()])");
         return NULL;
 }
 
-void ffn_dispose_duplicate_network(struct network *dn)
+void rnn_dispose_duplicate_network(struct network *dn)
 {
-        // ffn_dispose_duplicate_groups(dn->input);
-        ffn_dispose_duplicate_groups(dn->output);
+        // rnn_dispose_duplicate_groups(dn->input);
+        rnn_dispose_duplicate_groups(dn->output);
         dispose_group_array(dn->groups);
 
         free(dn);
 }
 
-struct group *ffn_duplicate_group(struct group *g)
+struct group *rnn_duplicate_group(struct group *g)
 {
         struct group *dg;
 
@@ -215,14 +208,14 @@ struct group *ffn_duplicate_group(struct group *g)
         return dg;
 
 error_out:
-        perror("[ffn_duplicate_group()]");
+        perror("[rnn_duplicate_group()]");
         return NULL;
 }
 
-struct group *ffn_duplicate_groups(struct network *n, struct network *dn, 
+struct group *rnn_duplicate_groups(struct network *n, struct network *dn, 
                 struct group *g)
 {
-        struct group *dg = ffn_duplicate_group(g);
+        struct group *dg = rnn_duplicate_group(g);
 
         dn->groups->elements[dn->groups->num_elements++] = dg;
         if (dn->groups->num_elements == dn->groups->max_elements)
@@ -235,7 +228,7 @@ struct group *ffn_duplicate_groups(struct network *n, struct network *dn,
                 if (!bg->bias)
                         continue;
                 
-                struct group *dbg = ffn_duplicate_group(bg);
+                struct group *dbg = rnn_duplicate_group(bg);
                 dn->groups->elements[dn->groups->num_elements++] = dbg;
                 if (dn->groups->num_elements == dn->groups->max_elements)
                         increase_group_array_size(dn->groups);
@@ -253,12 +246,12 @@ struct group *ffn_duplicate_groups(struct network *n, struct network *dn,
                                 bg->vector->size,
                                 g->vector->size);
 
-                dg->inc_projs->elements[i] = ffn_duplicate_projection(
+                dg->inc_projs->elements[i] = rnn_duplicate_projection(
                                 g->inc_projs->elements[i], error, gradients,
                                 prev_gradients);
                 dg->inc_projs->elements[i]->to = dbg;
 
-                dbg->out_projs->elements[0] = ffn_duplicate_projection(
+                dbg->out_projs->elements[0] = rnn_duplicate_projection(
                                 bg->out_projs->elements[0], error, gradients,
                                 prev_gradients);
                 dbg->out_projs->elements[0]->to = dg;
@@ -284,16 +277,16 @@ struct group *ffn_duplicate_groups(struct network *n, struct network *dn,
                                 g->vector->size,
                                 g2->vector->size);
 
-                dg->out_projs->elements[i] = ffn_duplicate_projection(
+                dg->out_projs->elements[i] = rnn_duplicate_projection(
                                 g->out_projs->elements[i], error, gradients, 
                                 prev_gradients);
-                struct group *rg = ffn_duplicate_groups(n, dn, g2);
+                struct group *rg = rnn_duplicate_groups(n, dn, g2);
                 dg->out_projs->elements[i]->to = rg;
 
                 for (int j = 0; j < g2->inc_projs->num_elements; j++) {
                         if (g2->inc_projs->elements[j]->to == g) {
                                 rg->inc_projs->elements[j] = 
-                                        ffn_duplicate_projection(
+                                        rnn_duplicate_projection(
                                                         g2->inc_projs->elements[j], 
                                                         error, gradients, prev_gradients);
                                 rg->inc_projs->elements[j]->to = dg;
@@ -309,11 +302,11 @@ struct group *ffn_duplicate_groups(struct network *n, struct network *dn,
         return dg;
 }
 
-void ffn_dispose_duplicate_groups(struct group *dg)
+void rnn_dispose_duplicate_groups(struct group *dg)
 {
         for (int i = 0; i < dg->inc_projs->num_elements; i++) {
-                ffn_dispose_duplicate_groups(dg->inc_projs->elements[i]->to);
-                ffn_dispose_duplicate_projection(dg->inc_projs->elements[i]);
+                rnn_dispose_duplicate_groups(dg->inc_projs->elements[i]->to);
+                rnn_dispose_duplicate_projection(dg->inc_projs->elements[i]);
         }
         dispose_projs_array(dg->inc_projs);
 
@@ -328,7 +321,7 @@ void ffn_dispose_duplicate_groups(struct group *dg)
         free(dg);
 }
 
-struct projection *ffn_duplicate_projection(
+struct projection *rnn_duplicate_projection(
                 struct projection *p,
                 struct vector *error,
                 struct matrix *gradients,
@@ -349,11 +342,11 @@ struct projection *ffn_duplicate_projection(
         return dp;
 
 error_out:
-        perror("[ffn_duplicate_projection()]");
+        perror("[rnn_duplicate_projection()]");
         return NULL;
 }
 
-void ffn_dispose_duplicate_projection(struct projection *dp)
+void rnn_dispose_duplicate_projection(struct projection *dp)
 {
         dispose_vector(dp->error);
         dispose_matrix(dp->gradients);
@@ -362,16 +355,16 @@ void ffn_dispose_duplicate_projection(struct projection *dp)
         free(dp);
 }
 
-struct group_array *ffn_recurrent_groups(struct network *n)
+struct group_array *rnn_recurrent_groups(struct network *n)
 {
         struct group_array *gs = create_group_array(MAX_GROUPS);
         
-        ffn_collect_recurrent_groups(n->input, gs);
+        rnn_collect_recurrent_groups(n->input, gs);
         
         return gs;
 }
 
-void ffn_collect_recurrent_groups(struct group *g, struct group_array *gs)
+void rnn_collect_recurrent_groups(struct group *g, struct group_array *gs)
 {
         if (g->recurrent) {
                 gs->elements[gs->num_elements++] = g;
@@ -380,10 +373,10 @@ void ffn_collect_recurrent_groups(struct group *g, struct group_array *gs)
         }
 
         for (int i = 0; i < g->out_projs->num_elements; i++)
-                ffn_collect_recurrent_groups(g->out_projs->elements[i]->to, gs);
+                rnn_collect_recurrent_groups(g->out_projs->elements[i]->to, gs);
 }
 
-void ffn_attach_recurrent_groups(struct ffn_unfolded_network *un,
+void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
                 struct network *n)
 {
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
@@ -421,7 +414,7 @@ void ffn_attach_recurrent_groups(struct ffn_unfolded_network *un,
         }
 }
 
-void ffn_detach_recurrent_groups(struct ffn_unfolded_network *un,
+void rnn_detach_recurrent_groups(struct rnn_unfolded_network *un,
                 struct network *n)
 {
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
@@ -438,17 +431,17 @@ void ffn_detach_recurrent_groups(struct ffn_unfolded_network *un,
                         g1->inc_projs->elements[g1->inc_projs->num_elements];
                 struct projection *p2 =
                         g2->out_projs->elements[g2->out_projs->num_elements];
-                ffn_dispose_duplicate_projection(p1);
+                rnn_dispose_duplicate_projection(p1);
                 free(p2);
 
                 g1->inc_projs->elements[g1->inc_projs->num_elements] = NULL;
                 g2->out_projs->elements[g2->out_projs->num_elements] = NULL;
 
-                ffn_dispose_duplicate_groups(g2);
+                rnn_dispose_duplicate_groups(g2);
         }
 }
 
-void ffn_connect_duplicate_networks(struct ffn_unfolded_network *un,
+void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,
                 struct network *n1, struct network *n2)
 {
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
@@ -485,7 +478,7 @@ void ffn_connect_duplicate_networks(struct ffn_unfolded_network *un,
         }
 }
 
-void ffn_disconnect_duplicate_networks(struct ffn_unfolded_network *un,
+void rnn_disconnect_duplicate_networks(struct rnn_unfolded_network *un,
                 struct network *n1, struct network *n2)
 {
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
@@ -500,7 +493,7 @@ void ffn_disconnect_duplicate_networks(struct ffn_unfolded_network *un,
                          g1->out_projs->elements[g1->out_projs->num_elements];
                  struct projection *p2 =
                          g2->inc_projs->elements[g2->inc_projs->num_elements];
-                 ffn_dispose_duplicate_projection(p1);
+                 rnn_dispose_duplicate_projection(p1);
                  free(p2);
 
                  g1->out_projs->elements[g1->out_projs->num_elements] = NULL;
@@ -508,13 +501,13 @@ void ffn_disconnect_duplicate_networks(struct ffn_unfolded_network *un,
         }
 }
 
-void ffn_sum_gradients(struct ffn_unfolded_network *un)
+void rnn_sum_gradients(struct rnn_unfolded_network *un)
 {
         for (int i = 1; i < un->stack_size; i++)
-                ffn_add_gradients(un->stack[0]->output, un->stack[i]->output);
+                rnn_add_gradients(un->stack[0]->output, un->stack[i]->output);
 }
 
-void ffn_add_gradients(struct group *g1, struct group *g2)
+void rnn_add_gradients(struct group *g1, struct group *g2)
 {
         for (int i = 0; i < g1->inc_projs->num_elements; i++) {
                 struct projection *p1 = g1->inc_projs->elements[i];
@@ -529,7 +522,7 @@ void ffn_add_gradients(struct group *g1, struct group *g2)
                 zero_out_matrix(p2->gradients);
 
                 if (!p1->recurrent)
-                        ffn_add_gradients(p1->to, p2->to);
+                        rnn_add_gradients(p1->to, p2->to);
         }
 }
 
@@ -580,7 +573,7 @@ void ffn_add_gradients(struct group *g1, struct group *g2)
  * Note: The above procedure extends to multiple recurrent groups per 
  *   network.
  */
-void ffn_cycle_stack(struct ffn_unfolded_network *un)
+void rnn_cycle_stack(struct rnn_unfolded_network *un)
 {
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
                 char *name = un->recur_groups->elements[i]->name;
@@ -592,7 +585,7 @@ void ffn_cycle_stack(struct ffn_unfolded_network *un)
                 int j = g1->inc_projs->num_elements - 1;
                 struct projection *p = g1->inc_projs->elements[j];
                 struct group *g = g1->inc_projs->elements[j]->to;
-                ffn_dispose_duplicate_projection(p);
+                rnn_dispose_duplicate_projection(p);
                 g1->inc_projs->elements[j] = NULL;
                 g1->inc_projs->num_elements--;
 
@@ -624,7 +617,7 @@ void ffn_cycle_stack(struct ffn_unfolded_network *un)
         un->stack[un->stack_size - 1] = n;
 
         /* step 6 */
-        ffn_connect_duplicate_networks(
+        rnn_connect_duplicate_networks(
                         un, 
                         un->stack[un->stack_size - 2],
                         un->stack[un->stack_size - 1]);

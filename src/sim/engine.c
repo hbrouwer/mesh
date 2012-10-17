@@ -123,7 +123,7 @@ void train_network_bp(struct network *n)
 
 void train_network_bptt(struct network *n)
 {
-        struct ffn_unfolded_network *un = n->unfolded_net;
+        struct rnn_unfolded_network *un = n->unfolded_net;
         struct network *nsp = un->stack[0];
 
         int elem = 0;
@@ -160,7 +160,7 @@ void train_network_bptt(struct network *n)
                         for (int j = 0; j < e->num_events; j++) {
                                 /* cycle network stack if necessary */
                                 if (his == un->stack_size) {
-                                        ffn_cycle_stack(un);
+                                        rnn_cycle_stack(un);
                                         nsp = un->stack[--his];
                                 } else {
                                         nsp = un->stack[his];
@@ -194,7 +194,7 @@ void train_network_bptt(struct network *n)
                         break;
 
                 /* sum gradients over unfolded network */
-                ffn_sum_gradients(un);
+                rnn_sum_gradients(un);
 
                 /* update weights */
                 n->update_algorithm(n);
@@ -303,7 +303,7 @@ void test_unfolded_network(struct network *n)
 {
         mprintf("starting testing of network: [%s]", n->name);
 
-        struct ffn_unfolded_network *un = n->unfolded_net;
+        struct rnn_unfolded_network *un = n->unfolded_net;
         struct network *nsp = un->stack[0];
 
         double me = 0.0;
@@ -326,7 +326,7 @@ void test_unfolded_network(struct network *n)
                 for (int j = 0; j < e->num_events; j++) {
                         /* cycle network stack if necessary */
                         if (his == un->stack_size) {
-                                ffn_cycle_stack(un);
+                                rnn_cycle_stack(un);
                                 nsp = un->stack[--his];
                         } else {
                                 nsp = un->stack[his];

@@ -90,7 +90,7 @@ void initialize_network(struct network *n)
 
         /* initialize unfolded network */
         if (n->learning_algorithm == train_network_bptt)
-                n->unfolded_net = ffn_init_unfolded_network(n);
+                n->unfolded_net = rnn_init_unfolded_network(n);
 
         if (!n->unfolded_net && n->load_weights_file)
                 load_weights(n);
@@ -112,7 +112,7 @@ void dispose_network(struct network *n)
         free(n->status);
 
         if (n->unfolded_net)
-                ffn_dispose_unfolded_network(n->unfolded_net);
+                rnn_dispose_unfolded_network(n->unfolded_net);
 
         dispose_groups(n->groups);
         dispose_group_array(n->groups);
@@ -604,6 +604,8 @@ struct network *load_network(char *filename)
                                 type = TYPE_FFN;
                         if (strcmp(tmp1, "srn") == 0)
                                 type = TYPE_SRN;
+                        if (strcmp(tmp1, "rnn") == 0)
+                                type = TYPE_RNN;
                         n = create_network(tmp2,type);
                         mprintf("created network: [%s:%s:(%s -> %s)]",
                                         tmp1, tmp2, input, output);
