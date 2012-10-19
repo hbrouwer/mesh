@@ -115,12 +115,12 @@ void train_network_bp(struct network *n)
  * This function implements backpropagation through time (BPTT) training.
  */
 
-// XXX: As always -- check logic...
 /*
+ * XXX: Epochwise versus truncated... check Haykin...
+ *
  * XXX: Check Williams & Peng (1990): BPTT(h;h') that captures both
  * epochwise/BPTT(h;h) and trucated/BPTT(h;1) backprop through time.
  */
-
 void train_network_bptt(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
@@ -173,9 +173,11 @@ void train_network_bptt(struct network *n)
                                  * Inject error if a target is specified
                                  * and history is full.
                                  */
-                                if (e->targets[j] && his == un->stack_size - 1) {
+                                if (e->targets[j]) {
                                         bp_output_error(nsp->output, e->targets[j]);
-                                        bp_backpropagate_error(nsp, nsp->output);
+
+                                        if (his == un->stack_size - 1)
+                                                bp_backpropagate_error(nsp, nsp->output);
 
                                         /* compute error */
                                         me += n->output->err_fun->fun(nsp->output, e->targets[j]);
@@ -197,7 +199,7 @@ void train_network_bptt(struct network *n)
                 rnn_sum_gradients(un);
 
                 /* update weights */
-                n->update_algorithm(n);
+                n->update_algorithm(un->stack[0]);
 
                 /* report progress */
                 if (epoch == 1 || epoch % n->report_after == 0) {

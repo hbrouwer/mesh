@@ -12,11 +12,11 @@ add_executable(mesh
         src/sim/engine.c
         src/sim/erps.c
         src/sim/error.c
-        src/sim/rnn_unfold.c
         src/sim/main.c
         src/sim/math.c
         src/sim/matrix.c
         src/sim/pprint.c
+        src/sim/rnn_unfold.c
         src/sim/set.c
         src/sim/stats.c
         src/sim/network.c
