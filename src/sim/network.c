@@ -269,10 +269,6 @@ void attach_bias_group(struct network *n, struct group *g)
                         bg->vector->size,
                         g->vector->size);
 
-        /* error vector */
-        struct vector *error = create_vector(
-                        bg->vector->size);
-
         /* gradients matrix */
         struct matrix *gradients = create_matrix(
                         bg->vector->size,
@@ -298,7 +294,7 @@ void attach_bias_group(struct network *n, struct group *g)
          * group.
          */
         struct projection *op;
-        op = create_projection(g, weights, error, gradients, prev_gradients,
+        op = create_projection(g, weights, gradients, prev_gradients,
                                 prev_weight_deltas, dyn_learning_pars, false);
         add_to_projs_array(bg->out_projs, op);
         
@@ -307,7 +303,7 @@ void attach_bias_group(struct network *n, struct group *g)
          * group.
          */
         struct projection *ip;
-        ip = create_projection(bg, weights, error, gradients, prev_gradients,
+        ip = create_projection(bg, weights, gradients, prev_gradients,
                                 prev_weight_deltas, dyn_learning_pars, false);
         add_to_projs_array(g->inc_projs, ip);
 
@@ -373,6 +369,17 @@ void shift_context_group_chain(struct network *n, struct group *g,
 }
 
 /*
+ * This resets the error vector for groups.
+ */
+void reset_error_signals(struct network *n)
+{
+        for (int i = 0; i < n->groups->num_elements; i++) {
+                struct group *g = n->groups->elements[i];
+                zero_out_vector(g->error);
+        }
+}
+
+/*
  * This resets all the context groups in a network to their initial value.
  */
 
@@ -397,7 +404,7 @@ void reset_recurrent_groups(struct network *n) {
                         fill_vector_with_value(g->vector, 0.0);
         }
 }
-        
+
 /*
  * Creates a new projection array.
  */
@@ -477,7 +484,6 @@ void dispose_projs_array(struct projs_array *ps)
 struct projection *create_projection(
                 struct group *to,
                 struct matrix *weights,
-                struct vector *error,
                 struct matrix *gradients,
                 struct matrix *prev_gradients,
                 struct matrix *prev_weight_deltas,
@@ -492,7 +498,6 @@ struct projection *create_projection(
 
         p->to = to;
         p->weights = weights;
-        p->error = error;
         p->gradients = gradients;
         p->prev_gradients = prev_gradients;
         p->prev_weight_deltas = prev_weight_deltas;
@@ -513,7 +518,6 @@ error_out:
 void dispose_projection(struct projection *p)
 {
         dispose_matrix(p->weights);
-        dispose_vector(p->error);
         dispose_matrix(p->gradients);
         dispose_matrix(p->prev_gradients);
         dispose_matrix(p->prev_weight_deltas);
@@ -938,8 +942,6 @@ void load_projection(char *buf, char *fmt, struct network *n, char *msg)
         struct matrix *weights = create_matrix(
                         fg->vector->size,
                         tg->vector->size);
-        struct vector *error = create_vector(
-                        fg->vector->size);
         struct matrix *gradients = create_matrix(
                         fg->vector->size,
                         tg->vector->size);
@@ -954,12 +956,12 @@ void load_projection(char *buf, char *fmt, struct network *n, char *msg)
                         tg->vector->size);
 
         struct projection *op;
-        op = create_projection(tg, weights, error, gradients, prev_gradients,
+        op = create_projection(tg, weights, gradients, prev_gradients,
                         prev_weight_deltas, dyn_learning_pars, false);
         add_to_projs_array(fg->out_projs, op);
 
         struct projection *ip;
-        ip = create_projection(fg, weights, error, gradients, prev_gradients,
+        ip = create_projection(fg, weights, gradients, prev_gradients,
                         prev_weight_deltas, dyn_learning_pars, false);
         add_to_projs_array(tg->inc_projs, ip);
 

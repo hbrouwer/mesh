@@ -186,7 +186,6 @@ struct projection
         struct matrix *weights;     /* projection weights */
         bool frozen;                /* flags whether weights for this projection
                                        are frozen */
-        struct vector *error;       /* projection error for BP */
         struct matrix *gradients;   /* projection gradients for BP */
         struct matrix               /* previous projection gradients for BP */
                 *prev_gradients;
@@ -274,6 +273,7 @@ void dispose_groups(struct group_array *groups);
 
 void shift_context_group_chain(struct network *n, struct group *g,
                 struct vector *v);
+void reset_error_signals(struct network *n);
 void reset_context_groups(struct network *n);
 void reset_recurrent_groups(struct network *n);
 
@@ -285,7 +285,6 @@ void dispose_projs_array(struct projs_array *ps);
 struct projection *create_projection(
                 struct group *to,
                 struct matrix *weights,
-                struct vector *error,
                 struct matrix *gradients,
                 struct matrix *prev_gradients,
                 struct matrix *prev_weight_deltas,

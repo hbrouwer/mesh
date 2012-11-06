@@ -72,6 +72,7 @@ void train_network_bp(struct network *n)
 
                                 /* inject error if a target is specified */
                                 if (e->targets[j]) {
+                                        reset_error_signals(n);
                                         bp_output_error(n->output, e->targets[j]);
                                         bp_backpropagate_error(n, n->output);
                                         
@@ -174,6 +175,7 @@ void train_network_bptt(struct network *n)
                                  * and history is full.
                                  */
                                 if (e->targets[j]) {
+                                        reset_error_signals(nsp);
                                         bp_output_error(nsp->output, e->targets[j]);
 
                                         if (his == un->stack_size - 1)

@@ -333,7 +333,6 @@ struct projection *rnn_duplicate_projection(
         memset(dp, 0, sizeof(struct projection));
 
         dp->weights = p->weights; /* <-- shared weights */
-        dp->error = error;
         dp->gradients = gradients;
         dp->prev_gradients = prev_gradients;
         dp->prev_weight_deltas = p->prev_weight_deltas;
@@ -348,7 +347,6 @@ error_out:
 
 void rnn_dispose_duplicate_projection(struct projection *dp)
 {
-        dispose_vector(dp->error);
         dispose_matrix(dp->gradients);
         dispose_matrix(dp->prev_gradients);
         
@@ -389,8 +387,6 @@ void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
                  * Note: weight matrices are shared among recurrent
                  *   projections.
                  */
-                struct vector *error = create_vector(
-                                g1->vector->size);
                 struct matrix *gradients = create_matrix(
                                 g1->vector->size,
                                 g2->vector->size);
@@ -399,15 +395,15 @@ void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
                                 g2->vector->size);
 
                 g2->out_projs->elements[g2->out_projs->num_elements++] =
-                        create_projection(g1, un->recur_weights[i], error,
-                                        gradients, prev_gradients, un->recur_prev_weight_deltas[i],
+                        create_projection(g1, un->recur_weights[i], gradients,
+                                        prev_gradients, un->recur_prev_weight_deltas[i],
                                         un->recur_dyn_learning_pars[i], true);
                 if (g2->out_projs->num_elements == g2->out_projs->max_elements)
                         increase_projs_array_size(g2->out_projs);
 
                 g1->inc_projs->elements[g1->inc_projs->num_elements++] = 
-                        create_projection(g2, un->recur_weights[i], error,
-                                        gradients, prev_gradients, un->recur_prev_weight_deltas[i],
+                        create_projection(g2, un->recur_weights[i], gradients,
+                                        prev_gradients, un->recur_prev_weight_deltas[i],
                                         un->recur_dyn_learning_pars[i], true);
                 if (g1->inc_projs->num_elements == g1->inc_projs->max_elements)
                         increase_projs_array_size(g1->inc_projs);
@@ -453,8 +449,6 @@ void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,
                  * Note: weight matrices are shared among recurrent
                  *   projections.
                  */                
-                struct vector *error = create_vector(
-                                g1->vector->size);
                 struct matrix *gradients = create_matrix(
                                 g1->vector->size,
                                 g2->vector->size);
@@ -463,15 +457,15 @@ void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,
                                 g2->vector->size);
 
                 g1->out_projs->elements[g1->out_projs->num_elements++] =
-                        create_projection(g2, un->recur_weights[i], error,
-                                        gradients, prev_gradients, un->recur_prev_weight_deltas[i],
+                        create_projection(g2, un->recur_weights[i], gradients,
+                                        prev_gradients, un->recur_prev_weight_deltas[i],
                                         un->recur_dyn_learning_pars[i], true);
                 if (g1->out_projs->num_elements == g1->out_projs->max_elements)
                         increase_projs_array_size(g1->out_projs);
 
                 g2->inc_projs->elements[g2->inc_projs->num_elements++] = 
-                        create_projection(g1, un->recur_weights[i], error,
-                                        gradients, prev_gradients, un->recur_prev_weight_deltas[i],
+                        create_projection(g1, un->recur_weights[i], gradients,
+                                        prev_gradients, un->recur_prev_weight_deltas[i],
                                         un->recur_dyn_learning_pars[i], true);
                 if (g2->inc_projs->num_elements == g2->inc_projs->max_elements)
                         increase_projs_array_size(g2->inc_projs);
@@ -604,7 +598,6 @@ void rnn_cycle_stack(struct rnn_unfolded_network *un)
                 p = g2->inc_projs->elements[j];
                 j = g->out_projs->num_elements - 1;
                 g->out_projs->elements[j]->to = g2;
-                g->out_projs->elements[j]->error = p->error;
                 g->out_projs->elements[j]->gradients = p->gradients;
                 g->out_projs->elements[j]->prev_gradients = p->prev_gradients;
         }
