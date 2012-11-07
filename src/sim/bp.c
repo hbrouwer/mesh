@@ -50,7 +50,7 @@
  * the product of that unit's error derivative and its activation
  * derivative:
  *
- *    delta_j = dE/dy_i * dy_i/dx_j = dE/d_yi * f'(x_j)
+ *    delta_j = dE/dy_j * dy_j/dx_j = dE/d_yj * f'(x_j)
  *
  * where f'(x) is the derivative of the activation function f(x) for the net
  * input x_j to unit j. If unit j is a unit in the output layer, this means
@@ -120,7 +120,7 @@ void bp_output_error(struct group *g, struct vector *t)
 void bp_backpropagate_error(struct network *n, struct group *g)
 {
         /*
-         * Each group g' that projects to g can receive error signals
+         * Note: Each group g' that projects to g can receive error signals
          * from more than one later groups (for instance in backpropagation
          * through time). If this is the case the error derivative of dE/dy_j
          * of a unit j, is then defined as:
@@ -146,8 +146,14 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                                                 * p->weights->elements[x][z];
 
                                         /*
+                                         * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                         *
                                          * We only compute gradients for
                                          * projections to g.
+                                         *
+                                         * XXX: Check for BPTT
+                                         *
+                                         * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                          */
                                         if (p->to != g)
                                                 continue;
@@ -157,7 +163,7 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                                          *
                                          * dE/dw_ij += delta_j * y_i
                                          *
-                                         * Note: gradients sum over an
+                                         * Note: gradients may sum over an
                                          * epoch.
                                          */
                                         p->gradients->elements[x][z] += p->to->error->elements[z]
@@ -167,13 +173,14 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                 }
 
                 /*
-                 * Multiply the error derivatives with the relevant 
+                 * Multiply each error derivative with its relevant 
                  * activation derivative to get the error signal:
                  *
                  * delta_j = f'(x_j) dE/dy_j
                  */
                 for (int x = 0; x < ng->error->size; x++) {
                         double act_deriv;
+                        /* but not for input units ... */
                         if (ng != n->input) {
                                 act_deriv = ng->act_fun->deriv(ng->vector, x)
                                         + BP_FLAT_SPOT_CORRECTION;
@@ -350,7 +357,7 @@ void bp_update_projection_sd(struct network *n, struct group *g,
  * iteration depends on the particular Rprop flavour. Four Rprop flavours
  * are implemented (see Igel & Husken, 2000):
  *
- * (1) RPROP+ (rprop with weight-backtracking)
+ * (1) RPROP+ (Rprop with weight-backtracking)
  *
  *     After computing the "update value" u_ij for each weight w_ij, the
  *     second stage depends on whether the sign of gradient of that weight
@@ -367,22 +374,22 @@ void bp_update_projection_sd(struct network *n, struct group *g,
  *     dE/dw_ij(t) to 0, so that the u_ij will not be adjusted on the next 
  *     iteration:
  *
- *         if dE/@d_ij(t-1) > dE/dw_ij(t) > 0 then
+ *         if dE/dw_ij(t-1) > dE/dw_ij(t) > 0 then
  *
  *            Dw_ij(t) = -Dw_ij(t-1)
  *
- *            dE/dW_ij(t) = 0
+ *            dE/dw_ij(t) = 0
  *
  *     Finally, weights are updated by means of: 
  *
- *          w_ij = w_ij + u_ij(t).
+ *          w_ij = w_ij + u_ij(t)
  *
- * (2) RPROP- (rprop without weight-backtracking)
+ * (2) RPROP- (Rprop without weight-backtracking)
  *
  *     A variation on RPROP+ in which weight backtracking is omitted, and
  *     in which dE/dw_ij(t) is not reset to 0 when its sign has changed.
  *
- * (3) iRPROP+ ("modified" rprop with weight-backtracking)
+ * (3) iRPROP+ ("modified" Rprop with weight-backtracking)
  *
  *     A variation on RPROP+ in which weight backtracking is only performed
  *     if the overall error goes up from timestep t-1 to t.
@@ -689,8 +696,10 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                         if (p->prev_weight_deltas->elements[i][j] > 0.0) {
                                 /*
                                  * If current gradient is negative, include
-                                 * the negative of the learning rate times
-                                 * the gradient in the weight delta.
+                                 * a steepest descent term in the weight
+                                 * delta:
+                                 *
+                                 * Dw_ij(t) = -epislon * dE/dw_ij
                                  */ 
                                 if (p->gradients->elements[i][j] < 0.0)
                                         weight_delta += -n->learning_rate
@@ -700,7 +709,9 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                  * If current gradient is smaller than the
                                  * max step size times the previous
                                  * gradient, take a step of the maximum size
-                                 * times the previous weight delta.
+                                 * times the previous weight delta:
+                                 *
+                                 * Dw_ij(t) = Dw_ij(t) + u * Dw(t-1)
                                  */
                                 if (p->gradients->elements[i][j] <
                                                 shrink_factor * p->prev_gradients->elements[i][j]) {
@@ -709,7 +720,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                 /*
                                  * Otherwise, use the quadratic estimate:
                                  *
-                                 * Dw_ij(t) = dE/dw_ij(t)
+                                 * Dw_ij(t) = Dw_ij(t) + dE/dw_ij(t)
                                  *     / (dE/dw_ij(t-1) - dE/dw_ij(t)
                                  *     * Dw_ij(t-1)
                                  */
@@ -728,8 +739,10 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                         } else if (p->prev_weight_deltas->elements[i][j] < 0.0) {
                                 /*
                                  * If current gradient is positive, include
-                                 * the negative of the learning rate times
-                                 * the gradient in the weight delta.
+                                 * a steepest descent term in the weight
+                                 * delta:
+                                 *
+                                 * Dw_ij(t) = -epislon * dE/dw_ij
                                  */
                                 if (p->gradients->elements[i][j] > 0.0)
                                         weight_delta += -n->learning_rate
@@ -739,7 +752,9 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                  * If current gradient is larger than the
                                  * max step size times the previous
                                  * gradient, take a step of the maximum size
-                                 * times the previous weight delta.
+                                 * times the previous weight delta:
+                                 *
+                                 * Dw_ij(t) = Dw_ij(t) + u * Dw(t-1)
                                  */
                                 if (p->gradients->elements[i][j] >
                                                 shrink_factor * p->prev_gradients->elements[i][j]) {
@@ -748,7 +763,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                 /*
                                  * Otherwise, use the quadratic estimate:
                                  *
-                                 * @Dw_ij(t) = dE/dw_ij(t) 
+                                 * Dw_ij(t) = Dw_ij(t) + dE/dw_ij(t)
                                  *     / (dE/dw_ij(t-1) - dE/dw_ij(t)
                                  *     * @Dw_ij(t-1)
                                  */
@@ -832,7 +847,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
  * DBD backpropagation, each weight has its own learning rate that is
  * updated together with its corresponding weight. Hence, in essence, DBD
  * adds a learning rate update rule to steepest descent. Upon each update,
- * the change in the update rule for weight is defined as:
+ * the change in the learning rate for a weight is defined as:
  *
  *                | kappa          , if dE/dw_ij_bar(t-1) * dE/dw_ij(t) > 0
  *                |
