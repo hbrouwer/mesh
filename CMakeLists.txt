@@ -9,6 +9,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pendantic -Wall -O3 -march=core2")
 add_executable(mesh
         src/sim/act.c
         src/sim/bp.c
+        src/sim/cli.c
         src/sim/engine.c
         src/sim/erps.c
         src/sim/error.c
@@ -17,6 +18,7 @@ add_executable(mesh
         src/sim/matrix.c
         src/sim/pprint.c
         src/sim/rnn_unfold.c
+        src/sim/session.c
         src/sim/set.c
         src/sim/stats.c
         src/sim/network.c

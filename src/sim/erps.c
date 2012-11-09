@@ -29,14 +29,12 @@ void compute_erp_correlates(struct network *n)
         mprintf("computing ERP correlates for network: [%s]", n->name);
 
         /* find "Wernicke" and "Broca" */
-        struct group *w, *b;
-        if (!(w = find_group_by_name(n, "wernicke")))
-                goto error_out;
-        if (!(b = find_group_by_name(n, "broca_hidden")))
+        struct group *w;
+        if (!(w = find_group_by_name(n, "hidden")))
                 goto error_out;
 
         struct vector *pw = create_vector(w->vector->size);
-        struct vector *pb = create_vector(b->vector->size);
+        // struct vector *pb = create_vector(b->vector->size);
 
         /* present test set to network */
         for (int i = 0; i < n->test_set->num_elements; i++) {
@@ -46,7 +44,6 @@ void compute_erp_correlates(struct network *n)
                 if (n->type == TYPE_SRN)
                         reset_context_groups(n);
 
-                zero_out_vector(pb);
                 zero_out_vector(pw);
 
                 rprintf("\n\nI: \"%s\"", e->name);
@@ -54,58 +51,16 @@ void compute_erp_correlates(struct network *n)
 
                 for (int j = 0; j < e->num_events; j++) {
                         copy_vector(n->input->vector, e->inputs[j]);
-                   
                         feed_forward(n, n->input);
 
-                        double n400_correlate = compute_n400_correlate(w->vector, pw);
-                        double p600_correlate = compute_p600_correlate(b->vector, pb);
-
-                        /*
-                        printf("%s\n", tokens);
-                        print_vector(pw);
-                        print_vector(w->vector);
-
-                        printf("\n");
-                        print_vector(pb);
-                        print_vector(b->vector);
-                        */
-
-                        printf("\n%s\t\tN400: %f\t\tP600: %f\n", tokens, n400_correlate, p600_correlate);
-
-                        struct group *gr;
-                        gr = find_group_by_name(n, "wernicke");
-                        pprint_vector(gr->vector);
-                        printf("\n");
-
-                        if (j == e->num_events - 1) {
-                        double diffsum = 0.0;
-                        for (int i = 0; i < w->vector->size; i++) {
-                                diffsum += fabs(pw->elements[i] - w->vector->elements[i]);
-                                printf("%.2f --> %.2f | %.2f\n", pw->elements[i], w->vector->elements[i],
-                                                fabs(pw->elements[i] - w->vector->elements[i]));
+                        if (j > 0) {
+                                double n400_correlate = compute_n400_correlate(w->vector, pw);
+                                printf("N400: %f\n", n400_correlate);
+                                pprint_vector(w->vector);
+                                pprint_vector(pw);
                         }
-                        printf("diff_sum: %.2f\n", diffsum / w->vector->size);
-                        }
-
-
-                                        /*
-                        pprint_vector(pw);
-                        pprint_vector(w->vector);
-                        */
-
-                        /*
-                        if(e->targets[j]) {
-                                printf("\n");
-                                printf("T: ");
-                                pprint_vector(e->targets[j]);
-                                printf("O: ");
-                                pprint_vector(n->output->vector);
-                                printf("\n\n");
-                        }
-                        */
 
                         copy_vector(pw, w->vector);
-                        copy_vector(pb, b->vector);
 
                         tokens = strtok(NULL, " ");
                 }

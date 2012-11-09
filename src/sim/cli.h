@@ -1,5 +1,5 @@
 /*
- * main.h
+ * cli.h
  *
  * Copyright 2012 Harm Brouwer <me@hbrouwer.eu>
  *
@@ -16,25 +16,11 @@
  * limitations under the License.
  */
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef CLI_H
+#define CLI_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
+#include "session.h"
 
-#define VERSION "0.260912"
+void cli_loop(struct session *s);
 
-void new_main();
-
-void print_help(char *exec_name);
-void print_version();
-
-void cprintf(const char *fmt, ...);
-void mprintf(const char *fmt, ...);
-void eprintf(const char *fmt, ...);
-void pprintf(const char *fmt, ...);
-void rprintf(const char *fmt, ...);
-
-#endif /* MAIN_H */
+#endif /* CLI_H */

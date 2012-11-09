@@ -18,14 +18,19 @@
 
 #include <stdarg.h>
 
+#include "cli.h"
 #include "engine.h"
 #include "erps.h"
 #include "main.h"
 #include "network.h"
 #include "rnn_unfold.h"
+#include "session.h"
 
 int main(int argc, char **argv)
 {
+        /* debugging */
+        new_main();
+        
         struct network *n = NULL;
         bool net_spec = false;
         bool print_stats = false;
@@ -127,6 +132,20 @@ exit_success:
         exit(EXIT_SUCCESS);
 }
 
+void new_main()
+{
+        struct session *s;
+
+        cprintf("MESH %s", VERSION);
+        cprintf("(c) 2012 Harm Brouwer <me@hbrouwer.eu>");
+        
+        s = create_session();
+        cli_loop(s);
+        dispose_session(s);
+
+        exit(EXIT_SUCCESS);
+}
+
 void print_help(char *exec_name)
 {
         cprintf(
@@ -153,12 +172,12 @@ void print_version()
 void cprintf(const char *fmt, ...)
 {
         va_list args;
-        fprintf(stderr, "\x1b[38;05;14m");
+        // fprintf(stderr, "\x1b[38;05;14m");
         va_start(args, fmt);
         vfprintf(stderr, fmt, args);
         va_end(args);
         fprintf(stderr, "\n");
-        fprintf(stderr, "\x1b[0m");
+        // fprintf(stderr, "\x1b[0m");
 }
 
 /* print program message */
