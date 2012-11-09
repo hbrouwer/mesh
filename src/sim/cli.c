@@ -27,7 +27,7 @@ void cli_loop(struct session *s)
         do {
                 /* prompt */
                 if (!s->anp) {
-                        printf("***");
+                        printf("---");
                 } else {
                         printf("%s", s->anp->name);
                 }

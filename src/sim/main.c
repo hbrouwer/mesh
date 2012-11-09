@@ -29,7 +29,7 @@
 int main(int argc, char **argv)
 {
         /* debugging */
-        new_main();
+        // new_main();
         
         struct network *n = NULL;
         bool net_spec = false;
@@ -136,9 +136,13 @@ void new_main()
 {
         struct session *s;
 
-        cprintf("MESH %s", VERSION);
+        cprintf("");
+        cprintf("MESH version %s", VERSION);
         cprintf("(c) 2012 Harm Brouwer <me@hbrouwer.eu>");
-        
+        cprintf("Center for Language and Cognition, University of Groningen &");
+        cprintf("Netherlands Organisation for Scientific Research (NWO)");
+        cprintf("");
+
         s = create_session();
         cli_loop(s);
         dispose_session(s);
