@@ -17,6 +17,7 @@
  */
 
 #include "cli.h"
+#include "cmd.h"
 #include "main.h"
 
 void cli_loop(struct session *s)
@@ -26,19 +27,21 @@ void cli_loop(struct session *s)
 
         do {
                 /* prompt */
-                if (!s->anp) {
-                        printf("---");
-                } else {
+                if (s->anp)
                         printf("%s", s->anp->name);
-                }
-                printf(": ");
+                printf("> ");
                 
                 /* get a line */
-                if (getline(&line, &linecap, stdin) == -1)
+                int num_chars;
+                if ((num_chars = getline(&line, &linecap, stdin)) == -1)
                         goto error_out;
 
-                if (strncmp(line, "exit", 4) == 0)
-                        return;
+                line[num_chars - 1] = '\0';
+
+                /* process command */
+                process_command(line, s);
+       
+                memset(line, 0, linecap);
 
         } while (!feof(stdin));
 

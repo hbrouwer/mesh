@@ -26,7 +26,7 @@
 
 #define VERSION "0.260912"
 
-void new_main();
+void new_main(int argc, char **argv);
 
 void print_help(char *exec_name);
 void print_version();

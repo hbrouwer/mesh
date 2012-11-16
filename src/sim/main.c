@@ -19,6 +19,7 @@
 #include <stdarg.h>
 
 #include "cli.h"
+#include "cmd.h"
 #include "engine.h"
 #include "erps.h"
 #include "main.h"
@@ -29,7 +30,7 @@
 int main(int argc, char **argv)
 {
         /* debugging */
-        // new_main();
+        new_main(argc, argv);
         
         struct network *n = NULL;
         bool net_spec = false;
@@ -44,12 +45,14 @@ int main(int argc, char **argv)
         cprintf("");
 
         for (int i = 1; i < argc; i++) {
+                /*
                 if (strcmp(argv[i], "--network") == 0) {
                         if (++i < argc) {
                                 n = load_network(argv[i]);
                                 net_spec = true;
                         }
                 }
+                */
 
                 if (strcmp(argv[i], "--use_act_lookup") == 0) {
                         n->use_act_lookup = true;
@@ -132,7 +135,7 @@ exit_success:
         exit(EXIT_SUCCESS);
 }
 
-void new_main()
+void new_main(int argc, char **argv)
 {
         struct session *s;
 
@@ -144,6 +147,18 @@ void new_main()
         cprintf("");
 
         s = create_session();
+
+        for (int i = 1; i < argc; i++) {
+                if (strcmp(argv[i], "--network") == 0) {
+                        if (++i < argc) {
+                                char *cmd;
+                                asprintf(&cmd, "loadNetwork %s", argv[i]);
+                                process_command(cmd, s);
+                                free(cmd);
+                        }
+                }
+        }
+
         cli_loop(s);
         dispose_session(s);
 

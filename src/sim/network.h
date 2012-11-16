@@ -296,30 +296,12 @@ void randomize_weight_matrices(struct group *g, struct network *n);
 void initialize_dyn_learning_pars(struct group *g, struct network *n);
 void initialize_act_lookup_vectors(struct network *n);
 
-struct network *load_network(char *filename);
+/*
+ * Stuff below will move to cmd.c ...
+ */
 
-void load_double_parameter(char *buf, char *fmt, double *par, char *msg);
-void load_int_parameter(char *buf, char *fmt, int *par, char *msg);
-void load_learning_algorithm(char *buf, char *fmt, struct network *n,
-                char *msg);
-void load_update_algorithm(char *buf, char *fmt, struct network *n,
-                char *msg);
-void load_item_set(char *buf, char *fmt, struct network *n, bool train,
-                char *msg);
-void load_group(char *buf, char *fmt, struct network *n, char *input,
-                char *output, char *msg);
 struct act_fun *load_activation_function(char *act_fun);
 struct err_fun *load_error_function(char *err_fun);
-void load_bias(char *buf, char *fmt, struct network *n, char *msg);
-void load_projection(char *buf, char *fmt, struct network *n, char *msg);
-void load_freeze_projection(char *buf, char *fmt, struct network *n,
-                char *msg);
-void load_elman_projection(char *buf, char *fmt, struct network *n,
-                char *msg);
-void load_recurrent_group(char *buf, char *fmt, struct network *n,
-                char *msg);
-void load_training_order(char *buf, char *fmt, struct network *n,
-                char *msg);
 
 struct group *find_group_by_name(struct network *n, char *name);
 

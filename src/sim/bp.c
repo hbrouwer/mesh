@@ -531,7 +531,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
 
                                 /*
                                  * Set dE/dw_ij(t) to 0 for all Rprop
-                                 * flavours except RPROP_MINUS.
+                                 * flavours except RPROP-.
                                  */
                                 if (n->rp_type != RPROP_MINUS)
                                         p->gradients->elements[i][j] = 0.0;

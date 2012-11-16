@@ -10,6 +10,7 @@ add_executable(mesh
         src/sim/act.c
         src/sim/bp.c
         src/sim/cli.c
+        src/sim/cmd.c
         src/sim/engine.c
         src/sim/erps.c
         src/sim/error.c
