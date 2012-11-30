@@ -19,6 +19,7 @@
 #include "act.h"
 #include "bp.h"
 #include "engine.h"
+#include "set.h"
 #include "pprint.h"
 
 /*
@@ -41,18 +42,26 @@ void train_network(struct network *n)
 void train_network_bp(struct network *n)
 {
         int elem = 0;
+
         for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
                 double me = 0.0;
 
+                printf("\n");
+
                 /* determine order of training items */
-                if (n->training_order == TRAIN_PERMUTED)
-                        permute_set(n->training_set);
-                if (n->training_order == TRAIN_RANDOMIZED)
-                        randomize_set(n->training_set);
+                if (elem == 0) {
+                        if (n->training_order == TRAIN_PERMUTED)
+                                permute_set(n->training_set);
+                        if (n->training_order == TRAIN_RANDOMIZED)
+                                randomize_set(n->training_set);
+                }
 
                 /* present all training items */
                 for (int i = 0; i < n->batch_size; i++) {
-                        struct element *e = n->training_set->elements[elem++];
+                        int elem_idx = n->training_set->order[elem++];
+                        struct element *e = n->training_set->elements[elem_idx];
+
+                        printf("%s\n", e->name);
 
                         /* 
                          * Restart at the beginning of the training
@@ -133,14 +142,18 @@ void train_network_bptt(struct network *n)
                 int his = 0;
 
                 /* determine order of training items */
-                if (n->training_order == TRAIN_PERMUTED)
-                        permute_set(n->training_set);
-                if (n->training_order == TRAIN_RANDOMIZED)
-                        randomize_set(n->training_set);
+                if (elem == 0) {
+                        if (n->training_order == TRAIN_PERMUTED)
+                                permute_set(n->training_set);
+                        if (n->training_order == TRAIN_RANDOMIZED)
+                                randomize_set(n->training_set);
+                }
 
                 /* present all training items */
                 for (int i = 0; i < n->batch_size; i++) {
-                        struct element *e = n->training_set->elements[elem++];
+                        int elem_idx = n->training_set->order[elem++];
+                        struct element *e = n->training_set->elements[elem_idx];
+                        // struct element *e = n->training_set->elements[elem++];
 
                         /* 
                          * Restart at the beginning of the training

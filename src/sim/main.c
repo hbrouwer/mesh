@@ -39,7 +39,7 @@ int main(int argc, char **argv)
         
         cprintf("");
         cprintf("MESH version %s", VERSION);
-        cprintf("(c) 2012 Harm Brouwer <me@hbrouwer.eu>");
+        cprintf("Copyright (c) 2012 Harm Brouwer <me@hbrouwer.eu>");
         cprintf("Center for Language and Cognition, University of Groningen &");
         cprintf("Netherlands Organisation for Scientific Research (NWO)");
         cprintf("");
@@ -141,9 +141,9 @@ void new_main(int argc, char **argv)
 
         cprintf("");
         cprintf("MESH version %s", VERSION);
-        cprintf("(c) 2012 Harm Brouwer <me@hbrouwer.eu>");
-        cprintf("Center for Language and Cognition, University of Groningen &");
-        cprintf("Netherlands Organisation for Scientific Research (NWO)");
+        cprintf("Copyright (C) 2012 Harm Brouwer <me@hbrouwer.eu>");
+        cprintf("Center for Language and Cognition, University of Groningen");
+        cprintf("& Netherlands Organisation for Scientific Research (NWO)");
         cprintf("");
 
         s = create_session();

@@ -71,8 +71,11 @@ void dispose_set(struct set *s)
                 if (s->elements[i])
                         dispose_element(s->elements[i]);
         free(s->elements);
+        free(s->order);
         free(s);
 }
+
+
 
 struct element *create_element(char *name, int num_events, 
                 struct vector **inputs, struct vector **targets)
@@ -179,6 +182,14 @@ struct set *load_set(char *filename, int input_size, int output_size)
 
         fclose(fd);
 
+        int block_size = s->num_elements * sizeof(int);
+        if (!(s->order = malloc(block_size)))
+                goto error_out;
+        memset(s->order, 0, block_size);
+
+        for (int i = 0; i < s->num_elements; i++)
+                s->order[i] = i;
+
         return s;
 
 error_out:
@@ -186,52 +197,35 @@ error_out:
         return NULL;
 }
 
-struct set *permute_set(struct set *s)
+void order_set(struct set *s)
 {
-        struct set *ps = create_set(s->num_elements);
-        ps->num_elements = s->num_elements;
+        for (int i = 0; i < s->num_elements; i++)
+                s->order[i] = i;
+}
 
+void permute_set(struct set *s)
+{
         for (int i = 0; i < s->num_elements; i++) {
                 int pe = ((double)rand() / (double)RAND_MAX)
                         * (s->num_elements);
-                struct element *e = s->elements[pe];
 
                 bool duplicate = false;
                 for (int j = 0; j < i; j++)
-                        if (ps->elements[j] == e)
+                        if (s->order[j] == pe)
                                 duplicate = true;
 
                 if (duplicate)
                         i--;
                 else
-                        ps->elements[i] = e;
+                        s->order[i] = pe;
         }
-
-        for (int i = 0; i < s->num_elements; i++)
-                s->elements[i] = ps->elements[i];
-
-        free(ps->elements);
-        free(ps);
-
-        return s;
 }
 
-struct set *randomize_set(struct set *s)
+void randomize_set(struct set *s)
 {
-        struct set *rs = create_set(s->num_elements);
-        rs->num_elements = s->num_elements;
-
         for (int i = 0; i < s->num_elements; i++) {
                 int re = ((double)rand() / (double)RAND_MAX)
                         * (s->num_elements);
-                rs->elements[i] = s->elements[re];
+                s->order[i] = re;
         }
-
-        for (int i = 0; i < s->num_elements; i++)
-                s->elements[i] = rs->elements[i];
-
-        free(rs->elements);
-        free(rs);
-
-        return s;
 }

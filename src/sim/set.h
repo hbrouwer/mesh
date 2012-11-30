@@ -28,6 +28,7 @@ struct set
         int num_elements;           /* number of set elements */
         int max_elements;           /* maximum number of set elements */
         struct element **elements;  /* set elements */
+        int *order;                 /* order in which to present elements */
 };
 
 struct element
@@ -49,7 +50,8 @@ void dispose_element(struct element *e);
 
 struct set *load_set(char *filename, int input_size, int output_size);
 
-struct set *permute_set(struct set *s);
-struct set *randomize_set(struct set *s);
+void order_set(struct set *s);
+void permute_set(struct set *s);
+void randomize_set(struct set *s);
 
 #endif /* SET_H */
