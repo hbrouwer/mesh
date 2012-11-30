@@ -19,6 +19,7 @@
 #include "bp.h"
 #include "cmd.h"
 #include "engine.h"
+#include "erps.h"
 #include "main.h"
 #include "matrix.h"
 #include "network.h"
@@ -181,6 +182,8 @@ void process_command(char *cmd, struct session *s)
         if (cmd_train(cmd, "train", s->anp))
                 return;
         if (cmd_test(cmd, "test", s->anp))
+                return;
+        if (cmd_erps(cmd, "erps", s->anp))
                 return;
         
         /*
@@ -658,7 +661,7 @@ bool cmd_set_update_algorithm(char *cmd, char *fmt, struct network *n,
 
 bool cmd_train(char *cmd, char *fmt, struct network *n)
 {
-        if (strcmp(cmd, fmt) != 0)
+        if (strncmp(cmd, fmt, strlen(fmt)) != 0)
                 return false;
 
         initialize_network(n);
@@ -669,13 +672,23 @@ bool cmd_train(char *cmd, char *fmt, struct network *n)
 
 bool cmd_test(char *cmd, char *fmt, struct network *n)
 {
-        if (strcmp(cmd, fmt) != 0)
+        if (strncmp(cmd, fmt, strlen(fmt)) != 0)
                 return false;
 
         if (n->type != TYPE_RNN)
                 test_network(n);
         else
                 test_unfolded_network(n);
+
+        return true;
+}
+
+bool cmd_erps(char *cmd, char *fmt, struct network *n)
+{
+        if (strncmp(cmd, fmt, strlen(fmt)) != 0)
+                return false;
+
+        compute_erp_correlates(n);
 
         return true;
 }

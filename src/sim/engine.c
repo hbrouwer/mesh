@@ -46,8 +46,6 @@ void train_network_bp(struct network *n)
         for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
                 double me = 0.0;
 
-                printf("\n");
-
                 /* determine order of training items */
                 if (elem == 0) {
                         if (n->training_order == TRAIN_PERMUTED)
@@ -60,8 +58,6 @@ void train_network_bp(struct network *n)
                 for (int i = 0; i < n->batch_size; i++) {
                         int elem_idx = n->training_set->order[elem++];
                         struct element *e = n->training_set->elements[elem_idx];
-
-                        printf("%s\n", e->name);
 
                         /* 
                          * Restart at the beginning of the training

@@ -73,27 +73,23 @@ error_out:
         return;
 }
 
-/*
 double compute_n400_correlate(struct vector *v, struct vector *pv)
 {
-        double csa = 0.0;
-        double psa = 0.0;
+        double v_mean = 0.0, pv_mean = 0.0;
         for (int i = 0; i < v->size; i++) {
-                csa += fabs(v->elements[i]);
-                psa += fabs(pv->elements[i]);
+                v_mean += v->elements[i];
+                pv_mean += pv->elements[i];
+        }
+        v_mean /= v->size;
+        pv_mean /= pv->size;
+
+        double nom = 0.0, denom = 0.0;
+        for (int i = 0; i < v->size; i++) {
+                nom += (v->elements[i] - v_mean) * (pv->elements[i] - pv_mean);
+                denom += pow(v->elements[i] - v_mean, 2.0) * pow(pv->elements[i] - pv_mean, 2.0);
         }
 
-        return (csa / v->size) - (psa / v->size);
-}
-*/
-
-double compute_n400_correlate(struct vector *v, struct vector *pv)
-{
-        double ab = 0.0;
-        for (int i = 0; i < v->size; i++)
-                ab += square(v->elements[i] - pv->elements[i]);
-
-        return sqrt(ab);
+        return 1.0 / (nom / pow(denom, 0.5));
 }
 
 double compute_p600_correlate(struct vector *v, struct vector *pv)

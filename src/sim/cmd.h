@@ -58,5 +58,6 @@ bool cmd_set_update_algorithm(char *cmd, char *fmt, struct network *n,
 
 bool cmd_train(char *cmd, char *fmt, struct network *n);
 bool cmd_test(char *cmd, char *fmt, struct network *n);
+bool cmd_erps(char *cmd, char *fmt, struct network *n);
 
 #endif /* CMD_H */
