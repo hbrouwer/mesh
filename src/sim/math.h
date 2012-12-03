@@ -28,9 +28,8 @@ double square(double x);
 
 double normrand(double mu, double sigma);
 
-double inv_sq_city_block(struct vector *v1, struct vector *v2);
-double inv_sq_euclidean(struct vector *v1, struct vector *v2);
+double inner_product(struct vector *v1, struct vector *v2);
 double cosine_similarity(struct vector *v1, struct vector *v2);
-double correlation(struct vector *v1, struct vector *v2);
+double pearson_correlation(struct vector *v1, struct vector *v2);
 
 #endif /* MATH_H */

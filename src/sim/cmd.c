@@ -793,14 +793,12 @@ bool cmd_compare_vectors(char *cmd, char *fmt, struct network *n, char *msg)
         pprint_vector(v2);
 
         cprintf("");
-        cprintf("inv. sq. city-block:\t[%f]",
-                        inv_sq_city_block(v1, v2));
-        cprintf("inv. sq. euclidean:\t[%f]",
-                        inv_sq_euclidean(v1, v2));
+        cprintf("inner product:\t\t[%f]",
+                        inner_product(v1, v2));
         cprintf("cosine similarity:\t[%f]",
                         cosine_similarity(v1, v2));
-        cprintf("correlation:\t\t[%f]",
-                        correlation(v1, v2));
+        cprintf("Pearson's correlation:\t[%f]",
+                        pearson_correlation(v1, v2));
         cprintf("");
 
         dispose_vector(v1);

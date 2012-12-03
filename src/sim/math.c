@@ -60,6 +60,7 @@ double square(double x)
  *     random normal deviates. The Annals of Mathematical Statistics, 29 
  *     (2), 610-611.
  */
+
 double normrand(double mu, double sigma)
 {
         double rs1;
@@ -83,93 +84,77 @@ double normrand(double mu, double sigma)
 }
 
 /*
- * Inverse squared city-block distance:
+ * Inner product:
  *
- *              1
- * -------------------------
- * (sum_i |a_i - b_i|)^2 + 1
+ * ip = sum_i (x_i * y_i)
  */
 
-double inv_sq_city_block(struct vector *v1, struct vector *v2)
+double inner_product(struct vector *v1, struct vector *v2)
 {
-        double cb = 0.0;
+        double ip = 0.0;
 
         for (int i = 0; i < v1->size; i++)
-                cb += fabs(v1->elements[i] - v2->elements[i]);
-        cb = pow(cb, 2.0);
-        cb++;
+                ip += v1->elements[i] * v2->elements[i];
 
-        return 1.0 / cb;
-}
-
-/*
- * Inverse squared euclidean distance:
- *
- *            1
- * -----------------------
- * sum_i (a_i - b_i)^2 + 1
- */
-
-double inv_sq_euclidean(struct vector *v1, struct vector *v2)
-{
-        double ed = 0.0;
-
-        for (int i = 0; i < v1->size; i++)
-                ed += pow(v1->elements[i] - v2->elements[i], 2.0);
-        ed++;
-
-        return 1.0 / ed;
+        return ip;
 }
 
 /*
  * Cosine similarity:
  *
- *                 1
- * ---------------------------------
- * (sum a_i^2)^0.5 * (sum b_i^2)^0.5
+ *                  sum_i (x_i * y_i)
+ * cs = ---------------------------------------------
+ *      sqrt(sum_i (x_i ^ 2)) * sqrt(sum_i (y_i ^ 2))
  */
 
 double cosine_similarity(struct vector *v1, struct vector *v2)
 {
-        double nom = 0.0, asq = 0.0, bsq = 0.0;
+        double nom = 0.0, xsq = 0.0, ysq = 0.0;
 
         for (int i = 0; i < v1->size; i++) {
                 nom += v1->elements[i] * v2->elements[i];
-                asq += pow(v1->elements[i], 2.0);
-                bsq += pow(v2->elements[i], 2.0);
+                xsq += pow(v1->elements[i], 2.0);
+                ysq += pow(v2->elements[i], 2.0);
         }
 
-        return nom / (pow(asq, 0.5) * pow(bsq, 0.5));
+        xsq = sqrt(xsq);
+        ysq = sqrt(ysq);
+
+        return nom / (xsq * ysq);
 }
 
 /*
- * Correlation:
+ * Pearson's correlation:
  *
- *        sum (a_i - a) * (b_i - b)
- * ---------------------------------------
- * (sum (a_i - a)^2 * sum (b_i - b)^2)^0.5
+ *                   sum_i ((x_i - x) * (y_i - y))
+ * pc = -----------------------------------------------------
+ *      sqrt(sum_i (x_i - x) ^ 2) * sqrt(sum_i (y_i - y) ^ 2)
+ *
+ * where x is the average of vector x and y the average of vector y.
  */
 
-double correlation(struct vector *v1, struct vector *v2)
+double pearson_correlation(struct vector *v1, struct vector *v2)
 {
-        double amn = 0.0, bmn = 0.0;
+        double xmn = 0.0, ymn = 0.0;
 
         for (int i = 0; i < v1->size; i++) {
-                amn += v1->elements[i];
-                bmn += v2->elements[i];
+                xmn += v1->elements[i];
+                ymn += v2->elements[i];
         }
 
-        amn /= v1->size;
-        bmn /= v2->size;
+        xmn /= v1->size;
+        ymn /= v2->size;
 
-        double nom = 0.0, asq = 0.0, bsq = 0.0;
+        double nom = 0.0, xsq = 0.0, ysq = 0.0;
+
         for (int i = 0; i < v1->size; i++) {
-                nom += (v1->elements[i] - amn) * (v2->elements[i] - bmn);
-                asq += pow(v1->elements[i] - amn, 2.0);
-                bsq += pow(v2->elements[i] - bmn, 2.0);
+                nom += (v1->elements[i] - xmn) * (v2->elements[i] - ymn);
+                xsq += pow(v1->elements[i] - xmn, 2.0);
+                ysq += pow(v2->elements[i] - ymn, 2.0);
         }
 
-        double denom = pow(asq * bsq, 0.5);
+        xsq = sqrt(xsq);
+        ysq = sqrt(ysq);
 
-        return nom / denom;
+        return nom / (xsq * ysq);
 }
