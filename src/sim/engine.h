@@ -31,6 +31,7 @@ void scale_learning_rate(int epoch, struct network *n);
 void scale_momentum(int epoch, struct network *n);
 
 void test_network(struct network *n);
+void test_network_with_item(struct network *n, struct element *e);
 void test_unfolded_network(struct network *n);
 
 #endif /* ENGINE_H */

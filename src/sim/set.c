@@ -75,7 +75,17 @@ void dispose_set(struct set *s)
         free(s);
 }
 
+struct element *find_element_by_name(struct set *s, char *name)
+{
+        for (int i = 0; i < s->num_elements; i++) {
+                struct element *e = s->elements[i];
+                if (strlen(e->name) == strlen(name)
+                                && strcmp(e->name, name) == 0)
+                        return e;
+        }
 
+        return NULL;
+}
 
 struct element *create_element(char *name, int num_events, 
                 struct vector **inputs, struct vector **targets)

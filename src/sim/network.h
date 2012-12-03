@@ -309,11 +309,4 @@ void load_weights(struct network *n);
 void save_weights(struct network *n);
 void save_weight_matrices(struct group *g, FILE *fd);
 
-/* experimental */
-void print_weights(struct network *n);
-void print_projection_weights(struct group *g);
-void print_weight_stats(struct network *n);
-void print_network_topology(struct network *n);
-void print_groups(struct group *g);
-
 #endif /* NETWORK_H */

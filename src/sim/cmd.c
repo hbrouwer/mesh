@@ -21,9 +21,12 @@
 #include "engine.h"
 #include "erps.h"
 #include "main.h"
+#include "math.h"
 #include "matrix.h"
 #include "network.h"
+#include "pprint.h"
 #include "set.h"
+#include "stats.h"
 
 void process_command(char *cmd, struct session *s)
 {
@@ -179,13 +182,34 @@ void process_command(char *cmd, struct session *s)
                                 "set update algorithm: [%s]"))
                 return;
 
-        if (cmd_train(cmd, "train", s->anp))
+        if (cmd_train(cmd, "train", 
+                                s->anp,
+                                "starting training of network: [%s]"))
                 return;
-        if (cmd_test(cmd, "test", s->anp))
+        if (cmd_test(cmd, "test",
+                                s->anp,
+                                "starting testing of network: [%s]"))
                 return;
-        if (cmd_erps(cmd, "erps", s->anp))
+        if (cmd_test_item(cmd, "testItem %s",
+                                s->anp,
+                                "starting testing of network [%s] for item: [%s]"))
                 return;
-        
+        /*
+        if (cmd_erps(cmd, "erps", s->anp,
+                                "computing ERP correlates for network: [%s]"))
+                return;
+                */
+
+        if (cmd_compare_vectors(cmd, "compareVectors %s %s %s",
+                                s->anp,
+                                "comparing vectors of group [%s] for items [%s] and [%s]:"))
+                return;
+
+        if (cmd_weight_stats(cmd, "weightStats",
+                                s->anp,
+                                "weight statistics for network: [%s]"))
+                return;
+
         /*
          * Invalid command.
          */
@@ -275,6 +299,7 @@ bool cmd_load_network(char *cmd, char *fmt, struct session *s, char *msg)
 
         char buf[1024];
         while (fgets(buf, sizeof(buf), fd)) {
+                buf[strlen(buf) - 1] = '\0';
                 process_command(buf, s);
         }
 
@@ -659,10 +684,13 @@ bool cmd_set_update_algorithm(char *cmd, char *fmt, struct network *n,
         return true;
 }
 
-bool cmd_train(char *cmd, char *fmt, struct network *n)
+bool cmd_train(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        if (strncmp(cmd, fmt, strlen(fmt)) != 0)
+        if (strlen(cmd) != strlen(fmt) 
+                        || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
+
+        mprintf(msg, n->name);
 
         initialize_network(n);
         train_network(n);
@@ -670,10 +698,13 @@ bool cmd_train(char *cmd, char *fmt, struct network *n)
         return true;
 }
 
-bool cmd_test(char *cmd, char *fmt, struct network *n)
+bool cmd_test(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        if (strncmp(cmd, fmt, strlen(fmt)) != 0)
+        if (strlen(cmd) != strlen(fmt) 
+                        || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
+
+        mprintf(msg, n->name);
 
         if (n->type != TYPE_RNN)
                 test_network(n);
@@ -683,12 +714,121 @@ bool cmd_test(char *cmd, char *fmt, struct network *n)
         return true;
 }
 
-bool cmd_erps(char *cmd, char *fmt, struct network *n)
+// TODO: extend such that set (train/test) can be specificied
+bool cmd_test_item(char *cmd, char *fmt, struct network *n, char *msg)
+{
+        char tmp[64];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        mprintf(msg, n->name, tmp);
+
+        struct element *e = find_element_by_name(n->test_set, tmp);
+        if (!e) {
+                eprintf("cannot test network--element (%s) unknown", tmp);
+                return true;
+        }
+
+        // TODO: add unfolded net support
+        test_network_with_item(n, e);
+
+        return true;
+}
+
+/*
+bool cmd_erps(char *cmd, char *fmt, struct network *n, char *msg)
 {
         if (strncmp(cmd, fmt, strlen(fmt)) != 0)
                 return false;
 
+        mprintf(msg);
+
         compute_erp_correlates(n);
+
+        return true;
+}
+*/
+
+// TODO: extend such that set (train/test) can be specificied
+bool cmd_compare_vectors(char *cmd, char *fmt, struct network *n, char *msg)
+{
+        char tmp1[64], tmp2[64], tmp3[64];
+        if (sscanf(cmd, fmt, tmp1, tmp2, tmp3) != 3)
+                return false;
+
+        mprintf(msg, tmp1, tmp2, tmp3);
+
+        struct group *g = find_group_by_name(n, tmp1);
+        if (!g) {
+                eprintf("cannot compare vectors--group (%s) unknown", tmp1);
+                return true;
+        }
+
+        struct element *e1 = find_element_by_name(n->test_set, tmp2);
+        if (!e1) {
+                eprintf("cannot compare vectors--item (%s) unknown", tmp2);
+                return true;
+        }
+
+        struct element *e2 = find_element_by_name(n->test_set, tmp3);
+        if (!e2) {
+                eprintf("cannot compare vectors--item (%s) unknown", tmp3);
+                return true;
+        }
+
+        struct vector *v1 = create_vector(g->vector->size);
+        struct vector *v2 = create_vector(g->vector->size);
+
+        test_network_with_item(n, e1);
+        copy_vector(v1, g->vector);
+        test_network_with_item(n, e2);
+        copy_vector(v2, g->vector);
+
+        cprintf("");
+        mprintf("vectors in group [%s] for 1: [%s] and 2: [%s]",
+                        tmp1, tmp2, tmp3);
+        printf("1: ");
+        pprint_vector(v1);
+        printf("2: ");
+        pprint_vector(v2);
+
+        cprintf("");
+        cprintf("inv. sq. city-block:\t[%f]",
+                        inv_sq_city_block(v1, v2));
+        cprintf("inv. sq. euclidean:\t[%f]",
+                        inv_sq_euclidean(v1, v2));
+        cprintf("cosine similarity:\t[%f]",
+                        cosine_similarity(v1, v2));
+        cprintf("correlation:\t\t[%f]",
+                        correlation(v1, v2));
+        cprintf("");
+
+        dispose_vector(v1);
+        dispose_vector(v2);
+
+        return true;
+}
+
+bool cmd_weight_stats(char *cmd, char *fmt, struct network *n, char *msg)
+{
+        if (strlen(cmd) != strlen(fmt) 
+                        || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf(msg, n->name);
+
+        struct weight_stats *ws = create_weight_statistics(n);
+        
+        cprintf("");
+        cprintf("mean:\t\t[%f]", ws->mean);
+        cprintf("mean abs.:\t[%f]", ws->mean_abs);
+        cprintf("mean dist.:\t[%f]", ws->mean_dist);
+        cprintf("variance:\t[%f]", ws->variance);
+        cprintf("minimum:\t[%f]", ws->minimum);
+        cprintf("maximum:\t[%f]", ws->maximum);
+        cprintf("");
+        
+        dispose_weight_statistics(ws);
 
         return true;
 }

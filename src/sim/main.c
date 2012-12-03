@@ -34,8 +34,6 @@ int main(int argc, char **argv)
         
         struct network *n = NULL;
         bool net_spec = false;
-        bool print_stats = false;
-        bool print_network = false;
         
         cprintf("");
         cprintf("MESH version %s", VERSION);
@@ -66,14 +64,6 @@ int main(int argc, char **argv)
                 if (strcmp(argv[i], "--load_weights") == 0) {
                         if (++i < argc)
                                 n->load_weights_file = argv[i];
-                }
-
-                if (strcmp(argv[i], "--print_stats") == 0) {
-                        print_stats = true;
-                }
-
-                if (strcmp(argv[i], "--print_network") == 0) {
-                        print_network = true;
                 }
 
                 if (strcmp(argv[i], "--compute_erps") == 0)
@@ -114,19 +104,6 @@ int main(int argc, char **argv)
                 save_weights(n);
         if (n->save_weights_file && n->unfolded_net)
                 save_weights(n->unfolded_net->stack[0]);
-
-        if (print_stats && !n->unfolded_net) {
-                print_weights(n);
-                print_weight_stats(n);
-        }
-        if (print_stats && n->unfolded_net) {
-                print_weights(n->unfolded_net->stack[0]);
-                print_weight_stats(n->unfolded_net->stack[0]);
-        }
-
-        if (print_network && !n->unfolded_net) {
-                print_network_topology(n);
-        }
 
         mprintf("Cleaning up...");
         dispose_network(n);

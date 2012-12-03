@@ -141,17 +141,3 @@ void pprint_value_as_color(double v, int scheme)
         if (v < 0.10)
                 printf("\x1b[48;05;%dm%s\x1b[0m", palette[9], VALUE_SYMBOL);
 }
-
-/*
- * Pretty print weight statistics.
- */
-
-void pprint_weight_stats(struct weight_stats *ws)
-{
-        mprintf("mean: [%f]", ws->mean);
-        mprintf("mean abs.: [%f]", ws->mean_abs);
-        mprintf("mean dist.: [%f]", ws->mean_dist);
-        mprintf("variance: [%f]", ws->variance);
-        mprintf("minimum: [%f]", ws->minimum);
-        mprintf("maximum: [%f]", ws->maximum);
-}

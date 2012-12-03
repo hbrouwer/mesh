@@ -30,8 +30,6 @@
 
 void train_network(struct network *n)
 {
-        mprintf("starting training of network: [%s]", n->name);
-
         n->learning_algorithm(n);
 }
 
@@ -275,8 +273,6 @@ void scale_momentum(int epoch, struct network *n)
 
 void test_network(struct network *n)
 {
-        mprintf("starting testing of network: [%s]", n->name);
-
         double me = 0.0;
 
         /* present all test items */
@@ -310,12 +306,36 @@ void test_network(struct network *n)
         pprintf("error: [%lf]", me);
 }
 
+void test_network_with_item(struct network *n, struct element *e)
+{
+        double me = 0.0;
+
+        if (n->type == TYPE_SRN)
+                reset_context_groups(n);
+
+        rprintf("\nI: \"%s\"", e->name);
+        for (int j = 0; j < e->num_events; j++) {
+                copy_vector(n->input->vector, e->inputs[j]);
+                feed_forward(n, n->input);
+
+                if (e->targets[j] != NULL) {
+                        /* compute error */
+                        me += n->output->err_fun->fun(n->output, e->targets[j]);
+
+                        printf("T: ");
+                        pprint_vector(e->targets[j]);
+                        printf("O: ");
+                        pprint_vector(n->output->vector);
+                }
+        }
+
+        pprintf("error: [%lf]", me);
+}
+
 // XXX: As always -- check logic...
 
 void test_unfolded_network(struct network *n)
 {
-        mprintf("starting testing of network: [%s]", n->name);
-
         struct rnn_unfolded_network *un = n->unfolded_net;
         struct network *nsp = un->stack[0];
 

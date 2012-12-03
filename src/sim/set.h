@@ -47,6 +47,7 @@ void dispose_set(struct set *s);
 struct element *create_element(char *name, int num_events, 
                 struct vector **inputs, struct vector **targets);
 void dispose_element(struct element *e);
+struct element *find_element_by_name(struct set *s, char *name);
 
 struct set *load_set(char *filename, int input_size, int output_size);
 

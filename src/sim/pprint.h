@@ -29,6 +29,4 @@ void pprint_matrix(struct matrix *m);
 double pprint_scale_value(double v, double min, double max);
 void pprint_value_as_color(double v, int scheme);
 
-void pprint_weight_stats(struct weight_stats *ws);
-
 #endif /* PPRINT_H */

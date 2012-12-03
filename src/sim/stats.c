@@ -32,7 +32,7 @@
  * Compute weight statistics.
  */ 
 
-struct weight_stats *weight_statistics(struct network *n)
+struct weight_stats *create_weight_statistics(struct network *n)
 {
         struct weight_stats *ws;
         if (!(ws = malloc(sizeof(struct weight_stats))))
@@ -58,6 +58,15 @@ struct weight_stats *weight_statistics(struct network *n)
 error_out:
         perror("[weight_statistics()]");
         return NULL;
+}
+
+/*
+ * Dispose weight statistics.
+ */
+
+void dispose_weight_statistics(struct weight_stats *ws)
+{
+        free(ws);
 }
 
 /*

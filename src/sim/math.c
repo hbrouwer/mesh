@@ -81,3 +81,95 @@ double normrand(double mu, double sigma)
 
         return rs1 * sigma + mu;
 }
+
+/*
+ * Inverse squared city-block distance:
+ *
+ *              1
+ * -------------------------
+ * (sum_i |a_i - b_i|)^2 + 1
+ */
+
+double inv_sq_city_block(struct vector *v1, struct vector *v2)
+{
+        double cb = 0.0;
+
+        for (int i = 0; i < v1->size; i++)
+                cb += fabs(v1->elements[i] - v2->elements[i]);
+        cb = pow(cb, 2.0);
+        cb++;
+
+        return 1.0 / cb;
+}
+
+/*
+ * Inverse squared euclidean distance:
+ *
+ *            1
+ * -----------------------
+ * sum_i (a_i - b_i)^2 + 1
+ */
+
+double inv_sq_euclidean(struct vector *v1, struct vector *v2)
+{
+        double ed = 0.0;
+
+        for (int i = 0; i < v1->size; i++)
+                ed += pow(v1->elements[i] - v2->elements[i], 2.0);
+        ed++;
+
+        return 1.0 / ed;
+}
+
+/*
+ * Cosine similarity:
+ *
+ *                 1
+ * ---------------------------------
+ * (sum a_i^2)^0.5 * (sum b_i^2)^0.5
+ */
+
+double cosine_similarity(struct vector *v1, struct vector *v2)
+{
+        double nom = 0.0, asq = 0.0, bsq = 0.0;
+
+        for (int i = 0; i < v1->size; i++) {
+                nom += v1->elements[i] * v2->elements[i];
+                asq += pow(v1->elements[i], 2.0);
+                bsq += pow(v2->elements[i], 2.0);
+        }
+
+        return nom / (pow(asq, 0.5) * pow(bsq, 0.5));
+}
+
+/*
+ * Correlation:
+ *
+ *        sum (a_i - a) * (b_i - b)
+ * ---------------------------------------
+ * (sum (a_i - a)^2 * sum (b_i - b)^2)^0.5
+ */
+
+double correlation(struct vector *v1, struct vector *v2)
+{
+        double amn = 0.0, bmn = 0.0;
+
+        for (int i = 0; i < v1->size; i++) {
+                amn += v1->elements[i];
+                bmn += v2->elements[i];
+        }
+
+        amn /= v1->size;
+        bmn /= v2->size;
+
+        double nom = 0.0, asq = 0.0, bsq = 0.0;
+        for (int i = 0; i < v1->size; i++) {
+                nom += (v1->elements[i] - amn) * (v2->elements[i] - bmn);
+                asq += pow(v1->elements[i] - amn, 2.0);
+                bsq += pow(v2->elements[i] - bmn, 2.0);
+        }
+
+        double denom = pow(asq * bsq, 0.5);
+
+        return nom / denom;
+}
