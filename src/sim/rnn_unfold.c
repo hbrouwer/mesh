@@ -543,19 +543,18 @@ void rnn_add_gradients(struct group *g1, struct group *g2)
  * stack[n]. We accomplish this by conducting the following steps:
  *
  * (1) Store a reference to [hidden1]. Next, disconnect [hidden1] from 
- *     [hidden2], dispose the corresponding projection error vector, and 
- *     delta matrices, and remove [hidden1] from the incoming projection 
- *     array of [hidden2].
+ *     [hidden2], dispose the corresponding projection gradients, and 
+ *     remove [hidden1] from the incoming projection array of [hidden2].
  *
  * (2) Disconnect [hidden2] from [hidden3], preserve the projection's
- *     error vector, delta matrices, and remove [hidden3] from the outgoing
- *     projections of [hidden2].
+ *     gradients and remove [hidden3] from the outgoing projections of
+ *     [hidden2].
  *
  * (3) Copy the activation vector of [hidden2] into [hidden1].
  *
  * (4) Set [hidden1] as the recurrent group of [hidden3], reusing the
- *     error vector, and delta matrices that were used for the previous
- *     projection between [hidden2] and [hidden3].
+ *     gradients that were used for the previous projection between
+ *     [hidden2] and [hidden3].
  *
  * (5) Store a reference to the network state at stack[0]. Next, shift
  *     stack[1] into stack[0], stack[2] into stack[1], until stack[n] has 

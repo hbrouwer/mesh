@@ -125,6 +125,7 @@ void train_network_bp(struct network *n)
  * XXX: Check Williams & Peng (1990): BPTT(h;h') that captures both
  * epochwise/BPTT(h;h) and trucated/BPTT(h;1) backprop through time.
  */
+
 void train_network_bptt(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
@@ -352,7 +353,7 @@ void test_unfolded_network(struct network *n)
                  * XXX: Does this make sense when history length is
                  *   larger then the number of events in an item?
                  */
-                reset_recurrent_groups(nsp);
+//                reset_recurrent_groups(nsp);
 
                 /* present all events for this item */
                 rprintf("\nI: \"%s\"", e->name);
@@ -368,7 +369,8 @@ void test_unfolded_network(struct network *n)
                         copy_vector(nsp->input->vector, e->inputs[j]);
                         feed_forward(nsp, nsp->input);
 
-                        if (e->targets[j] && his == un->stack_size - 1) {
+ //                       if (e->targets[j] && his == un->stack_size - 1) {
+                        if (e->targets[j]) {
                                 /* compute error */
                                 me += n->output->err_fun->fun(nsp->output, e->targets[j]);
 
