@@ -64,4 +64,7 @@ bool cmd_test_item(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_compare_vectors(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_weight_stats(char *cmd, char *fmt, struct network *n, char *msg);
 
+bool cmd_show_vector(char *cmd, char *fmt, struct network *n, char *msg, int type);
+bool cmd_show_matrix(char *cmd, char *fmt, struct network *n, char *msg, int type);
+
 #endif /* CMD_H */

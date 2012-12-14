@@ -28,8 +28,16 @@
 #include "set.h"
 #include "stats.h"
 
+#define VTYPE_UNITS 0
+#define VTYPE_ERROR 1
+
+#define MTYPE_WEIGHTS 0
+#define MTYPE_GRADIENTS 1
+#define MTYPE_DYN_PARS 2
+
 void process_command(char *cmd, struct session *s)
 {
+        /* comment */
         if (cmd[0] == '#') {
                 printf("%s\n", cmd);
                 return;
@@ -233,6 +241,33 @@ void process_command(char *cmd, struct session *s)
         if (cmd_weight_stats(cmd, "weightStats",
                                 s->anp,
                                 "weight statistics for network: [%s]"))
+                return;
+        
+        if (cmd_show_vector(cmd, "showUnits %s",
+                                s->anp,
+                                "unit vector for: [%s]",
+                                VTYPE_UNITS))
+                return;
+        if (cmd_show_vector(cmd, "showError %s",
+                                s->anp,
+                                "error vector for: [%s]",
+                                VTYPE_ERROR))
+                return;
+
+        if (cmd_show_matrix(cmd, "showWeights %s %s",
+                                s->anp,
+                                "weight matrix for projection: [%s -> %s]",
+                                MTYPE_WEIGHTS))
+                return;
+        if (cmd_show_matrix(cmd, "showGradients %s %s",
+                                s->anp,
+                                "gradient matrix for projection: [%s -> %s]",
+                                MTYPE_GRADIENTS))
+                return;
+        if (cmd_show_matrix(cmd, "showDynPars %s %s",
+                                s->anp,
+                                "dynamic learning parameters matrix for projection: [%s -> %s]",
+                                MTYPE_DYN_PARS))
                 return;
 
         /*
@@ -852,6 +887,73 @@ bool cmd_weight_stats(char *cmd, char *fmt, struct network *n, char *msg)
         cprintf("");
         
         dispose_weight_statistics(ws);
+
+        return true;
+}
+
+bool cmd_show_vector(char *cmd, char *fmt, struct network *n, char *msg, int type)
+{
+        char tmp[64];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        mprintf(msg, tmp);
+
+        struct group *g = find_group_by_name(n, tmp);
+
+        if (g == NULL) {
+                eprintf("cannot show vector---group (%s) unknown",
+                                tmp);
+                return true;
+        }
+
+        if (type == VTYPE_UNITS)
+                pprint_vector(g->vector);
+        if (type == VTYPE_ERROR)
+                pprint_vector(g->error);
+
+        return true;
+}
+
+bool cmd_show_matrix(char *cmd, char *fmt, struct network *n, char *msg, int type)
+{
+        char tmp1[64], tmp2[64];
+        if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
+                return false;
+
+        mprintf(msg, tmp1, tmp2);
+
+        struct group *fg = find_group_by_name(n, tmp1);
+        struct group *tg = find_group_by_name(n, tmp2);
+
+        if (fg == NULL) {
+                eprintf("cannot show matrix---'from' group (%s) unknown",
+                                tmp1);
+                return true;
+        }
+        if (tg == NULL) {
+                eprintf("cannot show matrix---'to' group (%s) unknown",
+                                tmp2);
+                return true;
+        }
+
+        struct projection *fg_to_tg = NULL;
+        for (int i = 0; i < fg->out_projs->num_elements; i++)
+                if (fg->out_projs->elements[i]->to == tg)
+                        fg_to_tg = fg->out_projs->elements[i];
+
+        if (fg_to_tg) {
+                if (type == MTYPE_WEIGHTS)
+                        pprint_matrix(fg_to_tg->weights);
+                if (type == MTYPE_GRADIENTS)
+                        pprint_matrix(fg_to_tg->gradients);
+                if (type == MTYPE_DYN_PARS)
+                        pprint_matrix(fg_to_tg->dyn_learning_pars);
+        } else {
+                eprintf("cannot show matrix--no projection between groups (%s and %s)",
+                                tmp1, tmp2);
+                return true;
+        }
 
         return true;
 }
