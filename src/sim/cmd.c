@@ -30,6 +30,11 @@
 
 void process_command(char *cmd, struct session *s)
 {
+        if (cmd[0] == '#') {
+                printf("%s\n", cmd);
+                return;
+        }
+
         cmd_quit(cmd, "quit", s, "Quitting...");        
         cmd_quit(cmd, "exit", s, "Quitting...");
 
@@ -155,6 +160,26 @@ void process_command(char *cmd, struct session *s)
         if (cmd_set_double_parameter(cmd, "set ErrorThreshold %lf",
                                 &s->anp->error_threshold,
                                 "set error threshold: [%lf]"))
+                return;
+        if (cmd_set_double_parameter(cmd, "set InitUpdate %lf",
+                                &s->anp->rp_init_update,
+                                "set initial update value (for Rprop): [%lf]"))
+                return;
+        if (cmd_set_double_parameter(cmd, "set EtaPlus %lf",
+                                &s->anp->rp_eta_plus,
+                                "set eta+ (for Rprop): [%lf]"))
+                return;
+        if (cmd_set_double_parameter(cmd, "set EtaMinus %lf",
+                                &s->anp->rp_eta_minus,
+                                "set eta- (for Rprop): [%lf]"))
+                return;
+        if (cmd_set_double_parameter(cmd, "set RateIncrement %lf",
+                                &s->anp->dbd_rate_increment,
+                                "set increment rate (for Delta-Bar-Delta): [%lf]"))
+                return;
+        if (cmd_set_double_parameter(cmd, "set RateDecrement %lf",
+                                &s->anp->dbd_rate_decrement,
+                                "set decrement rate (for Delta-Bar-Delta): [%lf]"))
                 return;
 
         if (cmd_load_item_set(cmd, "loadTrainingSet %s",

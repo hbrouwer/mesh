@@ -221,6 +221,11 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
         if (dn->groups->num_elements == dn->groups->max_elements)
                 increase_group_array_size(dn->groups);
 
+        if (n->input == g)
+                dn->input = dg;
+        if (n->output == g)
+                dn->output = dg;
+
         /* duplicate bias groups */
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
                 struct group *bg = g->inc_projs->elements[i]->to;
@@ -291,13 +296,8 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
                                                         error, gradients, prev_gradients);
                                 rg->inc_projs->elements[j]->to = dg;
                         }
-                 }
+                }
         }
-
-        if (n->input == g)
-                dn->input = dg;
-        if (n->output == g)
-                dn->output = dg;
 
         return dg;
 }

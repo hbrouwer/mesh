@@ -179,15 +179,8 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                  * delta_j = f'(x_j) dE/dy_j
                  */
                 for (int x = 0; x < ng->error->size; x++) {
-                        double act_deriv;
-                        /* but not for input units ... */
-                        if (ng != n->input) {
-                                act_deriv = ng->act_fun->deriv(ng->vector, x)
-                                        + BP_FLAT_SPOT_CORRECTION;
-                        } else {
-                                act_deriv = ng->vector->elements[x];
-                        }
-
+                        double act_deriv = ng->act_fun->deriv(ng->vector, x)
+                                + BP_FLAT_SPOT_CORRECTION;
                         ng->error->elements[x] *= act_deriv;
                 }
         }
@@ -416,8 +409,10 @@ void bp_update_rprop(struct network *n)
         n->status->last_weight_deltas_length = 0.0;
         n->status->gradients_length = 0.0;
 
+        /*
         n->rp_eta_plus = 1.2;
         n->rp_eta_minus = 0.5;
+        */
 
         bp_recursively_update_rprop(n, n->output);
 
@@ -881,8 +876,10 @@ void bp_update_dbd(struct network *n)
         n->status->last_weight_deltas_length = 0.0;
         n->status->gradients_length = 0.0;
 
+        /*
         n->dbd_rate_increment = 0.1;
         n->dbd_rate_decrement = 0.9;
+        */
 
         bp_recursively_update_dbd(n, n->output);
 

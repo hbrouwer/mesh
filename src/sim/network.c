@@ -67,6 +67,8 @@ error_out:
 
 /*
  * Iniatilizes a network.
+ *
+ * XXX: needs lots of cleaning...
  */
 
 void initialize_network(struct network *n)
@@ -78,7 +80,6 @@ void initialize_network(struct network *n)
         randomize_weight_matrices(n->input, n);
 
         /* for Rprop and DBD */
-        n->rp_init_update = 0.1;
         initialize_dyn_learning_pars(n->input, n);
 
         /* activation lookup */
@@ -625,6 +626,12 @@ struct act_fun *load_activation_function(char *act_fun)
         if (strcmp(act_fun, "step") == 0) {
                 a->fun = act_fun_step;
                 a->deriv = act_fun_step_deriv;
+        }
+
+        /* default to linear ... */
+        if (a->fun == NULL && a->deriv == NULL)  {
+                a->fun = act_fun_linear;
+                a->deriv = act_fun_linear_deriv;
         }
 
         return a;
