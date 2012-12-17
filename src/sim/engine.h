@@ -22,16 +22,22 @@
 #include "network.h"
 
 void train_network(struct network *n);
-void train_network_bp(struct network *n);
-void train_network_bptt(struct network *n);
 
 void print_training_progress(struct network *n);
+void print_training_summary(struct network *n);
 
-void scale_learning_rate(int epoch, struct network *n);
-void scale_momentum(int epoch, struct network *n);
+void scale_learning_rate(struct network *n);
+void scale_momentum(struct network *n);
+
+void train_network_with_bp(struct network *n);
+void train_network_with_bptt(struct network *n);
 
 void test_network(struct network *n);
+void test_ffn_network(struct network *n);
+void test_rnn_network(struct network *n);
+
 void test_network_with_item(struct network *n, struct element *e);
-void test_unfolded_network(struct network *n);
+void test_ffn_network_with_item(struct network *n, struct element *e);
+void test_rnn_network_with_item(struct network *n, struct element *e);
 
 #endif /* ENGINE_H */

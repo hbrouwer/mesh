@@ -143,11 +143,11 @@ void process_command(char *cmd, struct session *s)
                 return;
         if (cmd_set_double_parameter(cmd, "set LRScaleFactor %lf",
                                 &s->anp->lr_scale_factor,
-                                "set LR scale factor: [%lf]"))
+                                "set learning rate scale factor: [%lf]"))
                 return;
         if (cmd_set_double_parameter(cmd, "set LRScaleAfter %lf",
                                 &s->anp->lr_scale_after,
-                                "set LR scale after (fraction of epochs): [%lf]"))
+                                "set learning rate scale after (fraction of epochs): [%lf]"))
                 return;
         if (cmd_set_double_parameter(cmd, "set Momentum %lf",
                                 &s->anp->momentum,
@@ -155,11 +155,11 @@ void process_command(char *cmd, struct session *s)
                 return;
         if (cmd_set_double_parameter(cmd, "set MNScaleFactor %lf",
                                 &s->anp->mn_scale_factor,
-                                "set MN scale factor: [%lf]"))
+                                "set momentum scale factor: [%lf]"))
                 return;
         if (cmd_set_double_parameter(cmd, "set MNScaleAfter %lf",
                                 &s->anp->mn_scale_after,
-                                "set MN scale after (fraction of epochs): [%lf]"))
+                                "set momentum scale after (fraction of epochs): [%lf]"))
                 return;
         if (cmd_set_double_parameter(cmd, "set WeightDecay %lf",
                                 &s->anp->weight_decay,
@@ -684,9 +684,9 @@ bool cmd_set_learning_algorithm(char *cmd, char *fmt, struct network *n,
                 return false;
 
         if (strlen(tmp) == 2 && strcmp(tmp, "bp") == 0)
-                n->learning_algorithm = train_network_bp;
+                n->learning_algorithm = train_network_with_bp;
         else if (strlen(tmp) == 4 && strcmp(tmp, "bptt") == 0)
-                n->learning_algorithm = train_network_bptt;
+                n->learning_algorithm = train_network_with_bptt;
         else {
                 eprintf("invalid learning algorithm: %s", tmp);
                 return true;
@@ -765,11 +765,8 @@ bool cmd_test(char *cmd, char *fmt, struct network *n, char *msg)
                 return false;
 
         mprintf(msg, n->name);
-
-        if (n->type != TYPE_RNN)
-                test_network(n);
-        else
-                test_unfolded_network(n);
+                
+        test_network(n);
 
         return true;
 }
@@ -789,7 +786,6 @@ bool cmd_test_item(char *cmd, char *fmt, struct network *n, char *msg)
                 return true;
         }
 
-        // TODO: add unfolded net support
         test_network_with_item(n, e);
 
         return true;

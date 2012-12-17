@@ -90,7 +90,7 @@ void initialize_network(struct network *n)
                 n->batch_size = n->training_set->num_elements;
 
         /* initialize unfolded network */
-        if (n->learning_algorithm == train_network_bptt)
+        if (n->learning_algorithm == train_network_with_bptt)
                 n->unfolded_net = rnn_init_unfolded_network(n);
 
         if (!n->unfolded_net && n->load_weights_file)
