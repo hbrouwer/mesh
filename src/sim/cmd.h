@@ -37,6 +37,9 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_set_input_group(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_set_output_group(char *cmd, char *fmt, struct network *n, char *msg);
 
+bool cmd_set_act_func(char *cmd, char *fmt, struct network *n, char *msg);
+bool cmd_set_err_func(char *cmd, char *fmt, struct network *n, char *msg);
+
 bool cmd_create_projection(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_create_elman_projection(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_dispose_projection(char *cmd, char *fmt, struct network *n, char *msg);

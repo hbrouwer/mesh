@@ -194,8 +194,18 @@ struct group *rnn_duplicate_group(struct group *g)
 
         dg->vector = create_vector(g->vector->size);
         dg->error = create_vector(g->vector->size);
-        dg->act_fun = g->act_fun;
-        dg->err_fun = g->err_fun;
+
+        if (!(dg->act_fun = malloc(sizeof(struct act_fun))))
+                goto error_out;
+        memset(dg->act_fun, 0, sizeof(struct act_fun));
+        dg->act_fun->fun = g->act_fun->fun;
+        dg->act_fun->deriv = g->act_fun->deriv;
+
+        if (!(dg->err_fun = malloc(sizeof(struct err_fun))))
+                goto error_out;
+        memset(dg->err_fun, 0, sizeof(struct err_fun));
+        dg->err_fun->fun = g->err_fun->fun;
+        dg->err_fun->deriv = g->err_fun->deriv;
 
         dg->inc_projs = create_projs_array(g->inc_projs->max_elements);
         dg->inc_projs->num_elements = g->inc_projs->num_elements;
@@ -380,8 +390,13 @@ void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
                 char *name = un->recur_groups->elements[i]->name;
                 struct group *g1 = find_group_by_name(n, name);
-                struct group *g2 = create_group(g1->name, g1->act_fun, g1->err_fun,
-                                g1->vector->size, false, true);
+                struct group *g2 = create_group(g1->name, g1->vector->size, false, true);
+
+                g2->act_fun->fun = g1->act_fun->fun;
+                g2->act_fun->deriv = g1->act_fun->deriv;
+
+                g2->err_fun->fun = g1->err_fun->fun;
+                g2->err_fun->deriv = g1->err_fun->deriv;
 
                 /*
                  * Note: weight matrices are shared among recurrent

@@ -262,8 +262,6 @@ void dispose_group_array(struct group_array *gs);
 
 struct group *create_group(
                 char *name,
-                struct act_fun *act_fun,
-                struct err_fun *err_fun,
                 int size,
                 bool bias, 
                 bool recurrent);
@@ -299,9 +297,6 @@ void initialize_act_lookup_vectors(struct network *n);
 /*
  * Stuff below will move to cmd.c ...
  */
-
-struct act_fun *load_activation_function(char *act_fun);
-struct err_fun *load_error_function(char *err_fun);
 
 struct group *find_group_by_name(struct network *n, char *name);
 

@@ -203,8 +203,6 @@ void dispose_group_array(struct group_array *gs)
 
 struct group *create_group(
                 char *name,
-                struct act_fun *act_fun,
-                struct err_fun *err_fun,
                 int size,
                 bool bias, 
                 bool recurrent)
@@ -223,8 +221,15 @@ struct group *create_group(
         g->vector = create_vector(size);
         g->error = create_vector(size);
 
-        g->act_fun = act_fun;
-        g->err_fun = err_fun;
+        if (!(g->act_fun = malloc(sizeof(struct act_fun))))
+                goto error_out;
+        memset(g->act_fun, 0, sizeof(struct act_fun));
+        g->act_fun->fun = act_fun_linear;
+        g->act_fun->deriv = act_fun_linear_deriv;
+
+        if (!(g->err_fun = malloc(sizeof(struct err_fun))))
+                goto error_out;
+        memset(g->err_fun, 0, sizeof(struct err_fun));
 
         g->inc_projs = create_projs_array(MAX_PROJS);
         g->out_projs = create_projs_array(MAX_PROJS);
@@ -258,7 +263,13 @@ void attach_bias_group(struct network *n, struct group *g)
         memset(tmp, 0, sizeof(block_size));
 
         sprintf(tmp, "%s_bias", g->name);
-        struct group *bg = create_group(tmp, g->act_fun, g->err_fun, 1, true, false);
+        struct group *bg = create_group(tmp, 1, true, false);
+
+        bg->act_fun->fun = g->act_fun->fun;
+        bg->act_fun->deriv = g->act_fun->deriv;
+        
+        bg->err_fun->fun = g->err_fun->fun;
+        bg->err_fun->deriv = g->err_fun->deriv;
 
         free(tmp);
 
@@ -579,98 +590,6 @@ void initialize_act_lookup_vectors(struct network *n)
 
                 g->act_fun->lookup = create_act_lookup_vector(g->act_fun->fun);
         }
-}
-
-/*
- * This stuff needs a new home ...
- */
-
-struct act_fun *load_activation_function(char *act_fun)
-{
-        struct act_fun *a;
-        if (!(a = malloc(sizeof(struct act_fun))))
-                goto error_out;
-        memset(a, 0, sizeof(struct act_fun));
-
-        /* binary sigmoid function */
-        if (strcmp(act_fun, "binary_sigmoid") == 0) {
-                a->fun = act_fun_binary_sigmoid;
-                a->deriv = act_fun_binary_sigmoid_deriv;
-        }
-
-        /* bipolar sigmoid function */
-        if (strcmp(act_fun, "bipolar_sigmoid") == 0) {
-                a->fun = act_fun_bipolar_sigmoid;
-                a->deriv = act_fun_bipolar_sigmoid_deriv;
-        }
-
-        /* softmax activation function */
-        if (strcmp(act_fun, "softmax") == 0) {
-                a->fun = act_fun_softmax;
-                a->deriv = act_fun_softmax_deriv;
-        }
-
-        /* hyperbolic tangent function */
-        if (strcmp(act_fun, "tanh") == 0) {
-                a->fun = act_fun_tanh;
-                a->deriv = act_fun_tanh_deriv;
-        }
-
-        /* linear function */
-        if (strcmp(act_fun, "linear") == 0) {
-                a->fun = act_fun_linear;
-                a->deriv = act_fun_linear_deriv;
-        }
-
-        /* step function */
-        if (strcmp(act_fun, "step") == 0) {
-                a->fun = act_fun_step;
-                a->deriv = act_fun_step_deriv;
-        }
-
-        /* default to linear ... */
-        if (a->fun == NULL && a->deriv == NULL)  {
-                a->fun = act_fun_linear;
-                a->deriv = act_fun_linear_deriv;
-        }
-
-        return a;
-
-error_out:
-        perror("[load_activation_function()]");
-        return NULL;
-}
-
-struct err_fun *load_error_function(char *err_fun)
-{
-        struct err_fun *e;
-        if (!(e = malloc(sizeof(struct err_fun))))
-                goto error_out;
-        memset(e, 0, sizeof(struct err_fun));
-
-        /* sum of squares */
-        if (strcmp(err_fun, "sum_squares") == 0) {
-                e->fun = error_sum_of_squares;
-                e->deriv = error_sum_of_squares_deriv;
-        }
-
-        /* cross-entropy */
-        if (strcmp(err_fun, "cross_entropy") == 0) {
-                e->fun = error_cross_entropy;
-                e->deriv = error_cross_entropy_deriv;
-        }
-
-        /* divergence */
-        if (strcmp(err_fun, "divergence") == 0) {
-                e->fun = error_divergence;
-                e->deriv = error_divergence_deriv;
-        }
-
-        return e;
-
-error_out:
-        perror("[load_error_function()]");
-        return NULL;
 }
 
 struct group *find_group_by_name(struct network *n, char *name)

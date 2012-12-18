@@ -16,10 +16,12 @@
  * limitations under the License.
  */
 
+#include "act.h"
 #include "bp.h"
 #include "cmd.h"
 #include "engine.h"
 #include "erps.h"
+#include "error.h"
 #include "main.h"
 #include "math.h"
 #include "matrix.h"
@@ -61,9 +63,9 @@ void process_command(char *cmd, struct session *s)
                 return;
         }
 
-        if (cmd_create_group(cmd, "createGroup %s %s %s %d",
+        if (cmd_create_group(cmd, "createGroup %s %d",
                                 s->anp,
-                                "created group: [%s:(%s:%s:%d)"))
+                                "created group: [%s:%d]"))
                 return;
         if (cmd_dispose_group(cmd, "disposeGroup %s",
                                 s->anp,
@@ -81,6 +83,15 @@ void process_command(char *cmd, struct session *s)
         if (cmd_set_output_group(cmd, "set OutputGroup %s",
                                 s->anp,
                                 "set output group: [%s]"))
+                return;
+
+        if (cmd_set_act_func(cmd, "set ActFunc %s %s",
+                                s->anp,
+                                "set activation function: [%s:%s]"))
+                return;
+        if (cmd_set_err_func(cmd, "set ErrFunc %s %s",
+                                s->anp,
+                                "set error function: [%s:%s]"))
                 return;
 
         if (cmd_create_projection(cmd, "createProjection %s %s",
@@ -330,7 +341,7 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s, char *msg)
         }
         
         /* create network */
-        struct network *n = create_network(tmp1,type);
+        struct network *n = create_network(tmp1, type);
 
         /* add to session */
         s->networks->elements[s->networks->num_elements++] = n;
@@ -377,20 +388,15 @@ bool cmd_dispose_network(char *cmd, char *fmt, struct session *s, char *msg)
 
 bool cmd_create_group(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        char tmp1[64], tmp2[64], tmp3[64];
+        char tmp[64];
         int tmp_int;
-        if (sscanf(cmd, fmt, tmp1, tmp2, tmp3, &tmp_int) != 4)
+        if (sscanf(cmd, fmt, tmp, &tmp_int) != 2)
                 return false;
 
-        // XXX: this is ugly ...
-        struct act_fun *act_fun = load_activation_function(tmp2);
-        struct err_fun *err_fun = load_error_function(tmp3);
-
-        struct group *g = create_group(tmp1, act_fun, err_fun, tmp_int, false, false);
-
+        struct group *g = create_group(tmp, tmp_int, false, false);
         add_to_group_array(n->groups, g);
 
-        mprintf(msg, tmp1, tmp2, tmp3, tmp_int);
+        mprintf(msg, tmp, tmp_int);
 
         return true;
 }
@@ -453,6 +459,106 @@ bool cmd_set_output_group(char *cmd, char *fmt, struct network *n, char *msg)
         n->output = g;
 
         mprintf(msg, tmp);
+
+        return true;
+}
+
+bool cmd_set_act_func(char *cmd, char *fmt, struct network *n, char *msg)
+{
+        char tmp1[64], tmp2[64];
+        if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
+                return false;
+
+        struct group *g = find_group_by_name(n, tmp1);
+        if (g == NULL) {
+                eprintf("cannot set activation function--group (%s) unknown",
+                                tmp1);
+                return true;
+        }
+
+        /* binary sigmoid function */
+        if (strcmp(tmp2, "binary_sigmoid") == 0) {
+                g->act_fun->fun = act_fun_binary_sigmoid;
+                g->act_fun->deriv = act_fun_binary_sigmoid_deriv;
+        }
+
+        /* bipolar sigmoid function */
+        else if (strcmp(tmp2, "bipolar_sigmoid") == 0) {
+                g->act_fun->fun = act_fun_bipolar_sigmoid;
+                g->act_fun->deriv = act_fun_bipolar_sigmoid_deriv;
+        }
+
+        /* softmax activation function */
+        else if (strcmp(tmp2, "softmax") == 0) {
+                g->act_fun->fun = act_fun_softmax;
+                g->act_fun->deriv = act_fun_softmax_deriv;
+        }
+
+        /* hyperbolic tangent function */
+        else if (strcmp(tmp2, "tanh") == 0) {
+                g->act_fun->fun = act_fun_tanh;
+                g->act_fun->deriv = act_fun_tanh_deriv;
+        }
+
+        /* linear function */
+        else if (strcmp(tmp2, "linear") == 0) {
+                g->act_fun->fun = act_fun_linear;
+                g->act_fun->deriv = act_fun_linear_deriv;
+        }
+
+        /* step function */
+        else if (strcmp(tmp2, "step") == 0) {
+                g->act_fun->fun = act_fun_step;
+                g->act_fun->deriv = act_fun_step_deriv;
+        } 
+        
+        else {
+                eprintf("no such activation function: [%s]", tmp2);
+                return true;
+        }
+
+        mprintf(msg, tmp1, tmp2);
+
+        return true;
+}
+
+bool cmd_set_err_func(char *cmd, char *fmt, struct network *n, char *msg)
+{
+        char tmp1[64], tmp2[64];
+        if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
+                return false;
+
+        struct group *g = find_group_by_name(n, tmp1);
+        if (g == NULL) {
+                eprintf("cannot set error function--group (%s) unknown",
+                                tmp1);
+                return true;
+        }
+
+        /* sum of squares */
+        if (strcmp(tmp2, "sum_squares") == 0) {
+                g->err_fun->fun = error_sum_of_squares;
+                g->err_fun->deriv = error_sum_of_squares_deriv;
+        }
+
+        /* cross-entropy */
+        else if (strcmp(tmp2, "cross_entropy") == 0) {
+                g->err_fun->fun = error_cross_entropy;
+                g->err_fun->deriv = error_cross_entropy_deriv;
+        }
+
+        /* divergence */
+        else if (strcmp(tmp2, "divergence") == 0) {
+                g->err_fun->fun = error_divergence;
+                g->err_fun->deriv = error_divergence_deriv;
+        }
+
+        else {
+                eprintf("no such error function: [%s]", tmp2);
+                return true;
+        }
+
+        mprintf(msg, tmp1, tmp2);
 
         return true;
 }
