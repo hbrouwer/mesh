@@ -94,3 +94,14 @@ void dispose_network_array(struct network_array *ns)
         free(ns->elements);
         free(ns);
 }
+
+struct network *find_network_by_name(struct session *s, char *name)
+{
+        for (int i = 0; i < s->networks->num_elements; i++) {
+                char *nn = s->networks->elements[i]->name;
+                if (strcmp(nn, name) == 0)
+                        return s->networks->elements[i];
+        }
+
+        return NULL;
+}

@@ -43,5 +43,6 @@ struct network_array *create_network_array(int max_elements);
 void add_to_network_array(struct network_array *ns, struct network *n);
 void increase_network_array_size(struct network_array *ns);
 void dispose_network_array(struct network_array *ns);
+struct network *find_network_by_name(struct session *s, char *name);
 
 #endif /* SESSION_H */

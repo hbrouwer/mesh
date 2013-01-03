@@ -29,6 +29,8 @@ void cmd_quit(char *cmd, char *fmt, struct session *s, char *msg);
 bool cmd_create_network(char *cmd, char *fmt, struct session *s, char *msg);
 bool cmd_load_network(char *cmd, char *fmt, struct session *s, char *msg);
 bool cmd_dispose_network(char *cmd, char *fmt, struct session *s, char *msg);
+bool cmd_list_networks(char *cmd, char *fmt, struct session *s, char *msg);
+bool cmd_change_network(char *cmd, char *fmt, struct session *s, char *msg);
 
 bool cmd_create_group(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_dispose_group(char *cmd, char *fmt, struct network *n, char *msg); 

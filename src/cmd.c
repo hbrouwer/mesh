@@ -56,6 +56,12 @@ void process_command(char *cmd, struct session *s)
         if (cmd_dispose_network(cmd, "disposeNetwork %s %s", s,
                                 "disposed network: [%s]"))
                 return;
+        if (cmd_list_networks(cmd, "listNetworks", s,
+                                "network listing:"))
+                return;
+        if (cmd_change_network(cmd, "changeNetwork %s", s,
+                                "changed to network: [%s]"))
+                return;        
 
         if (!s->anp) {
                 eprintf("no active network");
@@ -361,6 +367,8 @@ bool cmd_load_network(char *cmd, char *fmt, struct session *s, char *msg)
 
         mprintf("attempting to load network: [%s]", tmp);
 
+        // XXX: check for double names!
+
         FILE *fd;
         if (!(fd = fopen(tmp, "r"))) {
                 eprintf("cannot open file: [%s]", tmp);
@@ -382,7 +390,65 @@ bool cmd_load_network(char *cmd, char *fmt, struct session *s, char *msg)
 
 bool cmd_dispose_network(char *cmd, char *fmt, struct session *s, char *msg)
 {
-        return false;
+        char tmp[64];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        struct network *n = find_network_by_name(s, tmp);
+        if (!n) {
+                eprintf("cannot dispose network: [%s]--no such network", tmp);
+                return true;
+        }
+
+        int i;
+        for (i = 0; i < s->networks->num_elements; i++)
+                if (s->networks->elements[i] == n)
+                        break;
+
+        for (int j = i; j < s->networks->num_elements - 1; j++)
+                s->networks->elements[j] = s->networks->elements[j + 1];
+        s->networks->elements[s->networks->num_elements - 1] = NULL;
+
+        if (n == s->anp)
+                s->anp = s->networks->elements[0];
+        dispose_network(n);
+        s->networks->num_elements--;
+
+        mprintf(msg, tmp);
+
+        return true;
+}
+
+bool cmd_list_networks(char *cmd, char *fmt, struct session *s, char *msg)
+{
+        if (strcmp(cmd, fmt) != 0)
+                return false;
+
+        mprintf(msg);
+
+        for (int i = 0; i < s->networks->num_elements; i++)
+                printf("%s\n", s->networks->elements[i]->name);
+
+        return true;
+}
+
+bool cmd_change_network(char *cmd, char *fmt, struct session *s, char *msg)
+{
+        char tmp[64];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        struct network *n = find_network_by_name(s, tmp);
+        if (!n) {
+                eprintf("cannot change to network: [%s]--no such network", tmp);
+                return true;
+        }
+
+        s->anp = n;
+
+        mprintf(msg, tmp);
+
+        return true;
 }
 
 bool cmd_create_group(char *cmd, char *fmt, struct network *n, char *msg)
