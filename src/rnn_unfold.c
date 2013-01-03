@@ -70,26 +70,33 @@
 
 struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
 {
+        /* allocate a new unfolded network */
         struct rnn_unfolded_network *un;
         if (!(un = malloc(sizeof(struct rnn_unfolded_network))))
                 goto error_out;
         memset(un, 0, sizeof(struct rnn_unfolded_network));
 
+        /* obtain an array of recurrent groups */
         un->recur_groups = rnn_recurrent_groups(n);
 
-        int block_size = un->recur_groups->num_elements * sizeof(struct matrix *);
+        /* allocate a array of weight matrices */
+        int block_size = un->recur_groups->num_elements
+                * sizeof(struct matrix *);
         if (!(un->recur_weights = malloc(block_size)))
                 goto error_out;
         memset(un->recur_weights, 0, block_size);
 
+        /* allocate an array of previous weight delta matrices */
         if (!(un->recur_prev_weight_deltas = malloc(block_size)))
                 goto error_out;
         memset(un->recur_prev_weight_deltas, 0, block_size);
 
+        /* allocate an array of dynamic learning paramter matrices */
         if (!(un->recur_dyn_learning_pars = malloc(block_size)))
                 goto error_out;
         memset(un->recur_dyn_learning_pars, 0, block_size);
 
+        /* fill the arrays with the relevant matrices */
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
                 struct group *g = un->recur_groups->elements[i];
                 un->recur_weights[i] = create_matrix(
@@ -97,11 +104,9 @@ struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
                                 g->vector->size);
                 randomize_matrix(un->recur_weights[i],
                                 n->random_mu, n->random_sigma);
-                
                 un->recur_prev_weight_deltas[i] = create_matrix(
                                 g->vector->size,
                                 g->vector->size);
-
                 un->recur_dyn_learning_pars[i] = create_matrix(
                                 g->vector->size,
                                 g->vector->size);
@@ -109,12 +114,14 @@ struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
                                 n->rp_init_update);
         }
 
+        /* allocate a stack for duplicate networks */
         un->stack_size = n->history_length + 1;
         block_size = un->stack_size * sizeof(struct network *);
         if (!(un->stack = malloc(block_size)))
                 goto error_out;
         memset(un->stack, 0, block_size);
 
+        /* fill the stack with duplicate networks */
         for (int i = 0; i < un->stack_size; i++) {
                 un->stack[i] = rnn_duplicate_network(n);
                 if (i == 0) {
@@ -152,7 +159,7 @@ void rnn_dispose_unfolded_network(struct rnn_unfolded_network *un)
         free(un->recur_prev_weight_deltas);
 
         dispose_group_array(un->recur_groups);
-        
+
         for (int i = 0; i < un->stack_size; i++)
                 rnn_dispose_duplicate_network(un->stack[i]);
         free(un->stack);
@@ -266,7 +273,7 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
 
                 if (!bg->bias)
                         continue;
-                
+
                 struct group *dbg = rnn_duplicate_group(bg);
                 dn->groups->elements[dn->groups->num_elements++] = dbg;
                 if (dn->groups->num_elements == dn->groups->max_elements)
@@ -395,7 +402,7 @@ void rnn_dispose_duplicate_projection(struct projection *dp)
 {
         dispose_matrix(dp->gradients);
         dispose_matrix(dp->prev_gradients);
-        
+
         free(dp);
 }
 
@@ -406,9 +413,9 @@ void rnn_dispose_duplicate_projection(struct projection *dp)
 struct group_array *rnn_recurrent_groups(struct network *n)
 {
         struct group_array *gs = create_group_array(MAX_GROUPS);
-        
+
         rnn_collect_recurrent_groups(n->input, gs);
-        
+
         return gs;
 }
 
@@ -519,7 +526,7 @@ void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,
                 /*
                  * Note: weight matrices are shared among recurrent
                  *   projections.
-                 */                
+                 */
                 struct matrix *gradients = create_matrix(
                                 g1->vector->size,
                                 g2->vector->size);
@@ -551,27 +558,27 @@ void rnn_disconnect_duplicate_networks(struct rnn_unfolded_network *un,
                 struct network *n1, struct network *n2)
 {
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
-                 char *name = un->recur_groups->elements[i]->name;
-                 struct group *g1 = find_group_by_name(n1, name);
-                 struct group *g2 = find_group_by_name(n2, name);
+                char *name = un->recur_groups->elements[i]->name;
+                struct group *g1 = find_group_by_name(n1, name);
+                struct group *g2 = find_group_by_name(n2, name);
 
-                 g1->out_projs->num_elements--;
-                 g2->inc_projs->num_elements--;
+                g1->out_projs->num_elements--;
+                g2->inc_projs->num_elements--;
 
-                 struct projection *p1 = 
-                         g1->out_projs->elements[g1->out_projs->num_elements];
-                 struct projection *p2 =
-                         g2->inc_projs->elements[g2->inc_projs->num_elements];
-                 rnn_dispose_duplicate_projection(p1);
-                 free(p2);
+                struct projection *p1 = 
+                        g1->out_projs->elements[g1->out_projs->num_elements];
+                struct projection *p2 =
+                        g2->inc_projs->elements[g2->inc_projs->num_elements];
+                rnn_dispose_duplicate_projection(p1);
+                free(p2);
 
-                 g1->out_projs->elements[g1->out_projs->num_elements] = NULL;
-                 g2->inc_projs->elements[g2->inc_projs->num_elements] = NULL;
+                g1->out_projs->elements[g1->out_projs->num_elements] = NULL;
+                g2->inc_projs->elements[g2->inc_projs->num_elements] = NULL;
         }
 }
 
 /*
- * Sum the gradients of over the unfolded network.
+ * Sum gradients over the unfolded network.
  */
 
 void rnn_sum_gradients(struct rnn_unfolded_network *un)
@@ -581,7 +588,7 @@ void rnn_sum_gradients(struct rnn_unfolded_network *un)
 }
 
 /*
- * Add the gradients for incoming projections of two
+ * Add the gradients of the incoming projections of two
  * duplicate groups.
  */
 
@@ -590,7 +597,7 @@ void rnn_add_gradients(struct group *g1, struct group *g2)
         for (int i = 0; i < g1->inc_projs->num_elements; i++) {
                 struct projection *p1 = g1->inc_projs->elements[i];
                 struct projection *p2 = g2->inc_projs->elements[i];
-                
+
                 for (int r = 0; r < p1->gradients->rows; r++)
                         for (int c = 0; c < p1->gradients->cols; c++)
                                 p1->gradients->elements[r][c] +=
@@ -650,6 +657,7 @@ void rnn_add_gradients(struct group *g1, struct group *g2)
  * Note: The above procedure extends to multiple recurrent groups per 
  *   network.
  */
+
 void rnn_cycle_stack(struct rnn_unfolded_network *un)
 {
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
