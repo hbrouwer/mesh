@@ -146,14 +146,27 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                                                 * p->weights->elements[x][z];
 
                                         /*
-                                         * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                         *
                                          * We only compute gradients for
-                                         * projections to g.
+                                         * projections to g:
                                          *
-                                         * XXX: Check for BPTT
+                                         * 0
+                                         * |
+                                         * 1   3
+                                         * | \ |
+                                         * 2   4   .
+                                         *     | \ |
+                                         *     5   7
+                                         *         |
+                                         *         . 
                                          *
-                                         * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                         * If the current group is 1, we
+                                         * compute the gradients for the
+                                         * projection between 1 and 2, and
+                                         * the one between 1 and 4. If the
+                                         * current group is 4, we compute
+                                         * the gradients of the projection
+                                         * between 4 and 5, and the one
+                                         * between 4 and 7, and so forth.
                                          */
                                         if (p->to != g)
                                                 continue;
