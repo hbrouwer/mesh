@@ -1,7 +1,7 @@
 /*
  * rnn_unfold.h
  *
- * Copyright 2012 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012, 2013 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,11 @@ struct rnn_unfolded_network
                 *recur_groups;    
         struct matrix             /* weights for recurrent connections */
                 **recur_weights;
-        struct matrix             /* previous weight changes for recurrent connections */
+        struct matrix             /* previous weight changes for recurrent
+                                     connections */
                 **recur_prev_weight_deltas;
-        struct matrix             /* previous Rprop update values or for DBD learning rates recurrent connection */
+        struct matrix             /* previous Rprop update values or for DBD
+                                     learning rates recurrent connection */
                 **recur_dyn_learning_pars;
         int stack_size;           /* size of the network 'state' stack */
         struct network **stack;   /* stack for different 'states' of the

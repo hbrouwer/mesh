@@ -1,7 +1,7 @@
 /*
  * cmd.c
  *
- * Copyright 2012 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012, 2013 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 #include "bp.h"
 #include "cmd.h"
 #include "engine.h"
-#include "erps.h"
 #include "error.h"
 #include "main.h"
 #include "math.h"
@@ -45,7 +44,7 @@ void process_command(char *cmd, struct session *s)
                 return;
         }
 
-        cmd_quit(cmd, "quit", s, "Quitting...");        
+        cmd_quit(cmd, "quit", s, "Quitting...");
         cmd_quit(cmd, "exit", s, "Quitting...");
 
         if (cmd_create_network(cmd, "createNetwork %s %s", s,

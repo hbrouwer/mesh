@@ -12,7 +12,6 @@ add_executable(mesh
         src/cli.c
         src/cmd.c
         src/engine.c
-        src/erps.c
         src/error.c
         src/main.c
         src/math.c
