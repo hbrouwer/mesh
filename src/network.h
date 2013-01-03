@@ -260,11 +260,7 @@ void add_to_group_array(struct group_array *gs, struct group *g);
 void increase_group_array_size(struct group_array *gs);
 void dispose_group_array(struct group_array *gs);
 
-struct group *create_group(
-                char *name,
-                int size,
-                bool bias, 
-                bool recurrent);
+struct group *create_group(char *name, int size, bool bias, bool recurrent);
 void attach_bias_group(struct network *n, struct group *g);
 void dispose_group(struct group *g);
 void dispose_groups(struct group_array *groups);
@@ -294,11 +290,11 @@ void randomize_weight_matrices(struct group *g, struct network *n);
 void initialize_dyn_learning_pars(struct group *g, struct network *n);
 void initialize_act_lookup_vectors(struct network *n);
 
+struct group *find_group_by_name(struct network *n, char *name);
+
 /*
  * Stuff below will move to cmd.c ...
  */
-
-struct group *find_group_by_name(struct network *n, char *name);
 
 void load_weights(struct network *n);
 void save_weights(struct network *n);

@@ -27,13 +27,15 @@
 #include "rnn_unfold.h"
 #include "session.h"
 
+#define VERSION "0.181212"
+
 int main(int argc, char **argv)
 {
         struct session *s;
 
         cprintf("");
         cprintf("MESH version %s", VERSION);
-        cprintf("Copyright (C) 2012 Harm Brouwer <me@hbrouwer.eu>");
+        cprintf("Copyright (C) 2012, 2013 Harm Brouwer <me@hbrouwer.eu>");
         cprintf("Center for Language and Cognition, University of Groningen");
         cprintf("& Netherlands Organisation for Scientific Research (NWO)");
         cprintf("");

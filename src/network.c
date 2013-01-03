@@ -201,11 +201,7 @@ void dispose_group_array(struct group_array *gs)
  * Creates a new group.
  */
 
-struct group *create_group(
-                char *name,
-                int size,
-                bool bias, 
-                bool recurrent)
+struct group *create_group(char *name, int size, bool bias, bool recurrent)
 {
         struct group *g;
         if (!(g = malloc(sizeof(struct group))))

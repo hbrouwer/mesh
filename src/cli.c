@@ -29,6 +29,8 @@ void cli_loop(struct session *s)
                 /* prompt */
                 if (s->anp)
                         printf("%s", s->anp->name);
+                else
+                        printf("(null)");
                 printf("> ");
                 
                 /* get a line */
