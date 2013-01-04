@@ -61,15 +61,18 @@ bool cmd_set_learning_algorithm(char *cmd, char *fmt, struct network *n,
 bool cmd_set_update_algorithm(char *cmd, char *fmt, struct network *n,
                 char *msg);
 
+bool cmd_init(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_train(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_test(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_test_item(char *cmd, char *fmt, struct network *n, char *msg);
-// bool cmd_erps(char *cmd, char *fmt, struct network *n, char *msg);
 
 bool cmd_compare_vectors(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_weight_stats(char *cmd, char *fmt, struct network *n, char *msg);
 
 bool cmd_show_vector(char *cmd, char *fmt, struct network *n, char *msg, int type);
 bool cmd_show_matrix(char *cmd, char *fmt, struct network *n, char *msg, int type);
+
+bool cmd_load_weights(char *cmd, char *fmt, struct network *n, char *msg);
+bool cmd_save_weights(char *cmd, char *fmt, struct network *n, char *msg);
 
 #endif /* CMD_H */

@@ -71,7 +71,7 @@ error_out:
  * XXX: needs lots of cleaning...
  */
 
-void initialize_network(struct network *n)
+void init_network(struct network *n)
 {
         mprintf("attempting to initialize network: [%s]", n->name);
 
@@ -92,13 +92,6 @@ void initialize_network(struct network *n)
         /* initialize unfolded network */
         if (n->learning_algorithm == train_network_with_bptt)
                 n->unfolded_net = rnn_init_unfolded_network(n);
-
-        if (!n->unfolded_net && n->load_weights_file)
-                load_weights(n);
-        if (n->unfolded_net && n->load_weights_file)
-                load_weights(n->unfolded_net->stack[0]);
-
-        // XXX: todo--sanity checks!
 
         mprintf("initialized network: [%s]", n->name);
 }
@@ -588,6 +581,10 @@ void initialize_act_lookup_vectors(struct network *n)
         }
 }
 
+/*
+ * Find a group by name.
+ */
+
 struct group *find_group_by_name(struct network *n, char *name)
 {
         for (int i = 0; i < n->groups->num_elements; i++) {
@@ -601,32 +598,103 @@ struct group *find_group_by_name(struct network *n, char *name)
 
 /*
  * ########################################################################
- * ## Weight matrix loading and saving                                   ##
+ * ## Weight matrix saving and loading                                   ##
  * ########################################################################
  */
 
-void load_weights(struct network *n)
+/*
+ * Save weight matrices to file.
+ */
+
+void save_weight_matrices(struct network *n, char *fn)
 {
         FILE *fd;
-        if (!(fd = fopen(n->load_weights_file, "r")))
+        if (!(fd = fopen(fn, "w")))
                 goto error_out;
 
-        char buf[4096];
+        if (n->type == TYPE_FFN)
+                save_weight_matrix(n->input, fd);
+        if (n->type == TYPE_SRN)
+                save_weight_matrix(n->input, fd);
+        if (n->type == TYPE_RNN)
+                save_weight_matrix(n->unfolded_net->stack[0]->input, fd);
+
+        fclose(fd);
+
+        return;
+
+error_out:
+        perror("[save_weight_matrices()]");
+        return;
+}
+
+void save_weight_matrix(struct group *g, FILE *fd)
+{
+        /*
+         * Write the weight matrices of all of the current group's
+         * incoming projections.
+         */
+        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+                struct projection *p = g->inc_projs->elements[i];
+                
+                fprintf(fd, "%s -> %s\n", p->to->name, g->name);
+                
+                for (int r = 0; r < p->weights->rows; r++) {
+                        for (int c = 0; c < p->weights->cols; c++) {
+                                fprintf(fd, "%f", p->weights->elements[r][c]);
+                                if (c < p->weights->cols - 1)
+                                        fprintf(fd, " ");
+                        }
+                        fprintf(fd, "\n");
+                }
+
+                mprintf("wrote weights for projection: [%s -> %s]",
+                                p->to->name, g->name);
+        }
+
+        /* 
+         * Repeat the above for all of the current group's
+         * outgoing projections.
+         */
+        for (int i = 0; i < g->out_projs->num_elements; i++)
+                if (!g->out_projs->elements[i]->recurrent)
+                        save_weight_matrix(g->out_projs->elements[i]->to, fd);
+}
+
+/*
+ * Load weight matrices from file.
+ */
+
+void load_weight_matrices(struct network *n, char *fn)
+{
+        FILE *fd;
+        if (!(fd = fopen(fn, "r")))
+                goto error_out;
+
+        struct network *np;
+        if (n->type == TYPE_FFN)
+                np = n;
+        if (n->type == TYPE_SRN)
+                np = n;
+        if (n->type == TYPE_RNN)
+                np = n->unfolded_net->stack[0];
+
+        char buf[8192];
         while (fgets(buf, sizeof(buf), fd)) {
                 char tmp1[64], tmp2[64];
 
-                if (!(sscanf(buf, "Projection %s %s", tmp1, tmp2)))
+                if (sscanf(buf, "%s -> %s", tmp1, tmp2) != 2)
                         continue;
 
                 /* find the groups for the projection */
                 struct group *g1, *g2;
-                if ((g1 = find_group_by_name(n, tmp1)) == NULL) {
+                if ((g1 = find_group_by_name(np, tmp1)) == NULL) {
                         eprintf("group does not exist: %s", tmp1);
-                        return;
+                        continue;
                 }
-                if ((g2 = find_group_by_name(n, tmp2)) == NULL) {
+                if ((g2 = find_group_by_name(np, tmp2)) == NULL) {
                         eprintf("group does not exist: %s", tmp2);
-                        return;
+                        continue;
                 }
 
                 /* find the projection */
@@ -648,6 +716,9 @@ void load_weights(struct network *n)
                                 tokens = strtok(NULL, " ");
                         }
                 }
+
+                mprintf("read weights for projection: [%s -> %s]",
+                                tmp1, tmp2);
         }
 
         fclose(fd);
@@ -657,52 +728,4 @@ void load_weights(struct network *n)
 error_out:
         perror("[load_weight_matrices()]");
         return;
-}
-
-void save_weights(struct network *n)
-{
-        FILE *fd;
-        if (!(fd = fopen(n->save_weights_file, "w")))
-                goto error_out;
-
-        save_weight_matrices(n->input, fd);
-
-        fclose(fd);
-
-        return;
-
-error_out:
-        perror("[save_weight_matrices()]");
-        return;
-}
-
-void save_weight_matrices(struct group *g, FILE *fd)
-{
-        /*
-         * write the weight matrices of all of the current group's
-         * incoming projections
-         */
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
-                struct projection *p = g->inc_projs->elements[i];
-                
-                fprintf(fd, "Projection %s %s\n", p->to->name, g->name);
-                
-                for (int r = 0; r < p->weights->rows; r++) {
-                        for (int c = 0; c < p->weights->cols; c++) {
-                                fprintf(fd, "%f", p->weights->elements[r][c]);
-                                if (c < p->weights->cols - 1)
-                                        fprintf(fd, " ");
-                        }
-                        fprintf(fd, "\n");
-                }
-                fprintf(fd, "\n");
-        }
-
-        /* 
-         * repeat the above for all of the current group's
-         * outgoing projections
-         */
-        for (int i = 0; i < g->out_projs->num_elements; i++)
-                if (!g->out_projs->elements[i]->recurrent)
-                        save_weight_matrices(g->out_projs->elements[i]->to, fd);
 }

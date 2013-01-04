@@ -138,7 +138,7 @@ struct set *load_set(char *filename, int input_size, int output_size)
                 char tmp[64];
                 int num_events;
 
-                if (!(sscanf(buf, "Name \"%[^\"]\" %d", tmp, &num_events)))
+                if (sscanf(buf, "Name \"%[^\"]\" %d", tmp, &num_events) != 2)
                         continue;
 
                 char *name;
@@ -168,7 +168,7 @@ struct set *load_set(char *filename, int input_size, int output_size)
                                 for (int j = 0; j < input_size; j++) {
                                         if (!(tokens = strtok(NULL, " ")))
                                                 goto error_out;
-                                        if (!sscanf(tokens, "%lf", &inputs[i]->elements[j]))
+                                        if (sscanf(tokens, "%lf", &inputs[i]->elements[j]) != 1)
                                                 goto error_out;
                                 }
                         }
@@ -179,7 +179,7 @@ struct set *load_set(char *filename, int input_size, int output_size)
                                         for (int j = 0; j < output_size; j++) {
                                                 if (!(tokens = strtok(NULL, " ")))
                                                         goto error_out;
-                                                if (!sscanf(tokens, "%lf", &targets[i]->elements[j]))
+                                                if (sscanf(tokens, "%lf", &targets[i]->elements[j]) != 1)
                                                         goto error_out;
                                         }
                                 }

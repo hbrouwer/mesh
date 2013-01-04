@@ -118,20 +118,10 @@ struct network
         double dbd_rate_increment;  /* learning rate increment factor for DBD */
         double dbd_rate_decrement;  /* learning rate decrement factor for DBD */
 
-        /* ## Loading and saving weight matrices ####################### */
-
-        char *save_weights_file;    /* file to which weights should be saved */
-        char *load_weights_file;    /* file from which weights should be loaded */
-
         /* ## Unfolded recurrent network ############################### */
 
         struct rnn_unfolded_network /* unfolded recurrent network */
                 *unfolded_net;
-
-        /* ## ERP correlates ########################################### */
-
-        bool compute_erps;          /* flags whether ERP correlates should
-                                       be computed */
 };
 
 /*
@@ -252,7 +242,7 @@ struct status
  */
 
 struct network *create_network(char *name, int type);
-void initialize_network(struct network *n);
+void init_network(struct network *n);
 void dispose_network(struct network *n);
 
 struct group_array *create_group_array(int max_elements);
@@ -292,12 +282,8 @@ void initialize_act_lookup_vectors(struct network *n);
 
 struct group *find_group_by_name(struct network *n, char *name);
 
-/*
- * Stuff below will move to cmd.c ...
- */
-
-void load_weights(struct network *n);
-void save_weights(struct network *n);
-void save_weight_matrices(struct group *g, FILE *fd);
+void save_weight_matrices(struct network *n, char *fn);
+void save_weight_matrix(struct group *g, FILE *fd);
+void load_weight_matrices(struct network *n, char *fn);
 
 #endif /* NETWORK_H */

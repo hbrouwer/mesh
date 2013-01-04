@@ -231,6 +231,10 @@ void process_command(char *cmd, struct session *s)
                                 "set update algorithm: [%s]"))
                 return;
 
+        if (cmd_init(cmd, "init",
+                                s->anp,
+                                "initializing network: [%s]"))
+                return;
         if (cmd_train(cmd, "train", 
                                 s->anp,
                                 "starting training of network: [%s]"))
@@ -239,15 +243,11 @@ void process_command(char *cmd, struct session *s)
                                 s->anp,
                                 "starting testing of network: [%s]"))
                 return;
-        if (cmd_test_item(cmd, "testItem %s",
+        // XXX: check this ...
+        if (cmd_test_item(cmd, "testItem %[^]",
                                 s->anp,
                                 "starting testing of network [%s] for item: [%s]"))
                 return;
-        /*
-        if (cmd_erps(cmd, "erps", s->anp,
-                                "computing ERP correlates for network: [%s]"))
-                return;
-                */
 
         if (cmd_compare_vectors(cmd, "compareVectors %s %s %s",
                                 s->anp,
@@ -284,6 +284,19 @@ void process_command(char *cmd, struct session *s)
                                 s->anp,
                                 "dynamic learning parameters matrix for projection: [%s -> %s]",
                                 MTYPE_DYN_PARS))
+                return;
+
+        /*
+         * Weight matrix saving and loading.
+         */
+
+        if (cmd_save_weights(cmd, "saveWeights %s",
+                                s->anp,
+                                "saved weights: [%s]"))
+                return;
+        if (cmd_load_weights(cmd, "loadWeights %s",
+                                s->anp,
+                                "loaded weights: [%s]"))
                 return;
 
         /*
@@ -341,7 +354,13 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s, char *msg)
         else if (strcmp(tmp2, "rnn") == 0)
                 type = TYPE_RNN;
         else {
-                eprintf("invalid network type: %s", tmp2);
+                eprintf("cannot create network--invalid network type: [%s]", tmp2);
+                return true;
+        }
+
+        /* check network name */
+        if (find_network_by_name(s, tmp1)) {
+                eprintf("cannot create network--network [%s] already exists", tmp1);
                 return true;
         }
         
@@ -366,8 +385,6 @@ bool cmd_load_network(char *cmd, char *fmt, struct session *s, char *msg)
                 return false;
 
         mprintf("attempting to load network: [%s]", tmp);
-
-        // XXX: check for double names!
 
         FILE *fd;
         if (!(fd = fopen(tmp, "r"))) {
@@ -479,7 +496,7 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct network *n, char *msg)
 
         struct group *g = find_group_by_name(n, tmp);
         if (g == NULL) {
-                eprintf("cannot attach bias--group (%s) unknown", tmp);
+                eprintf("cannot attach bias--group [%s] unknown", tmp);
                 return true;
         }
 
@@ -498,7 +515,7 @@ bool cmd_set_input_group(char *cmd, char *fmt, struct network *n, char *msg)
 
         struct group *g = find_group_by_name(n, tmp);
         if (g == NULL) {
-                eprintf("cannot set input group--group (%s) unknown", tmp);
+                eprintf("cannot set input group--group [%s] unknown", tmp);
                 return true;
         }
 
@@ -517,7 +534,7 @@ bool cmd_set_output_group(char *cmd, char *fmt, struct network *n, char *msg)
 
         struct group *g = find_group_by_name(n, tmp);
         if (g == NULL) {
-                eprintf("cannot set output group--group (%s) unknown", tmp);
+                eprintf("cannot set output group--group [%s] unknown", tmp);
                 return true;
         }
 
@@ -536,7 +553,7 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct network *n, char *msg)
 
         struct group *g = find_group_by_name(n, tmp1);
         if (g == NULL) {
-                eprintf("cannot set activation function--group (%s) unknown",
+                eprintf("cannot set activation function--group [%s] unknown",
                                 tmp1);
                 return true;
         }
@@ -595,7 +612,7 @@ bool cmd_set_err_func(char *cmd, char *fmt, struct network *n, char *msg)
 
         struct group *g = find_group_by_name(n, tmp1);
         if (g == NULL) {
-                eprintf("cannot set error function--group (%s) unknown",
+                eprintf("cannot set error function--group [%s] unknown",
                                 tmp1);
                 return true;
         }
@@ -638,12 +655,12 @@ bool cmd_create_projection(char *cmd, char *fmt, struct network *n, char *msg)
         struct group *tg = find_group_by_name(n, tmp2);
 
         if (fg == NULL) {
-                eprintf("cannot set projection--'from' group (%s) unknown",
+                eprintf("cannot set projection--'from' group [%s] unknown",
                                 tmp1);
                 return true;
         }
         if (tg == NULL) {
-                eprintf("cannot set projection--'to' group (%s) unknown",
+                eprintf("cannot set projection--'to' group [%s] unknown",
                                 tmp2);
                 return true;
         }
@@ -694,18 +711,18 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct network *n, char *
         struct group *tg = find_group_by_name(n, tmp2);
 
         if (fg == NULL) {
-                eprintf("cannot set Elman-projection--'from' group (%s) unknown",
+                eprintf("cannot set Elman-projection--'from' group [%s] unknown",
                                 tmp1);
                 return true;
         }
         if (tg == NULL) {
-                eprintf("cannot set Elman-projection--'from' group (%s) unknown",
+                eprintf("cannot set Elman-projection--'from' group [%s] unknown",
                                 tmp2);
                 return true;
         }
 
         if (fg == tg) {
-                eprintf("cannot set Elman-projection--'from' and 'to' are the same (%s)",
+                eprintf("cannot set Elman-projection--'from' and 'to' are the same [%s]",
                                 fg->name);
                 return true;
         }
@@ -741,12 +758,12 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct network *n, char *msg)
         struct group *tg = find_group_by_name(n, tmp2);
 
         if (fg == NULL) {
-                eprintf("cannot freeze projection--'from' group (%s) unknown",
+                eprintf("cannot freeze projection--'from' group [%s] unknown",
                                 tmp1);
                 return true;
         }
         if (tg == NULL) {
-                eprintf("cannot freeze projection--'to' group (%s) unknown",
+                eprintf("cannot freeze projection--'to' group [%s] unknown",
                                 tmp2);
                 return true;
         }
@@ -915,6 +932,19 @@ bool cmd_set_update_algorithm(char *cmd, char *fmt, struct network *n,
         return true;
 }
 
+bool cmd_init(char *cmd, char *fmt, struct network *n, char *msg)
+{
+        if (strlen(cmd) != strlen(fmt) 
+                        || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf(msg, n->name);
+
+        init_network(n);
+
+        return true;
+}
+
 bool cmd_train(char *cmd, char *fmt, struct network *n, char *msg)
 {
         if (strlen(cmd) != strlen(fmt) 
@@ -923,7 +953,6 @@ bool cmd_train(char *cmd, char *fmt, struct network *n, char *msg)
 
         mprintf(msg, n->name);
 
-        initialize_network(n);
         train_network(n);
 
         return true;
@@ -953,7 +982,7 @@ bool cmd_test_item(char *cmd, char *fmt, struct network *n, char *msg)
 
         struct element *e = find_element_by_name(n->test_set, tmp);
         if (!e) {
-                eprintf("cannot test network--element (%s) unknown", tmp);
+                eprintf("cannot test network--element [%s] unknown", tmp);
                 return true;
         }
 
@@ -961,20 +990,6 @@ bool cmd_test_item(char *cmd, char *fmt, struct network *n, char *msg)
 
         return true;
 }
-
-/*
-bool cmd_erps(char *cmd, char *fmt, struct network *n, char *msg)
-{
-        if (strncmp(cmd, fmt, strlen(fmt)) != 0)
-                return false;
-
-        mprintf(msg);
-
-        compute_erp_correlates(n);
-
-        return true;
-}
-*/
 
 // TODO: extend such that set (train/test) can be specificied
 bool cmd_compare_vectors(char *cmd, char *fmt, struct network *n, char *msg)
@@ -987,19 +1002,19 @@ bool cmd_compare_vectors(char *cmd, char *fmt, struct network *n, char *msg)
 
         struct group *g = find_group_by_name(n, tmp1);
         if (!g) {
-                eprintf("cannot compare vectors--group (%s) unknown", tmp1);
+                eprintf("cannot compare vectors--group [%s] unknown", tmp1);
                 return true;
         }
 
         struct element *e1 = find_element_by_name(n->test_set, tmp2);
         if (!e1) {
-                eprintf("cannot compare vectors--item (%s) unknown", tmp2);
+                eprintf("cannot compare vectors--item [%s] unknown", tmp2);
                 return true;
         }
 
         struct element *e2 = find_element_by_name(n->test_set, tmp3);
         if (!e2) {
-                eprintf("cannot compare vectors--item (%s) unknown", tmp3);
+                eprintf("cannot compare vectors--item [%s] unknown", tmp3);
                 return true;
         }
 
@@ -1069,7 +1084,7 @@ bool cmd_show_vector(char *cmd, char *fmt, struct network *n, char *msg, int typ
         struct group *g = find_group_by_name(n, tmp);
 
         if (g == NULL) {
-                eprintf("cannot show vector---group (%s) unknown",
+                eprintf("cannot show vector---group [%s] unknown",
                                 tmp);
                 return true;
         }
@@ -1094,12 +1109,12 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct network *n, char *msg, int typ
         struct group *tg = find_group_by_name(n, tmp2);
 
         if (fg == NULL) {
-                eprintf("cannot show matrix---'from' group (%s) unknown",
+                eprintf("cannot show matrix---'from' group [%s] unknown",
                                 tmp1);
                 return true;
         }
         if (tg == NULL) {
-                eprintf("cannot show matrix---'to' group (%s) unknown",
+                eprintf("cannot show matrix---'to' group [%s] unknown",
                                 tmp2);
                 return true;
         }
@@ -1121,6 +1136,36 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct network *n, char *msg, int typ
                                 tmp1, tmp2);
                 return true;
         }
+
+        return true;
+}
+
+bool cmd_save_weights(char *cmd, char *fmt, struct network *n, char *msg)
+{
+        char tmp[64];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        mprintf("attempting to save weights: [%s]", tmp);
+
+        save_weight_matrices(n, tmp);
+
+        mprintf(msg, tmp);
+
+        return true;
+}
+
+bool cmd_load_weights(char *cmd, char *fmt, struct network *n, char *msg)
+{
+        char tmp[64];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        mprintf("attempting to load weights: [%s]", tmp);
+
+        load_weight_matrices(n, tmp);
+
+        mprintf(msg, tmp);
 
         return true;
 }
