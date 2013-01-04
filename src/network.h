@@ -57,6 +57,9 @@ struct network
 
         bool use_act_lookup;        /* use activation lookup vectors */
 
+        bool initialized;           /* flags whether this network is
+                                       intialized */
+
         /* ## Random numbers ########################################### */
 
         int random_seed;            /* seed for the random number
@@ -106,7 +109,7 @@ struct network
 
         /* ## Rprop parameters ######################################### */
 
-        double rp_init_update;      /* initial update values for Rprop */
+        double rp_init_update;      /* initial update value for Rprop */
         double rp_eta_plus;         /* rate with which update values are
                                        increased */
         double rp_eta_minus;        /* rate with which update values are

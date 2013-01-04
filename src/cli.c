@@ -31,7 +31,7 @@ void cli_loop(struct session *s)
                         printf("%s", s->anp->name);
                 else
                         printf("(null)");
-                printf("> ");
+                printf("| ");
                 
                 /* get a line */
                 int num_chars;

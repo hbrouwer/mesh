@@ -38,6 +38,11 @@
 
 void process_command(char *cmd, struct session *s)
 {
+        /* blank line */
+        if (cmd[0] == '\0') {
+                return;
+        }
+
         /* comment */
         if (cmd[0] == '#') {
                 printf("%s\n", cmd);
@@ -63,6 +68,7 @@ void process_command(char *cmd, struct session *s)
                                 "changed to network: [%s]"))
                 return;        
 
+        /* all other commands require an active network */
         if (!s->anp) {
                 eprintf("no active network");
                 return;
@@ -235,6 +241,13 @@ void process_command(char *cmd, struct session *s)
                                 s->anp,
                                 "initializing network: [%s]"))
                 return;
+
+        /* all other commands require an initialized active network */
+        if (!s->anp->initialized) {
+                eprintf("unitizialized network--use 'init' command to initialize");
+                return;
+        }
+
         if (cmd_train(cmd, "train", 
                                 s->anp,
                                 "starting training of network: [%s]"))

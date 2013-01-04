@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+#include "bp.h"
 #include "vector.h"
 #include "rnn_unfold.h"
 
@@ -91,7 +92,7 @@ struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
                 goto error_out;
         memset(un->recur_prev_weight_deltas, 0, block_size);
 
-        /* allocate an array of dynamic learning paramter matrices */
+        /* allocate an array of dynamic learning parameter matrices */
         if (!(un->recur_dyn_learning_pars = malloc(block_size)))
                 goto error_out;
         memset(un->recur_dyn_learning_pars, 0, block_size);
@@ -99,19 +100,30 @@ struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
         /* fill the arrays with the relevant matrices */
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
                 struct group *g = un->recur_groups->elements[i];
+
+                /* weights */
                 un->recur_weights[i] = create_matrix(
                                 g->vector->size,
                                 g->vector->size);
                 randomize_matrix(un->recur_weights[i],
                                 n->random_mu, n->random_sigma);
+
+                /* previous weight deltas */
                 un->recur_prev_weight_deltas[i] = create_matrix(
                                 g->vector->size,
                                 g->vector->size);
                 un->recur_dyn_learning_pars[i] = create_matrix(
                                 g->vector->size,
                                 g->vector->size);
-                fill_matrix_with_value(un->recur_dyn_learning_pars[i],
-                                n->rp_init_update);
+
+                /* dynamic learning parameters */
+                if (n->update_algorithm == bp_update_dbd) {
+                        fill_matrix_with_value(un->recur_dyn_learning_pars[i],
+                                        n->learning_rate);
+                } else {
+                        fill_matrix_with_value(un->recur_dyn_learning_pars[i],
+                                        n->rp_init_update);
+                }
         }
 
         /* allocate a stack for duplicate networks */
@@ -384,8 +396,8 @@ struct projection *rnn_duplicate_projection(
         dp->weights = p->weights; /* <-- shared weights */
         dp->gradients = gradients;
         dp->prev_gradients = prev_gradients;
-        dp->prev_weight_deltas = p->prev_weight_deltas;
-        dp->dyn_learning_pars = p->dyn_learning_pars;
+        dp->prev_weight_deltas = p->prev_weight_deltas; /* idem */
+        dp->dyn_learning_pars = p->dyn_learning_pars; /* idem */
 
         return dp;
 

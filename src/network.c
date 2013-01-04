@@ -66,34 +66,56 @@ error_out:
 }
 
 /*
- * Iniatilizes a network.
- *
- * XXX: needs lots of cleaning...
+ * Initialize a network.
  */
 
 void init_network(struct network *n)
 {
-        mprintf("attempting to initialize network: [%s]", n->name);
+        n->initialized = false;
 
+        /*
+         * ################################################################
+         * ## Verify network sanity                                      ##
+         * ################################################################
+         */
+
+        if (n->groups->num_elements == 0) {
+                eprintf("cannot initialize network--network has no groups");
+                return;
+        }
+        if (!n->input) {
+                eprintf("cannot initialize network--network has no 'input' group");
+                return;
+        }
+        if (!n->output) {
+                eprintf("cannot initialize network--network has no 'output group");
+                return;
+        }
+
+        /* seed random number generator */
         srand(n->random_seed);
 
+        /* randomize weights matrices */
         randomize_weight_matrices(n->input, n);
 
-        /* for Rprop and DBD */
+        /* initialize dynamic learning paramters */
         initialize_dyn_learning_pars(n->input, n);
 
-        /* activation lookup */
+        /* 
+         * Initialize activation function lookup
+         * vectors (if required).
+         */
         if (n->use_act_lookup)
                 initialize_act_lookup_vectors(n);
-
+        
         if (n->batch_size == 0)
                 n->batch_size = n->training_set->num_elements;
 
-        /* initialize unfolded network */
+        /* initialize unfolded network (if required) */
         if (n->learning_algorithm == train_network_with_bptt)
                 n->unfolded_net = rnn_init_unfolded_network(n);
 
-        mprintf("initialized network: [%s]", n->name);
+        n->initialized = true;
 }
 
 /*
