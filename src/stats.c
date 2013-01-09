@@ -130,7 +130,7 @@ void collect_mean_dependent_ws(struct weight_stats *ws, struct group *g)
                                 ws->mean_dist += fabs(w->elements[r][c] - ws->mean);
 
                                 /* variance */
-                                ws->variance += square(w->elements[r][c] - ws->mean);
+                                ws->variance += pow(w->elements[r][c] - ws->mean, 2.0);
                         }
                 }
 

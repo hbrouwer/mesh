@@ -47,11 +47,6 @@ double sign(double x)
                 return -1.0;
 }
 
-double square(double x)
-{
-        return x * x;
-}
-
 /*
  * Box-Muller transform for the generation of pairs of normally distributed
  * random numbers. See:
