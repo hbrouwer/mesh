@@ -57,7 +57,11 @@ void error_sum_of_squares_deriv(struct group *g, struct vector *t)
  */
 
 /*
- * Formulas and limit handling adapted from LENS source code.
+ * Formulas and limit handling adapted from LENS (Rohde, 1999) source code.
+ *
+ * Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
+ *     Technical Report CMU-CS-99-164 (Pittsburgh, PA: Carnegie Mellon
+ *     University, Department of Computer Science).
  */
 
 #define LARGE_VALUE 1e10
@@ -127,7 +131,11 @@ void error_cross_entropy_deriv(struct group *g, struct vector *t)
  */
 
 /*
- * Formulas and limit handling adapted from LENS source code.
+ * Formulas and limit handling adapted from LENS (Rohde, 1999) source code.
+ *
+ * Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
+ *     Technical Report CMU-CS-99-164 (Pittsburgh, PA: Carnegie Mellon
+ *     University, Department of Computer Science).
  */
 
 double error_divergence(struct group *g, struct vector *t)
