@@ -906,8 +906,14 @@ bool cmd_set_update_algorithm(char *cmd, char *fmt, struct network *n,
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        if (strcmp(tmp, "steepest") == 0)
+        if (strcmp(tmp, "steepest") == 0) {
                 n->update_algorithm = bp_update_sd;
+                n->sd_type = SD_DFLT;
+        }
+        else if (strcmp(tmp, "dougs") == 0) {
+                n->update_algorithm = bp_update_sd;
+                n->sd_type = SD_DOUG;
+        }
         else if (strcmp(tmp, "rprop+") == 0) {
                 n->update_algorithm = bp_update_rprop;
                 n->rp_type = RPROP_PLUS;

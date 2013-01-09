@@ -19,6 +19,9 @@
 #ifndef BP_H
 #define BP_H
 
+#define SD_DFLT 0
+#define SD_DOUG 1
+
 #define RPROP_PLUS 0
 #define RPROP_MINUS 1
 #define IRPROP_PLUS 2
@@ -34,6 +37,9 @@ void bp_update_sd(struct network *n);
 void bp_recursively_update_sd(struct network *n, struct group *g);
 void bp_update_projection_sd(struct network *n, struct group *g,
                 struct projection *p);
+
+void bp_determine_sd_sf(struct network *n);
+void bp_recursively_determine_sd_sf(struct network *n, struct group *g);
 
 void bp_update_rprop(struct network *n);
 void bp_recursively_update_rprop(struct network *n, struct group *g);

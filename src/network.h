@@ -107,6 +107,11 @@ struct network
         int training_order;         /* order in which training items are
                                        presented */        
 
+        /* ## Steepest descent parameters ############################## */
+
+        int sd_type;                /* type of steepest descent */
+        double sd_scale_factor;     /* scaling factor */
+
         /* ## Rprop parameters ######################################### */
 
         double rp_init_update;      /* initial update value for Rprop */

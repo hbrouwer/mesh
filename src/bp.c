@@ -228,6 +228,12 @@ void bp_update_sd(struct network *n)
         n->status->last_weight_deltas_length = 0.0;
         n->status->gradients_length = 0.0;
 
+        /* determine the scaling factor for steepest descent */
+        if (n->sd_type == SD_DFLT)
+                n->sd_scale_factor = 1.0;
+        if (n->sd_type == SD_DOUG)
+                bp_determine_sd_sf(n);
+
         bp_recursively_update_sd(n, n->output);
 
         n->status->gradient_linearity /=
@@ -287,8 +293,13 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                          * First, we apply learning:
                          *
                          * Dw_ij = -epsilon * dE/dw_ij
+                         *
+                         * Note: If "Doug's momentum" is 
+                         * used, the gradient term is scaled
+                         * by the length of the gradient.
                          */
                         weight_delta += -n->learning_rate
+                                * n->sd_scale_factor
                                 * p->gradients->elements[i][j];
 
                         /*
@@ -333,6 +344,61 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                          */
                         p->prev_weight_deltas->elements[i][j] = weight_delta;
                 }
+        }
+}
+
+/*
+ * Determine the scaling factor for steepest descent. If "Doug's momentum"
+ * is used instead of "default" steepest descent, we scale the gradient
+ * term of the weight delta by the length of the gradient if this length is
+ * greater than 1.0. Otherwise, we simply take the product of the negative
+ * learning rate and the gradient by setting the scaling factor to 1.0:
+ *
+ *      | ||dE/dw||   , if ||dE/dw|| > 1.0
+ * sf = |
+ *      | 1.0         , otherwise
+ *
+ * where sf is the scaling factor. 
+ */
+
+void bp_determine_sd_sf(struct network *n)
+{
+        /* reset scaling factor */
+        n->sd_scale_factor = 0.0;
+
+        /* 
+         * Resursively compute the sum of squares of the
+         * individual weight gradients.
+         */
+        bp_recursively_determine_sd_sf(n, n->output);
+
+        /* determine the scaling factor */
+        if (n->sd_scale_factor > 1.0) {
+                n->sd_scale_factor = sqrt(n->sd_scale_factor);
+        } else {
+                n->sd_scale_factor = 1.0;
+        }
+}
+
+/*
+ * Recursively compute the sum of squares of the individual weight
+ * gradients.
+ */
+
+void bp_recursively_determine_sd_sf(struct network *n, struct group *g)
+{
+        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+                struct projection *p = g->inc_projs->elements[i];
+
+                /* sum gradients */
+                for (int j = 0; j < p->to->vector->size; j++) {
+                        for (int x = 0; x < g->vector->size; x++) {
+                                double gradient = p->gradients->elements[j][x];
+                                n->sd_scale_factor += pow(gradient, 2.0);
+                        }
+                }
+                
+                bp_recursively_determine_sd_sf(n, p->to);
         }
 }
 
