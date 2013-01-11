@@ -119,6 +119,19 @@ void init_network(struct network *n)
 }
 
 /*
+ * Resets a network.
+ */
+
+void reset_network(struct network *n)
+{
+        /* randomize weights matrices */
+        randomize_weight_matrices(n->input, n);
+
+        /* initialize dynamic learning paramters */
+        initialize_dyn_learning_pars(n->input, n);
+}
+
+/*
  * Disposes a network.
  */
 

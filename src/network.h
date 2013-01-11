@@ -251,6 +251,7 @@ struct status
 
 struct network *create_network(char *name, int type);
 void init_network(struct network *n);
+void reset_network(struct network *n);
 void dispose_network(struct network *n);
 
 struct group_array *create_group_array(int max_elements);

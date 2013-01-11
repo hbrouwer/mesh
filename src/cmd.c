@@ -248,6 +248,10 @@ void process_command(char *cmd, struct session *s)
                 return;
         }
 
+        if (cmd_reset(cmd, "reset",
+                                s->anp,
+                                "resetting network: [%s]"))
+                return;
         if (cmd_train(cmd, "train", 
                                 s->anp,
                                 "starting training of network: [%s]"))
@@ -960,6 +964,19 @@ bool cmd_init(char *cmd, char *fmt, struct network *n, char *msg)
         mprintf(msg, n->name);
 
         init_network(n);
+
+        return true;
+}
+
+bool cmd_reset(char *cmd, char *fmt, struct network *n, char *msg)
+{
+        if (strlen(cmd) != strlen(fmt) 
+                        || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf(msg, n->name);
+
+        reset_network(n);
 
         return true;
 }
