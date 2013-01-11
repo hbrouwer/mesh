@@ -297,7 +297,6 @@ double error_divergence(struct group *g, struct vector *t)
                  *     = log(d * LARGE_VALUE) * d
                  */
                 } else if (y <= SMALL_VALUE) {
-                // } else if (y <= 0.0) {
                         de += d * log(d * LARGE_VALUE);
 
                 /*
