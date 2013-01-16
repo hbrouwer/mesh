@@ -354,9 +354,9 @@ void bp_update_projection_sd(struct network *n, struct group *g,
  * greater than 1.0. Otherwise, we simply take the product of the negative
  * learning rate and the gradient by setting the scaling factor to 1.0:
  *
- *      | ||dE/dw||   , if ||dE/dw|| > 1.0
+ *      | 1.0 / ||dE/dw|| , if ||dE/dw|| > 1.0
  * sf = |
- *      | 1.0         , otherwise
+ *      | 1.0             , otherwise
  *
  * where sf is the scaling factor. 
  */
@@ -374,7 +374,7 @@ void bp_determine_sd_sf(struct network *n)
 
         /* determine the scaling factor */
         if (n->sd_scale_factor > 1.0) {
-                n->sd_scale_factor = sqrt(n->sd_scale_factor);
+                n->sd_scale_factor = 1.0 / sqrt(n->sd_scale_factor);
         } else {
                 n->sd_scale_factor = 1.0;
         }
