@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+#include "act.h"
 #include "bp.h"
 #include "error.h"
 #include "math.h"
@@ -105,8 +106,10 @@ void bp_output_error(struct group *g, struct vector *t)
          * derivative f'(x_j) to obtain the error signal for unit j.
          */
         for (int i = 0; i < g->error->size; i++) {
-                g->error->elements[i] *= g->act_fun->deriv(g->vector, i)
-                        + BP_FLAT_SPOT_CORRECTION;
+                double act_deriv = g->act_fun->deriv(g->vector, i);
+                if (g->act_fun->fun == act_fun_binary_sigmoid)
+                        act_deriv += BP_FLAT_SPOT_CORRECTION;
+                g->error->elements[i] *= act_deriv;
         }
 }
 
@@ -192,8 +195,9 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                  * delta_j = f'(x_j) dE/dy_j
                  */
                 for (int x = 0; x < ng->error->size; x++) {
-                        double act_deriv = ng->act_fun->deriv(ng->vector, x)
-                                + BP_FLAT_SPOT_CORRECTION;
+                        double act_deriv = ng->act_fun->deriv(ng->vector, x);
+                        if (g->act_fun->fun == act_fun_binary_sigmoid)
+                                act_deriv += BP_FLAT_SPOT_CORRECTION;
                         ng->error->elements[x] *= act_deriv;
                 }
         }
