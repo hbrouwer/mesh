@@ -227,6 +227,7 @@ void bp_backpropagate_error(struct network *n, struct group *g)
 
 void bp_update_sd(struct network *n)
 {
+        /* reset status statistics */
         n->status->weight_cost = 0.0;
         n->status->gradient_linearity = 0.0;
         n->status->last_weight_deltas_length = 0.0;
@@ -240,9 +241,17 @@ void bp_update_sd(struct network *n)
 
         bp_recursively_update_sd(n, n->output);
 
-        n->status->gradient_linearity /=
-                sqrt(n->status->last_weight_deltas_length
-                                * n->status->gradients_length);
+        /*
+         * Compute gradient linearity:
+         *
+         *         sum_i sum_j (Dw_ij(t-1) * dE/dw_ij)
+         * gl = -( ----------------------------------- )
+         *         sqrt(sum_i sum_j (Dw_ij(t-1) ^ 2))
+         *         * sqrt(sum_i sum_j (dE/dw_ij ^ 2))
+         */
+        n->status->gradient_linearity = -(n->status->gradient_linearity
+                        / sqrt(n->status->last_weight_deltas_length
+                                * n->status->gradients_length));
 }
 
 /*
@@ -329,19 +338,41 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                          */
                         p->weights->elements[i][j] += weight_delta;
                         
-                        /********************************/
-
+                        /*
+                         * Compute weight cost:
+                         *
+                         * wc = sum_i sum_j (w_ij ^ 2)
+                         */
                         n->status->weight_cost +=
                                 pow(p->weights->elements[i][j], 2.0);
-                        n->status->gradient_linearity -= 
+                        
+                        /*
+                         * Compute the numerator of the
+                         * gradient linearity:
+                         *
+                         * sum_i sum_j (Dw_ij(t-1) * dE/dw_ij)
+                         */
+                        n->status->gradient_linearity += 
                                 p->prev_weight_deltas->elements[i][j]
                                 * p->gradients->elements[i][j];
+                        
+                        /*
+                         * Compute the sum of squares of the
+                         * previous weight delta vector:
+                         *
+                         * sum_i sum_j (Dw_ij(t-1) ^ 2
+                         */
                         n->status->last_weight_deltas_length +=
                                 pow(p->prev_weight_deltas->elements[i][j], 2.0);
+
+                        /*
+                         * Compute the sum of squares of the
+                         * gradients:
+                         *
+                         * sum_i sum_j (dE/dw_ij ^ 2)
+                         */
                         n->status->gradients_length +=
                                 pow(p->gradients->elements[i][j], 2.0);
-
-                        /********************************/
 
                         /* 
                          * Store a copy of the weight change.
@@ -487,6 +518,7 @@ void bp_recursively_determine_sd_sf(struct network *n, struct group *g)
 
 void bp_update_rprop(struct network *n)
 {
+        /* reset status statistics */
         n->status->weight_cost = 0.0;
         n->status->gradient_linearity = 0.0;
         n->status->last_weight_deltas_length = 0.0;
@@ -499,9 +531,17 @@ void bp_update_rprop(struct network *n)
 
         bp_recursively_update_rprop(n, n->output);
 
-        n->status->gradient_linearity /=
-                sqrt(n->status->last_weight_deltas_length
-                                * n->status->gradients_length);
+        /*
+         * Compute gradient linearity:
+         *
+         *         sum_i sum_j (Dw_ij(t-1) * dE/dw_ij)
+         * gl = -( ----------------------------------- )
+         *         sqrt(sum_i sum_j (Dw_ij(t-1) ^ 2))
+         *         * sqrt(sum_i sum_j (dE/dw_ij ^ 2))
+         */
+        n->status->gradient_linearity = -(n->status->gradient_linearity
+                        / sqrt(n->status->last_weight_deltas_length
+                                * n->status->gradients_length));
 }
 
 void bp_recursively_update_rprop(struct network *n, struct group *g)
@@ -647,19 +687,41 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                 p->weights->elements[i][j] += weight_delta;
                         }
 
-                        /********************************/
-
+                        /*
+                         * Compute weight cost:
+                         *
+                         * wc = sum_i sum_j (w_ij ^ 2)
+                         */
                         n->status->weight_cost +=
                                 pow(p->weights->elements[i][j], 2.0);
-                        n->status->gradient_linearity -= 
+                        
+                        /*
+                         * Compute the numerator of the
+                         * gradient linearity:
+                         *
+                         * sum_i sum_j (Dw_ij(t-1) * dE/dw_ij)
+                         */
+                        n->status->gradient_linearity += 
                                 p->prev_weight_deltas->elements[i][j]
                                 * p->gradients->elements[i][j];
+                        
+                        /*
+                         * Compute the sum of squares of the
+                         * previous weight delta vector:
+                         *
+                         * sum_i sum_j (Dw_ij(t-1) ^ 2
+                         */
                         n->status->last_weight_deltas_length +=
                                 pow(p->prev_weight_deltas->elements[i][j], 2.0);
+
+                        /*
+                         * Compute the sum of squares of the
+                         * gradients:
+                         *
+                         * sum_i sum_j (dE/dw_ij ^ 2)
+                         */
                         n->status->gradients_length +=
                                 pow(p->gradients->elements[i][j], 2.0);
-
-                        /********************************/
 
                         /* 
                          * Store a copy of the weight change.
@@ -713,6 +775,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
 
 void bp_update_qprop(struct network *n)
 {
+        /* reset status statistics */
         n->status->weight_cost = 0.0;
         n->status->gradient_linearity = 0.0;
         n->status->last_weight_deltas_length = 0.0;
@@ -720,9 +783,17 @@ void bp_update_qprop(struct network *n)
 
         bp_recursively_update_qprop(n, n->output);
 
-        n->status->gradient_linearity /=
-                sqrt(n->status->last_weight_deltas_length
-                                * n->status->gradients_length);
+        /*
+         * Compute gradient linearity:
+         *
+         *         sum_i sum_j (Dw_ij(t-1) * dE/dw_ij)
+         * gl = -( ----------------------------------- )
+         *         sqrt(sum_i sum_j (Dw_ij(t-1) ^ 2))
+         *         * sqrt(sum_i sum_j (dE/dw_ij ^ 2))
+         */
+        n->status->gradient_linearity = -(n->status->gradient_linearity
+                        / sqrt(n->status->last_weight_deltas_length
+                                * n->status->gradients_length));
 }
 
 void bp_recursively_update_qprop(struct network *n, struct group *g)
@@ -892,19 +963,41 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                          */
                         p->weights->elements[i][j] += weight_delta;
 
-                        /********************************/
-
+                        /*
+                         * Compute weight cost:
+                         *
+                         * wc = sum_i sum_j (w_ij ^ 2)
+                         */
                         n->status->weight_cost +=
                                 pow(p->weights->elements[i][j], 2.0);
-                        n->status->gradient_linearity -= 
+                        
+                        /*
+                         * Compute the numerator of the
+                         * gradient linearity:
+                         *
+                         * sum_i sum_j (Dw_ij(t-1) * dE/dw_ij)
+                         */
+                        n->status->gradient_linearity += 
                                 p->prev_weight_deltas->elements[i][j]
                                 * p->gradients->elements[i][j];
+                        
+                        /*
+                         * Compute the sum of squares of the
+                         * previous weight delta vector:
+                         *
+                         * sum_i sum_j (Dw_ij(t-1) ^ 2
+                         */
                         n->status->last_weight_deltas_length +=
                                 pow(p->prev_weight_deltas->elements[i][j], 2.0);
+
+                        /*
+                         * Compute the sum of squares of the
+                         * gradients:
+                         *
+                         * sum_i sum_j (dE/dw_ij ^ 2)
+                         */
                         n->status->gradients_length +=
                                 pow(p->gradients->elements[i][j], 2.0);
-
-                        /********************************/
 
                         /* 
                          * Store a copy of the weight change.
@@ -954,6 +1047,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
 
 void bp_update_dbd(struct network *n)
 {
+        /* reset status statistics */
         n->status->weight_cost = 0.0;
         n->status->gradient_linearity = 0.0;
         n->status->last_weight_deltas_length = 0.0;
@@ -966,9 +1060,17 @@ void bp_update_dbd(struct network *n)
 
         bp_recursively_update_dbd(n, n->output);
 
-        n->status->gradient_linearity /=
-                sqrt(n->status->last_weight_deltas_length
-                                * n->status->gradients_length);
+        /*
+         * Compute gradient linearity:
+         *
+         *         sum_i sum_j (Dw_ij(t-1) * dE/dw_ij)
+         * gl = -( ----------------------------------- )
+         *         sqrt(sum_i sum_j (Dw_ij(t-1) ^ 2))
+         *         * sqrt(sum_i sum_j (dE/dw_ij ^ 2))
+         */
+        n->status->gradient_linearity = -(n->status->gradient_linearity
+                        / sqrt(n->status->last_weight_deltas_length
+                                * n->status->gradients_length));
 }
 
 /*
@@ -1056,19 +1158,41 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                          */
                         p->weights->elements[i][j] += weight_delta;
                         
-                        /********************************/
-
+                        /*
+                         * Compute weight cost:
+                         *
+                         * wc = sum_i sum_j (w_ij ^ 2)
+                         */
                         n->status->weight_cost +=
                                 pow(p->weights->elements[i][j], 2.0);
-                        n->status->gradient_linearity -= 
+                        
+                        /*
+                         * Compute the numerator of the
+                         * gradient linearity:
+                         *
+                         * sum_i sum_j (Dw_ij(t-1) * dE/dw_ij)
+                         */
+                        n->status->gradient_linearity += 
                                 p->prev_weight_deltas->elements[i][j]
                                 * p->gradients->elements[i][j];
+                        
+                        /*
+                         * Compute the sum of squares of the
+                         * previous weight delta vector:
+                         *
+                         * sum_i sum_j (Dw_ij(t-1) ^ 2
+                         */
                         n->status->last_weight_deltas_length +=
                                 pow(p->prev_weight_deltas->elements[i][j], 2.0);
+
+                        /*
+                         * Compute the sum of squares of the
+                         * gradients:
+                         *
+                         * sum_i sum_j (dE/dw_ij ^ 2)
+                         */
                         n->status->gradients_length +=
                                 pow(p->gradients->elements[i][j], 2.0);
-
-                        /********************************/
 
                         /* 
                          * Store a copy of the weight change.
