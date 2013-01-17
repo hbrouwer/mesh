@@ -104,6 +104,10 @@ void process_command(char *cmd, struct session *s)
                                 s->anp,
                                 "set error function: [%s:%s]"))
                 return;
+        if (cmd_use_act_lookup(cmd, "useActLookup",
+                                s->anp,
+                                "using activation lookup tables for network: [%s]"))
+                return;
 
         if (cmd_create_projection(cmd, "createProjection %s %s",
                                 s->anp,
@@ -658,6 +662,19 @@ bool cmd_set_err_func(char *cmd, char *fmt, struct network *n, char *msg)
         }
 
         mprintf(msg, tmp1, tmp2);
+
+        return true;
+}
+
+bool cmd_use_act_lookup(char *cmd, char *fmt, struct network *n, char *msg)
+{
+        if (strlen(cmd) != strlen(fmt) 
+                        || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf(msg, n->name);
+
+        n->use_act_lookup = true;
 
         return true;
 }
