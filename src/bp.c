@@ -19,6 +19,7 @@
 #include "act.h"
 #include "bp.h"
 #include "error.h"
+#include "main.h"
 #include "math.h"
 
 #include <math.h>
@@ -139,7 +140,7 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                         struct projection *p = ng->out_projs->elements[j];
 
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for if(ng->error->size > OMP_MIN_ITERATIONS)
 #endif
                         for (int x = 0; x < ng->error->size; x++) {
                                 for (int z = 0; z < p->to->vector->size; z++) {
@@ -198,8 +199,8 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                  * delta_j = f'(x_j) dE/dy_j
                  */
 #ifdef _OPENMP
-#pragma omp parallel for
-#endif                
+#pragma omp parallel for if(ng->error->size > OMP_MIN_ITERATIONS)
+#endif
                 for (int x = 0; x < ng->error->size; x++) {
                         double act_deriv = ng->act_fun->deriv(ng->vector, x);
                         if (g->act_fun->fun == act_fun_binary_sigmoid)
@@ -300,12 +301,18 @@ void bp_recursively_update_sd(struct network *n, struct group *g)
 void bp_update_projection_sd(struct network *n, struct group *g,
                 struct projection *p)
 {
+        /* local status statistics */
+        double weight_cost = 0.0;
+        double gradient_linearity = 0.0;
+        double last_weight_deltas_length = 0.0;
+        double gradients_length = 0.0;
+
         /*
          * Adjust the weight between unit i in group g'
          * and unit j in group g.
          */
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for if(p->to->vector->size > OMP_MIN_ITERATIONS) reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
 #endif        
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
@@ -352,8 +359,7 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                          *
                          * wc = sum_i sum_j (w_ij ^ 2)
                          */
-                        n->status->weight_cost +=
-                                pow(p->weights->elements[i][j], 2.0);
+                        weight_cost += pow(p->weights->elements[i][j], 2.0);
                         
                         /*
                          * Compute the numerator of the
@@ -361,7 +367,7 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                          *
                          * sum_i sum_j (Dw_ij(t-1) * dE/dw_ij)
                          */
-                        n->status->gradient_linearity += 
+                        gradient_linearity +=
                                 p->prev_weight_deltas->elements[i][j]
                                 * p->gradients->elements[i][j];
                         
@@ -371,8 +377,8 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                          *
                          * sum_i sum_j (Dw_ij(t-1) ^ 2
                          */
-                        n->status->last_weight_deltas_length +=
-                                pow(p->prev_weight_deltas->elements[i][j], 2.0);
+                        last_weight_deltas_length +=
+                                 pow(p->prev_weight_deltas->elements[i][j], 2.0);
 
                         /*
                          * Compute the sum of squares of the
@@ -380,7 +386,7 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                          *
                          * sum_i sum_j (dE/dw_ij ^ 2)
                          */
-                        n->status->gradients_length +=
+                        gradients_length +=
                                 pow(p->gradients->elements[i][j], 2.0);
 
                         /* 
@@ -389,6 +395,19 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                         p->prev_weight_deltas->elements[i][j] = weight_delta;
                 }
         }
+
+        /*
+         * Add the local status statistics to the
+         * global status statistics.
+         */
+        n->status->weight_cost
+                += weight_cost;
+        n->status->gradient_linearity
+                += gradient_linearity;
+        n->status->last_weight_deltas_length
+                += last_weight_deltas_length;
+        n->status->gradients_length
+                += gradients_length;
 }
 
 /*
@@ -431,19 +450,31 @@ void bp_determine_sd_sf(struct network *n)
 
 void bp_recursively_determine_sd_sf(struct network *n, struct group *g)
 {
+        /* local scale factor */
+        double sd_scale_factor = 0.0;
+
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
 
                 /* sum gradients */
+#ifdef _OPENMP
+#pragma omp parallel for if(p->to->vector->size > OMP_MIN_ITERATIONS) reduction(+:sd_scale_factor)
+#endif
                 for (int j = 0; j < p->to->vector->size; j++) {
                         for (int x = 0; x < g->vector->size; x++) {
                                 double gradient = p->gradients->elements[j][x];
-                                n->sd_scale_factor += pow(gradient, 2.0);
+                                sd_scale_factor += pow(gradient, 2.0);
                         }
                 }
                 
                 bp_recursively_determine_sd_sf(n, p->to);
         }
+
+        /*
+         * Add local scale factor to global
+         * scale factor.
+         */
+        n->sd_scale_factor += sd_scale_factor;
 }
 
 /*
@@ -584,13 +615,19 @@ void bp_recursively_update_rprop(struct network *n, struct group *g)
 void bp_update_projection_rprop(struct network *n, struct group *g,
                 struct projection *p)
 {
+        /* local status statistics */
+        double weight_cost = 0.0;
+        double gradient_linearity = 0.0;
+        double last_weight_deltas_length = 0.0;
+        double gradients_length = 0.0;
+
         /*
          * Adjust the weight between unit i in group g'
          * and unit j in group g.
          */
 #ifdef _OPENMP
-#pragma omp parallel for
-#endif        
+#pragma omp parallel for if(p->to->vector->size > OMP_MIN_ITERATIONS) reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
+#endif 
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
                         double weight_delta = 0.0;
@@ -704,8 +741,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                          *
                          * wc = sum_i sum_j (w_ij ^ 2)
                          */
-                        n->status->weight_cost +=
-                                pow(p->weights->elements[i][j], 2.0);
+                        weight_cost += pow(p->weights->elements[i][j], 2.0);
                         
                         /*
                          * Compute the numerator of the
@@ -713,7 +749,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                          *
                          * sum_i sum_j (Dw_ij(t-1) * dE/dw_ij)
                          */
-                        n->status->gradient_linearity += 
+                        gradient_linearity +=
                                 p->prev_weight_deltas->elements[i][j]
                                 * p->gradients->elements[i][j];
                         
@@ -723,8 +759,8 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                          *
                          * sum_i sum_j (Dw_ij(t-1) ^ 2
                          */
-                        n->status->last_weight_deltas_length +=
-                                pow(p->prev_weight_deltas->elements[i][j], 2.0);
+                        last_weight_deltas_length +=
+                                 pow(p->prev_weight_deltas->elements[i][j], 2.0);
 
                         /*
                          * Compute the sum of squares of the
@@ -732,7 +768,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                          *
                          * sum_i sum_j (dE/dw_ij ^ 2)
                          */
-                        n->status->gradients_length +=
+                        gradients_length +=
                                 pow(p->gradients->elements[i][j], 2.0);
 
                         /* 
@@ -841,13 +877,19 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
 {
         double shrink_factor = QP_MAX_STEP_SIZE / (1.0 + QP_MAX_STEP_SIZE);
 
+        /* local status statistics */
+        double weight_cost = 0.0;
+        double gradient_linearity = 0.0;
+        double last_weight_deltas_length = 0.0;
+        double gradients_length = 0.0;
+
         /*
          * Adjust the weight between unit i in group g'
          * and unit j in group g.
          */
 #ifdef _OPENMP
-#pragma omp parallel for
-#endif        
+#pragma omp parallel for if(p->to->vector->size > OMP_MIN_ITERATIONS) reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
+#endif 
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
                         double weight_delta = 0.0;
@@ -983,8 +1025,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                          *
                          * wc = sum_i sum_j (w_ij ^ 2)
                          */
-                        n->status->weight_cost +=
-                                pow(p->weights->elements[i][j], 2.0);
+                        weight_cost += pow(p->weights->elements[i][j], 2.0);
                         
                         /*
                          * Compute the numerator of the
@@ -992,7 +1033,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                          *
                          * sum_i sum_j (Dw_ij(t-1) * dE/dw_ij)
                          */
-                        n->status->gradient_linearity += 
+                        gradient_linearity +=
                                 p->prev_weight_deltas->elements[i][j]
                                 * p->gradients->elements[i][j];
                         
@@ -1002,8 +1043,8 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                          *
                          * sum_i sum_j (Dw_ij(t-1) ^ 2
                          */
-                        n->status->last_weight_deltas_length +=
-                                pow(p->prev_weight_deltas->elements[i][j], 2.0);
+                        last_weight_deltas_length +=
+                                 pow(p->prev_weight_deltas->elements[i][j], 2.0);
 
                         /*
                          * Compute the sum of squares of the
@@ -1011,7 +1052,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                          *
                          * sum_i sum_j (dE/dw_ij ^ 2)
                          */
-                        n->status->gradients_length +=
+                        gradients_length +=
                                 pow(p->gradients->elements[i][j], 2.0);
 
                         /* 
@@ -1020,6 +1061,19 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                         p->prev_weight_deltas->elements[i][j] = weight_delta;
                 }
         }
+
+        /*
+         * Add the local status statistics to the
+         * global status statistics.
+         */
+        n->status->weight_cost
+                += weight_cost;
+        n->status->gradient_linearity
+                += gradient_linearity;
+        n->status->last_weight_deltas_length
+                += last_weight_deltas_length;
+        n->status->gradients_length
+                += gradients_length;
 }
 
 /*
@@ -1127,13 +1181,19 @@ void bp_recursively_update_dbd(struct network *n, struct group *g)
 void bp_update_projection_dbd(struct network *n, struct group *g,
                 struct projection *p)
 {
+        /* local status statistics */
+        double weight_cost = 0.0;
+        double gradient_linearity = 0.0;
+        double last_weight_deltas_length = 0.0;
+        double gradients_length = 0.0;
+
         /*
          * Adjust the weight and its learning rate between unit i in group g'
          * and unit j in group g.
          */
 #ifdef _OPENMP
-#pragma omp parallel for
-#endif        
+#pragma omp parallel for if(p->to->vector->size > OMP_MIN_ITERATIONS) reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
+#endif 
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
 
@@ -1181,8 +1241,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                          *
                          * wc = sum_i sum_j (w_ij ^ 2)
                          */
-                        n->status->weight_cost +=
-                                pow(p->weights->elements[i][j], 2.0);
+                        weight_cost += pow(p->weights->elements[i][j], 2.0);
                         
                         /*
                          * Compute the numerator of the
@@ -1190,7 +1249,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                          *
                          * sum_i sum_j (Dw_ij(t-1) * dE/dw_ij)
                          */
-                        n->status->gradient_linearity += 
+                        gradient_linearity +=
                                 p->prev_weight_deltas->elements[i][j]
                                 * p->gradients->elements[i][j];
                         
@@ -1200,8 +1259,8 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                          *
                          * sum_i sum_j (Dw_ij(t-1) ^ 2
                          */
-                        n->status->last_weight_deltas_length +=
-                                pow(p->prev_weight_deltas->elements[i][j], 2.0);
+                        last_weight_deltas_length +=
+                                 pow(p->prev_weight_deltas->elements[i][j], 2.0);
 
                         /*
                          * Compute the sum of squares of the
@@ -1209,7 +1268,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                          *
                          * sum_i sum_j (dE/dw_ij ^ 2)
                          */
-                        n->status->gradients_length +=
+                        gradients_length +=
                                 pow(p->gradients->elements[i][j], 2.0);
 
                         /* 
@@ -1281,4 +1340,17 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                         p->prev_gradients->elements[i][j] = exp_average;
                 }
         }
+
+        /*
+         * Add the local status statistics to the
+         * global status statistics.
+         */
+        n->status->weight_cost
+                += weight_cost;
+        n->status->gradient_linearity
+                += gradient_linearity;
+        n->status->last_weight_deltas_length
+                += last_weight_deltas_length;
+        n->status->gradients_length
+                += gradients_length;
 }

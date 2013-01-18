@@ -20,6 +20,7 @@
 #include <stdio.h>
 
 #include "act.h"
+#include "main.h"
 #include "vector.h"
 
 /*
@@ -76,7 +77,7 @@ void feed_forward(struct network *n, struct group *g)
                  */
                 struct group *rg = g->out_projs->elements[i]->to;
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for if(rg->vector->size > OMP_MIN_ITERATIONS)
 #endif
                 for (int j = 0; j < rg->vector->size; j++) {
                         /* 
