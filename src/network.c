@@ -706,7 +706,7 @@ void load_weight_matrices(struct network *n, char *fn)
         if (!(fd = fopen(fn, "r")))
                 goto error_out;
 
-        struct network *np;
+        struct network *np = NULL;
         if (n->type == TYPE_FFN)
                 np = n;
         if (n->type == TYPE_SRN)
@@ -733,7 +733,7 @@ void load_weight_matrices(struct network *n, char *fn)
                 }
 
                 /* find the projection */
-                struct projection *p;
+                struct projection *p = NULL;
                 for (int i = 0; i < g1->out_projs->num_elements; i++) {
                         p = g1->out_projs->elements[i];
                         if (p->to == g2)

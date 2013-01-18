@@ -73,7 +73,7 @@ void pprint_matrix(struct matrix *m)
 
 double pprint_scale_value(double v, double min, double max)
 {
-        double sv;
+        double sv = 0.0;
 
         /*
          * Scale value into [0,1] interval.

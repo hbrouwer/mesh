@@ -4,7 +4,9 @@ project(mesh)
 
 include(CheckIncludeFile)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -pendantic -Wall -O3 -march=core2")
+set(CMAKE_C_COMPILER "gcc-mp-4.5")
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -march=core2 -fopenmp")
 
 add_executable(mesh
         src/act.c
