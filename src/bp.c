@@ -141,7 +141,7 @@ void bp_backpropagate_error(struct network *n, struct group *g)
 
 #ifdef _OPENMP
 #pragma omp parallel for if(ng->error->size > OMP_MIN_ITERATIONS)
-#endif
+#endif /* _OPENMP */
                         for (int x = 0; x < ng->error->size; x++) {
                                 for (int z = 0; z < p->to->vector->size; z++) {
                                         /*
@@ -200,7 +200,7 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                  */
 #ifdef _OPENMP
 #pragma omp parallel for if(ng->error->size > OMP_MIN_ITERATIONS)
-#endif
+#endif /* _OPENMP */
                 for (int x = 0; x < ng->error->size; x++) {
                         double act_deriv = ng->act_fun->deriv(ng->vector, x);
                         if (g->act_fun->fun == act_fun_binary_sigmoid)
@@ -312,8 +312,9 @@ void bp_update_projection_sd(struct network *n, struct group *g,
          * and unit j in group g.
          */
 #ifdef _OPENMP
-#pragma omp parallel for if(p->to->vector->size > OMP_MIN_ITERATIONS) reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
-#endif        
+#pragma omp parallel for if(p->to->vector->size > OMP_MIN_ITERATIONS) \
+        reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
+#endif /* _OPENMP */
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
                         double weight_delta = 0.0;
@@ -458,8 +459,9 @@ void bp_recursively_determine_sd_sf(struct network *n, struct group *g)
 
                 /* sum gradients */
 #ifdef _OPENMP
-#pragma omp parallel for if(p->to->vector->size > OMP_MIN_ITERATIONS) reduction(+:sd_scale_factor)
-#endif
+#pragma omp parallel for if(p->to->vector->size > OMP_MIN_ITERATIONS) \
+                reduction(+:sd_scale_factor)
+#endif /* _OPENMP */
                 for (int j = 0; j < p->to->vector->size; j++) {
                         for (int x = 0; x < g->vector->size; x++) {
                                 double gradient = p->gradients->elements[j][x];
@@ -626,8 +628,9 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
          * and unit j in group g.
          */
 #ifdef _OPENMP
-#pragma omp parallel for if(p->to->vector->size > OMP_MIN_ITERATIONS) reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
-#endif 
+#pragma omp parallel for if(p->to->vector->size > OMP_MIN_ITERATIONS) \
+        reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
+#endif /* _OPENMP */
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
                         double weight_delta = 0.0;
@@ -888,8 +891,9 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
          * and unit j in group g.
          */
 #ifdef _OPENMP
-#pragma omp parallel for if(p->to->vector->size > OMP_MIN_ITERATIONS) reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
-#endif 
+#pragma omp parallel for if(p->to->vector->size > OMP_MIN_ITERATIONS) \
+        reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
+#endif /* _OPENMP */
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
                         double weight_delta = 0.0;
@@ -1192,8 +1196,9 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
          * and unit j in group g.
          */
 #ifdef _OPENMP
-#pragma omp parallel for if(p->to->vector->size > OMP_MIN_ITERATIONS) reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
-#endif 
+#pragma omp parallel for if(p->to->vector->size > OMP_MIN_ITERATIONS) \
+        reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
+#endif /* _OPENMP */
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
 

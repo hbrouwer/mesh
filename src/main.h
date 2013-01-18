@@ -19,7 +19,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#define OMP_MIN_ITERATIONS 20
+#define OMP_MIN_ITERATIONS 10
 
 #include <stdio.h>
 #include <stdlib.h>
