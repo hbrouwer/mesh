@@ -64,7 +64,7 @@ void copy_vector(struct vector *v1, struct vector *v2)
                 return;
 
 #ifdef _OPENMP
-#pragma omp parallel for if(v1->size > OMP_MIN_ITERATIONS)
+#pragma omp parallel for if(v1->size >= OMP_MIN_ITERATIONS)
 #endif /* _OPENMP */
         for (int i = 0; i < v1->size; i++)
                 v1->elements[i] = v2->elements[i];
@@ -78,7 +78,7 @@ void copy_vector(struct vector *v1, struct vector *v2)
 void randomize_vector(struct vector *v, double mu, double sigma)
 {
 #ifdef _OPENMP
-#pragma omp parallel for if(v->size > OMP_MIN_ITERATIONS)
+#pragma omp parallel for if(v->size >= OMP_MIN_ITERATIONS)
 #endif /* _OPENMP */
         for (int i = 0; i < v->size; i++)
                 v->elements[i] = normrand(mu, sigma);
@@ -91,7 +91,7 @@ void randomize_vector(struct vector *v, double mu, double sigma)
 void zero_out_vector(struct vector *v)
 {
 #ifdef _OPENMP
-#pragma omp parallel for if(v->size > OMP_MIN_ITERATIONS)
+#pragma omp parallel for if(v->size >= OMP_MIN_ITERATIONS)
 #endif /* _OPENMP */
         for (int i = 0; i < v->size; i++)
                 v->elements[i] = 0.0;
@@ -104,7 +104,7 @@ void zero_out_vector(struct vector *v)
 void fill_vector_with_value(struct vector *v, double val)
 {
 #ifdef _OPENMP
-#pragma omp parallel for if(v->size > OMP_MIN_ITERATIONS)
+#pragma omp parallel for if(v->size >= OMP_MIN_ITERATIONS)
 #endif /* _OPENMP */
         for (int i = 0; i < v->size; i++)
                 v->elements[i] = val;
