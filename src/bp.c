@@ -138,6 +138,9 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                 for (int j = 0; j < ng->out_projs->num_elements; j++) {
                         struct projection *p = ng->out_projs->elements[j];
 
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
                         for (int x = 0; x < ng->error->size; x++) {
                                 for (int z = 0; z < p->to->vector->size; z++) {
                                         /*
@@ -194,6 +197,9 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                  *
                  * delta_j = f'(x_j) dE/dy_j
                  */
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif                
                 for (int x = 0; x < ng->error->size; x++) {
                         double act_deriv = ng->act_fun->deriv(ng->vector, x);
                         if (g->act_fun->fun == act_fun_binary_sigmoid)
@@ -298,6 +304,9 @@ void bp_update_projection_sd(struct network *n, struct group *g,
          * Adjust the weight between unit i in group g'
          * and unit j in group g.
          */
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif        
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
                         double weight_delta = 0.0;
@@ -579,6 +588,9 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
          * Adjust the weight between unit i in group g'
          * and unit j in group g.
          */
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif        
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
                         double weight_delta = 0.0;
@@ -833,6 +845,9 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
          * Adjust the weight between unit i in group g'
          * and unit j in group g.
          */
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif        
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
                         double weight_delta = 0.0;
@@ -1116,6 +1131,9 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
          * Adjust the weight and its learning rate between unit i in group g'
          * and unit j in group g.
          */
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif        
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
 

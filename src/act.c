@@ -75,6 +75,9 @@ void feed_forward(struct network *n, struct group *g)
                  * each group that the current group projects to.
                  */
                 struct group *rg = g->out_projs->elements[i]->to;
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
                 for (int j = 0; j < rg->vector->size; j++) {
                         /* 
                          * Reset the activation level of the current unit.
