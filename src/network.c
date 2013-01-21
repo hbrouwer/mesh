@@ -573,8 +573,7 @@ void dispose_projection(struct projection *p)
 void randomize_weight_matrices(struct group *g, struct network *n)
 {
         for (int i = 0; i < g->inc_projs->num_elements; i++)
-                randomize_matrix(g->inc_projs->elements[i]->weights, 
-                                n->random_mu, n->random_sigma);
+                n->random_algorithm(g->inc_projs->elements[i]->weights, n);
 
         for (int i = 0; i < g->out_projs->num_elements; i++)
                 randomize_weight_matrices(g->out_projs->elements[i]->to, n);

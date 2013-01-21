@@ -26,6 +26,7 @@
 #include "matrix.h"
 #include "network.h"
 #include "pprint.h"
+#include "random.h"
 #include "set.h"
 #include "stats.h"
 
@@ -163,6 +164,14 @@ void process_command(char *cmd, struct session *s)
                                 &s->anp->random_sigma,
                                 "set random sigma: [%lf]"))
                 return;
+        if (cmd_set_double_parameter(cmd, "set RandomMin %lf",
+                                &s->anp->random_min,
+                                "set random minimum: [%lf]"))
+                return;
+        if (cmd_set_double_parameter(cmd, "set RandomMax %lf",
+                                &s->anp->random_max,
+                                "set random maximum: [%lf]"))
+                return;        
         if (cmd_set_double_parameter(cmd, "set LearningRate %lf",
                                 &s->anp->learning_rate,
                                 "set learning rate: [%lf]"))
@@ -232,6 +241,10 @@ void process_command(char *cmd, struct session *s)
                                 "set training order: [%s]"))
                 return;
 
+        if (cmd_set_rand_algorithm(cmd, "set RandomAlgorithm %s",
+                                s->anp,
+                                "set randomization algorithm: [%s]"))
+                return;
         if (cmd_set_learning_algorithm(cmd, "set LearningAlgorithm %s",
                                 s->anp,
                                 "set learning algorithm: [%s]"))
@@ -894,6 +907,30 @@ bool cmd_set_training_order(char *cmd, char *fmt, int *training_order,
         }
 
         mprintf(msg, tmp);
+
+        return true;
+}
+
+bool cmd_set_rand_algorithm(char *cmd, char *fmt, struct network *n,
+                char *msg)
+{
+        char tmp[64];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        if (strcmp(tmp, "gaussian") == 0)
+                n->random_algorithm = randomize_gaussian;
+        else if (strcmp(tmp, "range") == 0)
+                n->random_algorithm = randomize_range;
+        else if (strcmp(tmp, "nguyen_widrow") == 0)
+                n->random_algorithm = randomize_nguyen_widrow;
+        else if (strcmp(tmp, "fan_in") == 0)
+                n->random_algorithm = randomize_fan_in;
+        else if (strcmp(tmp, "binary") == 0)
+                n->random_algorithm = randomize_binary;
+
+        if (n->random_algorithm)
+                mprintf(msg, tmp);
 
         return true;
 }

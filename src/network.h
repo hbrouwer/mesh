@@ -62,11 +62,18 @@ struct network
 
         /* ## Random numbers ########################################### */
 
+        void (*random_algorithm)    /* randomization algorithm */
+                (struct matrix *m, struct network *n);
+
         int random_seed;            /* seed for the random number
                                        generator */
         double random_mu;           /* mu for normally distributed random
                                        matrices */
         double random_sigma;        /* sigma for normally distributed random
+                                       matrices */
+        double random_min;          /* minimum value for range randomized
+                                       matrices */
+        double random_max;          /* maximum value for range randomized
                                        matrices */
 
         /* ## Learning parameters ###################################### */

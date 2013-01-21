@@ -19,6 +19,7 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
+#include "network.h"
 #include "vector.h"
 
 struct matrix
@@ -35,8 +36,6 @@ void copy_matrix(struct matrix *m1, struct matrix *m2);
 struct vector *row_to_vector(struct matrix *m, int row);
 struct vector *column_to_vector(struct matrix *m, int col);
 
-void randomize_matrix(struct matrix *m, double mu, double sigma);
-void binary_randomize_matrix(struct matrix *m);
 void zero_out_matrix(struct matrix *m);
 void fill_matrix_with_value(struct matrix *m, double val);
 

@@ -57,6 +57,8 @@ bool cmd_load_item_set(char *cmd, char *fmt, struct network *n, bool train,
 bool cmd_set_training_order(char *cmd, char *fmt, int *training_order,
                 char *msg);
 
+bool cmd_set_rand_algorithm(char *cmd, char *fmt, struct network *n,
+                char *msg);
 bool cmd_set_learning_algorithm(char *cmd, char *fmt, struct network *n,
                 char *msg);
 bool cmd_set_update_algorithm(char *cmd, char *fmt, struct network *n,

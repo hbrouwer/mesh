@@ -19,6 +19,7 @@ add_executable(mesh
         src/math.c
         src/matrix.c
         src/pprint.c
+        src/random.c
         src/rnn_unfold.c
         src/session.c
         src/set.c

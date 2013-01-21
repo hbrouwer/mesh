@@ -16,8 +16,6 @@
  * limitations under the License.
  */
 
-#include <math.h>
-
 #include "main.h"
 #include "math.h"
 #include "matrix.h"
@@ -114,35 +112,6 @@ struct vector *column_to_vector(struct matrix *m, int col)
                 v->elements[i] = m->elements[i][col];
 
         return v;
-}
-
-/*
- * Randomizes the values of a matrix using samples
- * from N(mu,sigma).
- */
-
-void randomize_matrix(struct matrix *m, double mu, double sigma)
-{
-//#ifdef _OPENMP
-//#pragma omp parallel for if(m->rows >= OMP_MIN_ITERATIONS)
-//#endif /* _OPENMP */
-        for (int i = 0; i < m->rows; i++)
-                for (int j = 0; j < m->cols; j++)
-                        m->elements[i][j] = normrand(mu, sigma);
-}
-
-/*
- * Randomly fills a matrix with binary values.
- */
-
-void binary_randomize_matrix(struct matrix *m)
-{
-//#ifdef _OPENMP
-//#pragma omp parallel for if(m->rows >= OMP_MIN_ITERATIONS)
-//#endif /* _OPENMP */
-        for (int i = 0; i < m->rows; i++)
-                for (int j = 0; j < m->cols; j++)
-                        m->elements[i][j] = round((float)rand() / RAND_MAX);
 }
 
 /*

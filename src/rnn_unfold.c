@@ -105,8 +105,7 @@ struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
                 un->recur_weights[i] = create_matrix(
                                 g->vector->size,
                                 g->vector->size);
-                randomize_matrix(un->recur_weights[i],
-                                n->random_mu, n->random_sigma);
+                n->random_algorithm(un->recur_weights[i], n);
 
                 /* previous weight deltas */
                 un->recur_prev_weight_deltas[i] = create_matrix(
