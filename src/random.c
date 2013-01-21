@@ -95,7 +95,11 @@ void randomize_nguyen_widrow(struct matrix *m, struct network *n)
          */
         double beta = 0.7 * pow(m->cols, 1.0 / m->rows);
 
-        /* compute weigths */
+        /*
+         * Compute weights:
+         *
+         * w_ij = (beta * w_ij) / en
+         */
         for (int i = 0; i < m->rows; i++)
                 for (int j = 0; j < m->cols; j++)
                         m->elements[i][j] = (beta * m->elements[i][j]) / en;
@@ -129,7 +133,7 @@ void randomize_fan_in(struct matrix *m, struct network *n)
         n->random_max = random_max;
 
         /*
-         * Compute the weights:
+         * Compute weights:
          *
          * w_ij = (min / h) + w_ij * ((max - min) / h)
          *
