@@ -204,23 +204,23 @@ void process_command(char *cmd, struct session *s)
                                 &s->anp->error_threshold,
                                 "set error threshold: [%lf]"))
                 return;
-        if (cmd_set_double_parameter(cmd, "set InitUpdate %lf",
+        if (cmd_set_double_parameter(cmd, "set RpropInitUpdate %lf",
                                 &s->anp->rp_init_update,
                                 "set initial update value (for Rprop): [%lf]"))
                 return;
-        if (cmd_set_double_parameter(cmd, "set EtaPlus %lf",
+        if (cmd_set_double_parameter(cmd, "set RpropEtaPlus %lf",
                                 &s->anp->rp_eta_plus,
                                 "set eta+ (for Rprop): [%lf]"))
                 return;
-        if (cmd_set_double_parameter(cmd, "set EtaMinus %lf",
+        if (cmd_set_double_parameter(cmd, "set RpropEtaMinus %lf",
                                 &s->anp->rp_eta_minus,
                                 "set eta- (for Rprop): [%lf]"))
                 return;
-        if (cmd_set_double_parameter(cmd, "set RateIncrement %lf",
+        if (cmd_set_double_parameter(cmd, "set DBDRateIncrement %lf",
                                 &s->anp->dbd_rate_increment,
                                 "set increment rate (for Delta-Bar-Delta): [%lf]"))
                 return;
-        if (cmd_set_double_parameter(cmd, "set RateDecrement %lf",
+        if (cmd_set_double_parameter(cmd, "set DBDRateDecrement %lf",
                                 &s->anp->dbd_rate_decrement,
                                 "set decrement rate (for Delta-Bar-Delta): [%lf]"))
                 return;

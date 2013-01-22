@@ -780,6 +780,19 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                         p->prev_weight_deltas->elements[i][j] = weight_delta;
                 }
         }
+        
+        /*
+         * Add the local status statistics to the
+         * global status statistics.
+         */
+        n->status->weight_cost
+                += weight_cost;
+        n->status->gradient_linearity
+                += gradient_linearity;
+        n->status->last_weight_deltas_length
+                += last_weight_deltas_length;
+        n->status->gradients_length
+                += gradients_length;
 }
 
 /*
