@@ -22,6 +22,12 @@
 #include "network.h"
 #include "vector.h"
 
+/*
+ * ########################################################################
+ * ## Unfolded network                                                   ##
+ * ########################################################################
+ */
+
 struct rnn_unfolded_network
 {
         struct group_array        /* recurrent groups in the network */
@@ -31,8 +37,8 @@ struct rnn_unfolded_network
         struct matrix             /* previous weight changes for recurrent
                                      connections */
                 **recur_prev_weight_deltas;
-        struct matrix             /* previous Rprop update values or for DBD
-                                     learning rates recurrent connection */
+        struct matrix             /* previous Rprop update values or DBD
+                                     learning rates for recurrent connection */
                 **recur_dyn_learning_pars;
         int stack_size;           /* size of the network 'state' stack */
         struct network **stack;   /* stack for different 'states' of the
@@ -51,8 +57,8 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
 void rnn_dispose_duplicate_groups(struct group *dg);
 
 struct projection *rnn_duplicate_projection(
+                struct group *to,
                 struct projection *p,
-                struct vector *error,
                 struct matrix *gradients,
                 struct matrix *prev_gradients);
 void rnn_dispose_duplicate_projection(struct projection *dp);
@@ -64,7 +70,6 @@ void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
                 struct network *n);
 void rnn_detach_recurrent_groups(struct rnn_unfolded_network *un,
                 struct network *n);
-
 void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,
                 struct network *n1, struct network *n2);
 void rnn_disconnect_duplicate_networks(struct rnn_unfolded_network *un,

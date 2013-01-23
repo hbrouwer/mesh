@@ -192,7 +192,8 @@ void train_network_with_bptt(struct network *n)
 
                 /* reset context groups and error signals */
                 for (int j = 0; j < un->stack_size; j++) {
-                        reset_context_groups(un->stack[j]);
+                        reset_recurrent_groups(un->stack[j]);
+                        //reset_context_groups(un->stack[j]);
                         reset_error_signals(un->stack[j]);
                 }
 
@@ -378,8 +379,9 @@ void test_rnn_network_with_item(struct network *n, struct element *e)
 
         /* reset context groups and error signals */
         for (int j = 0; j < un->stack_size; j++) {
-                reset_context_groups(un->stack[j]);
-                reset_error_signals(un->stack[j]);
+                reset_recurrent_groups(un->stack[j]);
+                //reset_context_groups(un->stack[j]);
+                //reset_error_signals(un->stack[j]);
         }
 
         /* stack pointer */
