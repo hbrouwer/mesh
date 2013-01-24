@@ -23,7 +23,7 @@
 /* 
  * This implements the unfolding of recurrent neural networks (RNNs) for
  * backpropagation through time (BPTT; Rumelhart, Hinton, & Williams, 1986),
- * such that RNNs effectively become feed forward networks (FFNs) that can
+ * such that they effectively become feed forward networks (FFNs) that can
  * be trained with standard backpropagation (BP). 
  *
  * Assume an RNN with the following topology:
@@ -42,7 +42,7 @@
  *
  * where [hidden1] is a recurrent group. The aim is to unfold this network 
  * in time such that its states at different timesteps are connected through
- * recurrent connections:
+ * recurrent projections:
  *
  * ...........
  *      |
@@ -66,16 +66,16 @@
  *                                                       # input1  #
  *                                                       ###########
  *
- * Note:  Weight matrices, previous weight delta matrices, and dynamic
- * learning parameter matrices are shared among recurrent projections.
+ * Note: Weight matrices, previous weight delta matrices, and dynamic
+ *   learning parameter matrices are shared among recurrent projections.
  *
  * References
  *
  * Rumelhart, D. E., Hinton, G. E., & Williams, R. J. (1986). Learning
  *     internal representations by error propagation. In: D. E. Rumelhart &
- *     J. L. McClelland (Eds.). Parallel distributed processing:
+ *     J. L. McClelland (Eds.), Parallel distributed processing:
  *     Explorations in the microstructure of cognition, Volume 1:
- *     Foundations, pp. 318-362. Cambridge, MA: MIT Press.
+ *     Foundations, pp. 318-362, Cambridge, MA: MIT Press.
  */
 
 /*
@@ -92,7 +92,7 @@ struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
 
         /* 
          * Obtain an array of recurrent groups, and allocate arrays for
-         * their shared weight matrices, previous weight deltas, and
+         * their shared weight matrices, previous weight delta matrices, and
          * dynamic learning parameter matrices.
          */
         un->recur_groups = rnn_recurrent_groups(n);
@@ -350,7 +350,7 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
                  * corresponding group.
                  *
                  * Note: We only need a unique gradient and previous
-                 * gradient matrix for this projection.
+                 *   gradient matrix for this projection.
                  */
                 struct matrix *gradients = create_matrix(1, g->vector->size);
                 struct matrix *prev_gradients = create_matrix(1, g->vector->size);
@@ -389,7 +389,7 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
                  * and the group to which it projects.
                  * 
                  * Note: We only need a unique gradient and previous
-                 * gradient matrix for this projection.
+                 *   gradient matrix for this projection.
                  */
                 struct matrix *gradients = create_matrix(
                                 g->vector->size,
@@ -409,7 +409,7 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
                  * Add the required incoming projection.
                  *
                  * Note: We want to add this projection in the same array
-                 * location as the original projection.
+                 *   location as the original projection.
                  */
                 for (int j = 0; j < g2->inc_projs->num_elements; j++) {
                         if (g2->inc_projs->elements[j]->to == g)
@@ -539,10 +539,10 @@ void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
 
                 /*
                  * Create a projection between the recurrent group,
-                 * and the "terminal recurrent group.
+                 * and the "terminal" recurrent group.
                  *
                  * Note: We only need a unique gradient and previous
-                 * gradient matrix for this projection.
+                 *   gradient matrix for this projection.
                  */
                 struct matrix *gradients = create_matrix(vz, vz);
                 struct matrix *prev_gradients = create_matrix(vz, vz);
@@ -622,7 +622,7 @@ void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,
                  * Create a projection between the recurrent groups.
                  *
                  * Note: We only need a unique gradient and previous
-                 * gradient matrix for this projection.
+                 *   gradient matrix for this projection.
                  */
                 struct matrix *gradients = create_matrix(
                                 g1->vector->size,
@@ -720,95 +720,92 @@ void rnn_add_gradients(struct group *g1, struct group *g2)
  * Cycle the network stack. Assume the following unfolded network:
  *
  *         .   ...........
- *        [W]       |
+ *         |        |
  *         |   ###########       ###########
  *         +--># hidden3 #<--+   # output2 #
  *             ###########   |   ###########
- *                  |       [W]       |
+ *                  |        |        |
  *             ###########   |   ###########
  *             # input3  #   +--># hidden2 #<--+
  *             ###########       ###########   |
- *                                    |       [W]
+ *                                    |        |
  *                               ###########   |   ###########
  *                               # input2  #   +--># hidden1 #
  *                               ###########       ###########
  *
- * stack[n] ... stack[1]          stack[0]
+ * stack[n] ... stack[1]          stack[0]          terminal
  *
- *
- * In brief, we want to completely isolate stack[0] and move it into
- * stack[n]. We accomplish this by conducting the following steps:
- *
- * (1) Store a reference to [hidden1]. Next, disconnect [hidden1] from 
- *     [hidden2], dispose the corresponding projection gradients, and 
- *     remove [hidden1] from the incoming projection array of [hidden2].
- *
- * (2) Disconnect [hidden2] from [hidden3], preserve the projection's
- *     gradients and remove [hidden3] from the outgoing projections of
- *     [hidden2].
- *
- * (3) Copy the activation vector of [hidden2] into [hidden1].
- *
- * (4) Set [hidden1] as the recurrent group of [hidden3], reusing the
- *     gradients that were used for the previous projection between
- *     [hidden2] and [hidden3].
- *
- * (5) Store a reference to the network state at stack[0]. Next, shift
- *     stack[1] into stack[0], stack[2] into stack[1], until stack[n] has 
- *     been shifted into stack[n - 1]. Finally, set the stack[n] to refer
- *     to the previous stack[0].
- *
- * (6) Connect the recurrent groups of stack[n] to those of stack[n-1].
- *
- * Note: The above procedure extends to multiple recurrent groups per 
- *   network.
+ * The aim is to completely isolate stack[0], and move it into stack[n].
  */
 
 void rnn_cycle_stack(struct rnn_unfolded_network *un)
 {
+        /* 
+         * Isolate the network in stack[0] by rewiring all of its recurrent
+         * terminals to their corresponding groups in stack[1].
+         */
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
                 char *name = un->recur_groups->elements[i]->name;
 
+                /* recurrent group in stack[0] and stack[1] */
                 struct group *g1 = find_group_by_name(un->stack[0], name);
                 struct group *g2 = find_group_by_name(un->stack[1], name);
 
-                /* step 1 */
-                int j = g1->inc_projs->num_elements - 1;
-                struct projection *p = g1->inc_projs->elements[j];
-                struct group *g = g1->inc_projs->elements[j]->to;
+                /* store a reference to [hidden1] */
+                int z = --g1->inc_projs->num_elements;
+                struct group *g0 = g1->inc_projs->elements[z]->to;
+                
+                /* 
+                 * Disconnect [hidden1] from [hidden2], dispose the
+                 * corresponding projection gradients, and remove [hidden1]
+                 * from the incoming projection array of [hidden2].
+                 */
+                struct projection *p = g1->inc_projs->elements[z];
                 rnn_dispose_duplicate_projection(p);
-                g1->inc_projs->elements[j] = NULL;
-                g1->inc_projs->num_elements--;
+                g1->inc_projs->elements[z] = NULL;
 
-                /* step 2 */
-                j = g1->out_projs->num_elements - 1;
-                free(g1->out_projs->elements[j]);
-                g1->out_projs->elements[j] = NULL;
-                g1->out_projs->num_elements--;
+                /* 
+                 * Disconnect [hidden2] from [hidden3], preserve the
+                 * projection's gradients, and remove [hidden3] from the
+                 * outgoing projections of [hidden2].
+                 */
+                z = --g1->out_projs->num_elements;
+                free(g1->out_projs->elements[z]);
+                g1->out_projs->elements[z] = NULL;
 
-                /* step 3 */
-                copy_vector(g->vector, g1->vector);
+                /* copy the activation vector of [hidden2] into [hidden1] */
+                copy_vector(g0->vector, g1->vector);
 
-                /* step 4 */
-                j = g2->inc_projs->num_elements - 1;
-                g2->inc_projs->elements[j]->to = g;
-                p = g2->inc_projs->elements[j];
-                j = g->out_projs->num_elements - 1;
-                g->out_projs->elements[j]->to = g2;
-                g->out_projs->elements[j]->gradients = p->gradients;
-                g->out_projs->elements[j]->prev_gradients = p->prev_gradients;
+                /*
+                 * Set [hidden1] as the recurrent group of [hidden3],
+                 * reusing the gradients that were used for the previous
+                 * projection between [hidden2] and [hidden3].
+                 */
+                z = g2->inc_projs->num_elements - 1;
+                g2->inc_projs->elements[z]->to = g0;
+                p = g2->inc_projs->elements[z];
+                z = g0->out_projs->num_elements - 1;
+                g0->out_projs->elements[z]->to = g2;
+                g0->out_projs->elements[z]->gradients = p->gradients;
+                g0->out_projs->elements[z]->prev_gradients = p->prev_gradients;
         }
 
-        /* step 5 */
+        /*
+         * Store a reference to the network state at stack[0]. Next, shift
+         * stack[1] into stack[0], stack[2] into stack[1], until stack[n]
+         * has been shifted into stack[n - 1]. Finally, place the previous
+         * stack[0] in stack[n].
+         */
         struct network *n = un->stack[0];
-        for (int i = 0; i < un->stack_size - 1; i++) {
+        for (int i = 0; i < un->stack_size - 1; i++)
                 un->stack[i] = un->stack[i + 1];
-        }
         un->stack[un->stack_size - 1] = n;
 
-        /* step 6 */
-        rnn_connect_duplicate_networks(
-                        un, 
+        /*
+         * Connect the recurrent groups of stack[n] to those of
+         * stack[n - 1].
+         */
+        rnn_connect_duplicate_networks(un, 
                         un->stack[un->stack_size - 2],
                         un->stack[un->stack_size - 1]);
 }
