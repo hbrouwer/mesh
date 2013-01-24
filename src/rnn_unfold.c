@@ -747,39 +747,39 @@ void rnn_cycle_stack(struct rnn_unfolded_network *un)
         for (int i = 0; i < un->recur_groups->num_elements; i++) {
                 char *name = un->recur_groups->elements[i]->name;
 
-                /* recurrent group in stack[0] and stack[1] */
+                /* recurrent groups in stack[0] and stack[1] */
                 struct group *g1 = find_group_by_name(un->stack[0], name);
                 struct group *g2 = find_group_by_name(un->stack[1], name);
 
-                /* store a reference to [hidden1] */
+                /* store a reference to [recur1] */
                 int z = --g1->inc_projs->num_elements;
                 struct group *g0 = g1->inc_projs->elements[z]->to;
                 
                 /* 
-                 * Disconnect [hidden1] from [hidden2], dispose the
-                 * corresponding projection gradients, and remove [hidden1]
-                 * from the incoming projection array of [hidden2].
+                 * Disconnect [recur1] from [recur2], dispose the
+                 * corresponding projection gradients, and remove [recur1]
+                 * from the incoming projection array of [recur2].
                  */
                 struct projection *p = g1->inc_projs->elements[z];
                 rnn_dispose_duplicate_projection(p);
                 g1->inc_projs->elements[z] = NULL;
 
                 /* 
-                 * Disconnect [hidden2] from [hidden3], preserve the
-                 * projection's gradients, and remove [hidden3] from the
-                 * outgoing projections of [hidden2].
+                 * Disconnect [recur2] from [recur3], preserve the
+                 * projection's gradients, and remove [recur3] from the
+                 * outgoing projections of [recur2].
                  */
                 z = --g1->out_projs->num_elements;
                 free(g1->out_projs->elements[z]);
                 g1->out_projs->elements[z] = NULL;
 
-                /* copy the activation vector of [hidden2] into [hidden1] */
+                /* copy the activation vector of [recur2] into [recur1] */
                 copy_vector(g0->vector, g1->vector);
 
                 /*
-                 * Set [hidden1] as the recurrent group of [hidden3],
+                 * Set [recur1] as the recurrent group of [recur3],
                  * reusing the gradients that were used for the previous
-                 * projection between [hidden2] and [hidden3].
+                 * projection between [recur2] and [recur3].
                  */
                 z = g2->inc_projs->num_elements - 1;
                 g2->inc_projs->elements[z]->to = g0;
