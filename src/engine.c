@@ -153,7 +153,7 @@ void train_network_with_bp(struct network *n)
                         }
                 }
 
-                /* stop training if threshold is reaced */
+                /* stop training if threshold is reached */
                 if (n->status->error < n->error_threshold) {
                         print_training_summary(n);
                         break;
@@ -190,10 +190,9 @@ void train_network_with_bptt(struct network *n)
                 n->status->prev_error = n->status->error;
                 n->status->error = 0.0;
 
-                /* reset context groups and error signals */
+                /* reset recurrent groups and error signals */
                 for (int j = 0; j < un->stack_size; j++) {
                         reset_recurrent_groups(un->stack[j]);
-                        //reset_context_groups(un->stack[j]);
                         reset_error_signals(un->stack[j]);
                 }
 
@@ -250,7 +249,7 @@ void train_network_with_bptt(struct network *n)
                         }
                 }
 
-                /* stop training if threshold is reaced */
+                /* stop training if threshold is reached */
                 if (n->status->error < n->error_threshold) {
                         print_training_summary(n);
                         break;

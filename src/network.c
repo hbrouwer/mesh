@@ -439,7 +439,7 @@ void reset_recurrent_groups(struct network *n) {
         for (int i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
                 if (g->recurrent)
-                        fill_vector_with_value(g->vector, 0.0);
+                        fill_vector_with_value(g->vector, 0.5);
         }
 }
 
