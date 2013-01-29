@@ -19,6 +19,7 @@
 #include "act.h"
 #include "bp.h"
 #include "engine.h"
+#include "math.h"
 #include "pprint.h"
 
 /*
@@ -146,9 +147,11 @@ void train_network_with_bp(struct network *n)
                                         reset_error_signals(n);
                                         bp_output_error(n->output, e->targets[j]);
                                         bp_backpropagate_error(n, n->output);
-                                        n->status->error += n->output->err_fun->fun(
-                                                        n->output, e->targets[j])
-                                                / n->batch_size;
+                                        if (j == e->num_events - 1) {
+                                                n->status->error += n->output->err_fun->fun(
+                                                                n->output, e->targets[j])
+                                                        / n->batch_size;
+                                        }
                                 }
                         }
                 }
@@ -354,13 +357,18 @@ void test_ffn_network_with_item(struct network *n, struct element *e)
 
                 /* compute error if an event has a target */
                 if (e->targets[j]) {
-                        n->status->error += n->output->err_fun->fun(
-                                        n->output, e->targets[j]);
                         printf("\nT: ");
                         pprint_vector(e->targets[j]);
                         printf("O: ");
                         pprint_vector(n->output->vector);
-                        pprintf("error: [%lf]\n", n->status->error);
+                        if (j == e->num_events - 1) {
+                                n->status->error += n->output->err_fun->fun(
+                                        n->output, e->targets[j]);
+                                n->status->error += n->output->err_fun->fun(
+                                                n->output, e->targets[j])
+                                        / n->batch_size;
+                                pprintf("error: [%lf]\n", n->status->error);
+                        }
                 }
         }
 }
@@ -377,11 +385,8 @@ void test_rnn_network_with_item(struct network *n, struct element *e)
         struct rnn_unfolded_network *un = n->unfolded_net;
 
         /* reset context groups and error signals */
-        for (int j = 0; j < un->stack_size; j++) {
+        for (int j = 0; j < un->stack_size; j++)
                 reset_recurrent_groups(un->stack[j]);
-                //reset_context_groups(un->stack[j]);
-                //reset_error_signals(un->stack[j]);
-        }
 
         /* stack pointer */
         int sp = 0;
@@ -417,4 +422,74 @@ void test_rnn_network_with_item(struct network *n, struct element *e)
                         sp++;
                 }
         }
+}
+
+/*
+ * ########################################################################
+ * ## Comparing                                                          ##
+ * ########################################################################
+ */
+
+void compare_items(struct network *n, struct group *g, struct element *e1,
+                struct element *e2)
+{
+        if (n->type == TYPE_FFN)
+                compare_items_in_ffn(n, g, e1, e2);
+        if (n->type == TYPE_SRN)
+                compare_items_in_ffn(n, g, e1, e2);
+}
+
+void compare_items_in_ffn(struct network *n, struct group *g,
+                struct element *e1, struct element *e2)
+{
+        double ips[2][e1->num_events];
+        double css[2][e1->num_events];
+        double pcs[2][e1->num_events];
+
+        struct vector *v = create_vector(g->vector->size);
+
+        /* item 1 */
+
+        /* reset context groups (for SRNs) */
+        if (n->type == TYPE_SRN)
+                reset_context_groups(n);
+
+        for (int j = 0; j < e1->num_events; j++) {
+                copy_vector(n->input->vector, e1->inputs[j]);
+                feed_forward(n, n->input);
+
+                ips[0][j] = inner_product(v, g->vector);
+                css[0][j] = cosine_similarity(v, g->vector);
+                pcs[0][j] = pearson_correlation(v, g->vector);
+
+                copy_vector(v, g->vector);
+        }
+
+        /* item 2 */
+
+        zero_out_vector(v);
+
+        /* reset context groups (for SRNs) */
+        if (n->type == TYPE_SRN)
+                reset_context_groups(n);
+
+        for (int j = 0; j < e1->num_events; j++) {
+                copy_vector(n->input->vector, e2->inputs[j]);
+                feed_forward(n, n->input);
+          
+                ips[1][j] = inner_product(v, g->vector);
+                css[1][j] = cosine_similarity(v, g->vector);
+                pcs[1][j] = pearson_correlation(v, g->vector);
+                
+                copy_vector(v, g->vector);
+        }
+
+        printf("\nevent\tinner product\t\tcosine similarity\tPearson's correlation\n");
+        for (int j = 0; j < e1->num_events; j++) {
+                printf("%d\t%.3f\t%.3f\t\t%.3f\t%.3f\t\t%.5f\t%.5f\n", j,
+                                ips[0][j], ips[1][j],
+                                css[0][j], css[1][j],
+                                pcs[0][j], pcs[1][j]);
+        }
+        printf("\n");
 }

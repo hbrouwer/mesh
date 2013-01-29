@@ -277,17 +277,16 @@ void process_command(char *cmd, struct session *s)
                                 s->anp,
                                 "starting testing of network: [%s]"))
                 return;
-        // XXX: check this ...
-        if (cmd_test_item(cmd, "testItem %[^]",
+        if (cmd_test_item(cmd, "testItem \"%[^\"]\"",
                                 s->anp,
                                 "starting testing of network [%s] for item: [%s]"))
                 return;
 
-        if (cmd_compare_vectors(cmd, "compareVectors %s %s %s",
+        if (cmd_compare_items(cmd, "compareItems %s \"%[^\"]\" \"%[^\"]\"",
                                 s->anp,
                                 "comparing vectors of group [%s] for items [%s] and [%s]:"))
                 return;
-
+        
         if (cmd_weight_stats(cmd, "weightStats",
                                 s->anp,
                                 "weight statistics for network: [%s]"))
@@ -375,7 +374,7 @@ void cmd_quit(char *cmd, char *fmt, struct session *s, char *msg)
 
 bool cmd_create_network(char *cmd, char *fmt, struct session *s, char *msg)
 {
-        char tmp1[64], tmp2[64];
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
                 return false;
 
@@ -414,7 +413,7 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s, char *msg)
 
 bool cmd_load_network(char *cmd, char *fmt, struct session *s, char *msg)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
@@ -426,7 +425,7 @@ bool cmd_load_network(char *cmd, char *fmt, struct session *s, char *msg)
                 return true;
         }
 
-        char buf[1024];
+        char buf[MAX_BUF_SIZE];
         while (fgets(buf, sizeof(buf), fd)) {
                 buf[strlen(buf) - 1] = '\0';
                 process_command(buf, s);
@@ -441,7 +440,7 @@ bool cmd_load_network(char *cmd, char *fmt, struct session *s, char *msg)
 
 bool cmd_dispose_network(char *cmd, char *fmt, struct session *s, char *msg)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
@@ -485,7 +484,7 @@ bool cmd_list_networks(char *cmd, char *fmt, struct session *s, char *msg)
 
 bool cmd_change_network(char *cmd, char *fmt, struct session *s, char *msg)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
@@ -504,7 +503,7 @@ bool cmd_change_network(char *cmd, char *fmt, struct session *s, char *msg)
 
 bool cmd_create_group(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         int tmp_int;
         if (sscanf(cmd, fmt, tmp, &tmp_int) != 2)
                 return false;
@@ -524,7 +523,7 @@ bool cmd_dispose_group(char *cmd, char *fmt, struct network *n, char *msg)
 
 bool cmd_attach_bias(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
@@ -543,7 +542,7 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct network *n, char *msg)
 
 bool cmd_set_input_group(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
@@ -562,7 +561,7 @@ bool cmd_set_input_group(char *cmd, char *fmt, struct network *n, char *msg)
 
 bool cmd_set_output_group(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
@@ -581,7 +580,7 @@ bool cmd_set_output_group(char *cmd, char *fmt, struct network *n, char *msg)
 
 bool cmd_set_act_func(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        char tmp1[64], tmp2[64];
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
                 return false;
 
@@ -640,7 +639,7 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct network *n, char *msg)
 
 bool cmd_set_err_func(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        char tmp1[64], tmp2[64];
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
                 return false;
 
@@ -694,7 +693,7 @@ bool cmd_use_act_lookup(char *cmd, char *fmt, struct network *n, char *msg)
 
 bool cmd_create_projection(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        char tmp1[64], tmp2[64];
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
                 return false;
 
@@ -750,7 +749,7 @@ bool cmd_create_projection(char *cmd, char *fmt, struct network *n, char *msg)
 
 bool cmd_create_elman_projection(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        char tmp1[64], tmp2[64];
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
                 return false;
 
@@ -797,7 +796,7 @@ bool cmd_dispose_projection(char *cmd, char *fmt, struct network *n, char *msg)
 
 bool cmd_freeze_projection(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        char tmp1[64], tmp2[64];
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
                 return false;
 
@@ -862,7 +861,7 @@ bool cmd_set_int_parameter(char *cmd, char *fmt, int *par, char *msg)
 bool cmd_load_item_set(char *cmd, char *fmt, struct network *n, bool train,
                 char *msg)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
@@ -891,7 +890,7 @@ bool cmd_load_item_set(char *cmd, char *fmt, struct network *n, bool train,
 bool cmd_set_training_order(char *cmd, char *fmt, int *training_order,
                 char *msg)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
@@ -914,7 +913,7 @@ bool cmd_set_training_order(char *cmd, char *fmt, int *training_order,
 bool cmd_set_rand_algorithm(char *cmd, char *fmt, struct network *n,
                 char *msg)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
@@ -938,7 +937,7 @@ bool cmd_set_rand_algorithm(char *cmd, char *fmt, struct network *n,
 bool cmd_set_learning_algorithm(char *cmd, char *fmt, struct network *n,
                 char *msg)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
@@ -960,7 +959,7 @@ bool cmd_set_learning_algorithm(char *cmd, char *fmt, struct network *n,
 bool cmd_set_update_algorithm(char *cmd, char *fmt, struct network *n,
                 char *msg)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
@@ -1064,7 +1063,7 @@ bool cmd_test(char *cmd, char *fmt, struct network *n, char *msg)
 // TODO: extend such that set (train/test) can be specificied
 bool cmd_test_item(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
@@ -1081,10 +1080,9 @@ bool cmd_test_item(char *cmd, char *fmt, struct network *n, char *msg)
         return true;
 }
 
-// TODO: extend such that set (train/test) can be specificied
-bool cmd_compare_vectors(char *cmd, char *fmt, struct network *n, char *msg)
+bool cmd_compare_items(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        char tmp1[64], tmp2[64], tmp3[64];
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE], tmp3[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp1, tmp2, tmp3) != 3)
                 return false;
 
@@ -1092,49 +1090,23 @@ bool cmd_compare_vectors(char *cmd, char *fmt, struct network *n, char *msg)
 
         struct group *g = find_group_by_name(n, tmp1);
         if (!g) {
-                eprintf("cannot compare vectors--group [%s] unknown", tmp1);
+                eprintf("cannot compare items--group [%s] unknown", tmp1);
                 return true;
         }
 
         struct element *e1 = find_element_by_name(n->test_set, tmp2);
         if (!e1) {
-                eprintf("cannot compare vectors--item [%s] unknown", tmp2);
+                eprintf("cannot compare items--item [%s] unknown", tmp2);
                 return true;
         }
 
         struct element *e2 = find_element_by_name(n->test_set, tmp3);
         if (!e2) {
-                eprintf("cannot compare vectors--item [%s] unknown", tmp3);
+                eprintf("cannot compare items--item [%s] unknown", tmp3);
                 return true;
         }
 
-        struct vector *v1 = create_vector(g->vector->size);
-        struct vector *v2 = create_vector(g->vector->size);
-
-        test_network_with_item(n, e1);
-        copy_vector(v1, g->vector);
-        test_network_with_item(n, e2);
-        copy_vector(v2, g->vector);
-
-        cprintf("");
-        mprintf("vectors in group [%s] for 1: [%s] and 2: [%s]",
-                        tmp1, tmp2, tmp3);
-        printf("1: ");
-        pprint_vector(v1);
-        printf("2: ");
-        pprint_vector(v2);
-
-        cprintf("");
-        cprintf("inner product:\t\t[%f]",
-                        inner_product(v1, v2));
-        cprintf("cosine similarity:\t[%f]",
-                        cosine_similarity(v1, v2));
-        cprintf("Pearson's correlation:\t[%f]",
-                        pearson_correlation(v1, v2));
-        cprintf("");
-
-        dispose_vector(v1);
-        dispose_vector(v2);
+        compare_items(n, g, e1, e2);
 
         return true;
 }
@@ -1165,7 +1137,7 @@ bool cmd_weight_stats(char *cmd, char *fmt, struct network *n, char *msg)
 
 bool cmd_show_vector(char *cmd, char *fmt, struct network *n, char *msg, int type)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
@@ -1189,7 +1161,7 @@ bool cmd_show_vector(char *cmd, char *fmt, struct network *n, char *msg, int typ
 
 bool cmd_show_matrix(char *cmd, char *fmt, struct network *n, char *msg, int type)
 {
-        char tmp1[64], tmp2[64];
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
                 return false;
 
@@ -1232,7 +1204,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct network *n, char *msg, int typ
 
 bool cmd_save_weights(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
@@ -1247,7 +1219,7 @@ bool cmd_save_weights(char *cmd, char *fmt, struct network *n, char *msg)
 
 bool cmd_load_weights(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        char tmp[64];
+        char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 

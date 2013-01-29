@@ -21,6 +21,9 @@
 
 #define OMP_MIN_ITERATIONS 10
 
+#define MAX_ARG_SIZE 128
+#define MAX_BUF_SIZE 32768
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

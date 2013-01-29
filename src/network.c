@@ -22,6 +22,7 @@
 #include "bp.h"
 #include "engine.h"
 #include "error.h"
+#include "main.h"
 #include "network.h"
 #include "pprint.h"
 #include "stats.h"
@@ -713,9 +714,9 @@ void load_weight_matrices(struct network *n, char *fn)
         if (n->type == TYPE_RNN)
                 np = n->unfolded_net->stack[0];
 
-        char buf[8192];
+        char buf[MAX_BUF_SIZE];
         while (fgets(buf, sizeof(buf), fd)) {
-                char tmp1[64], tmp2[64];
+                char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
 
                 if (sscanf(buf, "%s -> %s", tmp1, tmp2) != 2)
                         continue;

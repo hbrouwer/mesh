@@ -26,27 +26,26 @@
 #include "rnn_unfold.h"
 #include "session.h"
 
-#define VERSION "0.181212"
+#define VERSION "[Mon Jan 28 11:52:14 CET 2013]"
 
 int main(int argc, char **argv)
 {
         struct session *s;
 
         cprintf("MESH version %s", VERSION);
-        cprintf("Copyright (C) 2012, 2013 Harm Brouwer <me@hbrouwer.eu>");
+        cprintf("Copyright (c) 2012, 2013 Harm Brouwer <me@hbrouwer.eu>");
         cprintf("Center for Language and Cognition, University of Groningen");
         cprintf("& Netherlands Organisation for Scientific Research (NWO)");
 
         s = create_session();
 
         for (int i = 1; i < argc; i++) {
-                if (strcmp(argv[i], "--network") == 0) {
-                        if (++i < argc) {
-                                char *cmd;
-                                asprintf(&cmd, "loadNetwork %s", argv[i]);
-                                process_command(cmd, s);
-                                free(cmd);
-                        }
+                /* last argument is a network file */
+                if (argv[argc - 1] != NULL) {
+                        char *cmd;
+                        asprintf(&cmd, "loadNetwork %s", argv[i]);
+                        process_command(cmd, s);
+                        free(cmd);
                 }
         }
 

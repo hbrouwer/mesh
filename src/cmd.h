@@ -70,7 +70,8 @@ bool cmd_train(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_test(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_test_item(char *cmd, char *fmt, struct network *n, char *msg);
 
-bool cmd_compare_vectors(char *cmd, char *fmt, struct network *n, char *msg);
+bool cmd_compare_items(char *cmd, char *fmt, struct network *n, char *msg);
+
 bool cmd_weight_stats(char *cmd, char *fmt, struct network *n, char *msg);
 
 bool cmd_show_vector(char *cmd, char *fmt, struct network *n, char *msg, int type);

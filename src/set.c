@@ -133,9 +133,9 @@ struct set *load_set(char *filename, int input_size, int output_size)
         if (!(fd = fopen(filename, "r")))
                 goto error_out;
 
-        char buf[4096];
+        char buf[MAX_BUF_SIZE];
         while (fgets(buf, sizeof(buf), fd)) {
-                char tmp[64];
+                char tmp[MAX_BUF_SIZE];
                 int num_events;
 
                 if (sscanf(buf, "Name \"%[^\"]\" %d", tmp, &num_events) != 2)
