@@ -442,7 +442,6 @@ void compare_items(struct network *n, struct group *g, struct element *e1,
 void compare_items_in_ffn(struct network *n, struct group *g,
                 struct element *e1, struct element *e2)
 {
-        double ips[2][e1->num_events];
         double css[2][e1->num_events];
         double pcs[2][e1->num_events];
 
@@ -458,7 +457,6 @@ void compare_items_in_ffn(struct network *n, struct group *g,
                 copy_vector(n->input->vector, e1->inputs[j]);
                 feed_forward(n, n->input);
 
-                ips[0][j] = inner_product(v, g->vector);
                 css[0][j] = cosine_similarity(v, g->vector);
                 pcs[0][j] = pearson_correlation(v, g->vector);
 
@@ -477,19 +475,20 @@ void compare_items_in_ffn(struct network *n, struct group *g,
                 copy_vector(n->input->vector, e2->inputs[j]);
                 feed_forward(n, n->input);
           
-                ips[1][j] = inner_product(v, g->vector);
                 css[1][j] = cosine_similarity(v, g->vector);
                 pcs[1][j] = pearson_correlation(v, g->vector);
                 
                 copy_vector(v, g->vector);
         }
 
-        printf("\nevent\tinner product\t\tcosine similarity\tPearson's correlation\n");
+        printf("\n");
+        printf("event\t\tcosine similarity\tPearson's correlation\n");
+        printf("-----\t\t-----------------\t---------------------\n");
         for (int j = 0; j < e1->num_events; j++) {
-                printf("%d\t%.3f\t%.3f\t\t%.3f\t%.3f\t\t%.5f\t%.5f\n", j,
-                                ips[0][j], ips[1][j],
+                printf("%d\t\t%.5f\t%.5f\t\t%.5f\t%.5f\n", j,
                                 css[0][j], css[1][j],
                                 pcs[0][j], pcs[1][j]);
         }
+        printf("-----\t\t-----------------\t---------------------\n");
         printf("\n");
 }

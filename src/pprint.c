@@ -48,7 +48,7 @@ void pprint_vector(struct vector *v)
 
         for (int i = 0; i < v->size; i++) {
                 double sv = pprint_scale_value(v->elements[i], min, max);
-                pprint_value_as_color(sv, SCHEME_GRAYSCALE);
+                pprint_value_as_color(sv, SCHEME_BLUE_RED);
         }
         printf("\n");
 }
@@ -65,7 +65,7 @@ void pprint_matrix(struct matrix *m)
         for (int i = 0; i < m->rows; i++) {
                 for (int j = 0; j < m->cols; j++) {
                         double sv = pprint_scale_value(m->elements[i][j], min, max);
-                        pprint_value_as_color(sv, SCHEME_GRAYSCALE);
+                        pprint_value_as_color(sv, SCHEME_BLUE_RED);
                 }
                 printf("\n");
         }

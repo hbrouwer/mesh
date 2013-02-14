@@ -53,6 +53,7 @@ bool cmd_set_int_parameter(char *cmd, char *fmt, int *par, char *msg);
 
 bool cmd_load_item_set(char *cmd, char *fmt, struct network *n, bool train,
                 char *msg);
+bool cmd_scale_binary_targets(char *cmd, char *fmt, struct network *n, char *msg);
 
 bool cmd_set_training_order(char *cmd, char *fmt, int *training_order,
                 char *msg);

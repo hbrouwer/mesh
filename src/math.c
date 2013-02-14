@@ -79,22 +79,6 @@ double normrand(double mu, double sigma)
 }
 
 /*
- * Inner product:
- *
- * ip = sum_i (x_i * y_i)
- */
-
-double inner_product(struct vector *v1, struct vector *v2)
-{
-        double ip = 0.0;
-
-        for (int i = 0; i < v1->size; i++)
-                ip += v1->elements[i] * v2->elements[i];
-
-        return ip;
-}
-
-/*
  * Cosine similarity:
  *
  *                  sum_i (x_i * y_i)

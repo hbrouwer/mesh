@@ -27,7 +27,6 @@ double sign(double x);
 
 double normrand(double mu, double sigma);
 
-double inner_product(struct vector *v1, struct vector *v2);
 double cosine_similarity(struct vector *v1, struct vector *v2);
 double pearson_correlation(struct vector *v1, struct vector *v2);
 
