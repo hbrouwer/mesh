@@ -94,13 +94,13 @@
  * This computes the error signal delta_j for each output unit j.
  */
 
-void bp_output_error(struct group *g, struct vector *t)
+void bp_output_error(struct group *g, struct vector *t, double tr, double zr)
 {
         /*
          * First, compute error derivates dE/dy for all units in the output
          * layer.
          */
-        g->err_fun->deriv(g, t);
+        g->err_fun->deriv(g, t, tr, zr);
 
         /*
          * Multiply all error derivatives dE/dy with the activation function

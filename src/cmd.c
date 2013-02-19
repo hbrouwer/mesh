@@ -204,6 +204,14 @@ void process_command(char *cmd, struct session *s)
                                 &s->anp->error_threshold,
                                 "set error threshold: [%lf]"))
                 return;
+        if (cmd_set_double_parameter(cmd, "set TargetRadius %lf",
+                                &s->anp->target_radius,
+                                "set target radius: [%lf"))
+                return;
+        if (cmd_set_double_parameter(cmd, "set ZeroErrorRadius %lf",
+                                &s->anp->zero_error_radius,
+                                "set zero-error radius: [%lf]"))
+                return;
         if (cmd_set_double_parameter(cmd, "set RpropInitUpdate %lf",
                                 &s->anp->rp_init_update,
                                 "set initial update value (for Rprop): [%lf]"))
@@ -236,11 +244,6 @@ void process_command(char *cmd, struct session *s)
                                 "loaded test set: [%s (%d elements)]"))
                 return;
 
-        if (cmd_scale_binary_targets(cmd, "scaleBinaryTargets %lf",
-                                s->anp,
-                                "scaled binary targets: [(0 -> %lf) and (%lf <- 1)]"))
-                return;
-        
         if (cmd_set_training_order(cmd, "set TrainingOrder %s",
                                 &s->anp->training_order,
                                 "set training order: [%s]"))
@@ -888,45 +891,6 @@ bool cmd_load_item_set(char *cmd, char *fmt, struct network *n, bool train,
 
         if (s)
                 mprintf(msg, tmp, s->num_elements);
-
-        return true;
-}
-
-bool cmd_scale_binary_targets(char *cmd, char *fmt, struct network *n, char *msg)
-{
-        double sf;
-        if (sscanf(cmd, fmt, &sf) != 1)
-                return false;
-
-        /* training set */
-        for (int i = 0; i < n->training_set->num_elements; i++) {
-                struct element *e = n->training_set->elements[i];
-                for (int j = 0; j < e->num_events; j++) {
-                        struct vector *target = e->targets[j];
-                        for (int x = 0; x < target->size; x++) {
-                                if (target->elements[x] == 0.0)
-                                        target->elements[x] += sf;
-                                if (target->elements[x] == 1.0)
-                                        target->elements[x] -= sf;
-                        }
-                }
-        }
-
-        /* test set */
-        for (int i = 0; i < n->test_set->num_elements; i++) {
-                struct element *e = n->test_set->elements[i];
-                for (int j = 0; j < e->num_events; j++) {
-                        struct vector *target = e->targets[j];
-                        for (int x = 0; x < target->size; x++) {
-                                if (target->elements[x] == 0.0)
-                                        target->elements[x] += sf;
-                                if (target->elements[x] == 1.0)
-                                        target->elements[x] -= sf;
-                        }
-                }
-        }
-
-        mprintf(msg, 0.0 + sf, 1.0 - sf);
 
         return true;
 }

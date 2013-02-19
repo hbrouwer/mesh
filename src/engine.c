@@ -145,11 +145,17 @@ void train_network_with_bp(struct network *n)
                                 /* inject error if an event has a target */
                                 if (e->targets[j]) {
                                         reset_error_signals(n);
-                                        bp_output_error(n->output, e->targets[j]);
+                                        bp_output_error(n->output,
+                                                        e->targets[j],
+                                                        n->target_radius,
+                                                        n->zero_error_radius);
                                         bp_backpropagate_error(n, n->output);
                                         if (j == e->num_events - 1) {
                                                 n->status->error += n->output->err_fun->fun(
-                                                                n->output, e->targets[j])
+                                                                n->output,
+                                                                e->targets[j],
+                                                                n->target_radius,
+                                                                n->zero_error_radius)
                                                         / n->batch_size;
                                         }
                                 }
@@ -230,12 +236,18 @@ void train_network_with_bptt(struct network *n)
                          */
                         if (e->targets[j]) {
                                 reset_error_signals(un->stack[sp]);
-                                bp_output_error(un->stack[sp]->output, e->targets[j]);
+                                bp_output_error(un->stack[sp]->output,
+                                                e->targets[j],
+                                                n->target_radius,
+                                                n->zero_error_radius);
                                 if (sp == un->stack_size - 1) {
                                         bp_backpropagate_error(un->stack[sp],
                                                         un->stack[sp]->output);
                                         n->status->error += n->output->err_fun->fun(
-                                                        un->stack[sp]->output, e->targets[j]);
+                                                        un->stack[sp]->output,
+                                                        e->targets[j],
+                                                        n->target_radius,
+                                                        n->zero_error_radius);
                                         rnn_sum_gradients(un);
                                         n->update_algorithm(un->stack[0]);
                                 }
@@ -358,15 +370,15 @@ void test_ffn_network_with_item(struct network *n, struct element *e)
                 /* compute error if an event has a target */
                 if (e->targets[j]) {
                         printf("\nT: ");
-                        pprint_vector(e->targets[j]);
+                        print_vector(e->targets[j]);
                         printf("O: ");
-                        pprint_vector(n->output->vector);
+                        print_vector(n->output->vector);
                         if (j == e->num_events - 1) {
                                 n->status->error += n->output->err_fun->fun(
-                                        n->output, e->targets[j]);
-                                n->status->error += n->output->err_fun->fun(
-                                                n->output, e->targets[j])
-                                        / n->batch_size;
+                                        n->output,
+                                        e->targets[j],
+                                        n->target_radius,
+                                        n->zero_error_radius);
                                 pprintf("error: [%lf]\n", n->status->error);
                         }
                 }
@@ -404,7 +416,10 @@ void test_rnn_network_with_item(struct network *n, struct element *e)
 
                 if (e->targets[j]) {
                         n->status->error += n->output->err_fun->fun(
-                                        un->stack[sp]->output, e->targets[j]);
+                                        un->stack[sp]->output,
+                                        e->targets[j],
+                                        n->target_radius,
+                                        n->zero_error_radius);
                         printf("\nT: ");
                         pprint_vector(e->targets[j]);
                         printf("O: ");

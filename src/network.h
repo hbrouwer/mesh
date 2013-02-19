@@ -94,6 +94,9 @@ struct network
 
         double error_threshold;     /* error threshold */
 
+        double target_radius;       /* target radius */
+        double zero_error_radius;   /* zero error radius */
+
         int max_epochs;             /* maximum number of training epochs */
         int report_after;           /* number of training epochs after
                                        which to report status */
@@ -227,9 +230,9 @@ struct act_fun
 struct err_fun
 {
         double (*fun)               /* error function */
-                (struct group *g, struct vector *t);
+                (struct group *g, struct vector *t, double tr, double zr);
         void(*deriv)                /* error function derivative */
-                (struct group *g, struct vector *t);
+                (struct group *g, struct vector *t, double tr, double zr);
 };
 
 /*
