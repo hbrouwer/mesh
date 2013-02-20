@@ -41,7 +41,6 @@
  */
 
 double adjust_target(double y, double d, double tr, double zr) {
-        
         /* 
          * Unit's activation is within zero error radius
          * of the target, so set its target to equal this
