@@ -65,10 +65,13 @@ double adjust_target(double y, double d, double tr, double zr) {
                 return d - tr;
 
         /*
-         * Unit's activation is not within zero-error radius
-         * (or zero-error radius is zero), but it is within
-         * the target radius, so set the unit's target to equal
-         * this activation.
+         * Unit's activation is not within zero-error radius,
+         * but it is within the target radius, so set the unit's
+         * target to equal this activation.
+         *
+         * Note: This should only happen if the the zero-error
+         * radius is zero, as a zero-error radius becomes
+         * meaningless if it is smaller than the target radius.
          */
         return y;
 }
