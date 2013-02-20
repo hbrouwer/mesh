@@ -21,20 +21,55 @@
 #include <math.h>
 
 /*
- * Adjust target.
+ * ########################################################################
+ * ## Adjust target                                                      ##
+ * ########################################################################
  */
 
-double adjust_target(double y, double d, double tr, double zr)
-{
+/*
+ * Adjust a unit's target based on the target radius and zero-error radius.
+ * If a unit's activation is within the target or zero-error radius of the
+ * target, set its target to equal this activation, such that the error for
+ * this unit will be zero. Otherwise, adjust the target in the direction of
+ * the unit's activation by the target radius.
+ *
+ * Formulas adapted from LENS (Rohde, 1999) source code.
+ *
+ * Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
+ *     Technical Report CMU-CS-99-164 (Pittsburgh, PA: Carnegie Mellon
+ *     University, Department of Computer Science).
+ */
+
+double adjust_target(double y, double d, double tr, double zr) {
+        
+        /* 
+         * Unit's activation is within zero error radius
+         * of the target, so set its target to equal this
+         * activation.
+         */
         if ((y - d < zr) && (y - d > -zr))
                 return y;
-        
+
+        /*
+         * Unit's activation is not within target radius
+         * of the target, so adjust the unit's target towards the
+         * unit's activation by the target radius.
+         */
+
+        /* adjust upward */
         if (y - d > tr)
                 return d + tr;
 
+        /* adjust downward */
         if (y - d < -tr)
                 return d - tr;
 
+        /*
+         * Unit's activation is not within zero-error radius
+         * (or zero-error radius is zero), but it is within
+         * the target radius, so set the unit's target to equal
+         * this activation.
+         */
         return y;
 }
 
@@ -60,7 +95,6 @@ double error_sum_of_squares(struct group *g, struct vector *t, double tr,
 #endif /* _OPENMP */
         for (int i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
-                // double d = t->elements[i];
                 double d = adjust_target(y, t->elements[i], tr, zr);
 
                 se += pow(y - d, 2.0);
@@ -83,7 +117,6 @@ void error_sum_of_squares_deriv(struct group *g, struct vector *t, double tr,
 #endif /* _OPENMP */
         for (int i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
-                // double d = t->elements[i];
                 double d = adjust_target(y, t->elements[i], tr, zr);
 
                 g->error->elements[i] = y - d;
@@ -123,7 +156,6 @@ double error_cross_entropy(struct group *g, struct vector *t, double tr,
 #endif /* _OPENMP */
         for (int i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
-                // double d = t->elements[i];
                 double d = adjust_target(y, t->elements[i], tr, zr);
 
 
@@ -226,7 +258,6 @@ void error_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
 #endif /* _OPENMP */
         for (int i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
-                // double d = t->elements[i];
                 double d = adjust_target(y, t->elements[i], tr, zr);
 
                 if (d == 0.0) {
@@ -322,7 +353,6 @@ double error_divergence(struct group *g, struct vector *t, double tr,
 #endif /* _OPENMP */
         for (int i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
-                // double d = t->elements[i];
                 double d = adjust_target(y, t->elements[i], tr, zr);
 
                 /*
@@ -370,7 +400,6 @@ void error_divergence_deriv(struct group *g, struct vector *t, double tr,
 #endif /* _OPENMP */
         for (int i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
-                // double d = t->elements[i];
                 double d = adjust_target(y, t->elements[i], tr, zr);
 
                 /*

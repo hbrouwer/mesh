@@ -206,7 +206,7 @@ void process_command(char *cmd, struct session *s)
                 return;
         if (cmd_set_double_parameter(cmd, "set TargetRadius %lf",
                                 &s->anp->target_radius,
-                                "set target radius: [%lf"))
+                                "set target radius: [%lf]"))
                 return;
         if (cmd_set_double_parameter(cmd, "set ZeroErrorRadius %lf",
                                 &s->anp->zero_error_radius,

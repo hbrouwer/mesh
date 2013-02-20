@@ -370,9 +370,16 @@ void test_ffn_network_with_item(struct network *n, struct element *e)
                 /* compute error if an event has a target */
                 if (e->targets[j]) {
                         printf("\nT: ");
+                        pprint_vector(e->targets[j]);
+                        printf("O: ");
+                        pprint_vector(n->output->vector);
+                        
+                        /* for debugging */
+                        printf("\nT: ");
                         print_vector(e->targets[j]);
                         printf("O: ");
                         print_vector(n->output->vector);
+
                         if (j == e->num_events - 1) {
                                 n->status->error += n->output->err_fun->fun(
                                         n->output,
