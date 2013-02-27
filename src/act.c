@@ -49,15 +49,6 @@
 void feed_forward(struct network *n, struct group *g)
 {
         /*
-         * If the current group has a context group, copy this group's
-         * previous activation vector to the context group's vector.
-         * Recursively repeat this, if the context group has a context 
-         * group too.
-         */
-        if (g->context_group)
-                shift_context_group_chain(n, g, g->vector);
-
-        /*
          * Under the assumption that activation levels for the unit's
          * in the current group have already been determined, determine
          * the activation levels of all the groups towards which the

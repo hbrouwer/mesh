@@ -116,7 +116,7 @@ void process_command(char *cmd, struct session *s)
                 return;
         if (cmd_create_elman_projection(cmd, "createElmanProjection %s %s",
                                 s->anp,
-                                "created elman projection: [%s -> %s]"))
+                                "created Elman projection: [%s -> %s]"))
                 return;
         if (cmd_dispose_projection(cmd, "disposeProjection %s %s",
                                 s->anp,
@@ -788,7 +788,10 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct network *n, char *
                 return true;
         }
 
+        add_to_group_array(fg->ctx_groups, tg);
+        /*
         fg->context_group = tg;
+        */
 
         reset_context_groups(n);
 

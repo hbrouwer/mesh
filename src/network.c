@@ -259,6 +259,8 @@ struct group *create_group(char *name, int size, bool bias, bool recurrent)
         g->inc_projs = create_projs_array(MAX_PROJS);
         g->out_projs = create_projs_array(MAX_PROJS);
 
+        g->ctx_groups = create_group_array(MAX_GROUPS);
+
         g->bias = bias;
         g->recurrent = recurrent;
 
@@ -377,6 +379,8 @@ void dispose_group(struct group *g)
         dispose_projs_array(g->inc_projs);
         dispose_projs_array(g->out_projs);
 
+        dispose_group_array(g->ctx_groups);
+
         free(g);
 }
 
@@ -392,30 +396,36 @@ void dispose_groups(struct group_array *groups)
 }
 
 /*
+ * Shifts all context groups chains in a network.
+ */
+
+void shift_context_groups(struct network *n)
+{
+        for (int i = 0; i < n->groups->num_elements; i++) {
+                struct group *g = n->groups->elements[i];
+                for (int j = 0; j < g->ctx_groups->num_elements; j++) {
+                        struct group *cg = g->ctx_groups->elements[j];
+                        shift_context_group_chain(cg, g->vector);
+                }
+        }
+}
+
+/*
  * Shifts a context group chain. If group g has a context group c, then
  * the activity vector of g is copied into that of c. However, if c has
  * itself a context group c', then the activity pattern of c is first
  * copied into c', and so forth.
  */
 
-void shift_context_group_chain(struct network *n, struct group *g,
+void shift_context_group_chain(struct group *g,
                 struct vector *v)
 {
-        if (g->context_group)
-                shift_context_group_chain(n, g->context_group, g->vector);
+        for (int i = 0; i < g->ctx_groups->num_elements; i++) {
+                struct group *cg = g->ctx_groups->elements[i];
+                shift_context_group_chain(cg, g->vector);
+        }
         
         copy_vector(g->vector, v);
-}
-
-/*
- * This resets the error vector for groups.
- */
-void reset_error_signals(struct network *n)
-{
-        for (int i = 0; i < n->groups->num_elements; i++) {
-                struct group *g = n->groups->elements[i];
-                zero_out_vector(g->error);
-        }
 }
 
 /*
@@ -426,9 +436,23 @@ void reset_context_groups(struct network *n)
 {
         for (int i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
-                if (g->context_group)
-                        fill_vector_with_value(g->context_group->vector, 0.5);
+                for (int j = 0; j < g->ctx_groups->num_elements; j++) {
+                        struct group *cg = g->ctx_groups->elements[j];
+                        reset_context_group_chain(cg);
+                }
         }
+}
+
+/*
+ * This resets a context group chain.
+ */
+
+void reset_context_group_chain(struct group *g)
+{
+        for (int i = 0; i < g->ctx_groups->num_elements; i++)
+                reset_context_group_chain(g->ctx_groups->elements[i]);
+                
+        fill_vector_with_value(g->vector, 0.5);
 }
 
 /*
@@ -441,6 +465,17 @@ void reset_recurrent_groups(struct network *n) {
                 struct group *g = n->groups->elements[i];
                 if (g->recurrent)
                         fill_vector_with_value(g->vector, 0.5);
+        }
+}
+
+/*
+ * This resets the error vector for groups.
+ */
+void reset_error_signals(struct network *n)
+{
+        for (int i = 0; i < n->groups->num_elements; i++) {
+                struct group *g = n->groups->elements[i];
+                zero_out_vector(g->error);
         }
 }
 

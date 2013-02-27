@@ -139,6 +139,10 @@ void train_network_with_bp(struct network *n)
 
                         /* present all events of the current item */
                         for (int j = 0; j < e->num_events; j++) {
+                                /* shift context groups (for SRNs) */
+                                if (j > 0 && n->type == TYPE_SRN)
+                                        shift_context_groups(n);
+
                                 copy_vector(n->input->vector, e->inputs[j]);
                                 feed_forward(n, n->input);
 
@@ -304,9 +308,58 @@ void test_network(struct network *n)
 
 void test_ffn_network(struct network *n)
 {
+        n->status->error = 0.0;
+        int threshold_reached = 0;
+
+        for (int i = 0; i < n->test_set->num_elements; i++) {
+                struct element *e = n->test_set->elements[i];
+
+                /* reset context groups (for SRNs) */
+                if (n->type == TYPE_SRN)
+                        reset_context_groups(n);
+
+                /* present all events of the current item */
+                for (int j = 0; j < e->num_events; j++) {
+                        /* shift context groups (for SRNs) */
+                        if (j > 0 && n->type == TYPE_SRN)
+                                shift_context_groups(n);
+
+                        copy_vector(n->input->vector, e->inputs[j]);
+                        feed_forward(n, n->input);
+
+                        /* compute error if an event has a target */
+                        if (e->targets[j] && j == e->num_events - 1) {
+                                double error = n->output->err_fun->fun(
+                                                n->output,
+                                                e->targets[j],
+                                                n->target_radius,
+                                                n->zero_error_radius);
+                                n->status->error += error;
+
+                                if (error < n->error_threshold)
+                                        threshold_reached++;
+                        }
+                }
+        }
+
+        printf("\n");
+        printf("Number of items:\t\t[%d]:\n",
+                        n->test_set->num_elements);
+        printf("Total error:\t\t\t[%lf]:\n",
+                        n->status->error);
+        printf("Error per example:\t\t[%lf]:\n",
+                        n->status->error / n->test_set->num_elements);
+        printf("# items reached threshold:\t[%d (%lf)]\n",
+                        threshold_reached,
+                        (double)threshold_reached / n->test_set->num_elements);
+        printf("\n");
+}
+
+/*
+void test_ffn_network(struct network *n)
+{
         double total_error = 0.0;
 
-        /* present all test items */
         for (int i = 0; i < n->test_set->num_elements; i++) {
                 struct element *e = n->test_set->elements[i];
                 test_ffn_network_with_item(n, e);
@@ -315,6 +368,7 @@ void test_ffn_network(struct network *n)
 
         pprintf("total error: [%lf]", total_error);
 }
+*/
 
 /*
  * Test recurrent network.
@@ -322,9 +376,69 @@ void test_ffn_network(struct network *n)
 
 void test_rnn_network(struct network *n)
 {
+        n->status->error = 0.0;
+        int threshold_reached = 0;
+
+        /* unfolded network */
+        struct rnn_unfolded_network *un = n->unfolded_net;
+
+        for (int i = 0; i < n->test_set->num_elements; i++) {
+                struct element *e = n->test_set->elements[i];
+
+                /* reset context groups and error signals */
+                for (int j = 0; j < un->stack_size; j++)
+                        reset_recurrent_groups(un->stack[j]);
+
+                /* stack pointer */
+                int sp = 0;
+ 
+                /* present all events of the current item */
+                for (int j = 0; j < e->num_events; j++) {
+                        copy_vector(un->stack[sp]->input->vector, e->inputs[j]);
+                        feed_forward(un->stack[sp], un->stack[sp]->input);
+
+                        if (e->targets[j]) {
+                                double error = n->output->err_fun->fun(
+                                                un->stack[sp]->output,
+                                                e->targets[j],
+                                                n->target_radius,
+                                                n->zero_error_radius);
+                                n->status->error += error;
+
+                                if (error < n->error_threshold)
+                                        threshold_reached++;
+                        }
+
+                        /*
+                         * Cycle stack, if required. Otherwise,
+                         * increase stack pointer.
+                         */
+                        if (sp == un->stack_size - 1) {
+                                rnn_cycle_stack(un);
+                        } else {
+                                sp++;
+                        }
+                }
+        }
+
+        printf("\n");
+        printf("Number of items:\t\t[%d]:\n",
+                        n->test_set->num_elements);
+        printf("Total error:\t\t\t[%lf]:\n",
+                        n->status->error);
+        printf("Error per example:\t\t[%lf]:\n",
+                        n->status->error / n->test_set->num_elements);
+        printf("# items reached threshold:\t[%d (%lf)]\n",
+                        threshold_reached,
+                        (double)threshold_reached / n->test_set->num_elements);
+        printf("\n");
+}
+
+/*
+void test_rnn_network(struct network *n)
+{
         double total_error = 0.0;
 
-        /* present all test items */
         for (int i = 0; i < n->test_set->num_elements; i++) {
                 struct element *e = n->test_set->elements[i];
                 test_rnn_network_with_item(n, e);
@@ -333,6 +447,7 @@ void test_rnn_network(struct network *n)
 
         pprintf("total error: [%lf]", total_error);
 }
+*/
 
 void test_network_with_item(struct network *n, struct element *e)
 {
@@ -364,6 +479,10 @@ void test_ffn_network_with_item(struct network *n, struct element *e)
                 printf("\nI: ");
                 pprint_vector(e->inputs[j]);
 
+                /* shift context groups (for SRNs) */
+                if (j > 0 && n->type == TYPE_SRN)
+                        shift_context_groups(n);
+
                 copy_vector(n->input->vector, e->inputs[j]);
                 feed_forward(n, n->input);
 
@@ -373,12 +492,6 @@ void test_ffn_network_with_item(struct network *n, struct element *e)
                         pprint_vector(e->targets[j]);
                         printf("O: ");
                         pprint_vector(n->output->vector);
-                        
-                        /* for debugging */
-                        printf("\nT: ");
-                        print_vector(e->targets[j]);
-                        printf("O: ");
-                        print_vector(n->output->vector);
 
                         if (j == e->num_events - 1) {
                                 n->status->error += n->output->err_fun->fun(
@@ -476,6 +589,10 @@ void compare_items_in_ffn(struct network *n, struct group *g,
                 reset_context_groups(n);
 
         for (int j = 0; j < e1->num_events; j++) {
+                /* shift context groups (for SRNs) */
+                if (j > 0 && n->type == TYPE_SRN)
+                        shift_context_groups(n);
+
                 copy_vector(n->input->vector, e1->inputs[j]);
                 feed_forward(n, n->input);
 
@@ -494,9 +611,13 @@ void compare_items_in_ffn(struct network *n, struct group *g,
                 reset_context_groups(n);
 
         for (int j = 0; j < e1->num_events; j++) {
+                /* shift context groups (for SRNs) */
+                if (j > 0 && n->type == TYPE_SRN)
+                        shift_context_groups(n);
+                
                 copy_vector(n->input->vector, e2->inputs[j]);
                 feed_forward(n, n->input);
-          
+                
                 css[1][j] = cosine_similarity(v, g->vector);
                 pcs[1][j] = pearson_correlation(v, g->vector);
                 
@@ -504,13 +625,13 @@ void compare_items_in_ffn(struct network *n, struct group *g,
         }
 
         printf("\n");
-        printf("event\t\tcosine similarity\tPearson's correlation\n");
-        printf("-----\t\t-----------------\t---------------------\n");
+        printf("event\t1 - cosine similarity\t\t1 - Pearson's corr.\n");
+        printf("-----\t-----------------------\t\t-----------------------\n");
         for (int j = 0; j < e1->num_events; j++) {
-                printf("%d\t\t%.5f\t%.5f\t\t%.5f\t%.5f\n", j,
-                                css[0][j], css[1][j],
-                                pcs[0][j], pcs[1][j]);
+                printf("%d\t%.5f\t%.5f\t%.5f\t\t%.5f\t%.5f\t%.5f\n", j,
+                                1.0 - css[0][j], 1.0 - css[1][j], css[0][j] - css[1][j],
+                                1.0 - pcs[0][j], 1.0 - pcs[1][j], pcs[0][j] - pcs[1][j]);
         }
-        printf("-----\t\t-----------------\t---------------------\n");
+        printf("-----\t-----------------------\t\t-----------------------\n");
         printf("\n");
 }

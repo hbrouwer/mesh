@@ -167,9 +167,11 @@ struct group
         struct projs_array          /* array of incoming projections */
                 *inc_projs;
         struct projs_array          /* array of outgoing projections */
-                *out_projs; 
-        struct group                /* context group for Elman-type topologies */
-                *context_group;
+                *out_projs;
+
+        struct group_array          /* array of context groups */
+                *ctx_groups;
+        
         bool bias;                  /* flags whether this is a bias group */
         bool recurrent;             /* flags whether this is a recurrent group */
 };
@@ -274,11 +276,12 @@ void attach_bias_group(struct network *n, struct group *g);
 void dispose_group(struct group *g);
 void dispose_groups(struct group_array *groups);
 
-void shift_context_group_chain(struct network *n, struct group *g,
-                struct vector *v);
-void reset_error_signals(struct network *n);
+void shift_context_groups(struct network *n);
+void shift_context_group_chain(struct group *g, struct vector *v);
 void reset_context_groups(struct network *n);
+void reset_context_group_chain(struct group *g);
 void reset_recurrent_groups(struct network *n);
+void reset_error_signals(struct network *n);
 
 struct projs_array *create_projs_array(int max_elements);
 void add_to_projs_array(struct projs_array *ps, struct projection *p);
