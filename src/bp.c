@@ -324,7 +324,7 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                          *
                          * Dw_ij = -epsilon * dE/dw_ij
                          *
-                         * Note: If "Doug's momentum" is 
+                         * Note: If bounded steepest descent is
                          * used, the gradient term is scaled
                          * by the length of the gradient.
                          */
