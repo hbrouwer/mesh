@@ -19,8 +19,8 @@
 #ifndef BP_H
 #define BP_H
 
-#define SD_DFLT 0
-#define SD_DOUG 1
+#define SD_DEFAULT 0
+#define SD_BOUNDED 1
 
 #define RPROP_PLUS 0
 #define RPROP_MINUS 1

@@ -977,11 +977,11 @@ bool cmd_set_update_algorithm(char *cmd, char *fmt, struct network *n,
 
         if (strcmp(tmp, "steepest") == 0) {
                 n->update_algorithm = bp_update_sd;
-                n->sd_type = SD_DFLT;
+                n->sd_type = SD_DEFAULT;
         }
-        else if (strcmp(tmp, "dougs") == 0) {
+        else if (strcmp(tmp, "bounded") == 0) {
                 n->update_algorithm = bp_update_sd;
-                n->sd_type = SD_DOUG;
+                n->sd_type = SD_BOUNDED;
         }
         else if (strcmp(tmp, "rprop+") == 0) {
                 n->update_algorithm = bp_update_rprop;

@@ -241,9 +241,9 @@ void bp_update_sd(struct network *n)
         n->status->gradients_length = 0.0;
 
         /* determine the scaling factor for steepest descent */
-        if (n->sd_type == SD_DFLT)
+        if (n->sd_type == SD_DEFAULT)
                 n->sd_scale_factor = 1.0;
-        if (n->sd_type == SD_DOUG)
+        if (n->sd_type == SD_BOUNDED)
                 bp_determine_sd_sf(n);
 
         bp_recursively_update_sd(n, n->output);
@@ -412,11 +412,12 @@ void bp_update_projection_sd(struct network *n, struct group *g,
 }
 
 /*
- * Determine the scaling factor for steepest descent. If "Doug's momentum"
- * is used instead of "default" steepest descent, we scale the gradient
- * term of the weight delta by the length of the gradient if this length is
- * greater than 1.0. Otherwise, we simply take the product of the negative
- * learning rate and the gradient by setting the scaling factor to 1.0:
+ * Determine the scaling factor for steepest descent. If "bounded" steepest
+ * descent is used instead of "default" steepest descent, we scale the
+ * gradient term of the weight delta by the length of the gradient if this
+ * length is greater than 1.0. Otherwise, we simply take the product of the
+ * negative learning rate and the gradient by setting the scaling factor to
+ * 1.0:
  *
  *      | 1.0 / ||dE/dw|| , if ||dE/dw|| > 1.0
  * sf = |
