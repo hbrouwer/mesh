@@ -53,11 +53,12 @@ void process_command(char *cmd, struct session *s)
         cmd_quit(cmd, "quit", s, "Quitting...");
         cmd_quit(cmd, "exit", s, "Quitting...");
 
+        if (cmd_load_file(cmd, "loadFile %s", s,
+                                "loaded file: [%s]"))
+                return;
+
         if (cmd_create_network(cmd, "createNetwork %s %s", s,
                                 "created network: [%s:%s]"))
-                return;
-        if (cmd_load_network(cmd, "loadNetwork %s", s,
-                                "loaded network: [%s]"))
                 return;
         if (cmd_dispose_network(cmd, "disposeNetwork %s %s", s,
                                 "disposed network: [%s]"))
@@ -419,13 +420,13 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s, char *msg)
         return true;
 }
 
-bool cmd_load_network(char *cmd, char *fmt, struct session *s, char *msg)
+bool cmd_load_file(char *cmd, char *fmt, struct session *s, char *msg)
 {
         char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        mprintf("attempting to load network: [%s]", tmp);
+        mprintf("attempting to load file: [%s]", tmp);
 
         FILE *fd;
         if (!(fd = fopen(tmp, "r"))) {

@@ -43,7 +43,7 @@ int main(int argc, char **argv)
                 /* last argument is a network file */
                 if (argv[argc - 1] != NULL) {
                         char *cmd;
-                        asprintf(&cmd, "loadNetwork %s", argv[i]);
+                        asprintf(&cmd, "loadFile %s", argv[i]);
                         process_command(cmd, s);
                         free(cmd);
                 }
