@@ -888,10 +888,15 @@ bool cmd_load_item_set(char *cmd, char *fmt, struct network *n, bool train,
 
         struct set *s = load_set(tmp, n->input->vector->size, n->output->vector->size);
         
-        if (train)
+        if (train) {
+                if (n->training_set)
+                        dispose_set(n->training_set);
                 n->training_set = s;
-        else
+        } else {
+                if (n->test_set)
+                        dispose_set(n->test_set);
                 n->test_set = s;
+        }
 
         if (s)
                 mprintf(msg, tmp, s->num_elements);
