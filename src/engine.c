@@ -336,10 +336,12 @@ void test_ffn_network(struct network *n)
                                                 n->zero_error_radius);
                                 n->status->error += error;
 
-                                if (error < n->error_threshold)
+                                if (error <= n->error_threshold)
                                         threshold_reached++;
                         }
+                        
                 }
+                
         }
 
         printf("\n");
@@ -352,6 +354,7 @@ void test_ffn_network(struct network *n)
         printf("# items reached threshold:\t[%d (%lf)]\n",
                         threshold_reached,
                         (double)threshold_reached / n->test_set->num_elements);
+
         printf("\n");
 }
 

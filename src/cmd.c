@@ -1139,6 +1139,7 @@ bool cmd_weight_stats(char *cmd, char *fmt, struct network *n, char *msg)
         struct weight_stats *ws = create_weight_statistics(n);
         
         cprintf("");
+        cprintf("count:\t\t[%d]", ws->num_weights);
         cprintf("mean:\t\t[%f]", ws->mean);
         cprintf("mean abs.:\t[%f]", ws->mean_abs);
         cprintf("mean dist.:\t[%f]", ws->mean_dist);
