@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+#include "pprint.h"
 #include "session.h"
 
 struct session *create_session()
@@ -26,6 +27,8 @@ struct session *create_session()
         memset(s, 0, sizeof(struct session));
 
         s->networks = create_network_array(MAX_NETWORKS);
+
+        s->pprint_scheme = SCHEME_GRAYSCALE;
 
         return s;
 
@@ -72,7 +75,7 @@ void add_to_network_array(struct network_array *ns, struct network *n)
 void increase_network_array_size(struct network_array *ns)
 {
         ns->max_elements = ns->max_elements + MAX_NETWORKS;
-
+        
         int block_size = ns->max_elements * sizeof(struct network *);
         if (!(ns->elements = realloc(ns->elements, block_size)))
                 goto error_out;

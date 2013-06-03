@@ -20,10 +20,6 @@
 #include "math.h"
 #include "vector.h"
 
-/*
- * Creates a new vector.
- */
-
 struct vector *create_vector(int size)
 {
         struct vector *v;
@@ -44,19 +40,11 @@ error_out:
         return NULL;
 }
 
-/*
- * Disposes a vector.
- */ 
-
 void dispose_vector(struct vector *v)
 {
         free(v->elements);
         free(v);
 }
-
-/*
- * Copies the values of vector v2 into vector v1.
- */
 
 void copy_vector(struct vector *v1, struct vector *v2)
 {
@@ -70,24 +58,6 @@ void copy_vector(struct vector *v1, struct vector *v2)
                 v1->elements[i] = v2->elements[i];
 }
 
-/*
- * Randomizes the values of a vector using samples
- * from N(mu,sigma).
- */
-
-void randomize_vector(struct vector *v, double mu, double sigma)
-{
-#ifdef _OPENMP
-#pragma omp parallel for if(v->size >= OMP_MIN_ITERATIONS)
-#endif /* _OPENMP */
-        for (int i = 0; i < v->size; i++)
-                v->elements[i] = normrand(mu, sigma);
-}
-
-/*
- * Sets all vector values to zero.
- */
-
 void zero_out_vector(struct vector *v)
 {
 #ifdef _OPENMP
@@ -97,10 +67,6 @@ void zero_out_vector(struct vector *v)
                 v->elements[i] = 0.0;
 }
 
-/*
- * Sets all vector cells to a specified value.
- */
-
 void fill_vector_with_value(struct vector *v, double val)
 {
 #ifdef _OPENMP
@@ -109,10 +75,6 @@ void fill_vector_with_value(struct vector *v, double val)
         for (int i = 0; i < v->size; i++)
                 v->elements[i] = val;
 }
-
-/*
- * Returns the minimum value in a vector.
- */
 
 double vector_minimum(struct vector *v)
 {
@@ -125,10 +87,6 @@ double vector_minimum(struct vector *v)
         return min;
 }
 
-/*
- * Returns the maximum values in a vector.
- */
-
 double vector_maximum(struct vector *v)
 {
         double max = v->elements[0];
@@ -139,10 +97,6 @@ double vector_maximum(struct vector *v)
 
         return max;
 }
-
-/*
- * Prints a vector.
- */
 
 void print_vector(struct vector *v)
 {

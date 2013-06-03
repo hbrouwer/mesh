@@ -34,15 +34,14 @@ void randomize_gaussian(struct matrix *m, struct network *n)
 }
 
 /* 
- * Randomizes a matrix with values in a given range.
+ * Randomizes a matrix with uniformly samples values from a given range.
  */
 
 void randomize_range(struct matrix *m, struct network *n)
 {
         for (int i = 0; i < m->rows; i++)
                 for (int j = 0; j < m->cols; j++)
-                        m->elements[i][j] = (double)rand()
-                                / RAND_MAX
+                        m->elements[i][j] = (double)rand() / RAND_MAX
                                 * (n->random_max - n->random_min)
                                 + n->random_min;
 }
@@ -50,20 +49,20 @@ void randomize_range(struct matrix *m, struct network *n)
 /*
  * Randomize a matrix using Nguyen-Widrow (NW; Nguyen & Widrow, 1990)
  * randomization. In NW randomization, all weights are first randomized to
- * values within a range [min,max]. We then compute the Euclidean norm of
- * the weight matrix:
+ * values within a range [min,max]. Next, the Euclidean norm of the weight
+ * matrix is computed:
  *
- * en = sqrt(sum_i (w_ij ^ 2))
+ *     en = sqrt(sum_i (w_ij ^ 2))
  *
  * as well as a beta value:
  *
- * beta = 0.7 * h ^ (1 / i)
+ *     beta = 0.7 * h ^ (1 / i)
  *
  * where h is the number of neurons in the group that is being projected to,
  * and i the number of units in the projecting group. Based on this beta
  * value and the Euclidean norm, each weight is then adjusted to:
  *
- * w_ij = (beta * w_ij) / en
+ *     w_ij = (beta * w_ij) / en
  *
  * References
  *
@@ -110,16 +109,16 @@ void randomize_nguyen_widrow(struct matrix *m, struct network *n)
  * Randomize a matrix using Fan-In (FI) randomization. In FI randomization,
  * each weight is defined as:
  *
- * w_ij = (min / h) + R * ((max - min) / h)
+ *     w_ij = (min / h) + R * ((max - min) / h)
  *
  * where h is the number of units in the group that is projected to and R
- * is a random number in the [-1,1] range.
+ * is a random number in the range [-1,1].
  */
 
 void randomize_fan_in(struct matrix *m, struct network *n)
 {
         /*
-         * Randomize weights in the [-1,1] range.
+         * Randomize weights in the range [-1,1].
          */
         double random_min = n->random_min;
         double random_max = n->random_max;

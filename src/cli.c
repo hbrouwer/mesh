@@ -30,8 +30,8 @@ void cli_loop(struct session *s)
                 if (s->anp)
                         printf("%s", s->anp->name);
                 else
-                        printf("(null)");
-                printf("| ");
+                        printf("mesh");
+                printf("> ");
                 
                 /* get a line */
                 int num_chars;

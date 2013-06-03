@@ -27,13 +27,16 @@ struct session
 {
         struct network_array *networks;
         struct network *anp;
+        
+        bool pprint;
+        int pprint_scheme;
 };
 
 struct network_array
 {
-        int num_elements;           /* number of networks */
-        int max_elements;           /* maximum number of networks */
-        struct network **elements;  /* the actual networks */
+        int num_elements;
+        int max_elements;
+        struct network **elements;
 };
 
 struct session *create_session();

@@ -23,13 +23,13 @@
 
 struct weight_stats
 {
-        int num_weights;   /* number of weights */
-        double mean;       /* mean */
-        double mean_abs;   /* absolute mean */
-        double mean_dist;  /* mean distance */
-        double variance;   /* variance */
-        double minimum;    /* minimum */
-        double maximum;    /* maximum */
+        int num_weights;  /* number of weights */
+        double mean;      /* mean */
+        double mean_abs;  /* absolute mean */
+        double mean_dist; /* mean distance */
+        double variance;  /* variance */
+        double minimum;   /* minimum */
+        double maximum;   /* maximum */
 };
 
 struct weight_stats *create_weight_statistics(struct network *n);

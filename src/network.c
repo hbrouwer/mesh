@@ -53,6 +53,7 @@ struct network *create_network(char *name, int type)
         n->type = type;
 
         n->groups = create_group_array(MAX_GROUPS);
+        n->sets = create_sets_array(MAX_SETS);
 
         block_size = sizeof(struct status);
         if (!(n->status = malloc(block_size)))
@@ -81,15 +82,15 @@ void init_network(struct network *n)
          */
 
         if (n->groups->num_elements == 0) {
-                eprintf("cannot initialize network--network has no groups");
+                eprintf("Cannot initialize network--network has no groups");
                 return;
         }
         if (!n->input) {
-                eprintf("cannot initialize network--network has no 'input' group");
+                eprintf("Cannot initialize network--network has no input group");
                 return;
         }
         if (!n->output) {
-                eprintf("cannot initialize network--network has no 'output group");
+                eprintf("Cannot initialize network--network has no output group");
                 return;
         }
 
@@ -109,8 +110,8 @@ void init_network(struct network *n)
         if (n->use_act_lookup)
                 initialize_act_lookup_vectors(n);
         
-        if (n->batch_size == 0)
-                n->batch_size = n->training_set->num_elements;
+        if (n->batch_size == 0 && n->asp)
+                n->batch_size = n->asp->num_elements;
 
         /* initialize unfolded network (if required) */
         if (n->learning_algorithm == train_network_with_bptt)
@@ -147,10 +148,8 @@ void dispose_network(struct network *n)
         dispose_groups(n->groups);
         dispose_group_array(n->groups);
 
-        if (n->training_set)
-                dispose_set(n->training_set);
-        if (n->test_set)
-                dispose_set(n->test_set);
+        dispose_sets(n->sets);
+        dispose_sets_array(n->sets);
 
         free(n);
 }
@@ -600,6 +599,67 @@ void dispose_projection(struct projection *p)
         free(p);
 }
 
+struct sets_array *create_sets_array(int max_elements)
+{
+        struct sets_array *ss;
+        if (!(ss = malloc(sizeof(struct sets_array))))
+                goto error_out;
+        memset(ss, 0, sizeof(struct sets_array));
+
+        ss->num_elements = 0;
+        ss->max_elements = max_elements;
+
+        int block_size = ss->max_elements * sizeof(struct set *);
+        if (!(ss->elements = malloc(block_size)))
+                goto error_out;
+        memset(ss->elements, 0, block_size);
+
+        return ss;
+
+error_out:
+        perror("[create_sets_array()]");
+        return NULL;
+}
+
+void add_to_sets_array(struct sets_array *ss, struct set *s)
+{
+        ss->elements[ss->num_elements++] = s;
+        if (ss->num_elements == ss->max_elements)
+                increase_sets_array_size(ss);
+}
+
+void increase_sets_array_size(struct sets_array *ss)
+{
+        ss->max_elements = ss->max_elements + MAX_SETS;
+
+        /* reallocate memory for the sets array */
+        int block_size = ss->max_elements * sizeof(struct set *);
+        if (!(ss->elements = realloc(ss->elements, block_size)))
+                goto error_out;
+
+        /* make sure the new array cells are empty */
+        for (int i = ss->num_elements; i < ss->max_elements; i++)
+                ss->elements[i] = NULL;
+
+        return;
+
+error_out:
+        perror("[increase_sets_array_size()]");
+        return;
+}
+
+void dispose_sets_array(struct sets_array *ss)
+{
+        free(ss->elements);
+        free(ss);
+}
+
+void dispose_sets(struct sets_array *ss)
+{
+        for (int i = 0; i < ss->num_elements; i++)
+                dispose_set(ss->elements[i]);
+}
+
 /*
  * This randomizes the weights for all incoming projections of a group g,
  * and then recursively does the same for all groups towards which
@@ -667,6 +727,21 @@ struct group *find_group_by_name(struct network *n, char *name)
 }
 
 /*
+ * Find a set by name.
+ */
+
+struct set *find_set_by_name(struct network *n, char *name)
+{
+        for (int i = 0; i < n->sets->num_elements; i++) {
+                char *sn = n->sets->elements[i]->name;
+                if (strcmp(sn, name) == 0)
+                        return n->sets->elements[i];
+        }
+
+        return NULL;
+}
+
+/*
  * ########################################################################
  * ## Weight matrix saving and loading                                   ##
  * ########################################################################
@@ -718,7 +793,7 @@ void save_weight_matrix(struct group *g, FILE *fd)
                         fprintf(fd, "\n");
                 }
 
-                mprintf("wrote weights for projection: [%s -> %s]",
+                mprintf("Wrote weights for projection '%s -> %s'",
                                 p->to->name, g->name);
         }
 
@@ -759,11 +834,11 @@ void load_weight_matrices(struct network *n, char *fn)
                 /* find the groups for the projection */
                 struct group *g1, *g2;
                 if ((g1 = find_group_by_name(np, tmp1)) == NULL) {
-                        eprintf("group does not exist: %s", tmp1);
+                        eprintf("No such group '%s'", tmp1);
                         continue;
                 }
                 if ((g2 = find_group_by_name(np, tmp2)) == NULL) {
-                        eprintf("group does not exist: %s", tmp2);
+                        eprintf("No such group '%s'", tmp2);
                         continue;
                 }
 
@@ -787,7 +862,7 @@ void load_weight_matrices(struct network *n, char *fn)
                         }
                 }
 
-                mprintf("read weights for projection: [%s -> %s]",
+                mprintf("Read weights for projection '%s -> %s'",
                                 tmp1, tmp2);
         }
 

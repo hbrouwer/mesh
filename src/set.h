@@ -25,6 +25,7 @@
 
 struct set
 {
+        char *name;                 /* name of this set */
         int num_elements;           /* number of set elements */
         int max_elements;           /* maximum number of set elements */
         struct element **elements;  /* set elements */
@@ -33,23 +34,24 @@ struct set
 
 struct element
 {
-        char *name;                 /* name */
+        char *name;                 /* name of this element */
         int num_events;             /* number of events */
+        char *meta;                 /* meta information */
         struct vector **inputs;     /* input vectors */
         struct vector **targets;    /* target vectors */
 };
 
-struct set *create_set(int max_elements);
+struct set *create_set(char *name, int max_elements);
 void add_to_set(struct set *s, struct element *e);
 void increase_set_size(struct set *s);
 void dispose_set(struct set *s);
 
-struct element *create_element(char *name, int num_events, 
+struct element *create_element(char *name, int num_events, char *meta,
                 struct vector **inputs, struct vector **targets);
 void dispose_element(struct element *e);
 struct element *find_element_by_name(struct set *s, char *name);
 
-struct set *load_set(char *filename, int input_size, int output_size);
+struct set *load_set(char *name, char *filename, int input_size, int output_size);
 
 void order_set(struct set *s);
 void permute_set(struct set *s);

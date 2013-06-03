@@ -24,9 +24,9 @@
 
 struct matrix
 {
-        int rows;                   /* number of rows */
-        int cols;                   /* number of columns */
-        double **elements;          /* values */
+        int rows;
+        int cols;
+        double **elements;
 };
 
 struct matrix *create_matrix(int rows, int cols);

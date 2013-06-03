@@ -27,6 +27,7 @@
 
 #define MAX_GROUPS 5
 #define MAX_PROJS 2
+#define MAX_SETS 3
 
 /* network types */
 #define TYPE_FFN 0
@@ -108,9 +109,6 @@ struct network
 
         int history_length;         /* number of history timesteps for BPTT */
 
-        struct set *training_set;   /* set of training items */
-        struct set *test_set;       /* set of test items */
-
         int batch_size;             /* size of batch after which to update
                                        weights */
         
@@ -135,6 +133,11 @@ struct network
 
         double dbd_rate_increment;  /* learning rate increment factor for DBD */
         double dbd_rate_decrement;  /* learning rate decrement factor for DBD */
+
+        /* ## Sets ##################################################### */
+
+        struct sets_array *sets;    /* sets */
+        struct set *asp;            /* active set pointer */
 
         /* ## Unfolded recurrent network ############################### */
 
@@ -206,6 +209,19 @@ struct projection
                 *dyn_learning_pars;
         bool recurrent;             /* flags whether this is a recurrent
                                        projection for BPTT */
+};
+
+/*
+ * ########################################################################
+ * ## Sets array                                                         ##
+ * ########################################################################
+ */
+
+struct sets_array
+{
+        int num_elements;           /* number of sets */
+        int max_elements;           /* maximum number of sets */
+        struct set **elements;      /* the actual sets */
 };
 
 /*
@@ -298,11 +314,18 @@ struct projection *create_projection(
                 bool recurrent);
 void dispose_projection(struct projection *p);
 
+struct sets_array *create_sets_array(int max_elements);
+void add_to_sets_array(struct sets_array *ss, struct set *s);
+void increase_sets_array_size(struct sets_array *ss);
+void dispose_sets_array(struct sets_array *ss);
+void dispose_sets(struct sets_array *ss);
+
 void randomize_weight_matrices(struct group *g, struct network *n);
 void initialize_dyn_learning_pars(struct group *g, struct network *n);
 void initialize_act_lookup_vectors(struct network *n);
 
 struct group *find_group_by_name(struct network *n, char *name);
+struct set *find_set_by_name(struct network *n, char *name);
 
 void save_weight_matrices(struct network *n, char *fn);
 void save_weight_matrix(struct group *g, FILE *fd);

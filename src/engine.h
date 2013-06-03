@@ -20,6 +20,7 @@
 #define ENGINE_H
 
 #include "network.h"
+#include "session.h"
 
 void train_network(struct network *n);
 
@@ -36,13 +37,8 @@ void test_network(struct network *n);
 void test_ffn_network(struct network *n);
 void test_rnn_network(struct network *n);
 
-void test_network_with_item(struct network *n, struct element *e);
-void test_ffn_network_with_item(struct network *n, struct element *e);
-void test_rnn_network_with_item(struct network *n, struct element *e);
-
-void compare_items(struct network *n, struct group *g, struct element *e1,
-                struct element *e2);
-void compare_items_in_ffn(struct network *n, struct group *g,
-                struct element *e1, struct element *e2);
+void test_network_with_item(struct network *n, struct element *e, bool pprint);
+void test_ffn_network_with_item(struct network *n, struct element *e, bool pprint);
+void test_rnn_network_with_item(struct network *n, struct element *e, bool pprint);
 
 #endif /* ENGINE_H */

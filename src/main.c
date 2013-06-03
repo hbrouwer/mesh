@@ -26,22 +26,26 @@
 #include "rnn_unfold.h"
 #include "session.h"
 
-#define VERSION "[Mon Jan 28 11:52:14 CET 2013]"
+#define VERSION "0.99a"
 
 int main(int argc, char **argv)
 {
         struct session *s;
 
-        cprintf("MESH version %s", VERSION);
-        cprintf("Copyright (c) 2012, 2013 Harm Brouwer <me@hbrouwer.eu>");
-        cprintf("Center for Language and Cognition, University of Groningen");
-        cprintf("& Netherlands Organisation for Scientific Research (NWO)");
+        cprintf("MESH, version %s: http://hbrouwer.github.io/mesh/", VERSION);
 
         s = create_session();
 
         for (int i = 1; i < argc; i++) {
-                /* last argument is a network file */
-                if (argv[argc - 1] != NULL) {
+                if (strcmp(argv[i],"--help") == 0) {
+                        print_help(argv[0]);
+                        goto leave_session;
+                }
+                else if (strcmp(argv[i],"--version") == 0) {
+                        print_version();
+                        goto leave_session;
+                }
+                else if (argv[i] != NULL) {
                         char *cmd;
                         asprintf(&cmd, "loadFile %s", argv[i]);
                         process_command(cmd, s);
@@ -50,6 +54,8 @@ int main(int argc, char **argv)
         }
 
         cli_loop(s);
+
+leave_session:
         dispose_session(s);
 
         exit(EXIT_SUCCESS);
@@ -58,35 +64,35 @@ int main(int argc, char **argv)
 void print_help(char *exec_name)
 {
         cprintf(
-                        "usage: %s [options]\n\n"
+                        "Usage: %s [options-and-file]\n\n"
 
-                        "  running network simulations:\n"
-                        "    --network <file>\t\tload and test the network specified in <file>\n"
-                        "    --save_weights <file>\tsave weight matrices to <file> after training\n"
-                        "    --load_weights <file>\tload weight matrices from <file>\n"
+                        "  Basic information for users:\n"
+                        "    --help\t\t\tShows this help message\n"
+                        "    --version\t\t\tShows version\n",
 
-                        "\n"
-                        "  basic information for users:\n"
-                        "    --help\t\t\tshows this help message\n"
-                        "    --version\t\t\tshows version\n",
                         exec_name);
 }
 
 void print_version()
 {
-        cprintf("%s\n", VERSION);
+        cprintf(
+                        "\n"
+                        "(c) 2013 Harm Brouwer <me@hbrouwer.eu>\n"
+                        "Center for Language and Cognition Groningen (CLCG), University of Groningen\n"
+                        "& Netherlands Organisation for Scientific Research (NWO)\n",
+                        
+                        VERSION);
+        
 }
 
 /* print console message */
 void cprintf(const char *fmt, ...)
 {
         va_list args;
-        // fprintf(stderr, "\x1b[38;05;14m");
         va_start(args, fmt);
         vfprintf(stderr, fmt, args);
         va_end(args);
         fprintf(stderr, "\n");
-        // fprintf(stderr, "\x1b[0m");
 }
 
 /* print program message */
@@ -94,7 +100,7 @@ void mprintf(const char *fmt, ...)
 {
         va_list args;
 
-        fprintf(stderr, "--- ");
+        // fprintf(stderr, "");
         va_start(args, fmt);
         vfprintf(stderr, fmt, args);
         va_end(args);
@@ -106,13 +112,11 @@ void eprintf(const char *fmt, ...)
 {
         va_list args;
 
-        fprintf(stderr, "\x1b[38;05;1m");
-        fprintf(stderr, "!!! ERROR: ");
+        fprintf(stderr, "Error: ");
         va_start(args, fmt);
         vfprintf(stderr, fmt, args);
         va_end(args);
         fprintf(stderr, "\n");
-        fprintf(stderr, "\x1b[0m");
 }
 
 /* print progress message */
@@ -120,7 +124,7 @@ void pprintf(const char *fmt, ...)
 {
         va_list args;
 
-        fprintf(stderr, "=== ");
+        // fprintf(stderr, "");
         va_start(args, fmt);
         vfprintf(stderr, fmt, args);
         va_end(args);

@@ -23,6 +23,14 @@
 #include "vector.h"
 #include "stats.h"
 
+#define SCHEME_BLUE_RED 0
+#define SCHEME_BLUE_YELLOW 1
+#define SCHEME_GRAYSCALE 2
+#define SCHEME_SPACEPIGS 3
+#define SCHEME_MOODY_BLUES 4
+#define SCHEME_FOR_JOHN 5
+#define SCHEME_GRAY_ORANGE 6
+
 void pprint_vector(struct vector *v);
 void pprint_matrix(struct matrix *m);
 

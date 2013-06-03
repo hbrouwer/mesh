@@ -19,17 +19,23 @@
 #include "main.h"
 #include "set.h"
 
-struct set *create_set(int max_elements)
+struct set *create_set(char *name, int max_elements)
 {
         struct set *s;
         if (!(s = malloc(sizeof(struct set))))
                 goto error_out;
         memset(s, 0, sizeof(struct set));
 
+        int block_size = (strlen(name) + 1) * sizeof(char);
+        if (!(s->name = malloc(block_size)))
+                goto error_out;
+        memset(s->name, 0, block_size);
+        strncpy(s->name, name, strlen(name));
+
         s->num_elements = 0;
         s->max_elements = max_elements;
 
-        int block_size = s->max_elements * sizeof(struct element *);
+        block_size = s->max_elements * sizeof(struct element *);
         if (!(s->elements = malloc(block_size)))
                 goto error_out;
         memset(s->elements, 0, block_size);
@@ -87,7 +93,7 @@ struct element *find_element_by_name(struct set *s, char *name)
         return NULL;
 }
 
-struct element *create_element(char *name, int num_events, 
+struct element *create_element(char *name, int num_events, char *meta,
                 struct vector **inputs, struct vector **targets)
 {
         struct element *e;
@@ -98,6 +104,7 @@ struct element *create_element(char *name, int num_events,
 
         e->name = name;
         e->num_events = num_events;
+        e->meta = meta;
         e->inputs = inputs;
         e->targets = targets;
 
@@ -125,9 +132,9 @@ void dispose_element(struct element *e)
         free(e);
 }
 
-struct set *load_set(char *filename, int input_size, int output_size)
+struct set *load_set(char *name, char *filename, int input_size, int output_size)
 {
-        struct set *s = create_set(MAX_ELEMENTS);
+        struct set *s = create_set(name, MAX_ELEMENTS);
 
         FILE *fd;
         if (!(fd = fopen(filename, "r")))
@@ -135,18 +142,25 @@ struct set *load_set(char *filename, int input_size, int output_size)
 
         char buf[MAX_BUF_SIZE];
         while (fgets(buf, sizeof(buf), fd)) {
-                char tmp[MAX_BUF_SIZE];
+                char tmp1[MAX_BUF_SIZE], tmp2[MAX_BUF_SIZE];
                 int num_events;
 
-                if (sscanf(buf, "Name \"%[^\"]\" %d", tmp, &num_events) != 2)
+                if (sscanf(buf, "Item \"%[^\"]\" %d \"%[^\"]\"", tmp1, &num_events, tmp2) != 3)
                         continue;
 
                 char *name;
-                int block_size = ((strlen(tmp) + 1) * sizeof(char));
+                int block_size = ((strlen(tmp1) + 1) * sizeof(char));
                 if (!(name = malloc(block_size)))
                         goto error_out;
                 memset(name, 0, block_size);
-                strncpy(name, tmp, strlen(tmp));
+                strncpy(name, tmp1, strlen(tmp1));
+
+                char *meta;
+                block_size = ((strlen(tmp2) + 1) * sizeof(char));
+                if (!(meta = malloc(block_size)))
+                        goto error_out;
+                memset(meta, 0, block_size);
+                strncpy(meta, tmp2, strlen(tmp2));
 
                 struct vector **inputs;
                 block_size = num_events * sizeof(struct vector *);
@@ -186,7 +200,7 @@ struct set *load_set(char *filename, int input_size, int output_size)
                         }
                 }
 
-                struct element *e = create_element(name, num_events, inputs, targets);
+                struct element *e = create_element(name, num_events, meta, inputs, targets);
                 add_to_set(s, e);
         }
 

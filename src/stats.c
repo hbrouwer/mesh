@@ -22,16 +22,6 @@
 #include "matrix.h"
 #include "stats.h"
 
-/*
- * ########################################################################
- * ## Weight statistics                                                  ##
- * ########################################################################
- */
-
-/*
- * Compute weight statistics.
- */ 
-
 struct weight_stats *create_weight_statistics(struct network *n)
 {
         struct weight_stats *ws;
@@ -60,18 +50,10 @@ error_out:
         return NULL;
 }
 
-/*
- * Dispose weight statistics.
- */
-
 void dispose_weight_statistics(struct weight_stats *ws)
 {
         free(ws);
 }
-
-/*
- * Collect weight statistics.
- */
 
 void collect_weight_statistics(struct weight_stats *ws, struct group *g)
 {
@@ -85,34 +67,21 @@ void collect_weight_statistics(struct weight_stats *ws, struct group *g)
 
                 for (int r = 0; r < w->rows; r++) {
                         for (int c = 0; c < w->cols; c++) {
-                                /* number of weights */
                                 ws->num_weights++;
 
-                                /* means */
                                 ws->mean += w->elements[r][c];
                                 ws->mean_abs += fabs(w->elements[r][c]);
 
-                                /* minimum */
                                 if (w->elements[r][c] < ws->minimum)
                                         ws->minimum = w->elements[r][c];
-
-                                /* maximum */
                                 if (w->elements[r][c] > ws->maximum)
                                         ws->maximum = w->elements[r][c];
                         }
                 }
 
-                /*
-                 * Collect weight statistics for all groups
-                 * that project to this group.
-                 */
                 collect_weight_statistics(ws, p->to);
         }
 }
-
-/*
- * Collect mean dependent weight statistics.
- */
 
 void collect_mean_dependent_ws(struct weight_stats *ws, struct group *g)
 {
@@ -126,18 +95,11 @@ void collect_mean_dependent_ws(struct weight_stats *ws, struct group *g)
 
                 for (int r = 0; r < w->rows; r++) {
                         for (int c = 0; c < w->cols; c++) {
-                                /* mean distance */
                                 ws->mean_dist += fabs(w->elements[r][c] - ws->mean);
-
-                                /* variance */
                                 ws->variance += pow(w->elements[r][c] - ws->mean, 2.0);
                         }
                 }
 
-                /*
-                 * Collect mean dependent weight statistics for all
-                 * groups that project to this group.
-                 */
                 collect_mean_dependent_ws(ws, p->to);
         }
 }
