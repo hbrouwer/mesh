@@ -192,6 +192,25 @@ void add_to_group_array(struct group_array *gs, struct group *g)
 }
 
 /*
+ * Remove a group from a group array
+ */
+
+void remove_from_group_array(struct group_array *gs, struct group *g)
+{
+        int i;
+        for (i = 0; i < gs->num_elements; i++)
+                if (gs->elements[i] == g)
+                        break;
+
+        for (int j = i; j < gs->num_elements - 1; j++)
+                gs->elements[j] = gs->elements[j + 1];
+        gs->elements[gs->num_elements - 1] = NULL;
+
+        gs->num_elements--;
+}
+
+
+/*
  * Increases the size of a group array.
  */
 
@@ -517,6 +536,24 @@ void add_to_projs_array(struct projs_array *ps, struct projection *p)
 }
 
 /*
+ * Removes a projection from an array.
+ */
+
+void remove_from_projs_array(struct projs_array *ps, struct projection *p)
+{
+        int i;
+        for (i = 0; i < ps->num_elements; i++)
+                if (ps->elements[i] == p)
+                        break;
+
+        for (int j = i; j < ps->num_elements - 1; j++)
+                ps->elements[j] = ps->elements[j + 1];
+        ps->elements[ps->num_elements - 1] = NULL;
+
+        ps->num_elements--;
+}
+
+/*
  * Increases the size of a projection array.
  */
 
@@ -626,6 +663,20 @@ void add_to_sets_array(struct sets_array *ss, struct set *s)
         ss->elements[ss->num_elements++] = s;
         if (ss->num_elements == ss->max_elements)
                 increase_sets_array_size(ss);
+}
+
+void remove_from_sets_array(struct sets_array *ss, struct set *s)
+{
+        int i;
+        for (i = 0; i < ss->num_elements; i++)
+                if (ss->elements[i] == s)
+                        break;
+
+        for (int j = i; j < ss->num_elements - 1; j++)
+                ss->elements[j] = ss->elements[j + 1];
+        ss->elements[ss->num_elements - 1] = NULL;
+
+        ss->num_elements--;
 }
 
 void increase_sets_array_size(struct sets_array *ss)

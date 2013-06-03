@@ -35,6 +35,7 @@ bool cmd_change_network(char *cmd, char *fmt, struct session *s, char *msg);
 
 bool cmd_create_group(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_dispose_group(char *cmd, char *fmt, struct network *n, char *msg); 
+bool cmd_list_groups(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_attach_bias(char *cmd, char *fmt, struct network *n, char *msg);
 
 bool cmd_set_input_group(char *cmd, char *fmt, struct network *n, char *msg);
@@ -47,6 +48,8 @@ bool cmd_toggle_act_lookup(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_create_projection(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_create_elman_projection(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_dispose_projection(char *cmd, char *fmt, struct network *n, char *msg);
+bool cmd_list_projections(char *cmd, char *fmt, struct network *n,
+                struct group *g, char *msg);
 bool cmd_freeze_projection(char *cmd, char *fmt, struct network *n, char *msg);
 
 bool cmd_set_double_parameter(char *cmd, char *fmt, double *par, char *msg);

@@ -69,6 +69,20 @@ void add_to_network_array(struct network_array *ns, struct network *n)
                 increase_network_array_size(ns);
 }
 
+void remove_from_network_array(struct network_array *ns, struct network *n)
+{
+        int i;
+        for (i = 0; i < ns->num_elements; i++)
+                if (ns->elements[i] == n)
+                        break;
+
+        for (int j = i; j < ns->num_elements - 1; j++)
+                ns->elements[j] = ns->elements[j + 1];
+        ns->elements[ns->num_elements - 1] = NULL;
+
+        ns->num_elements--;
+}
+
 void increase_network_array_size(struct network_array *ns)
 {
         ns->max_elements = ns->max_elements + MAX_NETWORKS;

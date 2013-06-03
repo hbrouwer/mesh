@@ -84,6 +84,10 @@ void process_command(char *cmd, struct session *s)
                                 s->anp,
                                 "Disposed group ... \t\t ( %s )"))
                 return;
+        if (cmd_list_groups(cmd, "listGroups",
+                                s->anp,
+                                "Available groups:"))
+                return;
         if (cmd_attach_bias(cmd, "attachBias %s",
                                 s->anp,
                                 "Attached bias to group ... \t ( %s -> %s )"))
@@ -122,6 +126,11 @@ void process_command(char *cmd, struct session *s)
         if (cmd_dispose_projection(cmd, "disposeProjection %s %s",
                                 s->anp,
                                 "Disposed projection ... \t\t ( %s -> %s )"))
+                return;
+        if (cmd_list_projections(cmd, "listProjections",
+                                s->anp,
+                                s->anp->output,
+                                "Available projections:"))
                 return;
         if (cmd_freeze_projection(cmd, "freezeProjection %s %s",
                                 s->anp,
@@ -462,19 +471,10 @@ bool cmd_dispose_network(char *cmd, char *fmt, struct session *s, char *msg)
                 return true;
         }
 
-        int i;
-        for (i = 0; i < s->networks->num_elements; i++)
-                if (s->networks->elements[i] == n)
-                        break;
-
-        for (int j = i; j < s->networks->num_elements - 1; j++)
-                s->networks->elements[j] = s->networks->elements[j + 1];
-        s->networks->elements[s->networks->num_elements - 1] = NULL;
-
         if (n == s->anp)
-                s->anp = s->networks->elements[0];
+                s->anp = NULL;
+        remove_from_network_array(s->networks, n);
         dispose_network(n);
-        s->networks->num_elements--;
 
         mprintf(msg, tmp);
 
@@ -488,13 +488,17 @@ bool cmd_list_networks(char *cmd, char *fmt, struct session *s, char *msg)
 
         mprintf(msg);
 
-        for (int i = 0; i < s->networks->num_elements; i++) {
-                struct network *n = s->networks->elements[i];
-                printf("* %s", n->name);
-                if (n == s->anp) {
-                        printf("\t <- Active network\n");
-                } else {
-                        printf("\n");
+        if (s->networks->num_elements == 0) {
+                printf("(No networks)\n");
+        } else {
+                for (int i = 0; i < s->networks->num_elements; i++) {
+                        struct network *n = s->networks->elements[i];
+                        printf("* %s", n->name);
+                        if (n == s->anp) {
+                                printf("\t <- Active network\n");
+                        } else {
+                                printf("\n");
+                        }
                 }
         }
 
@@ -541,10 +545,43 @@ bool cmd_dispose_group(char *cmd, char *fmt, struct network *n, char *msg)
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        // TODO: requires remove_from_group_array()
-        // dispose_group(g);
+        struct group *g = find_group_by_name(n, tmp);
+        if (g == NULL) {
+                eprintf("Cannot dispose group--no such group '%s'", tmp);
+                return true;
+        }
+
+        // TODO: check/remove projections ...
+        remove_from_group_array(n->groups, g);
+        dispose_group(g);
 
         mprintf(msg, tmp);
+
+        return true;
+}
+
+bool cmd_list_groups(char *cmd, char *fmt, struct network *n, char *msg)
+{
+        if (strcmp(cmd, fmt) != 0)
+                return false;
+
+        mprintf(msg);
+
+        if (n->groups->num_elements == 0) {
+                printf("(No groups)\n");
+        } else {
+                for (int i = 0; i < n->groups->num_elements; i++) {
+                        struct group *g = n->groups->elements[i];
+                        printf("* %s", g->name);
+                        if (g == n->input) {
+                                printf("\t <- Input group\n");
+                        } else if (g == n->output) {
+                                printf("\t <- Output group\n");
+                        } else {
+                                printf("\n");
+                        }
+                }
+        }
 
         return true;
 }
@@ -823,8 +860,71 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct network *n, char *
 
 bool cmd_dispose_projection(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        // TODO: dispose projection
-        return false;
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
+                return false;
+
+        struct group *fg = find_group_by_name(n, tmp1);
+        struct group *tg = find_group_by_name(n, tmp2);
+
+        if (fg == NULL) {
+                eprintf("Cannot dispose projection--no such group '%s'",
+                                tmp1);
+                return true;
+        }
+        if (tg == NULL) {
+                eprintf("Cannot dispose projection--no such group '%s'",
+                                tmp2);
+                return true;
+        }
+
+        struct projection *fg_to_tg = NULL;
+        for (int i = 0; i < fg->out_projs->num_elements; i++)
+                if (fg->out_projs->elements[i]->to == tg)
+                        fg_to_tg = fg->out_projs->elements[i];
+
+        struct projection *tg_to_fg = NULL;
+        for (int i = 0; i < tg->inc_projs->num_elements; i++)
+                if (tg->inc_projs->elements[i]->to == fg)
+                        tg_to_fg = tg->inc_projs->elements[i];
+
+        if (fg_to_tg && tg_to_fg) {
+                remove_from_projs_array(fg->out_projs, fg_to_tg);
+                remove_from_projs_array(tg->inc_projs, tg_to_fg);
+                dispose_projection(fg_to_tg);
+                free(tg_to_fg);
+        } else {
+                eprintf("Cannot dispose projection--no projection between groups '%s' and '%s')",
+                                tmp1, tmp2);
+                return true;
+        }
+
+        mprintf(msg, tmp1, tmp2);
+
+        return true;
+}
+
+bool cmd_list_projections(char *cmd, char *fmt, struct network *n,
+                struct group *g, char *msg)
+{
+        if (strcmp(cmd, fmt) != 0)
+                return false;
+
+        if (!g) {
+                eprintf("Cannot list projections--network has no output group");
+                return true;
+        }
+
+        if (g == n->output)
+                mprintf(msg);
+
+        for (int i = 0; i < g->inc_projs->num_elements; i++)
+                printf("* %s -> %s\n", g->inc_projs->elements[i]->to->name, g->name);
+
+        for (int i = 0; i < g->inc_projs->num_elements; i++)
+                cmd_list_projections(cmd, fmt, n, g->inc_projs->elements[i]->to, msg);
+        
+        return true;
 }
 
 bool cmd_freeze_projection(char *cmd, char *fmt, struct network *n, char *msg)
@@ -898,13 +998,17 @@ bool cmd_list_sets(char *cmd, char *fmt, struct network *n, char *msg)
 
         mprintf(msg);
 
-        for (int i = 0; i < n->sets->num_elements; i++) {
-                struct set *s = n->sets->elements[i];
-                printf("* %s", s->name);
-                if (s == n->asp) {
-                        printf("\t <- Active set\n");
-                } else {
-                        printf("\n");
+        if (n->sets->num_elements == 0) {
+                printf("(No sets)\n");
+        } else {
+                for (int i = 0; i < n->sets->num_elements; i++) {
+                        struct set *s = n->sets->elements[i];
+                        printf("* %s", s->name);
+                        if (s == n->asp) {
+                                printf("\t <- Active set\n");
+                        } else {
+                                printf("\n");
+                        }
                 }
         }
 
@@ -943,8 +1047,24 @@ bool cmd_load_set(char *cmd, char *fmt, struct network *n, char *msg)
 
 bool cmd_dispose_set(char *cmd, char *fmt, struct network *n, char *msg)
 {
-        // TODO: dispose_set
-        return false;
+        char tmp[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        struct set *s = find_set_by_name(n, tmp);
+        if (!s) {
+                eprintf("Cannot change to set--no such set '%s'", tmp);
+                return true;
+        }
+
+        if (s == n->asp)
+                n->asp = NULL;
+        remove_from_sets_array(n->sets, s);
+        dispose_set(s);
+
+        mprintf(msg, tmp);
+
+        return true;
 }
 
 bool cmd_change_set(char *cmd, char *fmt, struct network *n, char *msg)
