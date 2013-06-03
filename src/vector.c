@@ -28,7 +28,6 @@ struct vector *create_vector(int size)
         memset(v, 0, sizeof(struct vector));
 
         v->size = size;
-
         if (!(v->elements = malloc(v->size * sizeof(double))))
                 goto error_out;
         memset(v->elements, 0, v->size * sizeof(double));

@@ -56,7 +56,7 @@ struct network
         struct group *input;        /* input group for this network */
         struct group *output;       /* output group for this network */
 
-        bool use_act_lookup;        /* use activation lookup vectors */
+        bool act_lookup;            /* use activation lookup vectors */
 
         bool initialized;           /* flags whether this network is
                                        intialized */
@@ -288,7 +288,7 @@ void increase_group_array_size(struct group_array *gs);
 void dispose_group_array(struct group_array *gs);
 
 struct group *create_group(char *name, int size, bool bias, bool recurrent);
-void attach_bias_group(struct network *n, struct group *g);
+struct group *attach_bias_group(struct network *n, struct group *g);
 void dispose_group(struct group *g);
 void dispose_groups(struct group_array *groups);
 
@@ -327,8 +327,8 @@ void initialize_act_lookup_vectors(struct network *n);
 struct group *find_group_by_name(struct network *n, char *name);
 struct set *find_set_by_name(struct network *n, char *name);
 
-void save_weight_matrices(struct network *n, char *fn);
+bool save_weight_matrices(struct network *n, char *fn);
 void save_weight_matrix(struct group *g, FILE *fd);
-void load_weight_matrices(struct network *n, char *fn);
+bool load_weight_matrices(struct network *n, char *fn);
 
 #endif /* NETWORK_H */

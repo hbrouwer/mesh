@@ -428,21 +428,21 @@ void test_rnn_network(struct network *n)
         mprintf(" ");
 }
 
-void test_network_with_item(struct network *n, struct element *e, bool pprint)
+void test_network_with_item(struct network *n, struct element *e, bool pprint, int scheme)
 {
         if (n->type == TYPE_FFN)
-                test_ffn_network_with_item(n, e, pprint);
+                test_ffn_network_with_item(n, e, pprint, scheme);
         if (n->type == TYPE_SRN)
-                test_ffn_network_with_item(n, e, pprint);
+                test_ffn_network_with_item(n, e, pprint, scheme);
         if (n->type == TYPE_RNN)
-                test_rnn_network_with_item(n, e, pprint);
+                test_rnn_network_with_item(n, e, pprint, scheme);
 }
 
 /*
  * Test a feed forward network with a single item.
  */
 
-void test_ffn_network_with_item(struct network *n, struct element *e, bool pprint)
+void test_ffn_network_with_item(struct network *n, struct element *e, bool pprint, int scheme)
 {
         n->status->error = 0.0;
 
@@ -450,14 +450,14 @@ void test_ffn_network_with_item(struct network *n, struct element *e, bool pprin
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
 
-        printf("Item: \"%s\" --  \"%s\"", e->name, e->meta);
+        printf("\nItem: \"%s\" --  \"%s\"\n", e->name, e->meta);
 
         /* present all events of the current item */
         for (int j = 0; j < e->num_events; j++) {
-                printf("\nEvent: %d", j);
-                printf("\nI: ");
+                printf("\nEvent: \t%d\n", j);
+                printf("\nInput: \t");
                 if (pprint) {
-                        pprint_vector(e->inputs[j]);
+                        pprint_vector(e->inputs[j], scheme);
                 } else {
                         print_vector(e->inputs[j]);
                 }
@@ -471,15 +471,15 @@ void test_ffn_network_with_item(struct network *n, struct element *e, bool pprin
 
                 /* compute error if an event has a target */
                 if (e->targets[j]) {
-                        printf("\nT: ");
+                        printf("\nTarget: ");
                         if (pprint) {
-                                pprint_vector(e->targets[j]);
+                                pprint_vector(e->targets[j], scheme);
                         } else  {
                                 print_vector(e->targets[j]);
                         }
-                        printf("O: ");
+                        printf("Output: ");
                         if (pprint) {
-                                pprint_vector(n->output->vector);
+                                pprint_vector(n->output->vector, scheme);
                         } else {
                                 print_vector(n->output->vector);
                         }
@@ -490,7 +490,7 @@ void test_ffn_network_with_item(struct network *n, struct element *e, bool pprin
                                         e->targets[j],
                                         n->target_radius,
                                         n->zero_error_radius);
-                                pprintf("error: [%lf]\n", n->status->error);
+                                pprintf("\nError: \t%lf\n", n->status->error);
                         }
                 }
         }
@@ -500,7 +500,7 @@ void test_ffn_network_with_item(struct network *n, struct element *e, bool pprin
  * Test a recurrent network with a single item.
  */
 
-void test_rnn_network_with_item(struct network *n, struct element *e, bool pprint)
+void test_rnn_network_with_item(struct network *n, struct element *e, bool pprint, int scheme)
 {
         n->status->error = 0.0;
 
@@ -514,14 +514,14 @@ void test_rnn_network_with_item(struct network *n, struct element *e, bool pprin
         /* stack pointer */
         int sp = 0;
 
-        printf("Item: \"%s\"\n", e->name);
+        printf("\nItem: \"%s\" --  \"%s\"\n", e->name, e->meta);
 
         /* present all events of the current item */
         for (int j = 0; j < e->num_events; j++) {
-                printf("\nEvent: %d", j);
-                printf("\nI: ");
+                printf("\nEvent: \t%d\n", j);
+                printf("\nInput: \t");
                 if (pprint) {
-                        pprint_vector(e->inputs[j]);
+                        pprint_vector(e->inputs[j], scheme);
                 } else {
                         print_vector(e->inputs[j]);
                 }
@@ -535,19 +535,19 @@ void test_rnn_network_with_item(struct network *n, struct element *e, bool pprin
                                         e->targets[j],
                                         n->target_radius,
                                         n->zero_error_radius);
-                        printf("\nT: ");
+                        printf("\nTarget: \t");
                         if (pprint) {
-                                pprint_vector(e->targets[j]);
+                                pprint_vector(e->targets[j], scheme);
                         } else {
                                 print_vector(e->targets[j]);
                         }
-                        printf("O: ");
+                        printf("Output: \t");
                         if (pprint) {
-                                pprint_vector(un->stack[sp]->output->vector);
+                                pprint_vector(un->stack[sp]->output->vector, scheme);
                         } else {
                                 print_vector(un->stack[sp]->output->vector);
                         }
-                        pprintf("error: [%lf]\n", n->status->error);
+                        pprintf("\nError: \t%lf", n->status->error);
                 }
 
                 /*

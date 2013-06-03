@@ -78,7 +78,7 @@ void process_command(char *cmd, struct session *s)
 
         if (cmd_create_group(cmd, "createGroup %s %d",
                                 s->anp,
-                                "Created group ... \t\t ( %s:%d )"))
+                                "Created group ... \t\t ( %s :: %d )"))
                 return;
         if (cmd_dispose_group(cmd, "disposeGroup %s",
                                 s->anp,
@@ -86,7 +86,7 @@ void process_command(char *cmd, struct session *s)
                 return;
         if (cmd_attach_bias(cmd, "attachBias %s",
                                 s->anp,
-                                "Attached bias to group ... \t ( %s )"))
+                                "Attached bias to group ... \t ( %s -> %s )"))
                 return;
 
         if (cmd_set_input_group(cmd, "set InputGroup %s",
@@ -106,9 +106,9 @@ void process_command(char *cmd, struct session *s)
                                 s->anp,
                                 "Set error function ... \t\t ( %s :: %s )"))
                 return;
-        if (cmd_use_act_lookup(cmd, "useActLookup",
+        if (cmd_toggle_act_lookup(cmd, "toggleActLookup",
                                 s->anp,
-                                "Using lookup tables for network ... ( %s )"))
+                                "Toggle activation lookup ... \t ( %s )"))
                 return;
 
         if (cmd_create_projection(cmd, "createProjection %s %s",
@@ -134,7 +134,7 @@ void process_command(char *cmd, struct session *s)
         
         if (cmd_set_int_parameter(cmd, "set BatchSize %d",
                                 &s->anp->batch_size,
-                                "Set batch size ... \t (%d)"))
+                                "Set batch size ... \t\t ( %d )"))
                 return;
         if (cmd_set_int_parameter(cmd, "set MaxEpochs %d",
                                 &s->anp->max_epochs,
@@ -146,7 +146,7 @@ void process_command(char *cmd, struct session *s)
                 return;
         if (cmd_set_int_parameter(cmd, "set RandomSeed %d",
                                 &s->anp->random_seed,
-                                "Set random seed ... \t ( %d )"))
+                                "Set random seed ... \t\t ( %d )"))
                 return;
         if (cmd_set_int_parameter(cmd, "set HistoryLength %d",
                                 &s->anp->history_length,
@@ -211,19 +211,19 @@ void process_command(char *cmd, struct session *s)
                 return;
         if (cmd_set_double_parameter(cmd, "set ZeroErrorRadius %lf",
                                 &s->anp->zero_error_radius,
-                                "Set zero-error radius ... \t\t ( %lf )"))
+                                "Set zero-error radius ... \t ( %lf )"))
                 return;
         if (cmd_set_double_parameter(cmd, "set RpropInitUpdate %lf",
                                 &s->anp->rp_init_update,
-                                "Set initial update value (for Rprop) ... \t (%lf )"))
+                                "Set init update (for Rprop) ...  ( %lf )"))
                 return;
         if (cmd_set_double_parameter(cmd, "set RpropEtaPlus %lf",
                                 &s->anp->rp_eta_plus,
-                                "Set Eta+ (for Rprop) ... \t\t ( %lf )"))
+                                "Set Eta+ (for Rprop) ... \t ( %lf )"))
                 return;
         if (cmd_set_double_parameter(cmd, "set RpropEtaMinus %lf",
                                 &s->anp->rp_eta_minus,
-                                "Set Eta- (for Rprop) ... \t\t ( %lf )"))
+                                "Set Eta- (for Rprop) ... \t ( %lf )"))
                 return;
         if (cmd_set_double_parameter(cmd, "set DBDRateIncrement %lf",
                                 &s->anp->dbd_rate_increment,
@@ -257,7 +257,7 @@ void process_command(char *cmd, struct session *s)
 
         if (cmd_set_training_order(cmd, "set TrainingOrder %s",
                                 &s->anp->training_order,
-                                "Set training order ... (%s)"))
+                                "Set training order ... \t\t ( %s )"))
                 return;
 
         if (cmd_set_rand_algorithm(cmd, "set RandomAlgorithm %s",
@@ -308,7 +308,7 @@ void process_command(char *cmd, struct session *s)
        
         if (cmd_toggle_pretty_printing(cmd, "togglePrettyPrinting",
                                 s,
-                                "Toggled pretty printing ... (%s)"))
+                                "Toggled pretty printing ... \t ( %s )"))
                 return;
         if (cmd_show_vector(cmd, "showUnits %s",
                                 s,
@@ -343,11 +343,19 @@ void process_command(char *cmd, struct session *s)
 
         if (cmd_save_weights(cmd, "saveWeights %s",
                                 s->anp,
-                                "Saved weights ... \t\t\t (%s)"))
+                                "Saved weights ... \t\t ( %s )"))
                 return;
         if (cmd_load_weights(cmd, "loadWeights %s",
                                 s->anp,
-                                "Loaded weights ... \t\t\t (%s)"))
+                                "Loaded weights ... \t\t ( %s )"))
+                return;
+
+        /*
+         * Color schemes.
+         */
+        if (cmd_set_colorscheme(cmd, "set ColorScheme %s",
+                                s,
+                                "Set color scheme ... \t\t ( %s )"))
                 return;
 
         /*
@@ -553,9 +561,9 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct network *n, char *msg)
                 return true;
         }
 
-        attach_bias_group(n, g);
+        struct group *bg = attach_bias_group(n, g);
 
-        mprintf(msg, tmp);
+        mprintf(msg, bg->name, g->name);
 
         return true;
 }
@@ -698,15 +706,20 @@ bool cmd_set_err_func(char *cmd, char *fmt, struct network *n, char *msg)
         return true;
 }
 
-bool cmd_use_act_lookup(char *cmd, char *fmt, struct network *n, char *msg)
+bool cmd_toggle_act_lookup(char *cmd, char *fmt, struct network *n, char *msg)
 {
         if (strlen(cmd) != strlen(fmt) 
                         || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
-        mprintf(msg, n->name);
-
-        n->use_act_lookup = true;
+        n->act_lookup = !n->act_lookup;
+        
+        if (n->act_lookup) {
+                initialize_act_lookup_vectors(n);
+                mprintf(msg, "on");
+        } else {
+                mprintf(msg, "off");
+        }
 
         return true;
 }
@@ -963,12 +976,12 @@ bool cmd_list_items(char *cmd, char *fmt, struct network *n, char *msg)
                 return true;
         }
 
+        mprintf(msg, n->asp->name);
+
         for (int i = 0; i < n->asp->num_elements; i++) {
                 struct element *e = n->asp->elements[i];
-                printf("* \"%s\" \t %d \t \"%s\"\n", e->name, e->num_events, e->meta);
+                printf("* \"%s\" %d \"%s\"\n", e->name, e->num_events, e->meta);
         }
-
-        mprintf(msg, n->asp->name);
 
         return true;
 }
@@ -1167,7 +1180,7 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s, char *msg)
                 return true;
         }
 
-        test_network_with_item(s->anp, e, s->pprint);
+        test_network_with_item(s->anp, e, s->pprint, s->pprint_scheme);
 
         return true;
 }
@@ -1232,14 +1245,14 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s, char *msg, int typ
 
         if (type == VTYPE_UNITS) {
                 if (s->pprint) {
-                        pprint_vector(g->vector);
+                        pprint_vector(g->vector, s->pprint_scheme);
                 } else {
                         print_vector(g->vector);
                 }
         }
         if (type == VTYPE_ERROR) {
                 if (s->pprint) {
-                        pprint_vector(g->error);
+                        pprint_vector(g->error, s->pprint_scheme);
                 } else {
                         print_vector(g->error);
                 }
@@ -1281,21 +1294,21 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s, char *msg, int typ
 
                 if (type == MTYPE_WEIGHTS) {
                         if (s->pprint) {
-                                pprint_matrix(fg_to_tg->weights);
+                                pprint_matrix(fg_to_tg->weights, s->pprint_scheme);
                         } else {
                                 print_matrix(fg_to_tg->weights);
                         }
                 }
                 if (type == MTYPE_GRADIENTS) {
                         if (s->pprint) {
-                                pprint_matrix(fg_to_tg->gradients);
+                                pprint_matrix(fg_to_tg->gradients, s->pprint_scheme);
                         } else {
                                 print_matrix(fg_to_tg->gradients);
                         }
                 }
                 if (type == MTYPE_DYN_PARS) {
                         if (s->pprint) {
-                                pprint_matrix(fg_to_tg->dyn_learning_pars);
+                                pprint_matrix(fg_to_tg->dyn_learning_pars, s->pprint_scheme);
                         } else {
                                 print_matrix(fg_to_tg->dyn_learning_pars);
                         }
@@ -1317,9 +1330,10 @@ bool cmd_save_weights(char *cmd, char *fmt, struct network *n, char *msg)
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        save_weight_matrices(n, tmp);
-
-        mprintf(msg, tmp);
+        if (save_weight_matrices(n, tmp))
+                mprintf(msg, tmp);
+        else
+                eprintf("Cannot save weights to file '%s'", tmp);
 
         return true;
 }
@@ -1330,7 +1344,38 @@ bool cmd_load_weights(char *cmd, char *fmt, struct network *n, char *msg)
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        load_weight_matrices(n, tmp);
+        if (load_weight_matrices(n, tmp))
+                mprintf(msg, tmp);
+        else
+                eprintf("Cannot load weights from file '%s'", tmp);
+
+        return true;
+}
+
+bool cmd_set_colorscheme(char *cmd, char *fmt, struct session *s, char *msg)
+{
+        char tmp[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        if (strcmp(tmp, "blue_red") == 0)
+                s->pprint_scheme = SCHEME_BLUE_RED;
+        else if (strcmp(tmp, "blue_yellow") == 0)
+                s->pprint_scheme = SCHEME_BLUE_YELLOW;
+        else if (strcmp(tmp, "grayscale") == 0)
+                s->pprint_scheme = SCHEME_GRAYSCALE;
+        else if (strcmp(tmp, "spacepigs") == 0)
+                s->pprint_scheme = SCHEME_SPACEPIGS;
+        else if (strcmp(tmp, "moody_blues") == 0)
+                s->pprint_scheme = SCHEME_MOODY_BLUES;
+        else if (strcmp(tmp, "for_john") == 0)
+                s->pprint_scheme = SCHEME_FOR_JOHN;
+        else if (strcmp(tmp, "gray_orange") == 0)
+                s->pprint_scheme = SCHEME_GRAY_ORANGE;
+        else {
+                eprintf("Cannot set color scheme--no such scheme '%s'", tmp);
+                return true;
+        }
 
         mprintf(msg, tmp);
 

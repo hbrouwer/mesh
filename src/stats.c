@@ -29,17 +29,11 @@ struct weight_stats *create_weight_statistics(struct network *n)
                 goto error_out;
         memset(ws, 0, sizeof(struct weight_stats));
 
-        /* collect weight statistics */
         collect_weight_statistics(ws, n->output);
-
-        /* compute means */
         ws->mean /= ws->num_weights;
         ws->mean_abs /= ws->num_weights;
 
-        /* collect mean dependent statistics */
         collect_mean_dependent_ws(ws, n->output);
-
-        /* compute mean dependent measures */
         ws->mean_dist /= ws->num_weights;
         ws->variance /= (ws->num_weights - 1);
 
@@ -68,10 +62,8 @@ void collect_weight_statistics(struct weight_stats *ws, struct group *g)
                 for (int r = 0; r < w->rows; r++) {
                         for (int c = 0; c < w->cols; c++) {
                                 ws->num_weights++;
-
                                 ws->mean += w->elements[r][c];
                                 ws->mean_abs += fabs(w->elements[r][c]);
-
                                 if (w->elements[r][c] < ws->minimum)
                                         ws->minimum = w->elements[r][c];
                                 if (w->elements[r][c] > ws->maximum)

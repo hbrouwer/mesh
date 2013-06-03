@@ -33,14 +33,14 @@ int PALETTE_GRAY_ORANGE[10] = {220, 221, 222, 223, 224, 255, 253, 251, 249, 247}
  * Pretty print vector.
  */
 
-void pprint_vector(struct vector *v)
+void pprint_vector(struct vector *v, int scheme)
 {
         double min = vector_minimum(v);
         double max = vector_maximum(v);
 
         for (int i = 0; i < v->size; i++) {
                 double sv = pprint_scale_value(v->elements[i], min, max);
-                pprint_value_as_color(sv, SCHEME_BLUE_RED);
+                pprint_value_as_color(sv, scheme);
         }
         printf("\n");
 }
@@ -49,7 +49,7 @@ void pprint_vector(struct vector *v)
  * Pretty print matrix.
  */
 
-void pprint_matrix(struct matrix *m)
+void pprint_matrix(struct matrix *m, int scheme)
 {
         double min = matrix_minimum(m);
         double max = matrix_maximum(m);
@@ -57,7 +57,7 @@ void pprint_matrix(struct matrix *m)
         for (int i = 0; i < m->rows; i++) {
                 for (int j = 0; j < m->cols; j++) {
                         double sv = pprint_scale_value(m->elements[i][j], min, max);
-                        pprint_value_as_color(sv, SCHEME_BLUE_RED);
+                        pprint_value_as_color(sv, scheme);
                 }
                 printf("\n");
         }

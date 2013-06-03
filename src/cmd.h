@@ -42,7 +42,7 @@ bool cmd_set_output_group(char *cmd, char *fmt, struct network *n, char *msg);
 
 bool cmd_set_act_func(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_set_err_func(char *cmd, char *fmt, struct network *n, char *msg);
-bool cmd_use_act_lookup(char *cmd, char *fmt, struct network *n, char *msg);
+bool cmd_toggle_act_lookup(char *cmd, char *fmt, struct network *n, char *msg);
 
 bool cmd_create_projection(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_create_elman_projection(char *cmd, char *fmt, struct network *n, char *msg);
@@ -82,5 +82,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s, char *msg, int typ
 
 bool cmd_load_weights(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_save_weights(char *cmd, char *fmt, struct network *n, char *msg);
+
+bool cmd_set_colorscheme(char *cmd, char *fmt, struct session *s, char *msg);
 
 #endif /* CMD_H */

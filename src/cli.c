@@ -27,10 +27,13 @@ void cli_loop(struct session *s)
 
         do {
                 /* prompt */
-                if (s->anp)
+                if (s->anp) {
                         printf("%s", s->anp->name);
-                else
+                        if (s->anp->asp)
+                                printf(":%s", s->anp->asp->name);
+                } else {
                         printf("mesh");
+                }
                 printf("> ");
                 
                 /* get a line */

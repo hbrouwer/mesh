@@ -31,8 +31,8 @@
 #define SCHEME_FOR_JOHN 5
 #define SCHEME_GRAY_ORANGE 6
 
-void pprint_vector(struct vector *v);
-void pprint_matrix(struct matrix *m);
+void pprint_vector(struct vector *v, int scheme);
+void pprint_matrix(struct matrix *m, int scheme);
 
 double pprint_scale_value(double v, double min, double max);
 void pprint_value_as_color(double v, int scheme);

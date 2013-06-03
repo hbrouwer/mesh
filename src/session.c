@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 
-#include "pprint.h"
 #include "session.h"
 
 struct session *create_session()
@@ -27,8 +26,6 @@ struct session *create_session()
         memset(s, 0, sizeof(struct session));
 
         s->networks = create_network_array(MAX_NETWORKS);
-
-        s->pprint_scheme = SCHEME_GRAYSCALE;
 
         return s;
 

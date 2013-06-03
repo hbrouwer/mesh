@@ -97,7 +97,7 @@ void feed_forward(struct network *n, struct group *g)
                          *
                          * y_j = f(x_j)
                          */
-                        if (!n->use_act_lookup) {
+                        if (!n->act_lookup) {
                                 rg->vector->elements[j] = rg->act_fun->fun(rg->vector, j);
                         } else {
                                 rg->vector->elements[j] = act_lookup(rg->vector->elements[j],

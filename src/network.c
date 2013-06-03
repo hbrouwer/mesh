@@ -107,7 +107,7 @@ void init_network(struct network *n)
          * Initialize activation function lookup
          * vectors (if required).
          */
-        if (n->use_act_lookup)
+        if (n->act_lookup)
                 initialize_act_lookup_vectors(n);
         
         if (n->batch_size == 0 && n->asp)
@@ -277,7 +277,7 @@ error_out:
  * Attaches a bias group to a specified group.
  */
 
-void attach_bias_group(struct network *n, struct group *g)
+struct group *attach_bias_group(struct network *n, struct group *g)
 {
         /*
          * Create a new "bias" group.
@@ -347,11 +347,11 @@ void attach_bias_group(struct network *n, struct group *g)
                                 prev_weight_deltas, dyn_learning_pars, false);
         add_to_projs_array(g->inc_projs, ip);
 
-        return;
+        return bg;
 
 error_out:
         perror("[attach_bias_group()]");
-        return;
+        return NULL;
 }
 
 /*
@@ -707,6 +707,8 @@ void initialize_act_lookup_vectors(struct network *n)
                 if (g == n->input || g->bias)
                         continue;
 
+                if (g->act_fun->lookup)
+                        dispose_vector(g->act_fun->lookup);
                 g->act_fun->lookup = create_act_lookup_vector(g->act_fun->fun);
         }
 }
@@ -751,7 +753,7 @@ struct set *find_set_by_name(struct network *n, char *name)
  * Save weight matrices to file.
  */
 
-void save_weight_matrices(struct network *n, char *fn)
+bool save_weight_matrices(struct network *n, char *fn)
 {
         FILE *fd;
         if (!(fd = fopen(fn, "w")))
@@ -766,11 +768,11 @@ void save_weight_matrices(struct network *n, char *fn)
 
         fclose(fd);
 
-        return;
+        return true;
 
 error_out:
         perror("[save_weight_matrices()]");
-        return;
+        return false;
 }
 
 void save_weight_matrix(struct group *g, FILE *fd)
@@ -804,13 +806,15 @@ void save_weight_matrix(struct group *g, FILE *fd)
         for (int i = 0; i < g->out_projs->num_elements; i++)
                 if (!g->out_projs->elements[i]->recurrent)
                         save_weight_matrix(g->out_projs->elements[i]->to, fd);
+
+        return;
 }
 
 /*
  * Load weight matrices from file.
  */
 
-void load_weight_matrices(struct network *n, char *fn)
+bool load_weight_matrices(struct network *n, char *fn)
 {
         FILE *fd;
         if (!(fd = fopen(fn, "r")))
@@ -868,9 +872,9 @@ void load_weight_matrices(struct network *n, char *fn)
 
         fclose(fd);
 
-        return;
+        return true;
 
 error_out:
         perror("[load_weight_matrices()]");
-        return;
+        return false;
 }

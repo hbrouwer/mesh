@@ -109,7 +109,7 @@ double cosine_similarity(struct vector *v1, struct vector *v2)
  * pc = -----------------------------------------------------
  *      sqrt(sum_i (x_i - x) ^ 2) * sqrt(sum_i (y_i - y) ^ 2)
  *
- * where x is the average of vector x and y the average of vector y.
+ * where x is the average of vector x, and y the average of vector y.
  */
 
 double pearson_correlation(struct vector *v1, struct vector *v2)
