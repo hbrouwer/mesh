@@ -1303,15 +1303,18 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s, char *msg)
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        mprintf(msg, s->anp->name, tmp);
-
         struct item *item = find_array_element_by_name(s->anp->asp->items, tmp);
         if (!item) {
                 eprintf("Cannot test network--no such item '%s'", tmp);
                 return true;
         }
 
+        mprintf(msg, s->anp->name, tmp);
+        mprintf(" ");
+
         test_network_with_item(s->anp, item, s->pprint, s->pprint_scheme);
+
+        mprintf(" ");
 
         return true;
 }

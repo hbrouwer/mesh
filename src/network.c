@@ -435,27 +435,29 @@ void save_weight_matrix(struct group *g, FILE *fd)
 {
         /* write all incoming projections */
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
-                struct projection *p = g->inc_projs->elements[i];
+                struct projection *ip = g->inc_projs->elements[i];
                 
-                fprintf(fd, "%s -> %s\n", p->to->name, g->name);
+                fprintf(fd, "%s -> %s\n", ip->to->name, g->name);
                 
-                for (int r = 0; r < p->weights->rows; r++) {
-                        for (int c = 0; c < p->weights->cols; c++) {
-                                fprintf(fd, "%f", p->weights->elements[r][c]);
-                                if (c < p->weights->cols - 1)
+                for (int r = 0; r < ip->weights->rows; r++) {
+                        for (int c = 0; c < ip->weights->cols; c++) {
+                                fprintf(fd, "%f", ip->weights->elements[r][c]);
+                                if (c < ip->weights->cols - 1)
                                         fprintf(fd, " ");
                         }
                         fprintf(fd, "\n");
                 }
 
                 mprintf("Wrote weights for projection '%s -> %s'",
-                                p->to->name, g->name);
+                                ip->to->name, g->name);
         }
 
         /* write all outgoing projections */
-        for (int i = 0; i < g->out_projs->num_elements; i++)
-                if (!((struct projection *)g->out_projs->elements[i])->recurrent)
-                        save_weight_matrix(((struct projection *)g->out_projs->elements[i])->to, fd);
+        for (int i = 0; i < g->out_projs->num_elements; i++) {
+                struct projection *op = g->out_projs->elements[i];
+                if (!op->recurrent)
+                        save_weight_matrix(op->to, fd);
+        }
 
         return;
 }

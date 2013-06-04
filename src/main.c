@@ -123,9 +123,8 @@ void pprintf(const char *fmt, ...)
 {
         va_list args;
 
-        fprintf(stderr, "**** ");
+        fprintf(stdout, "**** ");
         va_start(args, fmt);
-        vfprintf(stderr, fmt, args);
+        vfprintf(stdout, fmt, args);
         va_end(args);
-        fprintf(stderr, "\n");
 }

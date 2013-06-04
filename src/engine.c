@@ -24,8 +24,8 @@
 
 void train_network(struct network *n)
 {
-        pprintf("Epoch \t Error \t\t Weight Cost \t Gradient Lin.");
-        pprintf("----- \t ----- \t\t ----------- \t -------------");
+        pprintf("Epoch \t Error \t\t Weight Cost \t Gradient Lin.\n");
+        pprintf("----- \t ----- \t\t ----------- \t -------------\n");
 
         n->learning_algorithm(n);
 }
@@ -33,7 +33,7 @@ void train_network(struct network *n)
 void print_training_progress(struct network *n)
 {
         if (n->status->epoch == 1 || n->status->epoch % n->report_after == 0)
-                pprintf("%.4d \t %lf \t %lf \t %lf",
+                pprintf("%.4d \t %lf \t %lf \t %lf\n",
                                 n->status->epoch,
                                 n->status->error,
                                 n->status->weight_cost,
@@ -42,20 +42,20 @@ void print_training_progress(struct network *n)
 
 void print_training_summary(struct network *n)
 {
-        mprintf(" ");
-        mprintf("Training finished after %d epoch(s) -- Network error: %f",
+        pprintf("\n");
+        pprintf("Training finished after %d epoch(s) -- Network error: %f\n",
                         n->status->epoch, n->status->error);
 }
 
 void print_testing_summary(struct network *n, int tr)
 {
-        pprintf("Number of items: \t\t %d",
+        pprintf("Number of items: \t\t %d\n",
                         n->asp->items->num_elements);
-        pprintf("Total error: \t\t %lf",
+        pprintf("Total error: \t\t %lf\n",
                         n->status->error);
-        pprintf("Error per example:\t\t %lf",
+        pprintf("Error per example:\t\t %lf\n",
                         n->status->error / n->asp->items->num_elements);
-        pprintf("# Items reached threshold:  %d (%.2lf%%)",
+        pprintf("# Items reached threshold:  %d (%.2lf%%)\n",
                         tr, ((double)tr / n->asp->items->num_elements) * 100.0);
 }
 
@@ -360,11 +360,12 @@ void test_ffn_network_with_item(struct network *n, struct item *item, bool pprin
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
 
-        printf("\nItem: \"%s\" --  \"%s\"\n", item->name, item->meta);
+        pprintf("Item: \t\"%s\" --  \"%s\"\n", item->name, item->meta);
 
         for (int i = 0; i < item->num_events; i++) {
-                printf("\nEvent: \t%d\n", i);
-                printf("Input: \t");
+                pprintf("\n");
+                pprintf("Event: \t%d\n", i);
+                pprintf("Input: \t");
                 if (pprint) {
                         pprint_vector(item->inputs[i], scheme);
                 } else {
@@ -380,13 +381,14 @@ void test_ffn_network_with_item(struct network *n, struct item *item, bool pprin
                 if (!item->targets[i])
                         continue;
 
-                printf("\nTarget: ");
+                pprintf("\n");
+                pprintf("Target: \t");
                 if (pprint) {
                         pprint_vector(item->targets[i], scheme);
                 } else  {
                         print_vector(item->targets[i]);
                 }
-                printf("Output: ");
+                pprintf("Output: \t");
                 if (pprint) {
                         pprint_vector(n->output->vector, scheme);
                 } else {
@@ -402,7 +404,8 @@ void test_ffn_network_with_item(struct network *n, struct item *item, bool pprin
                 double zr = n->zero_error_radius; 
 
                 n->status->error += n->output->err_fun->fun(g, tv, tr, zr);
-                printf("Error: \t%lf\n\n", n->status->error);
+                pprintf("\n");
+                pprintf("Error: \t%lf\n", n->status->error);
         }
 }
 
@@ -416,13 +419,15 @@ void test_rnn_network_with_item(struct network *n, struct item *item, bool pprin
         for (int i = 0; i < un->stack_size; i++)
                 reset_recurrent_groups(un->stack[i]);
 
-        printf("\nItem: \"%s\" --  \"%s\"\n", item->name, item->meta);
+        pprintf("Item: \t\"%s\" --  \"%s\"\n", item->name, item->meta);
+
 
         for (int i = 0; i < item->num_events; i++) {
                 int sp = un->sp;
 
-                printf("\nEvent: \t%d\n", i);
-                printf("\nInput: \t");
+                pprintf("\n");
+                pprintf("Event: \t%d\n", i);
+                pprintf("Input: \t");
                 if (pprint) {
                         pprint_vector(item->inputs[i], scheme);
                 } else {
@@ -435,13 +440,14 @@ void test_rnn_network_with_item(struct network *n, struct item *item, bool pprin
                 if (!item->targets[i])
                         goto cycle_stack;
              
-                printf("\nTarget: \t");
+                pprintf("\n");
+                pprintf("Target: \t");
                 if (pprint) {
                         pprint_vector(item->targets[i], scheme);
                 } else {
                         print_vector(item->targets[i]);
                 }
-                printf("Output: \t");
+                pprintf("Output: \t");
                 if (pprint) {
                         pprint_vector(un->stack[sp]->output->vector, scheme);
                 } else {
@@ -454,8 +460,8 @@ void test_rnn_network_with_item(struct network *n, struct item *item, bool pprin
                 double zr = n->zero_error_radius;
 
                 n->status->error += n->output->err_fun->fun(g, tv, tr, zr);
-
-                pprintf("\nError: \t%lf", n->status->error);
+                pprintf("\n");
+                pprintf("Error: \t%lf\n", n->status->error);
 
 cycle_stack:
                 if (sp == un->stack_size - 1) {
