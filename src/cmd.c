@@ -1288,8 +1288,11 @@ bool cmd_test(char *cmd, char *fmt, struct network *n, char *msg)
                 return false;
 
         mprintf(msg, n->name);
+        mprintf(" ");
                 
         test_network(n);
+
+        mprintf(" ");
 
         return true;
 }

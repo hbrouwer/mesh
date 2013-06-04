@@ -41,6 +41,7 @@ struct rnn_unfolded_network
                 **recur_dyn_learning_pars;
         int stack_size;           /* state stack size */
         struct network **stack;   /* network state stack */
+        int sp;                   /* stack pointer */
 };
 
 struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n);

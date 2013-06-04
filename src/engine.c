@@ -22,16 +22,6 @@
 #include "math.h"
 #include "pprint.h"
 
-/*
- * ########################################################################
- * ## Training                                                           ##
- * ########################################################################
- */
-
-/*
- * Train network.
- */
-
 void train_network(struct network *n)
 {
         pprintf("Epoch \t Error \t\t Weight Cost \t Gradient Lin.");
@@ -39,12 +29,6 @@ void train_network(struct network *n)
 
         n->learning_algorithm(n);
 }
-
-
-
-/*
- * Report training progress.
- */
 
 void print_training_progress(struct network *n)
 {
@@ -56,21 +40,24 @@ void print_training_progress(struct network *n)
                                 n->status->gradient_linearity);
 }
 
-/*
- * Print training summary.
- */
-
 void print_training_summary(struct network *n)
 {
         mprintf(" ");
         mprintf("Training finished after %d epoch(s) -- Network error: %f",
-                        n->status->epoch,
-                        n->status->error);
+                        n->status->epoch, n->status->error);
 }
 
-/*
- * Scale learning rate.
- */
+void print_testing_summary(struct network *n, int tr)
+{
+        pprintf("Number of items: \t\t %d",
+                        n->asp->items->num_elements);
+        pprintf("Total error: \t\t %lf",
+                        n->status->error);
+        pprintf("Error per example:\t\t %lf",
+                        n->status->error / n->asp->items->num_elements);
+        pprintf("# Items reached threshold:  %d (%.2lf%%)",
+                        tr, ((double)tr / n->asp->items->num_elements) * 100.0);
+}
 
 void scale_learning_rate(struct network *n)
 {
@@ -78,14 +65,10 @@ void scale_learning_rate(struct network *n)
         if (sa > 0 && n->status->epoch % sa == 0) {
                 double lr = n->learning_rate;
                 n->learning_rate *= n->lr_scale_factor;
-                mprintf("Scaled learning rate \t\t  ( %lf => %lf )",
+                mprintf("Scaled learning rate ... \t  ( %lf => %lf )",
                                 lr, n->learning_rate);
         }
 }
-
-/*
- * Scale momentum.
- */
 
 void scale_momentum(struct network *n)
 {
@@ -93,14 +76,10 @@ void scale_momentum(struct network *n)
         if (sa > 0 && n->status->epoch % sa == 0) {
                 double mn = n->momentum;
                 n->momentum *= n->mn_scale_factor;
-                mprintf("Scaled momentum \t\t ( %lf => %lf )",
+                mprintf("Scaled momentum ... \t ( %lf => %lf )",
                                 mn, n->momentum);
         }
 }
-
-/*
- * Scale weight decay
- */
 
 void scale_weight_decay(struct network *n)
 {
@@ -108,35 +87,22 @@ void scale_weight_decay(struct network *n)
         if (sa > 0 && n->status->epoch % sa == 0) {
                 double wd = n->weight_decay;
                 n->weight_decay *= n->wd_scale_factor;
-                mprintf("Scale weight decay \t\t ( %lf => %lf)",
+                mprintf("Scaled weight decay ... \t ( %lf => %lf)",
                                 wd, n->weight_decay);
         }
 }
-
-/*
- * ########################################################################
- * ## Backpropagation training                                           ##
- * ########################################################################
- */
-
-/*
- * Backpropagation (BP) training.
- */
 
 void train_network_with_bp(struct network *n)
 {
         if (n->training_order == TRAIN_ORDERED)
                 order_set(n->asp);
 
-        /* train for a maximum number of epochs */
         int item_itr = 0;
-        for (n->status->epoch = 1;
-                        n->status->epoch <= n->max_epochs;
-                        n->status->epoch++) {
+        for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
+                n->status->epoch = epoch;
                 n->status->prev_error = n->status->error;
                 n->status->error = 0.0;
 
-                /* determine training order */
                 if (item_itr == 0) {
                         if (n->training_order == TRAIN_PERMUTED)
                                 permute_set(n->asp);
@@ -144,59 +110,25 @@ void train_network_with_bp(struct network *n)
                                 randomize_set(n->asp);
                 }
 
-                /* train a batch of items */
                 for (int i = 0; i < n->batch_size; i++) {
-                        /* select item */
                         int item_idx = n->asp->order[item_itr++];
-                        struct item *item = (struct item *)n->asp->items->elements[item_idx];
-
-                        /* restart training set (if required) */
                         if (item_itr == n->asp->items->num_elements)
                                 item_itr = 0;
+                        struct item *item = n->asp->items->elements[item_idx];
 
-                        /* reset context groups (for SRNs) */
                         if (n->type == TYPE_SRN)
                                 reset_context_groups(n);
-
-                        /* present all events of the current item */
-                        for (int j = 0; j < item->num_events; j++) {
-                                /* shift context groups (for SRNs) */
-                                if (j > 0 && n->type == TYPE_SRN)
-                                        shift_context_groups(n);
-
-                                copy_vector(n->input->vector, item->inputs[j]);
-                                feed_forward(n, n->input);
-
-                                /* inject error if an event has a target */
-                                if (item->targets[j]) {
-                                        reset_error_signals(n);
-                                        bp_output_error(n->output,
-                                                        item->targets[j],
-                                                        n->target_radius,
-                                                        n->zero_error_radius);
-                                        bp_backpropagate_error(n, n->output);
-                                        if (j == item->num_events - 1) {
-                                                n->status->error += n->output->err_fun->fun(
-                                                                n->output,
-                                                                item->targets[j],
-                                                                n->target_radius,
-                                                                n->zero_error_radius)
-                                                        / n->batch_size;
-                                        }
-                                }
-                        }
+                        
+                        train_ffn_network_with_item(n, item);
                 }
 
-                /* stop training if threshold is reached */
                 if (n->status->error < n->error_threshold) {
                         print_training_summary(n);
                         break;
                 }
 
-                /* update weights */
                 n->update_algorithm(n);
 
-                /* scale learning rate, momentum and weight decay */
                 scale_learning_rate(n);
                 scale_momentum(n);
                 scale_weight_decay(n);
@@ -205,36 +137,50 @@ void train_network_with_bp(struct network *n)
         }
 }
 
-/*
- * Backpropagation Through Time (BPTT) training.
- */
+void train_ffn_network_with_item(struct network *n, struct item *item)
+{
+        for (int i = 0; i < item->num_events; i++) {
+                if (i > 0 && n->type == TYPE_SRN)
+                        shift_context_groups(n);
+                
+                copy_vector(n->input->vector, item->inputs[i]);
+                feed_forward(n, n->input);
+
+                if (!item->targets[i])
+                        continue;
+
+                reset_error_signals(n);
+
+                struct group *g = n->output;
+                struct vector *tv = item->targets[i];
+                double tr = n->target_radius;
+                double zr = n->zero_error_radius;
+
+                bp_output_error(g, tv, tr, zr);
+                bp_backpropagate_error(n, g);
+                
+                if (i == item->num_events - 1) {
+                        double error = n->output->err_fun->fun(g, tv, tr, zr);
+                        error /= n->batch_size;
+                        n->status->error += error;
+                }
+        }
+}
+
 
 void train_network_with_bptt(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
 
-        /* order training items (if required) */
         if (n->training_order == TRAIN_ORDERED)
                 order_set(n->asp);
 
-        /* train for a maximum number of epochs */
         int item_itr = 0;
-        for (n->status->epoch = 1; 
-                        n->status->epoch <= n->max_epochs;
-                        n->status->epoch++) {
+        for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
+                n->status->epoch = epoch;
                 n->status->prev_error = n->status->error;
                 n->status->error = 0.0;
 
-                /* reset recurrent groups and error signals */
-                for (int j = 0; j < un->stack_size; j++) {
-                        reset_recurrent_groups(un->stack[j]);
-                        reset_error_signals(un->stack[j]);
-                }
-
-                /* stack pointer */
-                int sp = 0;
-
-                /* determine training order */
                 if (item_itr == 0) {
                         if (n->training_order == TRAIN_PERMUTED)
                                 permute_set(n->asp);
@@ -242,61 +188,24 @@ void train_network_with_bptt(struct network *n)
                                 randomize_set(n->asp);
                 }
 
-                /* select item */
                 int item_idx = n->asp->order[item_itr++];
-                struct item *item = n->asp->items->elements[item_idx];
-
-                /* restart training set (if required) */
                 if (item_itr == n->asp->items->num_elements)
                         item_itr = 0;
+                struct item *item = n->asp->items->elements[item_idx];
 
-                /* present all events of the current item */
-                for (int j = 0; j < item->num_events; j++) {
-                        copy_vector(un->stack[sp]->input->vector, item->inputs[j]);
-                        feed_forward(un->stack[sp], un->stack[sp]->input);
-
-                        /* 
-                         * Inject error if a target is specified for the
-                         * current event, and backpropagate error if history
-                         * is full.
-                         */
-                        if (item->targets[j]) {
-                                reset_error_signals(un->stack[sp]);
-                                bp_output_error(un->stack[sp]->output,
-                                                item->targets[j],
-                                                n->target_radius,
-                                                n->zero_error_radius);
-                                if (sp == un->stack_size - 1) {
-                                        bp_backpropagate_error(un->stack[sp],
-                                                        un->stack[sp]->output);
-                                        n->status->error += n->output->err_fun->fun(
-                                                        un->stack[sp]->output,
-                                                        item->targets[j],
-                                                        n->target_radius,
-                                                        n->zero_error_radius);
-                                        rnn_sum_gradients(un);
-                                        n->update_algorithm(un->stack[0]);
-                                }
-                        }
-
-                        /*
-                         * Cycle stack, if required. Otherwise,
-                         * increase stack pointer.
-                         */
-                        if (sp == un->stack_size - 1) {
-                                rnn_cycle_stack(un);
-                        } else {
-                                sp++;
-                        }
+                un->sp = 0;
+                for (int i = 0; i < un->stack_size; i++) {
+                        reset_recurrent_groups(un->stack[i]);
+                        reset_error_signals(un->stack[i]);
                 }
 
-                /* stop training if threshold is reached */
+                train_rnn_network_with_item(n, item);
+                
                 if (n->status->error < n->error_threshold) {
                         print_training_summary(n);
                         break;
                 }
 
-                /* scale learning rate, momentum and weight decay */
                 scale_learning_rate(n);
                 scale_momentum(n);
                 scale_weight_decay(n);
@@ -305,15 +214,42 @@ void train_network_with_bptt(struct network *n)
         }
 }
 
-/*
- * ########################################################################
- * ## Testing                                                            ##
- * ########################################################################
- */
+void train_rnn_network_with_item(struct network *n, struct item *item)
+{
+        struct rnn_unfolded_network *un = n->unfolded_net;
 
-/*
- * Test network.
- */
+        for (int i = 0; i < item->num_events; i++) {
+                int sp = un->sp;
+
+                copy_vector(un->stack[sp]->input->vector, item->inputs[i]);
+                feed_forward(un->stack[sp], un->stack[sp]->input);
+
+                if (!item->targets[i])
+                        goto cycle_stack;
+
+                reset_error_signals(un->stack[sp]);
+                        
+                struct group *g = un->stack[sp]->output;
+                struct vector *tv = item->targets[i];
+                double tr = n->target_radius;
+                double zr = n->zero_error_radius;
+                       
+                bp_output_error(g, tv, tr, zr);
+                if (sp == un->stack_size - 1) {
+                        bp_backpropagate_error(un->stack[un->sp], g);
+                        n->status->error += n->output->err_fun->fun(g, tv, tr, zr);
+                        rnn_sum_gradients(un);
+                        n->update_algorithm(un->stack[0]);
+                }
+               
+cycle_stack:
+                if (un->sp == un->stack_size - 1) {
+                        rnn_cycle_stack(un);
+                } else {
+                        un->sp++;
+                }
+        }
+}
 
 void test_network(struct network *n)
 {
@@ -325,124 +261,86 @@ void test_network(struct network *n)
                 test_rnn_network(n);
 }
 
-/*
- * Test feed forward network.
- */
-
 void test_ffn_network(struct network *n)
 {
         n->status->error = 0.0;
         int threshold_reached = 0;
 
         for (int i = 0; i < n->asp->items->num_elements; i++) {
-                struct item *item = (struct item *)n->asp->items->elements[i];
+                struct item *item = n->asp->items->elements[i];
 
-                /* reset context groups (for SRNs) */
                 if (n->type == TYPE_SRN)
                         reset_context_groups(n);
 
-                /* present all events of the current item */
                 for (int j = 0; j < item->num_events; j++) {
-                        /* shift context groups (for SRNs) */
                         if (j > 0 && n->type == TYPE_SRN)
                                 shift_context_groups(n);
 
                         copy_vector(n->input->vector, item->inputs[j]);
                         feed_forward(n, n->input);
 
-                        /* compute error if an event has a target */
-                        if (item->targets[j] && j == item->num_events - 1) {
-                                double error = n->output->err_fun->fun(
-                                                n->output,
-                                                item->targets[j],
-                                                n->target_radius,
-                                                n->zero_error_radius);
-                                n->status->error += error;
+                        if (!(item->targets[j] && j == item->num_events - 1))
+                                continue;
 
-                                if (error <= n->error_threshold)
-                                        threshold_reached++;
-                        }
-                        
+                        struct group *g = n->output;
+                        struct vector *tv = item->targets[j];
+                        double tr = n->target_radius;
+                        double zr = n->zero_error_radius;
+
+                        double error = n->output->err_fun->fun(g, tv, tr, zr);
+                        n->status->error += error;
+                        if (error <= n->error_threshold)
+                                threshold_reached++;
                 }
                 
         }
 
-        mprintf(" ");
-        mprintf("Number of items: \t\t %d",
-                        n->asp->items->num_elements);
-        mprintf("Total error: \t\t\t %lf",
-                        n->status->error);
-        mprintf("Error per example:\t\t %lf",
-                        n->status->error / n->asp->items->num_elements);
-        mprintf("# Items reached threshold: \t %d (%.2lf%%)",
-                        threshold_reached,
-                        ((double)threshold_reached / n->asp->items->num_elements) * 100.0);
+        print_testing_summary(n, threshold_reached);
 
-        mprintf(" ");
 }
-
-/*
- * Test recurrent network.
- */
 
 void test_rnn_network(struct network *n)
 {
+        struct rnn_unfolded_network *un = n->unfolded_net;
+        
         n->status->error = 0.0;
         int threshold_reached = 0;
 
-        /* unfolded network */
-        struct rnn_unfolded_network *un = n->unfolded_net;
-
+        un->sp = 0;
         for (int i = 0; i < n->asp->items->num_elements; i++) {
-                struct item *item = (struct item *)n->asp->items->elements[i];
+                int sp = un->sp;
+                struct item *item = n->asp->items->elements[i];
 
-                /* reset context groups and error signals */
                 for (int j = 0; j < un->stack_size; j++)
                         reset_recurrent_groups(un->stack[j]);
 
-                /* stack pointer */
-                int sp = 0;
- 
-                /* present all events of the current item */
                 for (int j = 0; j < item->num_events; j++) {
                         copy_vector(un->stack[sp]->input->vector, item->inputs[j]);
                         feed_forward(un->stack[sp], un->stack[sp]->input);
 
-                        if (item->targets[j]) {
-                                double error = n->output->err_fun->fun(
-                                                un->stack[sp]->output,
-                                                item->targets[j],
-                                                n->target_radius,
-                                                n->zero_error_radius);
-                                n->status->error += error;
+                        if (!item->targets[j])
+                                goto cycle_stack;
 
-                                if (error < n->error_threshold)
-                                        threshold_reached++;
-                        }
+                        struct group *g = un->stack[sp]->output;
+                        struct vector *tv = item->targets[j];
+                        double tr = n->target_radius;
+                        double zr = n->zero_error_radius;
 
-                        /*
-                         * Cycle stack, if required. Otherwise,
-                         * increase stack pointer.
-                         */
-                        if (sp == un->stack_size - 1) {
-                                rnn_cycle_stack(un);
-                        } else {
-                                sp++;
-                        }
+                        double error = n->output->err_fun->fun(g, tv, tr, zr);
+                        n->status->error += error;
+                        if (error < n->error_threshold)
+                                threshold_reached++;
+                }
+                       
+cycle_stack:
+                if (sp == un->stack_size - 1) {
+                        rnn_cycle_stack(un);
+                } else {
+                        un->sp++;
                 }
         }
 
-        mprintf(" ");
-        mprintf("Number of items: \t\t %d",
-                        n->asp->items->num_elements);
-        mprintf("Total error: \t\t\t %lf",
-                        n->status->error);
-        mprintf("Error per example:\t\t %lf",
-                        n->status->error / n->asp->items->num_elements);
-        mprintf("# Items reached threshold: \t %d (%.2lf%%)",
-                        threshold_reached,
-                        ((double)threshold_reached / n->asp->items->num_elements) * 100.0);
-        mprintf(" ");
+        print_testing_summary(n, threshold_reached);
 }
 
 void test_network_with_item(struct network *n, struct item *item, bool pprint, int scheme)
@@ -455,126 +353,115 @@ void test_network_with_item(struct network *n, struct item *item, bool pprint, i
                 test_rnn_network_with_item(n, item, pprint, scheme);
 }
 
-/*
- * Test a feed forward network with a single item.
- */
-
 void test_ffn_network_with_item(struct network *n, struct item *item, bool pprint, int scheme)
 {
         n->status->error = 0.0;
 
-        /* reset context groups (for SRNs) */
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
 
         printf("\nItem: \"%s\" --  \"%s\"\n", item->name, item->meta);
 
-        /* present all events of the current item */
-        for (int j = 0; j < item->num_events; j++) {
-                printf("\nEvent: \t%d\n", j);
-                printf("\nInput: \t");
+        for (int i = 0; i < item->num_events; i++) {
+                printf("\nEvent: \t%d\n", i);
+                printf("Input: \t");
                 if (pprint) {
-                        pprint_vector(item->inputs[j], scheme);
+                        pprint_vector(item->inputs[i], scheme);
                 } else {
-                        print_vector(item->inputs[j]);
+                        print_vector(item->inputs[i]);
                 }
 
-                /* shift context groups (for SRNs) */
-                if (j > 0 && n->type == TYPE_SRN)
+                if (i > 0 && n->type == TYPE_SRN)
                         shift_context_groups(n);
 
-                copy_vector(n->input->vector, item->inputs[j]);
+                copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 
-                /* compute error if an event has a target */
-                if (item->targets[j]) {
-                        printf("\nTarget: ");
-                        if (pprint) {
-                                pprint_vector(item->targets[j], scheme);
-                        } else  {
-                                print_vector(item->targets[j]);
-                        }
-                        printf("Output: ");
-                        if (pprint) {
-                                pprint_vector(n->output->vector, scheme);
-                        } else {
-                                print_vector(n->output->vector);
-                        }
+                if (!item->targets[i])
+                        continue;
 
-                        if (j == item->num_events - 1) {
-                                n->status->error += n->output->err_fun->fun(
-                                        n->output,
-                                        item->targets[j],
-                                        n->target_radius,
-                                        n->zero_error_radius);
-                                pprintf("\nError: \t%lf\n", n->status->error);
-                        }
+                printf("\nTarget: ");
+                if (pprint) {
+                        pprint_vector(item->targets[i], scheme);
+                } else  {
+                        print_vector(item->targets[i]);
                 }
+                printf("Output: ");
+                if (pprint) {
+                        pprint_vector(n->output->vector, scheme);
+                } else {
+                        print_vector(n->output->vector);
+                }
+
+                if (!(i == item->num_events - 1))
+                        continue;
+
+                struct group *g = n->output;
+                struct vector *tv = item->targets[i];
+                double tr = n->target_radius;
+                double zr = n->zero_error_radius; 
+
+                n->status->error += n->output->err_fun->fun(g, tv, tr, zr);
+                printf("Error: \t%lf\n\n", n->status->error);
         }
 }
 
-/*
- * Test a recurrent network with a single item.
- */
-
 void test_rnn_network_with_item(struct network *n, struct item *item, bool pprint, int scheme)
 {
-        n->status->error = 0.0;
-
-        /* unfolded network */
         struct rnn_unfolded_network *un = n->unfolded_net;
-
-        /* reset context groups and error signals */
-        for (int j = 0; j < un->stack_size; j++)
-                reset_recurrent_groups(un->stack[j]);
-
-        /* stack pointer */
-        int sp = 0;
+        
+        n->status->error = 0.0;
+        
+        un->sp = 0;
+        for (int i = 0; i < un->stack_size; i++)
+                reset_recurrent_groups(un->stack[i]);
 
         printf("\nItem: \"%s\" --  \"%s\"\n", item->name, item->meta);
 
-        /* present all events of the current item */
-        for (int j = 0; j < item->num_events; j++) {
-                printf("\nEvent: \t%d\n", j);
+        for (int i = 0; i < item->num_events; i++) {
+                int sp = un->sp;
+
+                printf("\nEvent: \t%d\n", i);
                 printf("\nInput: \t");
                 if (pprint) {
-                        pprint_vector(item->inputs[j], scheme);
+                        pprint_vector(item->inputs[i], scheme);
                 } else {
-                        print_vector(item->inputs[j]);
+                        print_vector(item->inputs[i]);
                 }
 
-                copy_vector(un->stack[sp]->input->vector, item->inputs[j]);
+                copy_vector(un->stack[sp]->input->vector, item->inputs[i]);
                 feed_forward(un->stack[sp], un->stack[sp]->input);
 
-                if (item->targets[j]) {
-                        n->status->error += n->output->err_fun->fun(
-                                        un->stack[sp]->output,
-                                        item->targets[j],
-                                        n->target_radius,
-                                        n->zero_error_radius);
-                        printf("\nTarget: \t");
-                        if (pprint) {
-                                pprint_vector(item->targets[j], scheme);
-                        } else {
-                                print_vector(item->targets[j]);
-                        }
-                        printf("Output: \t");
-                        if (pprint) {
-                                pprint_vector(un->stack[sp]->output->vector, scheme);
-                        } else {
-                                print_vector(un->stack[sp]->output->vector);
-                        }
-                        pprintf("\nError: \t%lf", n->status->error);
+                if (!item->targets[i])
+                        goto cycle_stack;
+             
+                printf("\nTarget: \t");
+                if (pprint) {
+                        pprint_vector(item->targets[i], scheme);
+                } else {
+                        print_vector(item->targets[i]);
+                }
+                printf("Output: \t");
+                if (pprint) {
+                        pprint_vector(un->stack[sp]->output->vector, scheme);
+                } else {
+                        print_vector(un->stack[sp]->output->vector);
                 }
 
-                /*
-                 * Cycle stack, if required. Otherwise,
-                 * increase stack pointer.
-                 */
+                struct group *g = un->stack[sp]->output;
+                struct vector *tv = item->targets[i];
+                double tr = n->target_radius;
+                double zr = n->zero_error_radius;
+
+                n->status->error += n->output->err_fun->fun(g, tv, tr, zr);
+
+                pprintf("\nError: \t%lf", n->status->error);
+
+cycle_stack:
                 if (sp == un->stack_size - 1) {
                         rnn_cycle_stack(un);
                 } else {
-                        sp++;
+                        un->sp++;
                 }
         }
 }
