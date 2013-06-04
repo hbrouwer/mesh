@@ -59,14 +59,14 @@ void feed_forward(struct network *n, struct group *g)
                  * During BPTT, we want activation to propagate only 
                  * through the network of the current timestep.
                  */
-                if (g->out_projs->elements[i]->recurrent)
+                if (((struct projection *)g->out_projs->elements[i])->recurrent)
                         continue;
 
                 /*
                  * Compute net input and activation level for the units in 
                  * each group that the current group projects to.
                  */
-                struct group *rg = g->out_projs->elements[i]->to;
+                struct group *rg = ((struct projection *)g->out_projs->elements[i])->to;
 #ifdef _OPENMP
 #pragma omp parallel for if(rg->vector->size >= OMP_MIN_ITERATIONS)
 #endif /* _OPENMP */
@@ -85,8 +85,8 @@ void feed_forward(struct network *n, struct group *g)
                          * in different projecting groups.
                          */
                         for (int x = 0; x < rg->inc_projs->num_elements; x++) {
-                                struct group *pg = rg->inc_projs->elements[x]->to;
-                                struct matrix *w = rg->inc_projs->elements[x]->weights;
+                                struct group *pg = ((struct projection *)rg->inc_projs->elements[x])->to;
+                                struct matrix *w = ((struct projection *)rg->inc_projs->elements[x])->weights;
                                 for (int z = 0; z < pg->vector->size; z++)
                                         rg->vector->elements[j] += pg->vector->elements[z]
                                                 * w->elements[z][j];
@@ -114,8 +114,8 @@ void feed_forward(struct network *n, struct group *g)
          * BPTT.
          */
         for (int i = 0; i < g->out_projs->num_elements; i++)
-                if (!g->out_projs->elements[i]->recurrent)
-                        feed_forward(n, g->out_projs->elements[i]->to);
+                if (!((struct projection *)g->out_projs->elements[i])->recurrent)
+                        feed_forward(n, ((struct projection *)g->out_projs->elements[i])->to);
 }
 
 /*

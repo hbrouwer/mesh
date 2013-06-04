@@ -52,8 +52,8 @@ struct network *create_network(char *name, int type)
 
         n->type = type;
 
-        n->groups = create_group_array(MAX_GROUPS);
-        n->sets = create_sets_array(MAX_SETS);
+        n->groups = create_array(TYPE_GROUPS);
+        n->sets = create_array(TYPE_SETS);
 
         block_size = sizeof(struct status);
         if (!(n->status = malloc(block_size)))
@@ -111,7 +111,7 @@ void init_network(struct network *n)
                 initialize_act_lookup_vectors(n);
         
         if (n->batch_size == 0 && n->asp)
-                n->batch_size = n->asp->num_elements;
+                n->batch_size = n->asp->items->num_elements;
 
         /* initialize unfolded network (if required) */
         if (n->learning_algorithm == train_network_with_bptt)
@@ -146,102 +146,12 @@ void dispose_network(struct network *n)
                 rnn_dispose_unfolded_network(n->unfolded_net);
 
         dispose_groups(n->groups);
-        dispose_group_array(n->groups);
+        dispose_array(n->groups);
 
         dispose_sets(n->sets);
-        dispose_sets_array(n->sets);
+        dispose_array(n->sets);
 
         free(n);
-}
-
-/*
- * Creates a new group array.
- */
-
-struct group_array *create_group_array(int max_elements)
-{
-        struct group_array *gs;
-        if (!(gs = malloc(sizeof(struct group_array))))
-                goto error_out;
-        memset(gs, 0, sizeof(struct group_array));
-
-        gs->num_elements = 0;
-        gs->max_elements= max_elements;
-
-        int block_size = gs->max_elements * sizeof(struct group *);
-        if (!(gs->elements = malloc(block_size)))
-                goto error_out;
-        memset(gs->elements, 0, block_size);
-
-        return gs;
-
-error_out:
-        perror("[create_group_array()]");
-        return NULL;
-}
-
-/*
- * Adds a group to a group array.
- */
-
-void add_to_group_array(struct group_array *gs, struct group *g)
-{
-        gs->elements[gs->num_elements++] = g;
-        if (gs->num_elements == gs->max_elements)
-                increase_group_array_size(gs);
-}
-
-/*
- * Remove a group from a group array
- */
-
-void remove_from_group_array(struct group_array *gs, struct group *g)
-{
-        int i;
-        for (i = 0; i < gs->num_elements; i++)
-                if (gs->elements[i] == g)
-                        break;
-
-        for (int j = i; j < gs->num_elements - 1; j++)
-                gs->elements[j] = gs->elements[j + 1];
-        gs->elements[gs->num_elements - 1] = NULL;
-
-        gs->num_elements--;
-}
-
-
-/*
- * Increases the size of a group array.
- */
-
-void increase_group_array_size(struct group_array *gs)
-{
-        gs->max_elements = gs->max_elements + MAX_GROUPS;
-        
-        /* reallocate memory for the group array */
-        int block_size = gs->max_elements * sizeof(struct group *);
-        if (!(gs->elements = realloc(gs->elements, block_size)))
-                goto error_out;
-
-        /* make sure the new array cells are empty */
-        for (int i = gs->num_elements; i < gs->max_elements; i++)
-                gs->elements[i] = NULL;
-
-        return;
-
-error_out:
-        perror("[increase_group_array_size()]");
-        return;
-}
-
-/*
- * Disposes a group array.
- */
-
-void dispose_group_array(struct group_array *gs)
-{
-        free(gs->elements);
-        free(gs);
 }
 
 /*
@@ -274,10 +184,10 @@ struct group *create_group(char *name, int size, bool bias, bool recurrent)
                 goto error_out;
         memset(g->err_fun, 0, sizeof(struct err_fun));
 
-        g->inc_projs = create_projs_array(MAX_PROJS);
-        g->out_projs = create_projs_array(MAX_PROJS);
+        g->inc_projs = create_array(TYPE_PROJS);
+        g->out_projs = create_array(TYPE_PROJS);
 
-        g->ctx_groups = create_group_array(MAX_GROUPS);
+        g->ctx_groups = create_array(TYPE_GROUPS);
 
         g->bias = bias;
         g->recurrent = recurrent;
@@ -321,7 +231,7 @@ struct group *attach_bias_group(struct network *n, struct group *g)
         /* 
          * Add it to the network's group array.
          */
-        add_to_group_array(n->groups, bg);
+        add_to_array(n->groups, bg);
 
         /* weight matrix */
         struct matrix *weights = create_matrix(
@@ -355,7 +265,7 @@ struct group *attach_bias_group(struct network *n, struct group *g)
         struct projection *op;
         op = create_projection(g, weights, gradients, prev_gradients,
                                 prev_weight_deltas, dyn_learning_pars, false);
-        add_to_projs_array(bg->out_projs, op);
+        add_to_array(bg->out_projs, op);
         
         /*
          * Create a projection from the bias receiving group to the bias
@@ -364,7 +274,7 @@ struct group *attach_bias_group(struct network *n, struct group *g)
         struct projection *ip;
         ip = create_projection(bg, weights, gradients, prev_gradients,
                                 prev_weight_deltas, dyn_learning_pars, false);
-        add_to_projs_array(g->inc_projs, ip);
+        add_to_array(g->inc_projs, ip);
 
         return bg;
 
@@ -394,10 +304,10 @@ void dispose_group(struct group *g)
         for (int j = 0; j < g->out_projs->num_elements; j++)
                 free(g->out_projs->elements[j]);
 
-        dispose_projs_array(g->inc_projs);
-        dispose_projs_array(g->out_projs);
+        dispose_array(g->inc_projs);
+        dispose_array(g->out_projs);
 
-        dispose_group_array(g->ctx_groups);
+        dispose_array(g->ctx_groups);
 
         free(g);
 }
@@ -407,10 +317,10 @@ void dispose_group(struct group *g)
  * Dispose all the groups in the specfied groups array.
  */
 
-void dispose_groups(struct group_array *groups)
+void dispose_groups(struct array *gs)
 {
-        for (int i = 0; i < groups->num_elements; i++)
-                dispose_group(groups->elements[i]);
+        for (int i = 0; i < gs->num_elements; i++)
+                dispose_group(gs->elements[i]);
 }
 
 /*
@@ -498,96 +408,6 @@ void reset_error_signals(struct network *n)
 }
 
 /*
- * Creates a new projection array.
- */
-
-struct projs_array *create_projs_array(int max_elements)
-{
-        struct projs_array *ps;
-        if (!(ps = malloc(sizeof(struct projs_array))))
-                goto error_out;
-        memset(ps, 0, sizeof(struct projs_array));
-
-        ps->num_elements = 0;
-        ps->max_elements = max_elements;
-
-        int block_size = ps->max_elements * sizeof(struct projection *);
-        if (!(ps->elements = malloc(block_size)))
-                goto error_out;
-        memset(ps->elements, 0, block_size);
-
-        return ps;
-
-error_out:
-        perror("[create_projs_array()]");
-        return NULL;
-
-}
-
-/*
- * Adds a projection to a projection array.
- */
-
-void add_to_projs_array(struct projs_array *ps, struct projection *p)
-{
-        ps->elements[ps->num_elements++] = p;
-        if (ps->num_elements == ps->max_elements)
-                increase_projs_array_size(ps);
-}
-
-/*
- * Removes a projection from an array.
- */
-
-void remove_from_projs_array(struct projs_array *ps, struct projection *p)
-{
-        int i;
-        for (i = 0; i < ps->num_elements; i++)
-                if (ps->elements[i] == p)
-                        break;
-
-        for (int j = i; j < ps->num_elements - 1; j++)
-                ps->elements[j] = ps->elements[j + 1];
-        ps->elements[ps->num_elements - 1] = NULL;
-
-        ps->num_elements--;
-}
-
-/*
- * Increases the size of a projection array.
- */
-
-void increase_projs_array_size(struct projs_array *ps)
-{
-        ps->max_elements = ps->max_elements + MAX_PROJS;
-
-        /* reallocate memory for the projection array */
-        int block_size = ps->max_elements * sizeof(struct projection *);
-        if (!(ps->elements = realloc(ps->elements, block_size)))
-                goto error_out;
-
-        /* make sure the new array cells are empty */
-        for (int i = ps->num_elements; i < ps->max_elements; i++)
-                ps->elements[i] = NULL;
-
-        return;
-
-error_out:
-        perror("[increase_projs_array_size()]");
-        return;
-}
-
-/*
- * Disposes a projection array.
- */
-
-void dispose_projs_array(struct projs_array *ps)
-{
-        free(ps->elements);
-        free(ps);
-}
-
-/*
  * Creates a new projection.
  */
 
@@ -636,76 +456,11 @@ void dispose_projection(struct projection *p)
         free(p);
 }
 
-struct sets_array *create_sets_array(int max_elements)
-{
-        struct sets_array *ss;
-        if (!(ss = malloc(sizeof(struct sets_array))))
-                goto error_out;
-        memset(ss, 0, sizeof(struct sets_array));
+/*
+ * Disposes sets.
+ */
 
-        ss->num_elements = 0;
-        ss->max_elements = max_elements;
-
-        int block_size = ss->max_elements * sizeof(struct set *);
-        if (!(ss->elements = malloc(block_size)))
-                goto error_out;
-        memset(ss->elements, 0, block_size);
-
-        return ss;
-
-error_out:
-        perror("[create_sets_array()]");
-        return NULL;
-}
-
-void add_to_sets_array(struct sets_array *ss, struct set *s)
-{
-        ss->elements[ss->num_elements++] = s;
-        if (ss->num_elements == ss->max_elements)
-                increase_sets_array_size(ss);
-}
-
-void remove_from_sets_array(struct sets_array *ss, struct set *s)
-{
-        int i;
-        for (i = 0; i < ss->num_elements; i++)
-                if (ss->elements[i] == s)
-                        break;
-
-        for (int j = i; j < ss->num_elements - 1; j++)
-                ss->elements[j] = ss->elements[j + 1];
-        ss->elements[ss->num_elements - 1] = NULL;
-
-        ss->num_elements--;
-}
-
-void increase_sets_array_size(struct sets_array *ss)
-{
-        ss->max_elements = ss->max_elements + MAX_SETS;
-
-        /* reallocate memory for the sets array */
-        int block_size = ss->max_elements * sizeof(struct set *);
-        if (!(ss->elements = realloc(ss->elements, block_size)))
-                goto error_out;
-
-        /* make sure the new array cells are empty */
-        for (int i = ss->num_elements; i < ss->max_elements; i++)
-                ss->elements[i] = NULL;
-
-        return;
-
-error_out:
-        perror("[increase_sets_array_size()]");
-        return;
-}
-
-void dispose_sets_array(struct sets_array *ss)
-{
-        free(ss->elements);
-        free(ss);
-}
-
-void dispose_sets(struct sets_array *ss)
+void dispose_sets(struct array *ss)
 {
         for (int i = 0; i < ss->num_elements; i++)
                 dispose_set(ss->elements[i]);
@@ -720,10 +475,10 @@ void dispose_sets(struct sets_array *ss)
 void randomize_weight_matrices(struct group *g, struct network *n)
 {
         for (int i = 0; i < g->inc_projs->num_elements; i++)
-                n->random_algorithm(g->inc_projs->elements[i]->weights, n);
+                n->random_algorithm(((struct projection *)g->inc_projs->elements[i])->weights, n);
 
         for (int i = 0; i < g->out_projs->num_elements; i++)
-                randomize_weight_matrices(g->out_projs->elements[i]->to, n);
+                randomize_weight_matrices(((struct projection *)g->out_projs->elements[i])->to, n);
 }
 
 /*
@@ -740,10 +495,10 @@ void initialize_dyn_learning_pars(struct group *g, struct network *n)
         }
 
         for (int i = 0; i < g->inc_projs->num_elements; i++)
-                fill_matrix_with_value(g->inc_projs->elements[i]->dyn_learning_pars, v);
+                fill_matrix_with_value(((struct projection *)g->inc_projs->elements[i])->dyn_learning_pars, v);
 
         for (int i = 0; i < g->out_projs->num_elements; i++)
-                initialize_dyn_learning_pars(g->out_projs->elements[i]->to, n);
+                initialize_dyn_learning_pars(((struct projection *)g->out_projs->elements[i])->to, n);
 }
 
 /*
@@ -762,36 +517,6 @@ void initialize_act_lookup_vectors(struct network *n)
                         dispose_vector(g->act_fun->lookup);
                 g->act_fun->lookup = create_act_lookup_vector(g->act_fun->fun);
         }
-}
-
-/*
- * Find a group by name.
- */
-
-struct group *find_group_by_name(struct network *n, char *name)
-{
-        for (int i = 0; i < n->groups->num_elements; i++) {
-                char *gn = n->groups->elements[i]->name;
-                if (strcmp(gn, name) == 0)
-                        return n->groups->elements[i];
-        }
-
-        return NULL;
-}
-
-/*
- * Find a set by name.
- */
-
-struct set *find_set_by_name(struct network *n, char *name)
-{
-        for (int i = 0; i < n->sets->num_elements; i++) {
-                char *sn = n->sets->elements[i]->name;
-                if (strcmp(sn, name) == 0)
-                        return n->sets->elements[i];
-        }
-
-        return NULL;
 }
 
 /*
@@ -855,8 +580,8 @@ void save_weight_matrix(struct group *g, FILE *fd)
          * outgoing projections.
          */
         for (int i = 0; i < g->out_projs->num_elements; i++)
-                if (!g->out_projs->elements[i]->recurrent)
-                        save_weight_matrix(g->out_projs->elements[i]->to, fd);
+                if (!((struct projection *)g->out_projs->elements[i])->recurrent)
+                        save_weight_matrix(((struct projection *)g->out_projs->elements[i])->to, fd);
 
         return;
 }
@@ -888,11 +613,11 @@ bool load_weight_matrices(struct network *n, char *fn)
 
                 /* find the groups for the projection */
                 struct group *g1, *g2;
-                if ((g1 = find_group_by_name(np, tmp1)) == NULL) {
+                if ((g1 = find_array_element_by_name(np->groups, tmp1)) == NULL) {
                         eprintf("No such group '%s'", tmp1);
                         continue;
                 }
-                if ((g2 = find_group_by_name(np, tmp2)) == NULL) {
+                if ((g2 = find_array_element_by_name(np->groups, tmp2)) == NULL) {
                         eprintf("No such group '%s'", tmp2);
                         continue;
                 }

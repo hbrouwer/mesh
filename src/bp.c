@@ -134,7 +134,7 @@ void bp_backpropagate_error(struct network *n, struct group *g)
          * where all groups g'' are groups to which g' projects.
          */
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
-                struct group *ng = g->inc_projs->elements[i]->to;
+                struct group *ng = ((struct projection *)g->inc_projs->elements[i])->to;
 
                 for (int j = 0; j < ng->out_projs->num_elements; j++) {
                         struct projection *p = ng->out_projs->elements[j];
@@ -213,7 +213,7 @@ void bp_backpropagate_error(struct network *n, struct group *g)
          * Recursively backpropagate error.
          */
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
-                struct group *ng = g->inc_projs->elements[i]->to;
+                struct group *ng = ((struct projection *)g->inc_projs->elements[i])->to;
                 bp_backpropagate_error(n, ng);
         }
 }

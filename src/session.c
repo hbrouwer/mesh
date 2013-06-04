@@ -25,7 +25,7 @@ struct session *create_session()
                 goto error_out;
         memset(s, 0, sizeof(struct session));
 
-        s->networks = create_network_array(MAX_NETWORKS);
+        s->networks = create_array(TYPE_NETWORKS);
 
         return s;
 
@@ -36,86 +36,6 @@ error_out:
 
 void dispose_session(struct session *s)
 {
-        dispose_network_array(s->networks);
+        dispose_array(s->networks);
         free(s);
-}
-
-struct network_array *create_network_array(int max_elements)
-{
-        struct network_array *ns;
-        if (!(ns = malloc(sizeof(struct network_array))))
-                goto error_out;
-        memset(ns, 0, sizeof(struct network_array));
-
-        ns->num_elements = 0;
-        ns->max_elements = max_elements;
-
-        int block_size = ns->max_elements * sizeof(struct network *);
-        if (!(ns->elements = malloc(block_size)))
-                goto error_out;
-        memset(ns->elements, 0, block_size);
-
-        return ns;
-
-error_out:
-        perror("[create_network_array()]");
-        return NULL;
-}
-
-void add_to_network_array(struct network_array *ns, struct network *n)
-{
-        ns->elements[ns->num_elements++] = n;
-        if (ns->num_elements == ns->max_elements)
-                increase_network_array_size(ns);
-}
-
-void remove_from_network_array(struct network_array *ns, struct network *n)
-{
-        int i;
-        for (i = 0; i < ns->num_elements; i++)
-                if (ns->elements[i] == n)
-                        break;
-
-        for (int j = i; j < ns->num_elements - 1; j++)
-                ns->elements[j] = ns->elements[j + 1];
-        ns->elements[ns->num_elements - 1] = NULL;
-
-        ns->num_elements--;
-}
-
-void increase_network_array_size(struct network_array *ns)
-{
-        ns->max_elements = ns->max_elements + MAX_NETWORKS;
-        
-        int block_size = ns->max_elements * sizeof(struct network *);
-        if (!(ns->elements = realloc(ns->elements, block_size)))
-                goto error_out;
-        for (int i = ns->num_elements; i < ns->max_elements; i++)
-                ns->elements[i] = NULL;
-
-        return;
-
-error_out:
-        perror("[increase_network_array_size()]");
-        return;
-}
-
-void dispose_network_array(struct network_array *ns)
-{
-        for (int i = 0; i < ns->max_elements; i++)
-                if (ns->elements[i])
-                        dispose_network(ns->elements[i]);
-        free(ns->elements);
-        free(ns);
-}
-
-struct network *find_network_by_name(struct session *s, char *name)
-{
-        for (int i = 0; i < s->networks->num_elements; i++) {
-                char *nn = s->networks->elements[i]->name;
-                if (strcmp(nn, name) == 0)
-                        return s->networks->elements[i];
-        }
-
-        return NULL;
 }

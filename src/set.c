@@ -19,7 +19,7 @@
 #include "main.h"
 #include "set.h"
 
-struct set *create_set(char *name, int max_elements)
+struct set *create_set(char *name)
 {
         struct set *s;
         if (!(s = malloc(sizeof(struct set))))
@@ -32,13 +32,7 @@ struct set *create_set(char *name, int max_elements)
         memset(s->name, 0, block_size);
         strncpy(s->name, name, strlen(name));
 
-        s->num_elements = 0;
-        s->max_elements = max_elements;
-
-        block_size = s->max_elements * sizeof(struct element *);
-        if (!(s->elements = malloc(block_size)))
-                goto error_out;
-        memset(s->elements, 0, block_size);
+        s->items = create_array(TYPE_ITEMS);
 
         return s;
 
@@ -47,94 +41,55 @@ error_out:
         return NULL;
 }
 
-void add_to_set(struct set *s, struct element *e)
-{
-        s->elements[s->num_elements++] = e;
-        if (s->num_elements == s->max_elements)
-                increase_set_size(s);
-}
-
-void increase_set_size(struct set *s)
-{
-        s->max_elements = s->max_elements + MAX_ELEMENTS;
-
-        int block_size = s->max_elements * sizeof(struct element *);
-        if (!(s->elements = realloc(s->elements, block_size)))
-                goto error_out;
-        for(int i = s->num_elements; i < s->max_elements; i++)
-                s->elements[i] = NULL;
-
-        return;
-
-error_out:
-        perror("[increase_set_size()]");
-        return;
-}
-
 void dispose_set(struct set *s)
 {
-        for (int i = 0; i < s->max_elements; i++)
-                if (s->elements[i])
-                        dispose_element(s->elements[i]);
-        free(s->elements);
-        free(s->order);
+        free(s->name);
+        dispose_array(s->items);
         free(s);
 }
 
-struct element *find_element_by_name(struct set *s, char *name)
-{
-        for (int i = 0; i < s->num_elements; i++) {
-                struct element *e = s->elements[i];
-                if (strlen(e->name) == strlen(name)
-                                && strcmp(e->name, name) == 0)
-                        return e;
-        }
-
-        return NULL;
-}
-
-struct element *create_element(char *name, int num_events, char *meta,
+struct item *create_item(char *name, int num_events, char *meta,
                 struct vector **inputs, struct vector **targets)
 {
-        struct element *e;
+        struct item *i;
 
-        if (!(e = malloc(sizeof(struct element))))
+        if (!(i = malloc(sizeof(struct item))))
                 goto error_out;
-        memset(e, 0, sizeof(struct element));
+        memset(i, 0, sizeof(struct item));
 
-        e->name = name;
-        e->num_events = num_events;
-        e->meta = meta;
-        e->inputs = inputs;
-        e->targets = targets;
+        i->name = name;
+        i->num_events = num_events;
+        i->meta = meta;
+        i->inputs = inputs;
+        i->targets = targets;
 
-        return e;
+        return i;
 
 error_out:
         perror("[create_element()]");
         return NULL;
 }
 
-void dispose_element(struct element *e)
+void dispose_item(struct item *item)
 {
-        free(e->name);
+        free(item->name);
 
-        for (int i = 0; i < e->num_events; i++) {
-                if (e->inputs[i])
-                        dispose_vector(e->inputs[i]);
-                if (e->targets[i])
-                        dispose_vector(e->targets[i]);
+        for (int i = 0; i < item->num_events; i++) {
+                if (item->inputs[i])
+                        dispose_vector(item->inputs[i]);
+                if (item->targets[i])
+                        dispose_vector(item->targets[i]);
         }
 
-        free(e->inputs);
-        free(e->targets);
+        free(item->inputs);
+        free(item->targets);
 
-        free(e);
+        free(item);
 }
 
 struct set *load_set(char *name, char *filename, int input_size, int output_size)
 {
-        struct set *s = create_set(name, MAX_ELEMENTS);
+        struct set *s = create_set(name);
 
         FILE *fd;
         if (!(fd = fopen(filename, "r")))
@@ -200,18 +155,18 @@ struct set *load_set(char *name, char *filename, int input_size, int output_size
                         }
                 }
 
-                struct element *e = create_element(name, num_events, meta, inputs, targets);
-                add_to_set(s, e);
+                struct item *item = create_item(name, num_events, meta, inputs, targets);
+                add_to_array(s->items, item);
         }
 
         fclose(fd);
 
-        int block_size = s->num_elements * sizeof(int);
+        int block_size = s->items->num_elements * sizeof(int);
         if (!(s->order = malloc(block_size)))
                 goto error_out;
         memset(s->order, 0, block_size);
 
-        for (int i = 0; i < s->num_elements; i++)
+        for (int i = 0; i < s->items->num_elements; i++)
                 s->order[i] = i;
 
         return s;
@@ -223,15 +178,15 @@ error_out:
 
 void order_set(struct set *s)
 {
-        for (int i = 0; i < s->num_elements; i++)
+        for (int i = 0; i < s->items->num_elements; i++)
                 s->order[i] = i;
 }
 
 void permute_set(struct set *s)
 {
-        for (int i = 0; i < s->num_elements; i++) {
+        for (int i = 0; i < s->items->num_elements; i++) {
                 int pe = ((double)rand() / (double)RAND_MAX)
-                        * (s->num_elements);
+                        * (s->items->num_elements);
 
                 bool duplicate = false;
                 for (int j = 0; j < i; j++)
@@ -247,9 +202,9 @@ void permute_set(struct set *s)
 
 void randomize_set(struct set *s)
 {
-        for (int i = 0; i < s->num_elements; i++) {
+        for (int i = 0; i < s->items->num_elements; i++) {
                 int re = ((double)rand() / (double)RAND_MAX)
-                        * (s->num_elements);
+                        * (s->items->num_elements);
                 s->order[i] = re;
         }
 }

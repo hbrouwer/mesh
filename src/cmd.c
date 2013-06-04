@@ -415,7 +415,7 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s, char *msg)
         }
 
         /* check network name */
-        if (find_network_by_name(s, tmp1)) {
+        if (find_array_element_by_name(s->networks, tmp1)) {
                 eprintf("Cannot create network--network '%s' already exists", tmp1);
                 return true;
         }
@@ -424,9 +424,7 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s, char *msg)
         struct network *n = create_network(tmp1, type);
 
         /* add to session */
-        s->networks->elements[s->networks->num_elements++] = n;
-        if (s->networks->num_elements == s->networks->max_elements)
-                increase_network_array_size(s->networks);
+        add_to_array(s->networks, n);
         s->anp = n;
 
         mprintf(msg, tmp1, tmp2);
@@ -465,7 +463,7 @@ bool cmd_dispose_network(char *cmd, char *fmt, struct session *s, char *msg)
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        struct network *n = find_network_by_name(s, tmp);
+        struct network *n = find_array_element_by_name(s->networks, tmp);
         if (!n) {
                 eprintf("Cannot dispose network--no such network '%s'", tmp);
                 return true;
@@ -473,7 +471,8 @@ bool cmd_dispose_network(char *cmd, char *fmt, struct session *s, char *msg)
 
         if (n == s->anp)
                 s->anp = NULL;
-        remove_from_network_array(s->networks, n);
+        //remove_from_network_array(s->networks, n);
+        remove_from_array(s->networks, n);
         dispose_network(n);
 
         mprintf(msg, tmp);
@@ -511,7 +510,7 @@ bool cmd_change_network(char *cmd, char *fmt, struct session *s, char *msg)
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        struct network *n = find_network_by_name(s, tmp);
+        struct network *n = find_array_element_by_name(s->networks, tmp);
         if (!n) {
                 eprintf("Cannot change to network--no such network '%s'", tmp);
                 return true;
@@ -532,7 +531,7 @@ bool cmd_create_group(char *cmd, char *fmt, struct network *n, char *msg)
                 return false;
 
         struct group *g = create_group(tmp, tmp_int, false, false);
-        add_to_group_array(n->groups, g);
+        add_to_array(n->groups, g);
 
         mprintf(msg, tmp, tmp_int);
 
@@ -545,14 +544,14 @@ bool cmd_dispose_group(char *cmd, char *fmt, struct network *n, char *msg)
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        struct group *g = find_group_by_name(n, tmp);
+        struct group *g = find_array_element_by_name(n->groups, tmp);
         if (g == NULL) {
                 eprintf("Cannot dispose group--no such group '%s'", tmp);
                 return true;
         }
 
         // TODO: check/remove projections ...
-        remove_from_group_array(n->groups, g);
+        remove_from_array(n->groups, g);
         dispose_group(g);
 
         mprintf(msg, tmp);
@@ -592,7 +591,7 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct network *n, char *msg)
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        struct group *g = find_group_by_name(n, tmp);
+        struct group *g = find_array_element_by_name(n->groups, tmp);
         if (g == NULL) {
                 eprintf("Cannot attach bias--no such group '%s'", tmp);
                 return true;
@@ -611,7 +610,7 @@ bool cmd_set_input_group(char *cmd, char *fmt, struct network *n, char *msg)
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        struct group *g = find_group_by_name(n, tmp);
+        struct group *g = find_array_element_by_name(n->groups, tmp);
         if (g == NULL) {
                 eprintf("Cannot set input group--no such group '%s'", tmp);
                 return true;
@@ -630,7 +629,7 @@ bool cmd_set_output_group(char *cmd, char *fmt, struct network *n, char *msg)
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        struct group *g = find_group_by_name(n, tmp);
+        struct group *g = find_array_element_by_name(n->groups, tmp);
         if (g == NULL) {
                 eprintf("Cannot set output group--no such group '%s'", tmp);
                 return true;
@@ -649,7 +648,7 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct network *n, char *msg)
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
                 return false;
 
-        struct group *g = find_group_by_name(n, tmp1);
+        struct group *g = find_array_element_by_name(n->groups, tmp1);
         if (g == NULL) {
                 eprintf("Cannot set activation function--no such group '%s'",
                                 tmp1);
@@ -708,7 +707,7 @@ bool cmd_set_err_func(char *cmd, char *fmt, struct network *n, char *msg)
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
                 return false;
 
-        struct group *g = find_group_by_name(n, tmp1);
+        struct group *g = find_array_element_by_name(n->groups, tmp1);
         if (g == NULL) {
                 eprintf("Cannot set error function--no such group '%s'",
                                 tmp1);
@@ -767,8 +766,8 @@ bool cmd_create_projection(char *cmd, char *fmt, struct network *n, char *msg)
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
                 return false;
 
-        struct group *fg = find_group_by_name(n, tmp1);
-        struct group *tg = find_group_by_name(n, tmp2);
+        struct group *fg = find_array_element_by_name(n->groups, tmp1);
+        struct group *tg = find_array_element_by_name(n->groups, tmp2);
 
         if (fg == NULL) {
                 eprintf("Cannot set projection--no such group '%s'",
@@ -803,12 +802,12 @@ bool cmd_create_projection(char *cmd, char *fmt, struct network *n, char *msg)
                 struct projection *op;
                 op = create_projection(tg, weights, gradients, prev_gradients,
                                 prev_weight_deltas, dyn_learning_pars, false);
-                add_to_projs_array(fg->out_projs, op);
+                add_to_array(fg->out_projs, op);
 
                 struct projection *ip;
                 ip = create_projection(fg, weights, gradients, prev_gradients,
                                 prev_weight_deltas, dyn_learning_pars, false);
-                add_to_projs_array(tg->inc_projs, ip);
+                add_to_array(tg->inc_projs, ip);
 
         }
 
@@ -823,8 +822,8 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct network *n, char *
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
                 return false;
 
-        struct group *fg = find_group_by_name(n, tmp1);
-        struct group *tg = find_group_by_name(n, tmp2);
+        struct group *fg = find_array_element_by_name(n->groups, tmp1);
+        struct group *tg = find_array_element_by_name(n->groups, tmp2);
 
         if (fg == NULL) {
                 eprintf("Cannot set Elman-projection--no such group '%s'",
@@ -849,7 +848,7 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct network *n, char *
                 return true;
         }
 
-        add_to_group_array(fg->ctx_groups, tg);
+        add_to_array(fg->ctx_groups, tg);
 
         reset_context_groups(n);
 
@@ -864,8 +863,8 @@ bool cmd_dispose_projection(char *cmd, char *fmt, struct network *n, char *msg)
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
                 return false;
 
-        struct group *fg = find_group_by_name(n, tmp1);
-        struct group *tg = find_group_by_name(n, tmp2);
+        struct group *fg = find_array_element_by_name(n->groups, tmp1);
+        struct group *tg = find_array_element_by_name(n->groups, tmp2);
 
         if (fg == NULL) {
                 eprintf("Cannot dispose projection--no such group '%s'",
@@ -880,17 +879,17 @@ bool cmd_dispose_projection(char *cmd, char *fmt, struct network *n, char *msg)
 
         struct projection *fg_to_tg = NULL;
         for (int i = 0; i < fg->out_projs->num_elements; i++)
-                if (fg->out_projs->elements[i]->to == tg)
+                if (((struct projection *)fg->out_projs->elements[i])->to == tg)
                         fg_to_tg = fg->out_projs->elements[i];
 
         struct projection *tg_to_fg = NULL;
         for (int i = 0; i < tg->inc_projs->num_elements; i++)
-                if (tg->inc_projs->elements[i]->to == fg)
+                if (((struct projection *)tg->inc_projs->elements[i])->to == fg)
                         tg_to_fg = tg->inc_projs->elements[i];
 
         if (fg_to_tg && tg_to_fg) {
-                remove_from_projs_array(fg->out_projs, fg_to_tg);
-                remove_from_projs_array(tg->inc_projs, tg_to_fg);
+                remove_from_array(fg->out_projs, fg_to_tg);
+                remove_from_array(tg->inc_projs, tg_to_fg);
                 dispose_projection(fg_to_tg);
                 free(tg_to_fg);
         } else {
@@ -919,10 +918,11 @@ bool cmd_list_projections(char *cmd, char *fmt, struct network *n,
                 mprintf(msg);
 
         for (int i = 0; i < g->inc_projs->num_elements; i++)
-                printf("* %s -> %s\n", g->inc_projs->elements[i]->to->name, g->name);
+                printf("* %s -> %s\n", ((struct projection *)g->inc_projs->elements[i])->to->name, g->name);
 
         for (int i = 0; i < g->inc_projs->num_elements; i++)
-                cmd_list_projections(cmd, fmt, n, g->inc_projs->elements[i]->to, msg);
+                cmd_list_projections(cmd, fmt, n,
+                                ((struct projection *)g->inc_projs->elements[i])->to, msg);
         
         return true;
 }
@@ -933,8 +933,8 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct network *n, char *msg)
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
                 return false;
 
-        struct group *fg = find_group_by_name(n, tmp1);
-        struct group *tg = find_group_by_name(n, tmp2);
+        struct group *fg = find_array_element_by_name(n->groups, tmp1);
+        struct group *tg = find_array_element_by_name(n->groups, tmp2);
 
         if (fg == NULL) {
                 eprintf("Cannot freeze projection--no such group '%s'",
@@ -949,12 +949,12 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct network *n, char *msg)
 
         struct projection *fg_to_tg = NULL;
         for (int i = 0; i < fg->out_projs->num_elements; i++)
-                if (fg->out_projs->elements[i]->to == tg)
+                if (((struct projection *)fg->out_projs->elements[i])->to == tg)
                         fg_to_tg = fg->out_projs->elements[i];
 
         struct projection *tg_to_fg = NULL;
         for (int i = 0; i < tg->inc_projs->num_elements; i++)
-                if (tg->inc_projs->elements[i]->to == fg)
+                if (((struct projection *)tg->inc_projs->elements[i])->to == fg)
                         tg_to_fg = tg->inc_projs->elements[i];
 
         if (fg_to_tg && tg_to_fg) {
@@ -1036,11 +1036,11 @@ bool cmd_load_set(char *cmd, char *fmt, struct network *n, char *msg)
                 return true;
         }
                 
-        add_to_sets_array(n->sets, s);
+        add_to_array(n->sets, s);
 
         n->asp = s;
 
-        mprintf(msg, s->name, tmp2, s->num_elements);
+        mprintf(msg, tmp2, s->name, s->items->num_elements);
 
         return true;
 }
@@ -1051,7 +1051,7 @@ bool cmd_dispose_set(char *cmd, char *fmt, struct network *n, char *msg)
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        struct set *s = find_set_by_name(n, tmp);
+        struct set *s = find_array_element_by_name(n->sets, tmp);
         if (!s) {
                 eprintf("Cannot change to set--no such set '%s'", tmp);
                 return true;
@@ -1059,7 +1059,7 @@ bool cmd_dispose_set(char *cmd, char *fmt, struct network *n, char *msg)
 
         if (s == n->asp)
                 n->asp = NULL;
-        remove_from_sets_array(n->sets, s);
+        remove_from_array(n->sets, s);
         dispose_set(s);
 
         mprintf(msg, tmp);
@@ -1073,7 +1073,7 @@ bool cmd_change_set(char *cmd, char *fmt, struct network *n, char *msg)
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        struct set *s = find_set_by_name(n, tmp);
+        struct set *s = find_array_element_by_name(n->sets, tmp);
         if (!s) {
                 eprintf("Cannot change to set--no such set '%s'", tmp);
                 return true;
@@ -1098,9 +1098,9 @@ bool cmd_list_items(char *cmd, char *fmt, struct network *n, char *msg)
 
         mprintf(msg, n->asp->name);
 
-        for (int i = 0; i < n->asp->num_elements; i++) {
-                struct element *e = n->asp->elements[i];
-                printf("* \"%s\" %d \"%s\"\n", e->name, e->num_events, e->meta);
+        for (int i = 0; i < n->asp->items->num_elements; i++) {
+                struct item *item = n->asp->items->elements[i];
+                printf("* \"%s\" %d \"%s\"\n", item->name, item->num_events, item->meta);
         }
 
         return true;
@@ -1294,13 +1294,13 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s, char *msg)
 
         mprintf(msg, s->anp->name, tmp);
 
-        struct element *e = find_element_by_name(s->anp->asp, tmp);
-        if (!e) {
+        struct item *item = find_array_element_by_name(s->anp->asp->items, tmp);
+        if (!item) {
                 eprintf("Cannot test network--no such item '%s'", tmp);
                 return true;
         }
 
-        test_network_with_item(s->anp, e, s->pprint, s->pprint_scheme);
+        test_network_with_item(s->anp, item, s->pprint, s->pprint_scheme);
 
         return true;
 }
@@ -1352,8 +1352,7 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s, char *msg, int typ
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        struct group *g = find_group_by_name(s->anp, tmp);
-
+        struct group *g = find_array_element_by_name(s->anp->groups, tmp);
         if (g == NULL) {
                 eprintf("Cannot show vector--no such group '%s'",
                                 tmp);
@@ -1389,8 +1388,8 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s, char *msg, int typ
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
                 return false;
 
-        struct group *fg = find_group_by_name(s->anp, tmp1);
-        struct group *tg = find_group_by_name(s->anp, tmp2);
+        struct group *fg = find_array_element_by_name(s->anp->groups, tmp1);
+        struct group *tg = find_array_element_by_name(s->anp->groups, tmp2);
 
         if (fg == NULL) {
                 eprintf("Cannot show matrix--no such group '%s'",
@@ -1405,8 +1404,8 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s, char *msg, int typ
 
         struct projection *fg_to_tg = NULL;
         for (int i = 0; i < fg->out_projs->num_elements; i++)
-                if (fg->out_projs->elements[i]->to == tg)
-                        fg_to_tg = fg->out_projs->elements[i];
+                if (((struct projection *)fg->out_projs->elements[i])->to == tg)
+                        fg_to_tg = (struct projection *)fg->out_projs->elements[i];
 
         if (fg_to_tg) {
                 mprintf(msg, tmp1, tmp2);

@@ -19,20 +19,17 @@
 #ifndef SET_H
 #define SET_H
 
+#include "array.h"
 #include "vector.h"
-
-#define MAX_ELEMENTS 100
 
 struct set
 {
         char *name;                 /* name of this set */
-        int num_elements;           /* number of set elements */
-        int max_elements;           /* maximum number of set elements */
-        struct element **elements;  /* set elements */
+        struct array *items;        /* items */
         int *order;                 /* order in which to present elements */
 };
 
-struct element
+struct item
 {
         char *name;                 /* name of this element */
         int num_events;             /* number of events */
@@ -41,15 +38,12 @@ struct element
         struct vector **targets;    /* target vectors */
 };
 
-struct set *create_set(char *name, int max_elements);
-void add_to_set(struct set *s, struct element *e);
-void increase_set_size(struct set *s);
+struct set *create_set(char *name);
 void dispose_set(struct set *s);
 
-struct element *create_element(char *name, int num_events, char *meta,
+struct item *create_item(char *name, int num_events, char *meta,
                 struct vector **inputs, struct vector **targets);
-void dispose_element(struct element *e);
-struct element *find_element_by_name(struct set *s, char *name);
+void dispose_item(struct item *item);
 
 struct set *load_set(char *name, char *filename, int input_size, int output_size);
 

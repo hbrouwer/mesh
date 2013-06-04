@@ -19,15 +19,12 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+#include "array.h"
 #include "main.h"
 #include "matrix.h"
 #include "rnn_unfold.h"
 #include "set.h"
 #include "vector.h"
-
-#define MAX_GROUPS 5
-#define MAX_PROJS 2
-#define MAX_SETS 3
 
 /* network types */
 #define TYPE_FFN 0
@@ -51,7 +48,7 @@ struct network
 
         char *name;                 /* name of the network */
         int type;                   /* type of the network */
-        struct group_array *groups; /* array of groups in the network */
+        struct array *groups;       /* array of groups in the network */
 
         struct group *input;        /* input group for this network */
         struct group *output;       /* output group for this network */
@@ -136,7 +133,7 @@ struct network
 
         /* ## Sets ##################################################### */
 
-        struct sets_array *sets;    /* sets */
+        struct array *sets;         /* sets */
         struct set *asp;            /* active set pointer */
 
         /* ## Unfolded recurrent network ############################### */
@@ -151,13 +148,6 @@ struct network
  * ########################################################################
  */
 
-struct group_array
-{
-        int num_elements;          /* number of groups */
-        int max_elements;          /* maximum number of groups */
-        struct group **elements;   /* the actual groups */
-};
-
 struct group
 {
         char *name;                 /* name of the group */
@@ -167,12 +157,12 @@ struct group
                                        for this group */
         struct err_fun *err_fun;    /* error function and its derivative
                                        for this group */
-        struct projs_array          /* array of incoming projections */
+        struct array                /* array of incoming projections */
                 *inc_projs;
-        struct projs_array          /* array of outgoing projections */
+        struct array                /* array of outgoing projections */
                 *out_projs;
 
-        struct group_array          /* array of context groups */
+        struct array                /* array of context groups */
                 *ctx_groups;
         
         bool bias;                  /* flags whether this is a bias group */
@@ -184,14 +174,6 @@ struct group
  * ## Projections                                                        ##
  * ########################################################################
  */
-
-struct projs_array
-{
-        int num_elements;           /* number of projections */
-        int max_elements;           /* maximum number of projections */
-        struct projection           /* the actual projections */
-                **elements;
-};
 
 struct projection
 {
@@ -209,19 +191,6 @@ struct projection
                 *dyn_learning_pars;
         bool recurrent;             /* flags whether this is a recurrent
                                        projection for BPTT */
-};
-
-/*
- * ########################################################################
- * ## Sets array                                                         ##
- * ########################################################################
- */
-
-struct sets_array
-{
-        int num_elements;           /* number of sets */
-        int max_elements;           /* maximum number of sets */
-        struct set **elements;      /* the actual sets */
 };
 
 /*
@@ -282,16 +251,10 @@ void init_network(struct network *n);
 void reset_network(struct network *n);
 void dispose_network(struct network *n);
 
-struct group_array *create_group_array(int max_elements);
-void add_to_group_array(struct group_array *gs, struct group *g);
-void remove_from_group_array(struct group_array *gs, struct group *g);
-void increase_group_array_size(struct group_array *gs);
-void dispose_group_array(struct group_array *gs);
-
 struct group *create_group(char *name, int size, bool bias, bool recurrent);
 struct group *attach_bias_group(struct network *n, struct group *g);
 void dispose_group(struct group *g);
-void dispose_groups(struct group_array *groups);
+void dispose_groups(struct array *gs);
 
 void shift_context_groups(struct network *n);
 void shift_context_group_chain(struct group *g, struct vector *v);
@@ -299,12 +262,6 @@ void reset_context_groups(struct network *n);
 void reset_context_group_chain(struct group *g);
 void reset_recurrent_groups(struct network *n);
 void reset_error_signals(struct network *n);
-
-struct projs_array *create_projs_array(int max_elements);
-void add_to_projs_array(struct projs_array *ps, struct projection *p);
-void remove_from_projs_array(struct projs_array *ps, struct projection *p);
-void increase_projs_array_size(struct projs_array *ps);
-void dispose_projs_array(struct projs_array *ps);
 
 struct projection *create_projection(
                 struct group *to,
@@ -316,19 +273,11 @@ struct projection *create_projection(
                 bool recurrent);
 void dispose_projection(struct projection *p);
 
-struct sets_array *create_sets_array(int max_elements);
-void add_to_sets_array(struct sets_array *ss, struct set *s);
-void remove_from_sets_array(struct sets_array *ss, struct set *s);
-void increase_sets_array_size(struct sets_array *ss);
-void dispose_sets_array(struct sets_array *ss);
-void dispose_sets(struct sets_array *ss);
+void dispose_sets(struct array *ss);
 
 void randomize_weight_matrices(struct group *g, struct network *n);
 void initialize_dyn_learning_pars(struct group *g, struct network *n);
 void initialize_act_lookup_vectors(struct network *n);
-
-struct group *find_group_by_name(struct network *n, char *name);
-struct set *find_set_by_name(struct network *n, char *name);
 
 bool save_weight_matrices(struct network *n, char *fn);
 void save_weight_matrix(struct group *g, FILE *fd);

@@ -19,6 +19,7 @@
 #ifndef RNN_UNFOLD_H
 #define RNN_UNFOLD_H
 
+#include "array.h"
 #include "network.h"
 #include "vector.h"
 
@@ -30,7 +31,7 @@
 
 struct rnn_unfolded_network
 {
-        struct group_array        /* recurrent groups in the network */
+        struct array              /* recurrent groups in the network */
                 *recur_groups;    
         struct matrix             /* weights for recurrent connections */
                 **recur_weights;
@@ -63,8 +64,8 @@ struct projection *rnn_duplicate_projection(
                 struct matrix *prev_gradients);
 void rnn_dispose_duplicate_projection(struct projection *dp);
 
-struct group_array *rnn_recurrent_groups(struct network *n);
-void rnn_collect_recurrent_groups(struct group *g, struct group_array *gs);
+struct array *rnn_recurrent_groups(struct network *n);
+void rnn_collect_recurrent_groups(struct group *g, struct array *gs);
 
 void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
                 struct network *n);

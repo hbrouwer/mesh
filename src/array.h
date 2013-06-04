@@ -1,5 +1,5 @@
 /*
- * session.h
+ * array.h
  *
  * Copyright 2012, 2013 Harm Brouwer <me@hbrouwer.eu>
  *
@@ -16,30 +16,30 @@
  * limitations under the License.
  */
 
-#ifndef SESSION_H
-#define SESSION_H
+#ifndef ARRAY_H
+#define ARRAY_H
 
-#include "array.h"
-#include "network.h"
+#define MAX_ARRAY_ELEMENTS 10
 
-#define MAX_NETWORKS 10
+#define TYPE_NETWORKS 0
+#define TYPE_GROUPS 1
+#define TYPE_PROJS 2
+#define TYPE_SETS 3
+#define TYPE_ITEMS 4
 
-struct session
+struct array
 {
-        struct array *networks;
-        struct network *anp;
-        bool pprint;
-        int pprint_scheme;
-};
-
-struct network_array
-{
+        int type;
         int num_elements;
         int max_elements;
-        struct network **elements;
+        void **elements;
 };
 
-struct session *create_session();
-void dispose_session(struct session *s);
+struct array *create_array(int type);
+void add_to_array(struct array *a, void *e);
+void remove_from_array(struct array *a, void *e);
+void increase_array_size(struct array *a);
+void dispose_array(struct array *a);
+void *find_array_element_by_name(struct array *a, char *name);
 
-#endif /* SESSION_H */
+#endif /* ARRAY_H */

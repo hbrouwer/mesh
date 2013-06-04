@@ -114,7 +114,7 @@ void train_network_with_bp(struct network *n)
                 order_set(n->asp);
 
         /* train for a maximum number of epochs */
-        int elem_itr = 0;
+        int item_itr = 0;
         for (n->status->epoch = 1;
                         n->status->epoch <= n->max_epochs;
                         n->status->epoch++) {
@@ -122,7 +122,7 @@ void train_network_with_bp(struct network *n)
                 n->status->error = 0.0;
 
                 /* determine training order */
-                if (elem_itr == 0) {
+                if (item_itr == 0) {
                         if (n->training_order == TRAIN_PERMUTED)
                                 permute_set(n->asp);
                         if (n->training_order == TRAIN_RANDOMIZED)
@@ -132,38 +132,38 @@ void train_network_with_bp(struct network *n)
                 /* train a batch of items */
                 for (int i = 0; i < n->batch_size; i++) {
                         /* select item */
-                        int elem_idx = n->asp->order[elem_itr++];
-                        struct element *e = n->asp->elements[elem_idx];
+                        int item_idx = n->asp->order[item_itr++];
+                        struct item *item = (struct item *)n->asp->items->elements[item_idx];
 
                         /* restart training set (if required) */
-                        if (elem_itr == n->asp->num_elements)
-                                elem_itr = 0;
+                        if (item_itr == n->asp->items->num_elements)
+                                item_itr = 0;
 
                         /* reset context groups (for SRNs) */
                         if (n->type == TYPE_SRN)
                                 reset_context_groups(n);
 
                         /* present all events of the current item */
-                        for (int j = 0; j < e->num_events; j++) {
+                        for (int j = 0; j < item->num_events; j++) {
                                 /* shift context groups (for SRNs) */
                                 if (j > 0 && n->type == TYPE_SRN)
                                         shift_context_groups(n);
 
-                                copy_vector(n->input->vector, e->inputs[j]);
+                                copy_vector(n->input->vector, item->inputs[j]);
                                 feed_forward(n, n->input);
 
                                 /* inject error if an event has a target */
-                                if (e->targets[j]) {
+                                if (item->targets[j]) {
                                         reset_error_signals(n);
                                         bp_output_error(n->output,
-                                                        e->targets[j],
+                                                        item->targets[j],
                                                         n->target_radius,
                                                         n->zero_error_radius);
                                         bp_backpropagate_error(n, n->output);
-                                        if (j == e->num_events - 1) {
+                                        if (j == item->num_events - 1) {
                                                 n->status->error += n->output->err_fun->fun(
                                                                 n->output,
-                                                                e->targets[j],
+                                                                item->targets[j],
                                                                 n->target_radius,
                                                                 n->zero_error_radius)
                                                         / n->batch_size;
@@ -202,7 +202,7 @@ void train_network_with_bptt(struct network *n)
                 order_set(n->asp);
 
         /* train for a maximum number of epochs */
-        int elem_itr = 0;
+        int item_itr = 0;
         for (n->status->epoch = 1; 
                         n->status->epoch <= n->max_epochs;
                         n->status->epoch++) {
@@ -219,7 +219,7 @@ void train_network_with_bptt(struct network *n)
                 int sp = 0;
 
                 /* determine training order */
-                if (elem_itr == 0) {
+                if (item_itr == 0) {
                         if (n->training_order == TRAIN_PERMUTED)
                                 permute_set(n->asp);
                         if (n->training_order == TRAIN_RANDOMIZED)
@@ -227,16 +227,16 @@ void train_network_with_bptt(struct network *n)
                 }
 
                 /* select item */
-                int elem_idx = n->asp->order[elem_itr++];
-                struct element *e = n->asp->elements[elem_idx];
+                int item_idx = n->asp->order[item_itr++];
+                struct item *item = n->asp->items->elements[item_idx];
 
                 /* restart training set (if required) */
-                if (elem_itr == n->asp->num_elements)
-                        elem_itr = 0;
+                if (item_itr == n->asp->items->num_elements)
+                        item_itr = 0;
 
                 /* present all events of the current item */
-                for (int j = 0; j < e->num_events; j++) {
-                        copy_vector(un->stack[sp]->input->vector, e->inputs[j]);
+                for (int j = 0; j < item->num_events; j++) {
+                        copy_vector(un->stack[sp]->input->vector, item->inputs[j]);
                         feed_forward(un->stack[sp], un->stack[sp]->input);
 
                         /* 
@@ -244,10 +244,10 @@ void train_network_with_bptt(struct network *n)
                          * current event, and backpropagate error if history
                          * is full.
                          */
-                        if (e->targets[j]) {
+                        if (item->targets[j]) {
                                 reset_error_signals(un->stack[sp]);
                                 bp_output_error(un->stack[sp]->output,
-                                                e->targets[j],
+                                                item->targets[j],
                                                 n->target_radius,
                                                 n->zero_error_radius);
                                 if (sp == un->stack_size - 1) {
@@ -255,7 +255,7 @@ void train_network_with_bptt(struct network *n)
                                                         un->stack[sp]->output);
                                         n->status->error += n->output->err_fun->fun(
                                                         un->stack[sp]->output,
-                                                        e->targets[j],
+                                                        item->targets[j],
                                                         n->target_radius,
                                                         n->zero_error_radius);
                                         rnn_sum_gradients(un);
@@ -317,27 +317,27 @@ void test_ffn_network(struct network *n)
         n->status->error = 0.0;
         int threshold_reached = 0;
 
-        for (int i = 0; i < n->asp->num_elements; i++) {
-                struct element *e = n->asp->elements[i];
+        for (int i = 0; i < n->asp->items->num_elements; i++) {
+                struct item *item = (struct item *)n->asp->items->elements[i];
 
                 /* reset context groups (for SRNs) */
                 if (n->type == TYPE_SRN)
                         reset_context_groups(n);
 
                 /* present all events of the current item */
-                for (int j = 0; j < e->num_events; j++) {
+                for (int j = 0; j < item->num_events; j++) {
                         /* shift context groups (for SRNs) */
                         if (j > 0 && n->type == TYPE_SRN)
                                 shift_context_groups(n);
 
-                        copy_vector(n->input->vector, e->inputs[j]);
+                        copy_vector(n->input->vector, item->inputs[j]);
                         feed_forward(n, n->input);
 
                         /* compute error if an event has a target */
-                        if (e->targets[j] && j == e->num_events - 1) {
+                        if (item->targets[j] && j == item->num_events - 1) {
                                 double error = n->output->err_fun->fun(
                                                 n->output,
-                                                e->targets[j],
+                                                item->targets[j],
                                                 n->target_radius,
                                                 n->zero_error_radius);
                                 n->status->error += error;
@@ -352,14 +352,14 @@ void test_ffn_network(struct network *n)
 
         mprintf(" ");
         mprintf("Number of items: \t\t %d",
-                        n->asp->num_elements);
+                        n->asp->items->num_elements);
         mprintf("Total error: \t\t\t %lf",
                         n->status->error);
         mprintf("Error per example:\t\t %lf",
-                        n->status->error / n->asp->num_elements);
+                        n->status->error / n->asp->items->num_elements);
         mprintf("# Items reached threshold: \t %d (%.2lf%%)",
                         threshold_reached,
-                        ((double)threshold_reached / n->asp->num_elements) * 100.0);
+                        ((double)threshold_reached / n->asp->items->num_elements) * 100.0);
 
         mprintf(" ");
 }
@@ -376,8 +376,8 @@ void test_rnn_network(struct network *n)
         /* unfolded network */
         struct rnn_unfolded_network *un = n->unfolded_net;
 
-        for (int i = 0; i < n->asp->num_elements; i++) {
-                struct element *e = n->asp->elements[i];
+        for (int i = 0; i < n->asp->items->num_elements; i++) {
+                struct item *item = (struct item *)n->asp->items->elements[i];
 
                 /* reset context groups and error signals */
                 for (int j = 0; j < un->stack_size; j++)
@@ -387,14 +387,14 @@ void test_rnn_network(struct network *n)
                 int sp = 0;
  
                 /* present all events of the current item */
-                for (int j = 0; j < e->num_events; j++) {
-                        copy_vector(un->stack[sp]->input->vector, e->inputs[j]);
+                for (int j = 0; j < item->num_events; j++) {
+                        copy_vector(un->stack[sp]->input->vector, item->inputs[j]);
                         feed_forward(un->stack[sp], un->stack[sp]->input);
 
-                        if (e->targets[j]) {
+                        if (item->targets[j]) {
                                 double error = n->output->err_fun->fun(
                                                 un->stack[sp]->output,
-                                                e->targets[j],
+                                                item->targets[j],
                                                 n->target_radius,
                                                 n->zero_error_radius);
                                 n->status->error += error;
@@ -417,32 +417,32 @@ void test_rnn_network(struct network *n)
 
         mprintf(" ");
         mprintf("Number of items: \t\t %d",
-                        n->asp->num_elements);
+                        n->asp->items->num_elements);
         mprintf("Total error: \t\t\t %lf",
                         n->status->error);
         mprintf("Error per example:\t\t %lf",
-                        n->status->error / n->asp->num_elements);
+                        n->status->error / n->asp->items->num_elements);
         mprintf("# Items reached threshold: \t %d (%.2lf%%)",
                         threshold_reached,
-                        ((double)threshold_reached / n->asp->num_elements) * 100.0);
+                        ((double)threshold_reached / n->asp->items->num_elements) * 100.0);
         mprintf(" ");
 }
 
-void test_network_with_item(struct network *n, struct element *e, bool pprint, int scheme)
+void test_network_with_item(struct network *n, struct item *item, bool pprint, int scheme)
 {
         if (n->type == TYPE_FFN)
-                test_ffn_network_with_item(n, e, pprint, scheme);
+                test_ffn_network_with_item(n, item, pprint, scheme);
         if (n->type == TYPE_SRN)
-                test_ffn_network_with_item(n, e, pprint, scheme);
+                test_ffn_network_with_item(n, item, pprint, scheme);
         if (n->type == TYPE_RNN)
-                test_rnn_network_with_item(n, e, pprint, scheme);
+                test_rnn_network_with_item(n, item, pprint, scheme);
 }
 
 /*
  * Test a feed forward network with a single item.
  */
 
-void test_ffn_network_with_item(struct network *n, struct element *e, bool pprint, int scheme)
+void test_ffn_network_with_item(struct network *n, struct item *item, bool pprint, int scheme)
 {
         n->status->error = 0.0;
 
@@ -450,32 +450,32 @@ void test_ffn_network_with_item(struct network *n, struct element *e, bool pprin
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
 
-        printf("\nItem: \"%s\" --  \"%s\"\n", e->name, e->meta);
+        printf("\nItem: \"%s\" --  \"%s\"\n", item->name, item->meta);
 
         /* present all events of the current item */
-        for (int j = 0; j < e->num_events; j++) {
+        for (int j = 0; j < item->num_events; j++) {
                 printf("\nEvent: \t%d\n", j);
                 printf("\nInput: \t");
                 if (pprint) {
-                        pprint_vector(e->inputs[j], scheme);
+                        pprint_vector(item->inputs[j], scheme);
                 } else {
-                        print_vector(e->inputs[j]);
+                        print_vector(item->inputs[j]);
                 }
 
                 /* shift context groups (for SRNs) */
                 if (j > 0 && n->type == TYPE_SRN)
                         shift_context_groups(n);
 
-                copy_vector(n->input->vector, e->inputs[j]);
+                copy_vector(n->input->vector, item->inputs[j]);
                 feed_forward(n, n->input);
 
                 /* compute error if an event has a target */
-                if (e->targets[j]) {
+                if (item->targets[j]) {
                         printf("\nTarget: ");
                         if (pprint) {
-                                pprint_vector(e->targets[j], scheme);
+                                pprint_vector(item->targets[j], scheme);
                         } else  {
-                                print_vector(e->targets[j]);
+                                print_vector(item->targets[j]);
                         }
                         printf("Output: ");
                         if (pprint) {
@@ -484,10 +484,10 @@ void test_ffn_network_with_item(struct network *n, struct element *e, bool pprin
                                 print_vector(n->output->vector);
                         }
 
-                        if (j == e->num_events - 1) {
+                        if (j == item->num_events - 1) {
                                 n->status->error += n->output->err_fun->fun(
                                         n->output,
-                                        e->targets[j],
+                                        item->targets[j],
                                         n->target_radius,
                                         n->zero_error_radius);
                                 pprintf("\nError: \t%lf\n", n->status->error);
@@ -500,7 +500,7 @@ void test_ffn_network_with_item(struct network *n, struct element *e, bool pprin
  * Test a recurrent network with a single item.
  */
 
-void test_rnn_network_with_item(struct network *n, struct element *e, bool pprint, int scheme)
+void test_rnn_network_with_item(struct network *n, struct item *item, bool pprint, int scheme)
 {
         n->status->error = 0.0;
 
@@ -514,32 +514,32 @@ void test_rnn_network_with_item(struct network *n, struct element *e, bool pprin
         /* stack pointer */
         int sp = 0;
 
-        printf("\nItem: \"%s\" --  \"%s\"\n", e->name, e->meta);
+        printf("\nItem: \"%s\" --  \"%s\"\n", item->name, item->meta);
 
         /* present all events of the current item */
-        for (int j = 0; j < e->num_events; j++) {
+        for (int j = 0; j < item->num_events; j++) {
                 printf("\nEvent: \t%d\n", j);
                 printf("\nInput: \t");
                 if (pprint) {
-                        pprint_vector(e->inputs[j], scheme);
+                        pprint_vector(item->inputs[j], scheme);
                 } else {
-                        print_vector(e->inputs[j]);
+                        print_vector(item->inputs[j]);
                 }
 
-                copy_vector(un->stack[sp]->input->vector, e->inputs[j]);
+                copy_vector(un->stack[sp]->input->vector, item->inputs[j]);
                 feed_forward(un->stack[sp], un->stack[sp]->input);
 
-                if (e->targets[j]) {
+                if (item->targets[j]) {
                         n->status->error += n->output->err_fun->fun(
                                         un->stack[sp]->output,
-                                        e->targets[j],
+                                        item->targets[j],
                                         n->target_radius,
                                         n->zero_error_radius);
                         printf("\nTarget: \t");
                         if (pprint) {
-                                pprint_vector(e->targets[j], scheme);
+                                pprint_vector(item->targets[j], scheme);
                         } else {
-                                print_vector(e->targets[j]);
+                                print_vector(item->targets[j]);
                         }
                         printf("Output: \t");
                         if (pprint) {
