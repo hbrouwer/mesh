@@ -32,9 +32,9 @@
 #define TYPE_RNN 2
 
 /* training orders */
-#define TRAIN_ORDERED 0
-#define TRAIN_PERMUTED 1
-#define TRAIN_RANDOMIZED 2
+#define TRAIN_ORDERED     0
+#define TRAIN_PERMUTED    1
+#define TRAIN_RANDOMIZED  2
 
 /*
  * ########################################################################
@@ -46,57 +46,49 @@ struct network
 {
         /* ## General ################################################## */
 
-        char *name;                 /* name of the network */
-        int type;                   /* type of the network */
-        struct array *groups;       /* array of groups in the network */
+        char *name;                 /* network name */
+        int type;                   /* network type */
+        
+        struct array *groups;       /* groups in the network */
+        struct group *input;        /* input group */
+        struct group *output;       /* output group */
 
-        struct group *input;        /* input group for this network */
-        struct group *output;       /* output group for this network */
-
-        bool act_lookup;            /* use activation lookup vectors */
-
-        bool initialized;           /* flags whether this network is
-                                       intialized */
+        bool act_lookup;            /* use activation lookup */
+        bool initialized;           /* flags initialization status */
 
         /* ## Random numbers ########################################### */
 
         void (*random_algorithm)    /* randomization algorithm */
                 (struct matrix *m, struct network *n);
+        int random_seed;            /* random number generator seed */
+        double random_mu;           /* mu for Gaussian random numbers */
+        double random_sigma;        /* sigma for Gaussian random numbers */
+        double random_min;          /* minimum for random ranges */
+        double random_max;          /* maximum for random ranges */
 
-        int random_seed;            /* seed for the random number
-                                       generator */
-        double random_mu;           /* mu for normally distributed random
-                                       matrices */
-        double random_sigma;        /* sigma for normally distributed random
-                                       matrices */
-        double random_min;          /* minimum value for range randomized
-                                       matrices */
-        double random_max;          /* maximum value for range randomized
-                                       matrices */
-
-        /* ## Learning parameters ###################################### */
+        /* ## Learning parameters and algorithms ####################### */
 
         struct status *status;      /* network status */
-
+        
         double learning_rate;       /* learning rate coefficient */
-        double lr_scale_factor;     /* scale factor for the learning rate */
-        double lr_scale_after;      /* fraction of maximum number of epochs
-                                       after which to scale the learning rate */
+        double lr_scale_factor;     /* LR scale factor */
+        double lr_scale_after;      /* LR scale after %epochs */
 
         double momentum;            /* momentum coefficient */
-        double mn_scale_factor;     /* scale factor for momentum */
-        double mn_scale_after;      /* fraction of maximum number of epochs
-                                       after which to scale the momentum */
+        double mn_scale_factor;     /* MN scale factor */
+        double mn_scale_after;      /* MN scale after %epochs */
         
         double weight_decay;        /* weight decay coefficient */
-
-        double error_threshold;     /* error threshold */
+        double wd_scale_factor;     /* WD scale factor */
+        double wd_scale_after;      /* WD scale after %epochs */
 
         double target_radius;       /* target radius */
         double zero_error_radius;   /* zero error radius */
 
+        double error_threshold;     /* error threshold */
         int max_epochs;             /* maximum number of training epochs */
-        int report_after;           /* number of training epochs after
+        int report_after;           /* report status after #epochs
+                                       number of training epochs after
                                        which to report status */
 
         void (*learning_algorithm)  /* learning algorithm */
@@ -104,11 +96,9 @@ struct network
         void (*update_algorithm)    /* weight update algorithm */
                 (struct network *n);
 
-        int history_length;         /* number of history timesteps for BPTT */
+        int history_length;         /* history length for BPTT */
 
-        int batch_size;             /* size of batch after which to update
-                                       weights */
-        
+        int batch_size;             /* update after #items */
         int training_order;         /* order in which training items are
                                        presented */        
 
@@ -120,20 +110,18 @@ struct network
         /* ## Rprop parameters ######################################### */
 
         double rp_init_update;      /* initial update value for Rprop */
-        double rp_eta_plus;         /* rate with which update values are
-                                       increased */
-        double rp_eta_minus;        /* rate with which update values are
-                                       decreased */
+        double rp_eta_plus;         /* update value increase rate */
+        double rp_eta_minus;        /* update value decrease rate */
         int rp_type;                /* type of Rprop */
 
         /* ## Delta-Bar-Delta parameters ############################### */
 
-        double dbd_rate_increment;  /* learning rate increment factor for DBD */
-        double dbd_rate_decrement;  /* learning rate decrement factor for DBD */
+        double dbd_rate_increment;  /* LR increment factor for DBD */
+        double dbd_rate_decrement;  /* LR decrement factor for DBD */
 
         /* ## Sets ##################################################### */
 
-        struct array *sets;         /* sets */
+        struct array *sets;         /* sets in this network */
         struct set *asp;            /* active set pointer */
 
         /* ## Unfolded recurrent network ############################### */
@@ -151,22 +139,20 @@ struct network
 struct group
 {
         char *name;                 /* name of the group */
+        
         struct vector *vector;      /* the "neurons" of this group */
         struct vector *error;       /* error vector for this group */
-        struct act_fun *act_fun;    /* activation function and its derivative
-                                       for this group */
-        struct err_fun *err_fun;    /* error function and its derivative
-                                       for this group */
-        struct array                /* array of incoming projections */
-                *inc_projs;
-        struct array                /* array of outgoing projections */
-                *out_projs;
 
-        struct array                /* array of context groups */
-                *ctx_groups;
+        struct act_fun *act_fun;    /* activation functions */
+        struct err_fun *err_fun;    /* error functions */
+                                       
+        struct array *inc_projs;    /* array of incoming projections */
+        struct array *out_projs;    /* array of outgoing projections */
+
+        struct array *ctx_groups;   /* array of context groups */
         
-        bool bias;                  /* flags whether this is a bias group */
-        bool recurrent;             /* flags whether this is a recurrent group */
+        bool bias;                  /* flags bias groups */
+        bool recurrent;             /* flags recurrent groups */
 };
 
 /*
@@ -177,20 +163,19 @@ struct group
 
 struct projection
 {
-        struct group *to;           /* the group towards which is projected */
+        struct group *to;           /* group projected to */
         struct matrix *weights;     /* projection weights */
-        bool frozen;                /* flags whether weights for this projection
-                                       are frozen */
-        struct matrix *gradients;   /* projection gradients for BP */
-        struct matrix               /* previous projection gradients for BP */
+        bool frozen;                /* flags frozen weights */
+        
+        struct matrix *gradients;   /* gradients */
+        struct matrix               /* previous gradients */
                 *prev_gradients;
         struct matrix               /* previous weight deltas */
                 *prev_weight_deltas;
-        struct matrix               /* update values for Rprop or 
-                                       learning rates for DBD */
+        struct matrix               /* update values (Rprop) or LRs (DBD) */
                 *dyn_learning_pars;
-        bool recurrent;             /* flags whether this is a recurrent
-                                       projection for BPTT */
+
+        bool recurrent;             /* flags recurrent projections (BPTT) */
 };
 
 /*
@@ -235,8 +220,9 @@ struct status
         double prev_error;          /* previous network error */
         double weight_cost;         /* weight cost */
         double gradient_linearity;  /* gradient linearity */
-        double                      /* length of last weight changes vector */ 
-                last_weight_deltas_length;
+        double last_weight_deltas_length;
+                                    /* length of last weight changes vector */ 
+
         double gradients_length;    /* length of weight gradients vector */
 };
 

@@ -36,6 +36,5 @@ void cprintf(const char *fmt, ...);
 void mprintf(const char *fmt, ...);
 void eprintf(const char *fmt, ...);
 void pprintf(const char *fmt, ...);
-void rprintf(const char *fmt, ...);
 
 #endif /* MAIN_H */

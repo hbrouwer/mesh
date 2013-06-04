@@ -188,11 +188,11 @@ void process_command(char *cmd, struct session *s)
                 return;
         if (cmd_set_double_parameter(cmd, "set LRScaleFactor %lf",
                                 &s->anp->lr_scale_factor,
-                                "Set learning rate scale factor ... \t ( %lf )"))
+                                "Set LR scale factor ... \t ( %lf )"))
                 return;
         if (cmd_set_double_parameter(cmd, "set LRScaleAfter %lf",
                                 &s->anp->lr_scale_after,
-                                "Set LR scale after (%%epochs) ... \t ( %lf )"))
+                                "Set LR scale after (%%epochs) ... ( %lf )"))
                 return;
         if (cmd_set_double_parameter(cmd, "set Momentum %lf",
                                 &s->anp->momentum,
@@ -200,15 +200,23 @@ void process_command(char *cmd, struct session *s)
                 return;
         if (cmd_set_double_parameter(cmd, "set MNScaleFactor %lf",
                                 &s->anp->mn_scale_factor,
-                                "Set momentum scale factor ... \t ( %lf )"))
+                                "Set MN scale factor ... \t ( %lf )"))
                 return;
         if (cmd_set_double_parameter(cmd, "set MNScaleAfter %lf",
                                 &s->anp->mn_scale_after,
-                                "Set momentum scale after (%%epochs) ... \t ( %lf )"))
+                                "Set MN scale after (%%epochs) ... ( %lf )"))
                 return;
         if (cmd_set_double_parameter(cmd, "set WeightDecay %lf",
                                 &s->anp->weight_decay,
                                 "Set weight decay ... \t\t ( %lf )"))
+                return;
+        if (cmd_set_double_parameter(cmd, "set WDScaleFactor %lf",
+                                &s->anp->wd_scale_factor,
+                                "Set WD scale factor ... \t ( %lf )"))
+                return;
+        if (cmd_set_double_parameter(cmd, "set WDScaleAfter %lf",
+                                &s->anp->wd_scale_after,
+                                "Set WD scale after (%%epochs) ... ( %lf )"))
                 return;
         if (cmd_set_double_parameter(cmd, "set ErrorThreshold %lf",
                                 &s->anp->error_threshold,

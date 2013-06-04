@@ -51,19 +51,19 @@ void dispose_set(struct set *s)
 struct item *create_item(char *name, int num_events, char *meta,
                 struct vector **inputs, struct vector **targets)
 {
-        struct item *i;
+        struct item *item;
 
-        if (!(i = malloc(sizeof(struct item))))
+        if (!(item = malloc(sizeof(struct item))))
                 goto error_out;
-        memset(i, 0, sizeof(struct item));
+        memset(item, 0, sizeof(struct item));
 
-        i->name = name;
-        i->num_events = num_events;
-        i->meta = meta;
-        i->inputs = inputs;
-        i->targets = targets;
+        item->name = name;
+        item->num_events = num_events;
+        item->meta = meta;
+        item->inputs = inputs;
+        item->targets = targets;
 
-        return i;
+        return item;
 
 error_out:
         perror("[create_element()]");
@@ -103,6 +103,7 @@ struct set *load_set(char *name, char *filename, int input_size, int output_size
                 if (sscanf(buf, "Item \"%[^\"]\" %d \"%[^\"]\"", tmp1, &num_events, tmp2) != 3)
                         continue;
 
+                /* item name */
                 char *name;
                 int block_size = ((strlen(tmp1) + 1) * sizeof(char));
                 if (!(name = malloc(block_size)))
@@ -110,6 +111,7 @@ struct set *load_set(char *name, char *filename, int input_size, int output_size
                 memset(name, 0, block_size);
                 strncpy(name, tmp1, strlen(tmp1));
 
+                /* meta information */
                 char *meta;
                 block_size = ((strlen(tmp2) + 1) * sizeof(char));
                 if (!(meta = malloc(block_size)))
@@ -117,6 +119,7 @@ struct set *load_set(char *name, char *filename, int input_size, int output_size
                 memset(meta, 0, block_size);
                 strncpy(meta, tmp2, strlen(tmp2));
 
+                /* input and target vectors */
                 struct vector **inputs;
                 block_size = num_events * sizeof(struct vector *);
                 if (!(inputs = malloc(block_size)))
@@ -132,6 +135,7 @@ struct set *load_set(char *name, char *filename, int input_size, int output_size
                                 goto error_out;
                         char *tokens = strtok(buf, " ");
 
+                        /* input vector */
                         if (strcmp(tokens, "Input") == 0) {
                                 inputs[i] = create_vector(input_size);
                                 for (int j = 0; j < input_size; j++) {
@@ -142,6 +146,7 @@ struct set *load_set(char *name, char *filename, int input_size, int output_size
                                 }
                         }
 
+                        /* (optional) target vector */
                         if ((tokens = strtok(NULL, " ")) != NULL) {
                                 targets[i] = create_vector(output_size);
                                 if (strcmp(tokens, "Target") == 0) {
@@ -161,6 +166,7 @@ struct set *load_set(char *name, char *filename, int input_size, int output_size
 
         fclose(fd);
 
+        /* item order */
         int block_size = s->items->num_elements * sizeof(int);
         if (!(s->order = malloc(block_size)))
                 goto error_out;

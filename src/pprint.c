@@ -29,10 +29,6 @@ int PALETTE_MOODY_BLUES[10] = {129, 128, 127, 91, 90, 55, 54, 19, 20, 21};
 int PALETTE_FOR_JOHN[10]    = {46, 40, 34, 28, 64, 100, 136, 166, 202, 196};
 int PALETTE_GRAY_ORANGE[10] = {220, 221, 222, 223, 224, 255, 253, 251, 249, 247};
 
-/*
- * Pretty print vector.
- */
-
 void pprint_vector(struct vector *v, int scheme)
 {
         double min = vector_minimum(v);
@@ -44,10 +40,6 @@ void pprint_vector(struct vector *v, int scheme)
         }
         printf("\n");
 }
-
-/*
- * Pretty print matrix.
- */
 
 void pprint_matrix(struct matrix *m, int scheme)
 {

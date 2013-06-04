@@ -49,24 +49,26 @@
 void feed_forward(struct network *n, struct group *g)
 {
         /*
-         * Under the assumption that activation levels for the unit's
+         * Under the assumption that activation levels for the units
          * in the current group have already been determined, determine
          * the activation levels of all the groups towards which the
          * current group maintains a projection.
          */
         for (int i = 0; i < g->out_projs->num_elements; i++) {
+                struct projection *op = g->out_projs->elements[i];
+
                 /*
                  * During BPTT, we want activation to propagate only 
                  * through the network of the current timestep.
                  */
-                if (((struct projection *)g->out_projs->elements[i])->recurrent)
+                if (op->recurrent)
                         continue;
 
                 /*
                  * Compute net input and activation level for the units in 
                  * each group that the current group projects to.
                  */
-                struct group *rg = ((struct projection *)g->out_projs->elements[i])->to;
+                struct group *rg = op->to;
 #ifdef _OPENMP
 #pragma omp parallel for if(rg->vector->size >= OMP_MIN_ITERATIONS)
 #endif /* _OPENMP */
@@ -85,8 +87,9 @@ void feed_forward(struct network *n, struct group *g)
                          * in different projecting groups.
                          */
                         for (int x = 0; x < rg->inc_projs->num_elements; x++) {
-                                struct group *pg = ((struct projection *)rg->inc_projs->elements[x])->to;
-                                struct matrix *w = ((struct projection *)rg->inc_projs->elements[x])->weights;
+                                struct projection *ip = rg->inc_projs->elements[x];
+                                struct group *pg = ip->to;
+                                struct matrix *w = ip->weights;
                                 for (int z = 0; z < pg->vector->size; z++)
                                         rg->vector->elements[j] += pg->vector->elements[z]
                                                 * w->elements[z][j];
@@ -113,9 +116,11 @@ void feed_forward(struct network *n, struct group *g)
          * propagate through the network of the current timestep during
          * BPTT.
          */
-        for (int i = 0; i < g->out_projs->num_elements; i++)
-                if (!((struct projection *)g->out_projs->elements[i])->recurrent)
-                        feed_forward(n, ((struct projection *)g->out_projs->elements[i])->to);
+        for (int i = 0; i < g->out_projs->num_elements; i++) {
+                struct projection *op = g->out_projs->elements[i];
+                if (!op->recurrent)
+                        feed_forward(n, op->to);
+        }
 }
 
 /*

@@ -29,6 +29,7 @@ void print_training_summary(struct network *n);
 
 void scale_learning_rate(struct network *n);
 void scale_momentum(struct network *n);
+void scale_weight_decay(struct network *n);
 
 void train_network_with_bp(struct network *n);
 void train_network_with_bptt(struct network *n);

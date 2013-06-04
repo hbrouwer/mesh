@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 {
         struct session *s;
 
-        cprintf("MESH, version %s: http://hbrouwer.github.io/mesh/", VERSION);
+        mprintf("MESH, version %s: http://hbrouwer.github.io/mesh/", VERSION);
 
         s = create_session();
 
@@ -63,7 +63,7 @@ leave_session:
 
 void print_help(char *exec_name)
 {
-        cprintf(
+        mprintf(
                         "Usage: %s [options-and-file]\n\n"
 
                         "  Basic information for users:\n"
@@ -75,7 +75,7 @@ void print_help(char *exec_name)
 
 void print_version()
 {
-        cprintf(
+        mprintf(
                         "\n"
                         "(c) 2013 Harm Brouwer <me@hbrouwer.eu>\n"
                         "Center for Language and Cognition Groningen (CLCG), University of Groningen\n"
@@ -90,9 +90,9 @@ void cprintf(const char *fmt, ...)
 {
         va_list args;
         va_start(args, fmt);
-        vfprintf(stderr, fmt, args);
+        vfprintf(stdout, fmt, args);
         va_end(args);
-        fprintf(stderr, "\n");
+        fprintf(stdout, "\n");
 }
 
 /* print program message */
@@ -100,7 +100,6 @@ void mprintf(const char *fmt, ...)
 {
         va_list args;
 
-        // fprintf(stderr, "");
         va_start(args, fmt);
         vfprintf(stderr, fmt, args);
         va_end(args);
@@ -124,20 +123,9 @@ void pprintf(const char *fmt, ...)
 {
         va_list args;
 
-        // fprintf(stderr, "");
+        fprintf(stderr, "**** ");
         va_start(args, fmt);
         vfprintf(stderr, fmt, args);
         va_end(args);
         fprintf(stderr, "\n");
-}
-
-/* print report message */
-void rprintf(const char *fmt, ...)
-{
-        va_list args;
-
-        va_start(args, fmt);
-        vfprintf(stdout, fmt, args);
-        va_end(args);
-        fprintf(stdout, "\n");
 }

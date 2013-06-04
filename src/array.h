@@ -21,11 +21,11 @@
 
 #define MAX_ARRAY_ELEMENTS 10
 
-#define TYPE_NETWORKS 0
-#define TYPE_GROUPS 1
-#define TYPE_PROJS 2
-#define TYPE_SETS 3
-#define TYPE_ITEMS 4
+#define TYPE_NETWORKS   0
+#define TYPE_GROUPS     1
+#define TYPE_PROJS      2
+#define TYPE_SETS       3
+#define TYPE_ITEMS      4
 
 struct array
 {

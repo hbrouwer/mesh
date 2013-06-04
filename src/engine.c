@@ -78,13 +78,13 @@ void scale_learning_rate(struct network *n)
         if (sa > 0 && n->status->epoch % sa == 0) {
                 double lr = n->learning_rate;
                 n->learning_rate *= n->lr_scale_factor;
-                mprintf("scaled learning rate: [%lf -> %lf]",
+                mprintf("Scaled learning rate \t\t  ( %lf => %lf )",
                                 lr, n->learning_rate);
         }
 }
 
 /*
- * Scale momentum factor.
+ * Scale momentum.
  */
 
 void scale_momentum(struct network *n)
@@ -93,8 +93,23 @@ void scale_momentum(struct network *n)
         if (sa > 0 && n->status->epoch % sa == 0) {
                 double mn = n->momentum;
                 n->momentum *= n->mn_scale_factor;
-                mprintf("scaled momentum: [%lf -> %lf]",
+                mprintf("Scaled momentum \t\t ( %lf => %lf )",
                                 mn, n->momentum);
+        }
+}
+
+/*
+ * Scale weight decay
+ */
+
+void scale_weight_decay(struct network *n)
+{
+        int sa = n->wd_scale_after * n->max_epochs;
+        if (sa > 0 && n->status->epoch % sa == 0) {
+                double wd = n->weight_decay;
+                n->weight_decay *= n->wd_scale_factor;
+                mprintf("Scale weight decay \t\t ( %lf => %lf)",
+                                wd, n->weight_decay);
         }
 }
 
@@ -181,9 +196,10 @@ void train_network_with_bp(struct network *n)
                 /* update weights */
                 n->update_algorithm(n);
 
-                /* scale learning rate and momentum */
+                /* scale learning rate, momentum and weight decay */
                 scale_learning_rate(n);
                 scale_momentum(n);
+                scale_weight_decay(n);
 
                 print_training_progress(n);
         }
@@ -280,9 +296,10 @@ void train_network_with_bptt(struct network *n)
                         break;
                 }
 
-                /* scale learning rate and momentum */
+                /* scale learning rate, momentum and weight decay */
                 scale_learning_rate(n);
                 scale_momentum(n);
+                scale_weight_decay(n);
 
                 print_training_progress(n);
         }

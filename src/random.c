@@ -34,7 +34,7 @@ void randomize_gaussian(struct matrix *m, struct network *n)
 }
 
 /* 
- * Randomizes a matrix with uniformly samples values from a given range.
+ * Randomizes a matrix with uniformly sampled values from a given range.
  */
 
 void randomize_range(struct matrix *m, struct network *n)

@@ -10,6 +10,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -march=core2 -fopenmp")
 
 add_executable(mesh
         src/act.c
+        src/array.c
         src/bp.c
         src/cli.c
         src/cmd.c

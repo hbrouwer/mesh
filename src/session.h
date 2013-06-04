@@ -22,21 +22,12 @@
 #include "array.h"
 #include "network.h"
 
-#define MAX_NETWORKS 10
-
 struct session
 {
-        struct array *networks;
-        struct network *anp;
-        bool pprint;
-        int pprint_scheme;
-};
-
-struct network_array
-{
-        int num_elements;
-        int max_elements;
-        struct network **elements;
+        struct array *networks; /* networks in this session */
+        struct network *anp;    /* active network pointer */
+        bool pprint;            /* flag for pretty printing */
+        int pprint_scheme;      /* pretty priniting scheme */
 };
 
 struct session *create_session();

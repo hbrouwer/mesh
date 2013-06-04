@@ -67,10 +67,12 @@ void increase_array_size(struct array *a)
 {
         a->max_elements = a->max_elements + MAX_ARRAY_ELEMENTS;
 
+        /* increase array size */
         int block_size = a->max_elements * sizeof(void *);
         if (!(a->elements = realloc(a->elements, block_size)))
                 goto error_out;
 
+        /* zero out all additional cells */
         for (int i = a->num_elements; i < a->max_elements; i++)
                 a->elements[i] = NULL;
 
@@ -87,6 +89,10 @@ void dispose_array(struct array *a)
         free(a);
 }
 
+/*
+ * Note: Projections are not addressable by name.
+ */
+
 void *find_array_element_by_name(struct array *a, char *name)
 {
         for (int i = 0; i < a->num_elements; i++) {
@@ -97,17 +103,17 @@ void *find_array_element_by_name(struct array *a, char *name)
                         if (strcmp(n->name, name) == 0)
                                 return e;
                 }
-                if (a->type == TYPE_GROUPS) {
+                else if (a->type == TYPE_GROUPS) {
                         struct group *g = (struct group *)e;
                         if (strcmp(g->name, name) == 0)
                                 return e;
                 }
-                if (a->type == TYPE_SETS) {
+                else if (a->type == TYPE_SETS) {
                         struct set *s = (struct set *)e;
                         if (strcmp(s->name, name) == 0)
                                 return e;
                 }
-                if (a->type == TYPE_ITEMS) {
+                else if (a->type == TYPE_ITEMS) {
                         struct item *item = (struct item *)e;
                         if (strcmp(item->name, name) == 0)
                                 return e;

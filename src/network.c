@@ -27,16 +27,6 @@
 #include "pprint.h"
 #include "stats.h"
 
-/*
- * ########################################################################
- * ## Network construction                                               ##
- * ########################################################################
- */
-
-/*
- * Creates a new network.
- */
-
 struct network *create_network(char *name, int type)
 {
         struct network *n;
@@ -67,19 +57,9 @@ error_out:
         return NULL;
 }
 
-/*
- * Initialize a network.
- */
-
 void init_network(struct network *n)
 {
         n->initialized = false;
-
-        /*
-         * ################################################################
-         * ## Verify network sanity                                      ##
-         * ################################################################
-         */
 
         if (n->groups->num_elements == 0) {
                 eprintf("Cannot initialize network--network has no groups");
@@ -94,48 +74,28 @@ void init_network(struct network *n)
                 return;
         }
 
-        /* seed random number generator */
         srand(n->random_seed);
-
-        /* randomize weights matrices */
         randomize_weight_matrices(n->input, n);
-
-        /* initialize dynamic learning paramters */
+        
         initialize_dyn_learning_pars(n->input, n);
 
-        /* 
-         * Initialize activation function lookup
-         * vectors (if required).
-         */
         if (n->act_lookup)
                 initialize_act_lookup_vectors(n);
         
         if (n->batch_size == 0 && n->asp)
                 n->batch_size = n->asp->items->num_elements;
 
-        /* initialize unfolded network (if required) */
         if (n->learning_algorithm == train_network_with_bptt)
                 n->unfolded_net = rnn_init_unfolded_network(n);
 
         n->initialized = true;
 }
 
-/*
- * Resets a network.
- */
-
 void reset_network(struct network *n)
 {
-        /* randomize weights matrices */
         randomize_weight_matrices(n->input, n);
-
-        /* initialize dynamic learning paramters */
         initialize_dyn_learning_pars(n->input, n);
 }
-
-/*
- * Disposes a network.
- */
 
 void dispose_network(struct network *n)
 {
@@ -153,10 +113,6 @@ void dispose_network(struct network *n)
 
         free(n);
 }
-
-/*
- * Creates a new group.
- */
 
 struct group *create_group(char *name, int size, bool bias, bool recurrent)
 {
@@ -202,15 +158,9 @@ error_out:
         return NULL;
 }
 
-/*
- * Attaches a bias group to a specified group.
- */
-
 struct group *attach_bias_group(struct network *n, struct group *g)
 {
-        /*
-         * Create a new "bias" group.
-         */
+        /* create a new "bias" group */
         char *tmp;
         int block_size = (strlen(g->name) + 6) * sizeof(char);
         if (!(tmp = malloc(block_size)))
@@ -228,9 +178,7 @@ struct group *attach_bias_group(struct network *n, struct group *g)
 
         free(tmp);
 
-        /* 
-         * Add it to the network's group array.
-         */
+        /* add "bias" group to the network */
         add_to_array(n->groups, bg);
 
         /* weight matrix */
@@ -258,19 +206,12 @@ struct group *attach_bias_group(struct network *n, struct group *g)
                         bg->vector->size,
                         g->vector->size);
 
-        /* 
-         * Create a projection from the bias group to the bias receiving 
-         * group.
-         */
+        /* add projections */
         struct projection *op;
         op = create_projection(g, weights, gradients, prev_gradients,
                                 prev_weight_deltas, dyn_learning_pars, false);
         add_to_array(bg->out_projs, op);
         
-        /*
-         * Create a projection from the bias receiving group to the bias
-         * group.
-         */
         struct projection *ip;
         ip = create_projection(bg, weights, gradients, prev_gradients,
                                 prev_weight_deltas, dyn_learning_pars, false);
@@ -282,10 +223,6 @@ error_out:
         perror("[attach_bias_group()]");
         return NULL;
 }
-
-/*
- * Dispose a group.
- */
 
 void dispose_group(struct group *g)
 {
@@ -312,20 +249,11 @@ void dispose_group(struct group *g)
         free(g);
 }
 
-
-/*
- * Dispose all the groups in the specfied groups array.
- */
-
 void dispose_groups(struct array *gs)
 {
         for (int i = 0; i < gs->num_elements; i++)
                 dispose_group(gs->elements[i]);
 }
-
-/*
- * Shifts all context groups chains in a network.
- */
 
 void shift_context_groups(struct network *n)
 {
@@ -339,10 +267,10 @@ void shift_context_groups(struct network *n)
 }
 
 /*
- * Shifts a context group chain. If group g has a context group c, then
- * the activity vector of g is copied into that of c. However, if c has
- * itself a context group c', then the activity pattern of c is first
- * copied into c', and so forth.
+ * Shifts a context group chain. If group g has a context group c, then the
+ * activity vector of g is copied into that of c. However, if c has itself
+ * a context group c', then the activity pattern of c is first copied into
+ * c', and so forth.
  */
 
 void shift_context_group_chain(struct group *g,
@@ -356,10 +284,6 @@ void shift_context_group_chain(struct group *g,
         copy_vector(g->vector, v);
 }
 
-/*
- * This resets all the context groups in a network to their initial value.
- */
-
 void reset_context_groups(struct network *n)
 {
         for (int i = 0; i < n->groups->num_elements; i++) {
@@ -371,22 +295,12 @@ void reset_context_groups(struct network *n)
         }
 }
 
-/*
- * This resets a context group chain.
- */
-
 void reset_context_group_chain(struct group *g)
 {
         for (int i = 0; i < g->ctx_groups->num_elements; i++)
                 reset_context_group_chain(g->ctx_groups->elements[i]);
-                
         fill_vector_with_value(g->vector, 0.5);
 }
-
-/*
- * This resets all the recurrent groups in a network to their intitial
- * value.
- */
 
 void reset_recurrent_groups(struct network *n) {
         for (int i = 0; i < n->groups->num_elements; i++) {
@@ -396,9 +310,6 @@ void reset_recurrent_groups(struct network *n) {
         }
 }
 
-/*
- * This resets the error vector for groups.
- */
 void reset_error_signals(struct network *n)
 {
         for (int i = 0; i < n->groups->num_elements; i++) {
@@ -406,10 +317,6 @@ void reset_error_signals(struct network *n)
                 zero_out_vector(g->error);
         }
 }
-
-/*
- * Creates a new projection.
- */
 
 struct projection *create_projection(
                 struct group *to,
@@ -440,10 +347,6 @@ error_out:
         perror("[create_projection()]");
         return NULL;
 }
-/*
- * Disposes a projection.
- */
-
 
 void dispose_projection(struct projection *p)
 {
@@ -456,34 +359,23 @@ void dispose_projection(struct projection *p)
         free(p);
 }
 
-/*
- * Disposes sets.
- */
-
 void dispose_sets(struct array *ss)
 {
         for (int i = 0; i < ss->num_elements; i++)
                 dispose_set(ss->elements[i]);
 }
 
-/*
- * This randomizes the weights for all incoming projections of a group g,
- * and then recursively does the same for all groups towards which
- * g projects.
- */
-
 void randomize_weight_matrices(struct group *g, struct network *n)
 {
-        for (int i = 0; i < g->inc_projs->num_elements; i++)
-                n->random_algorithm(((struct projection *)g->inc_projs->elements[i])->weights, n);
-
-        for (int i = 0; i < g->out_projs->num_elements; i++)
-                randomize_weight_matrices(((struct projection *)g->out_projs->elements[i])->to, n);
+        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+                struct projection *ip = g->inc_projs->elements[i];
+                n->random_algorithm(ip->weights, n);
+        }
+        for (int i = 0; i < g->out_projs->num_elements; i++) {
+                struct projection *op = g->out_projs->elements[i];
+                randomize_weight_matrices(op->to, n);
+        }
 }
-
-/*
- * Initializes dynamic learning parameters for Rprop and Delta-Bar-Delta.
- */
 
 void initialize_dyn_learning_pars(struct group *g, struct network *n)
 {
@@ -494,40 +386,28 @@ void initialize_dyn_learning_pars(struct group *g, struct network *n)
                 v = n->rp_init_update;
         }
 
-        for (int i = 0; i < g->inc_projs->num_elements; i++)
-                fill_matrix_with_value(((struct projection *)g->inc_projs->elements[i])->dyn_learning_pars, v);
+        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+                struct projection *ip = g->inc_projs->elements[i];
+                fill_matrix_with_value(ip->dyn_learning_pars, v);
+        }
 
-        for (int i = 0; i < g->out_projs->num_elements; i++)
-                initialize_dyn_learning_pars(((struct projection *)g->out_projs->elements[i])->to, n);
+        for (int i = 0; i < g->out_projs->num_elements; i++) {
+                struct projection *op = g->out_projs->elements[i];
+                initialize_dyn_learning_pars(op->to, n);
+        }
 }
-
-/*
- * Initializes activation lookup vector.
- */
 
 void initialize_act_lookup_vectors(struct network *n)
 {
         for (int i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
-
                 if (g == n->input || g->bias)
                         continue;
-
                 if (g->act_fun->lookup)
                         dispose_vector(g->act_fun->lookup);
                 g->act_fun->lookup = create_act_lookup_vector(g->act_fun->fun);
         }
 }
-
-/*
- * ########################################################################
- * ## Weight matrix saving and loading                                   ##
- * ########################################################################
- */
-
-/*
- * Save weight matrices to file.
- */
 
 bool save_weight_matrices(struct network *n, char *fn)
 {
@@ -553,10 +433,7 @@ error_out:
 
 void save_weight_matrix(struct group *g, FILE *fd)
 {
-        /*
-         * Write the weight matrices of all of the current group's
-         * incoming projections.
-         */
+        /* write all incoming projections */
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
                 
@@ -575,20 +452,13 @@ void save_weight_matrix(struct group *g, FILE *fd)
                                 p->to->name, g->name);
         }
 
-        /* 
-         * Repeat the above for all of the current group's
-         * outgoing projections.
-         */
+        /* write all outgoing projections */
         for (int i = 0; i < g->out_projs->num_elements; i++)
                 if (!((struct projection *)g->out_projs->elements[i])->recurrent)
                         save_weight_matrix(((struct projection *)g->out_projs->elements[i])->to, fd);
 
         return;
 }
-
-/*
- * Load weight matrices from file.
- */
 
 bool load_weight_matrices(struct network *n, char *fn)
 {

@@ -24,18 +24,18 @@
 
 struct set
 {
-        char *name;                 /* name of this set */
-        struct array *items;        /* items */
-        int *order;                 /* order in which to present elements */
+        char *name;               /* name of this set */
+        struct array *items;      /* items */
+        int *order;               /* order in which to present elements */
 };
 
 struct item
 {
-        char *name;                 /* name of this element */
-        int num_events;             /* number of events */
-        char *meta;                 /* meta information */
-        struct vector **inputs;     /* input vectors */
-        struct vector **targets;    /* target vectors */
+        char *name;               /* name of this element */
+        int num_events;           /* number of events */
+        char *meta;               /* meta information */
+        struct vector **inputs;   /* input vectors */
+        struct vector **targets;  /* target vectors */
 };
 
 struct set *create_set(char *name);
