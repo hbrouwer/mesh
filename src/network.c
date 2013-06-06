@@ -76,7 +76,7 @@ void init_network(struct network *n)
 
         srand(n->random_seed);
         randomize_weight_matrices(n->input, n);
-        
+       
         initialize_dyn_learning_pars(n->input, n);
 
         if (n->act_lookup)
