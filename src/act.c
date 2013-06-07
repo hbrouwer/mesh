@@ -23,13 +23,9 @@
 #include "main.h"
 #include "vector.h"
 
-/*
- * ########################################################################
- * ## Feed forward                                                       ##
- * ########################################################################
- */
-
-/*
+/**************************************************************************
+ * Feed forward
+ *
  * This function propagates activation forward from a group g. Let j be
  * a unit in one of the network's groups, and i a unit in a group projecting
  * to it. The net input x_j to unit j is defined as:
@@ -44,8 +40,7 @@
  *    y_j = f(x_j)
  *
  * where f is typically a non-linear activation function.
- */
-
+ *************************************************************************/
 void feed_forward(struct network *n, struct group *g)
 {
         /*
@@ -123,12 +118,9 @@ void feed_forward(struct network *n, struct group *g)
         }
 }
 
-/*
- * ########################################################################
- * ## Activation lookup                                                  ##
- * ########################################################################
- */
-
+/**************************************************************************
+ * Activation lookup
+ *************************************************************************/
 #define ACT_LOOKUP_MINIMUM -16
 #define ACT_LOOKUP_MAXIMUM 16
 #define ACT_LOOKUP_GRANULARITY 1024
@@ -136,10 +128,9 @@ void feed_forward(struct network *n, struct group *g)
 double ACT_LOOKUP_STEP_SIZE = ((double)ACT_LOOKUP_MAXIMUM 
                 - ACT_LOOKUP_MINIMUM) / ACT_LOOKUP_GRANULARITY;
 
-/*
+/**************************************************************************
  * Creates a lookup vector for the specified activation function.
- */
-
+ *************************************************************************/
 struct vector *create_act_lookup_vector(double (*fun)(struct vector *, int))
 {
         struct vector *lv = create_vector(ACT_LOOKUP_GRANULARITY);
@@ -152,10 +143,9 @@ struct vector *create_act_lookup_vector(double (*fun)(struct vector *, int))
         return lv;
 }
 
-/*
+/**************************************************************************
  * Lookup the activation value for net input x in lookup vector lv.
- */
-
+ *************************************************************************/
 double act_lookup(double x, struct vector *lv)
 {
         if (x < ACT_LOOKUP_MINIMUM)
@@ -168,18 +158,11 @@ double act_lookup(double x, struct vector *lv)
         return lv->elements[i];
 }
 
-/*
- * ########################################################################
- * ## Binary sigmoid function                                            ##
- * ########################################################################
- */
-
-/*
+/**************************************************************************
  * Binary sigmoid function:
  *
  * f(x) = 1 / (1 + e ^ (-x))
- */
-
+ *************************************************************************/
 double act_fun_binary_sigmoid(struct vector *v, int i)
 {
         double x = v->elements[i];
@@ -187,12 +170,11 @@ double act_fun_binary_sigmoid(struct vector *v, int i)
         return 1.0 / (1.0 + exp(-x));
 }
 
-/*
+/**************************************************************************
  * Derivative of the binary sigmoid function:
  *
  * f'(x) = y * (1 - y)
- */
-
+ *************************************************************************/
 double act_fun_binary_sigmoid_deriv(struct vector *v, int i)
 {
         double y = v->elements[i];
@@ -200,18 +182,11 @@ double act_fun_binary_sigmoid_deriv(struct vector *v, int i)
         return y * (1.0 - y);
 }
 
-/*
- * ########################################################################
- * ## Bipolar sigmoid function                                           ##
- * ########################################################################
- */
-
-/*
+/**************************************************************************
  * Bipolar sigmoid function:
  *
  * f(x) = (-1) + 2 / (1 / e ^ (-x))
- */
-
+ *************************************************************************/
 double act_fun_bipolar_sigmoid(struct vector *v, int i)
 {
         double x = v->elements[i];
@@ -219,12 +194,11 @@ double act_fun_bipolar_sigmoid(struct vector *v, int i)
         return (-1.0) + 2.0 / (1.0 + exp(-x));
 }
 
-/*
+/**************************************************************************
  * Derivative of the bipolar sigmoid function:
  *
  * f'(x) = 0.5 * (1 + y) * (1 - y)
- */
-
+ *************************************************************************/
 double act_fun_bipolar_sigmoid_deriv(struct vector *v, int i)
 {
         double y = v->elements[i];
@@ -232,18 +206,11 @@ double act_fun_bipolar_sigmoid_deriv(struct vector *v, int i)
         return 0.5 * (1.0 + y) * (1.0 - y);
 }
 
-/*
- * ########################################################################
- * ## Softmax function                                                   ##
- * ########################################################################
- */
-
-/*
+/**************************************************************************
  * Softmax function:
  *
  * f(x) = (e ^ x) / sum_j (e ^ x_j)
- */
-
+ *************************************************************************/
 double act_fun_softmax(struct vector *v, int i)
 {
         double x = exp(v->elements[i]);
@@ -255,29 +222,21 @@ double act_fun_softmax(struct vector *v, int i)
         return x / sum;
 }
 
-/*
+/**************************************************************************
  * Derivative of the softmax function:
  *
  * f'(x) = 1
- */
-
+ *************************************************************************/
 double act_fun_softmax_deriv(struct vector *v, int i)
 {
         return 1.0;
 }
 
-/*
- * ########################################################################
- * ## Hyperbolic tangent function                                        ##
- * ########################################################################
- */
-
-/*
+/**************************************************************************
  * Hyperbolic tangent function:
  *
  * f(x) = (e ^ (2 * x) - 1) / (e ^ (2 * x) + 1)
- */
-
+ *************************************************************************/
 double act_fun_tanh(struct vector *v, int i)
 {
         double x = v->elements[i];
@@ -285,12 +244,11 @@ double act_fun_tanh(struct vector *v, int i)
         return tanh(x);
 }
 
-/*
+/**************************************************************************
  * Derivative of the hyperbolic tangent function:
  *
  * f'(x) = 1 - y ^ 2;
- */
-
+ *************************************************************************/
 double act_fun_tanh_deriv(struct vector *v, int i)
 {
         double y = v->elements[i];
@@ -298,18 +256,11 @@ double act_fun_tanh_deriv(struct vector *v, int i)
         return 1.0 - pow(y, 2.0);
 }
 
-/*
- * ########################################################################
- * ## Linear function                                                    ##
- * ########################################################################
- */
-
-/*
+/**************************************************************************
  * Linear function:
  *
  * f(x) = x
- */
-
+ *************************************************************************/
 double act_fun_linear(struct vector *v, int i)
 {
         double x = v->elements[i];
@@ -317,31 +268,23 @@ double act_fun_linear(struct vector *v, int i)
         return x;
 }
 
-/*
+/**************************************************************************
  * Derivative of the linear function:
  *
  * f'(x) = 1
- */
-
+ *************************************************************************/
 double act_fun_linear_deriv(struct vector *v, int i)
 {
         return 1.0;
 }
 
-/*
- * ########################################################################
- * ## Step function                                                      ##
- * ########################################################################
- */
-
-/*
+/**************************************************************************
  * Step function:
  *        
  *        | 1 , if x >= 0
  * f(x) = |
  *        | 0 , otherwise
- */
-
+ *************************************************************************/
 double act_fun_step(struct vector *v, int i)
 {
         double x = v->elements[i];
@@ -352,12 +295,11 @@ double act_fun_step(struct vector *v, int i)
                 return 0.0;
 }
 
-/*
+/**************************************************************************
  * Derivative of the step function:
  *
  * f'(x) = 1
- */
-
+ *************************************************************************/
 double act_fun_step_deriv(struct vector *v, int i)
 {
         return 1.0;

@@ -24,7 +24,7 @@
 
 #include <math.h>
 
-/*
+/**************************************************************************
  * This implements the backpropagation (BP) algorithm (Rumelhart, Hinton, &
  * Williams, 1986). BP minimizes an error function over a finite set of
  * input-output pairs by means of gradient descent. Typically, the error
@@ -71,29 +71,22 @@
  *
  * Rumelhart, D. E., Hinton, G. E., & Williams, R. J. (1986). Learning
  *     representations by back-propagating errors. Nature, 323, 553-536.
- */
+ *************************************************************************/
 
-/*
- * Flat spot correction constant. This constant is added to the activation
- * function derivative f'(x_j) to avoid that it approaches zero when y_j
- * is near 1.0 or 0.0. See:
+/**************************************************************************
+ * Flat spot correction constant. This constant is added to the derivative 
+ * f'(x_j) of the sigmoid activation function to avoid that it approaches 
+ * zero when y_j is near 1.0 or 0.0. See:
  *
  * Fahlman, S. E. (1988). An empirical study of learning speed in back-
  *     propagation networks. Technical report CMU-CS-88-162. School of
  *     Computer Science, Caernie Mellon University, Pittsburgh, PA 15213.
- */
+ *************************************************************************/
 #define BP_FLAT_SPOT_CORRECTION 0.1
 
-/*
- * ########################################################################
- * ## Error backpropagation                                              ##
- * ########################################################################
- */
-
-/*
+/**************************************************************************
  * This computes the error signal delta_j for each output unit j.
- */
-
+ *************************************************************************/
 void bp_output_error(struct group *g, struct vector *t, double tr, double zr)
 {
         /*
@@ -114,13 +107,12 @@ void bp_output_error(struct group *g, struct vector *t, double tr, double zr)
         }
 }
 
-/*
+/************************************************************************** 
  * This is the main BP function. Provided a group g, it computes the error
  * signals for each group g' that projects to g, as well as the gradients
  * for the weights on the projection between these groups. Next, it
  * recursively propagates these error signals to earlier groups.
- */
-
+ *************************************************************************/
 void bp_backpropagate_error(struct network *n, struct group *g)
 {
         /*
@@ -219,20 +211,13 @@ void bp_backpropagate_error(struct network *n, struct group *g)
         }
 }
 
-/*
- * ########################################################################
- * ## Steepest descent weight updating                                   ##
- * ########################################################################
- */
-
-/*
+/**************************************************************************
  * This implements steepest (or gradient) descent backpropagation. Steepest
  * descent is a first-order optimization algorithm for finding the nearest
  * local minimum of a function. On each weight update, a step is taken that
  * is proportional to the negative of the gradient of the function that is
  * being minimized.
- */
-
+ *************************************************************************/
 void bp_update_sd(struct network *n)
 {
         /* reset status statistics */
@@ -262,11 +247,10 @@ void bp_update_sd(struct network *n)
                                 * n->status->gradients_length));
 }
 
-/*
+/**************************************************************************
  * This recursively adjusts the weights of all incoming projections of a
  * group g.
- */
-
+ *************************************************************************/
 void bp_recursively_update_sd(struct network *n, struct group *g)
 {
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
@@ -295,10 +279,9 @@ void bp_recursively_update_sd(struct network *n, struct group *g)
         }
 }
 
-/*
+/**************************************************************************
  * This adjusts the weights of a projection p between a group g' and g.
- */
-
+ *************************************************************************/
 void bp_update_projection_sd(struct network *n, struct group *g,
                 struct projection *p)
 {
@@ -412,7 +395,7 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                 += gradients_length;
 }
 
-/*
+/**************************************************************************
  * Determine the scaling factor for steepest descent. If "bounded" steepest
  * descent is used instead of "default" steepest descent, we scale the
  * gradient term of the weight delta by the length of the gradient if this
@@ -425,8 +408,7 @@ void bp_update_projection_sd(struct network *n, struct group *g,
  *      | 1.0             , otherwise
  *
  * where sf is the scaling factor. 
- */
-
+ *************************************************************************/
 void bp_determine_sd_sf(struct network *n)
 {
         /* reset scaling factor */
@@ -446,11 +428,10 @@ void bp_determine_sd_sf(struct network *n)
         }
 }
 
-/*
+/**************************************************************************
  * Recursively compute the sum of squares of the individual weight
  * gradients.
- */
-
+ *************************************************************************/
 void bp_recursively_determine_sd_sf(struct network *n, struct group *g)
 {
         /* local scale factor */
@@ -481,13 +462,7 @@ void bp_recursively_determine_sd_sf(struct network *n, struct group *g)
         n->sd_scale_factor += sd_scale_factor;
 }
 
-/*
- * ########################################################################
- * ## Resilient backpropagation weight updating                          ##
- * ########################################################################
- */
-
-/*
+/**************************************************************************
  * This implements resilient backpropagation (Rprop) (see Igel & Husken,
  * 2000). In Rprop, weight adjustments are made on the basis of the sign of
  * the gradient of a weight. An Rprop update iteration can be divided
@@ -555,8 +530,7 @@ void bp_recursively_determine_sd_sf(struct network *n, struct group *g)
  * Igel, C., & Husken, M. (2000). Improving the Rprop Algorithm. Proceedings
  *     of the Second International Symposium on Neural Computation, NC'2000,
  *     pp. 115-121, ICSC, Academic Press, 2000.
- */
-
+ *************************************************************************/
 #define RP_MAX_STEP_SIZE 50.0
 #define RP_MIN_STEP_SIZE 1e-6
 
@@ -588,6 +562,10 @@ void bp_update_rprop(struct network *n)
                                 * n->status->gradients_length));
 }
 
+/**************************************************************************
+ * This recursively adjusts the weights of all incoming projections of a
+ * group g.
+ *************************************************************************/
 void bp_recursively_update_rprop(struct network *n, struct group *g)
 {
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
@@ -616,6 +594,9 @@ void bp_recursively_update_rprop(struct network *n, struct group *g)
         }
 }
 
+/**************************************************************************
+ * This adjusts the weights of a projection p between a group g' and g.
+ *************************************************************************/
 void bp_update_projection_rprop(struct network *n, struct group *g,
                 struct projection *p)
 {
@@ -797,13 +778,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                 += gradients_length;
 }
 
-/*
- * ########################################################################
- * ## Quickprop weight updating                                          ##
- * ########################################################################
- */
-
-/*
+/**************************************************************************
  * This implements Quickprop backpropagation (Fahlman, 1988). Quickprop is
  * a second order learning method that draws upon two assumptions:
  *
@@ -835,8 +810,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
  * Fahlman, S. E. (1988). An empirical study of learning speed in back-
  *     propagation networks. Technical report CMU-CS-88-162. School of
  *     Computer Science, Caernie Mellon University, Pittsburgh, PA 15213.
- */
-
+ *************************************************************************/
 #define QP_MAX_STEP_SIZE 1.75
 
 void bp_update_qprop(struct network *n)
@@ -862,6 +836,10 @@ void bp_update_qprop(struct network *n)
                                 * n->status->gradients_length));
 }
 
+/**************************************************************************
+ * This recursively adjusts the weights of all incoming projections of a
+ * group g.
+ *************************************************************************/
 void bp_recursively_update_qprop(struct network *n, struct group *g)
 {
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
@@ -890,6 +868,9 @@ void bp_recursively_update_qprop(struct network *n, struct group *g)
         }
 }
 
+/**************************************************************************
+ * This adjusts the weights of a projection p between a group g' and g.
+ *************************************************************************/
 void bp_update_projection_qprop(struct network *n, struct group *g,
                 struct projection *p)
 {
@@ -1095,13 +1076,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                 += gradients_length;
 }
 
-/*
- * ########################################################################
- * ## Delta-Bar-Delta weight updating                                    ##
- * ########################################################################
- */
-
-/*
+/**************************************************************************
  * This implements Delta-Bar-Delta (DBD) backpropagation (Jacobs, 1988). In
  * DBD backpropagation, each weight has its own learning rate that is
  * updated together with its corresponding weight. Hence, in essence, DBD
@@ -1129,8 +1104,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
  *
  * Jacobs, R. A. (1988). Increased Rates of Convergence Through Learning
  *     Rate Adapation. Neural Networks, 1, pp. 295-307.
- */
-
+ **************************************************************************/
 #define DBD_BASE 0.7
 
 void bp_update_dbd(struct network *n)
@@ -1161,11 +1135,10 @@ void bp_update_dbd(struct network *n)
                                 * n->status->gradients_length));
 }
 
-/*
+/**************************************************************************
  * This recursively adjusts the weights and their learning rates of all 
  * incoming projections of a group g.
- */
-
+ *************************************************************************/
 void bp_recursively_update_dbd(struct network *n, struct group *g)
 {
         for (int i = 0; i < g->inc_projs->num_elements; i++) {
@@ -1192,11 +1165,10 @@ void bp_recursively_update_dbd(struct network *n, struct group *g)
         }
 }
 
-/*
+/**************************************************************************
  * This adjusts the weights and their learning rates of a projection p 
  * between a group g' and g.
- */
-
+ *************************************************************************/
 void bp_update_projection_dbd(struct network *n, struct group *g,
                 struct projection *p)
 {
@@ -1217,11 +1189,9 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
         for (int i = 0; i < p->to->vector->size; i++) {
                 for (int j = 0; j < g->vector->size; j++) {
 
-                        /*
-                         * ################################################
-                         * ## Update weight                              ##
-                         * ################################################
-                         */
+                        /******************************
+                         * Update weight
+                         **/
 
                         double weight_delta = 0.0;
 
@@ -1296,11 +1266,9 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                          */
                         p->prev_weight_deltas->elements[i][j] = weight_delta;
 
-                        /*
-                         * ################################################
-                         * ## Update learning rate                       ##
-                         * ################################################
-                         */
+                        /******************************
+                         * Update learning rate
+                         **/
 
                         double lr_delta = 0.0;
 

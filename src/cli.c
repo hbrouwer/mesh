@@ -20,6 +20,9 @@
 #include "cmd.h"
 #include "main.h"
 
+/**************************************************************************
+ * Command line interface loop
+ *************************************************************************/
 void cli_loop(struct session *s)
 {
         char *line = NULL;

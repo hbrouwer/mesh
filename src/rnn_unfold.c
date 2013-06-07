@@ -19,7 +19,7 @@
 #include "bp.h"
 #include "rnn_unfold.h"
 
-/* 
+/**************************************************************************
  * This implements the unfolding of recurrent neural networks (RNNs) for
  * backpropagation through time (BPTT; Rumelhart, Hinton, & Williams, 1986),
  * such that they effectively become feed forward networks (FFNs) that can
@@ -75,8 +75,7 @@
  *     J. L. McClelland (Eds.), Parallel distributed processing:
  *     Explorations in the microstructure of cognition, Volume 1:
  *     Foundations, pp. 318-362, Cambridge, MA: MIT Press.
- */
-
+ *************************************************************************/
 struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
 {
         struct rnn_unfolded_network *un;
@@ -172,6 +171,8 @@ error_out:
         return NULL;
 }
 
+/**************************************************************************
+ *************************************************************************/
 void rnn_dispose_unfolded_network(struct rnn_unfolded_network *un)
 {
         /* detach the "terminal" recurrent groups */
@@ -202,6 +203,8 @@ void rnn_dispose_unfolded_network(struct rnn_unfolded_network *un)
         free(un);
 }
 
+/**************************************************************************
+ *************************************************************************/
 struct network *rnn_duplicate_network(struct network *n)
 {
         /* allocate a duplicate network */
@@ -222,6 +225,8 @@ error_out:
         return NULL;
 }
 
+/**************************************************************************
+ *************************************************************************/
 void rnn_dispose_duplicate_network(struct network *dn)
 {
         rnn_dispose_duplicate_groups(dn->output);
@@ -230,6 +235,8 @@ void rnn_dispose_duplicate_network(struct network *dn)
         free(dn);
 }
 
+/**************************************************************************
+ *************************************************************************/
 struct group *rnn_duplicate_group(struct group *g)
 {
         struct group *dg;
@@ -274,6 +281,8 @@ error_out:
         return NULL;
 }
 
+/**************************************************************************
+ *************************************************************************/
 struct group *rnn_duplicate_groups(struct network *n, struct network *dn, 
                 struct group *g)
 {
@@ -357,6 +366,8 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
         return dg;
 }
 
+/**************************************************************************
+ *************************************************************************/
 void rnn_dispose_duplicate_groups(struct group *dg)
 {
         /* recursively dispose incoming projections */
@@ -379,6 +390,8 @@ void rnn_dispose_duplicate_groups(struct group *dg)
         free(dg);
 }
 
+/**************************************************************************
+ *************************************************************************/
 struct projection *rnn_duplicate_projection(
                 struct group *to,
                 struct projection *p,
@@ -404,6 +417,8 @@ error_out:
         return NULL;
 }
 
+/**************************************************************************
+ *************************************************************************/
 void rnn_dispose_duplicate_projection(struct projection *dp)
 {
         dispose_matrix(dp->gradients);
@@ -412,6 +427,8 @@ void rnn_dispose_duplicate_projection(struct projection *dp)
         free(dp);
 }
 
+/**************************************************************************
+ *************************************************************************/
 struct array *rnn_recurrent_groups(struct network *n)
 {
         struct array *gs = create_array(TYPE_GROUPS);
@@ -420,6 +437,8 @@ struct array *rnn_recurrent_groups(struct network *n)
         return gs;
 }
 
+/**************************************************************************
+ *************************************************************************/
 void rnn_collect_recurrent_groups(struct group *g, struct array *gs)
 {
         if (g->recurrent)
@@ -430,6 +449,8 @@ void rnn_collect_recurrent_groups(struct group *g, struct array *gs)
         }
 }
 
+/**************************************************************************
+ *************************************************************************/
 void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
                 struct network *n)
 {
@@ -469,6 +490,8 @@ void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
         }
 }
 
+/**************************************************************************
+ *************************************************************************/
 void rnn_detach_recurrent_groups(struct rnn_unfolded_network *un,
                 struct network *n)
 {
@@ -497,6 +520,8 @@ void rnn_detach_recurrent_groups(struct rnn_unfolded_network *un,
         }
 }
 
+/**************************************************************************
+ *************************************************************************/
 void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,
                 struct network *n1, struct network *n2)
 {
@@ -529,6 +554,8 @@ void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,
         }
 }
 
+/**************************************************************************
+ *************************************************************************/
 void rnn_disconnect_duplicate_networks(struct rnn_unfolded_network *un,
                 struct network *n1, struct network *n2)
 {
@@ -548,12 +575,16 @@ void rnn_disconnect_duplicate_networks(struct rnn_unfolded_network *un,
         }
 }
 
+/**************************************************************************
+ *************************************************************************/
 void rnn_sum_gradients(struct rnn_unfolded_network *un)
 {
         for (int i = 1; i < un->stack_size; i++)
                 rnn_add_gradients(un->stack[0]->output, un->stack[i]->output);
 }
 
+/**************************************************************************
+ *************************************************************************/
 void rnn_add_gradients(struct group *g1, struct group *g2)
 {
         for (int i = 0; i < g1->inc_projs->num_elements; i++) {
@@ -573,7 +604,7 @@ void rnn_add_gradients(struct group *g1, struct group *g2)
         }
 }
 
-/*
+/**************************************************************************
  * Cycle the network stack. Assume the following unfolded network:
  *
  *         .   ...........
@@ -593,8 +624,7 @@ void rnn_add_gradients(struct group *g1, struct group *g2)
  * stack[n] ... stack[1]          stack[0]          terminal
  *
  * The aim is to completely isolate stack[0], and move it into stack[n].
- */
-
+ *************************************************************************/
 void rnn_cycle_stack(struct rnn_unfolded_network *un)
 {
         /* 

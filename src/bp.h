@@ -33,6 +33,9 @@ void bp_output_error(struct group *g, struct vector *t, double tr, double zr);
 
 void bp_backpropagate_error(struct network *n, struct group *g);
 
+/**************************************************************************
+ *************************************************************************/
+
 void bp_update_sd(struct network *n);
 void bp_recursively_update_sd(struct network *n, struct group *g);
 void bp_update_projection_sd(struct network *n, struct group *g,
@@ -41,15 +44,24 @@ void bp_update_projection_sd(struct network *n, struct group *g,
 void bp_determine_sd_sf(struct network *n);
 void bp_recursively_determine_sd_sf(struct network *n, struct group *g);
 
+/**************************************************************************
+ *************************************************************************/
+
 void bp_update_rprop(struct network *n);
 void bp_recursively_update_rprop(struct network *n, struct group *g);
 void bp_update_projection_rprop(struct network *n, struct group *g,
                 struct projection *p);
 
+/**************************************************************************
+ *************************************************************************/
+
 void bp_update_qprop(struct network *n);
 void bp_recursively_update_qprop(struct network *n, struct group *g);
 void bp_update_projection_qprop(struct network *n, struct group *g,
                 struct projection *p);
+
+/**************************************************************************
+ *************************************************************************/
 
 void bp_update_dbd(struct network *n);
 void bp_recursively_update_dbd(struct network *n, struct group *g);

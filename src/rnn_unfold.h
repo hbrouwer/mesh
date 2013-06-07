@@ -23,12 +23,6 @@
 #include "network.h"
 #include "vector.h"
 
-/*
- * ########################################################################
- * ## Unfolded network                                                   ##
- * ########################################################################
- */
-
 struct rnn_unfolded_network
 {
         struct array              /* recurrent groups */
@@ -44,6 +38,8 @@ struct rnn_unfolded_network
         int sp;                   /* stack pointer */
 };
 
+/**************************************************************************
+ *************************************************************************/
 struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n);
 void rnn_dispose_unfolded_network(struct rnn_unfolded_network *un);
 
