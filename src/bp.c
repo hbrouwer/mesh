@@ -16,13 +16,14 @@
  * limitations under the License.
  */
 
+#include <math.h>
+#include <stdint.h>
+
 #include "act.h"
 #include "bp.h"
 #include "error.h"
 #include "main.h"
 #include "math.h"
-
-#include <math.h>
 
 /**************************************************************************
  * This implements the backpropagation (BP) algorithm (Rumelhart, Hinton, &
@@ -99,7 +100,7 @@ void bp_output_error(struct group *g, struct vector *t, double tr, double zr)
          * Multiply all error derivatives dE/dy with the activation function
          * derivative f'(x_j) to obtain the error signal for unit j.
          */
-        for (int i = 0; i < g->error->size; i++) {
+        for (uint32_t i = 0; i < g->error->size; i++) {
                 double act_deriv = g->act_fun->deriv(g->vector, i);
                 if (g->act_fun->fun == act_fun_binary_sigmoid)
                         act_deriv += BP_FLAT_SPOT_CORRECTION;
@@ -125,18 +126,18 @@ void bp_backpropagate_error(struct network *n, struct group *g)
          *
          * where all groups g'' are groups to which g' projects.
          */
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+        for (uint32_t  i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
                 struct group *ng = ip->to;
 
-                for (int j = 0; j < ng->out_projs->num_elements; j++) {
+                for (uint32_t  j = 0; j < ng->out_projs->num_elements; j++) {
                         struct projection *p = ng->out_projs->elements[j];
 
 #ifdef _OPENMP
 #pragma omp parallel for if(ng->error->size >= OMP_MIN_ITERATIONS)
 #endif /* _OPENMP */
-                        for (int x = 0; x < ng->error->size; x++) {
-                                for (int z = 0; z < p->to->vector->size; z++) {
+                        for (uint32_t  x = 0; x < ng->error->size; x++) {
+                                for (uint32_t  z = 0; z < p->to->vector->size; z++) {
                                         /*
                                          * Compute the error derivative:
                                          *
@@ -194,7 +195,7 @@ void bp_backpropagate_error(struct network *n, struct group *g)
 #ifdef _OPENMP
 #pragma omp parallel for if(ng->error->size >= OMP_MIN_ITERATIONS)
 #endif /* _OPENMP */
-                for (int x = 0; x < ng->error->size; x++) {
+                for (uint32_t  x = 0; x < ng->error->size; x++) {
                         double act_deriv = ng->act_fun->deriv(ng->vector, x);
                         if (g->act_fun->fun == act_fun_binary_sigmoid)
                                 act_deriv += BP_FLAT_SPOT_CORRECTION;
@@ -205,7 +206,7 @@ void bp_backpropagate_error(struct network *n, struct group *g)
         /*
          * Recursively backpropagate error.
          */
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+        for (uint32_t  i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
                 bp_backpropagate_error(n, ip->to);
         }
@@ -253,7 +254,7 @@ void bp_update_sd(struct network *n)
  *************************************************************************/
 void bp_recursively_update_sd(struct network *n, struct group *g)
 {
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+        for (uint32_t  i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
                 /*
                  * Adjust weights if projection is not frozen.
@@ -299,8 +300,8 @@ void bp_update_projection_sd(struct network *n, struct group *g,
 #pragma omp parallel for if(p->to->vector->size >= OMP_MIN_ITERATIONS) \
         reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
 #endif /* _OPENMP */
-        for (int i = 0; i < p->to->vector->size; i++) {
-                for (int j = 0; j < g->vector->size; j++) {
+        for (uint32_t  i = 0; i < p->to->vector->size; i++) {
+                for (uint32_t  j = 0; j < g->vector->size; j++) {
                         double weight_delta = 0.0;
 
                         /*
@@ -437,7 +438,7 @@ void bp_recursively_determine_sd_sf(struct network *n, struct group *g)
         /* local scale factor */
         double sd_scale_factor = 0.0;
 
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+        for (uint32_t  i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
 
                 /* sum gradients */
@@ -445,8 +446,8 @@ void bp_recursively_determine_sd_sf(struct network *n, struct group *g)
 #pragma omp parallel for if(p->to->vector->size >= OMP_MIN_ITERATIONS) \
                 reduction(+:sd_scale_factor)
 #endif /* _OPENMP */
-                for (int j = 0; j < p->to->vector->size; j++) {
-                        for (int x = 0; x < g->vector->size; x++) {
+                for (uint32_t  j = 0; j < p->to->vector->size; j++) {
+                        for (uint32_t  x = 0; x < g->vector->size; x++) {
                                 double gradient = p->gradients->elements[j][x];
                                 sd_scale_factor += pow(gradient, 2.0);
                         }
@@ -568,7 +569,7 @@ void bp_update_rprop(struct network *n)
  *************************************************************************/
 void bp_recursively_update_rprop(struct network *n, struct group *g)
 {
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
                 /*
                  * Adjust weights if projection is not frozen.
@@ -614,8 +615,8 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
 #pragma omp parallel for if(p->to->vector->size >= OMP_MIN_ITERATIONS) \
         reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
 #endif /* _OPENMP */
-        for (int i = 0; i < p->to->vector->size; i++) {
-                for (int j = 0; j < g->vector->size; j++) {
+        for (uint32_t  i = 0; i < p->to->vector->size; i++) {
+                for (uint32_t  j = 0; j < g->vector->size; j++) {
                         double weight_delta = 0.0;
 
                         /*
@@ -842,7 +843,7 @@ void bp_update_qprop(struct network *n)
  *************************************************************************/
 void bp_recursively_update_qprop(struct network *n, struct group *g)
 {
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+        for (uint32_t  i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
                 /*
                  * Adjust weights if projection is not frozen.
@@ -890,8 +891,8 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
 #pragma omp parallel for if(p->to->vector->size >= OMP_MIN_ITERATIONS) \
         reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
 #endif /* _OPENMP */
-        for (int i = 0; i < p->to->vector->size; i++) {
-                for (int j = 0; j < g->vector->size; j++) {
+        for (uint32_t  i = 0; i < p->to->vector->size; i++) {
+                for (uint32_t  j = 0; j < g->vector->size; j++) {
                         double weight_delta = 0.0;
                         
                         /*
@@ -1141,7 +1142,7 @@ void bp_update_dbd(struct network *n)
  *************************************************************************/
 void bp_recursively_update_dbd(struct network *n, struct group *g)
 {
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+        for (uint32_t  i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
                 /*
                  * Adjust weights if projection is not frozen.
@@ -1186,8 +1187,8 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
 #pragma omp parallel for if(p->to->vector->size >= OMP_MIN_ITERATIONS) \
         reduction(+:weight_cost, gradient_linearity, last_weight_deltas_length, gradients_length)
 #endif /* _OPENMP */
-        for (int i = 0; i < p->to->vector->size; i++) {
-                for (int j = 0; j < g->vector->size; j++) {
+        for (uint32_t  i = 0; i < p->to->vector->size; i++) {
+                for (uint32_t  j = 0; j < g->vector->size; j++) {
 
                         /******************************
                          * Update weight

@@ -27,8 +27,8 @@
  *************************************************************************/
 void randomize_gaussian(struct matrix *m, struct network *n)
 {
-        for (int i = 0; i < m->rows; i++)
-                for (int j = 0; j < m->cols; j++)
+        for (uint32_t i = 0; i < m->rows; i++)
+                for (uint32_t j = 0; j < m->cols; j++)
                         m->elements[i][j] = normrand(n->random_mu, n->random_sigma);
 }
 
@@ -37,8 +37,8 @@ void randomize_gaussian(struct matrix *m, struct network *n)
  *************************************************************************/
 void randomize_range(struct matrix *m, struct network *n)
 {
-        for (int i = 0; i < m->rows; i++)
-                for (int j = 0; j < m->cols; j++)
+        for (uint32_t i = 0; i < m->rows; i++)
+                for (uint32_t j = 0; j < m->cols; j++)
                         m->elements[i][j] = (double)rand() / RAND_MAX
                                 * (n->random_max - n->random_min)
                                 + n->random_min;
@@ -79,8 +79,8 @@ void randomize_nguyen_widrow(struct matrix *m, struct network *n)
          * en = sqrt(sum_i (w_ij ^ 2))
          */
         double en = 0.0;
-        for (int i = 0; i < m->rows; i++)
-                for (int j = 0; j < m->cols; j++)
+        for (uint32_t i = 0; i < m->rows; i++)
+                for (uint32_t j = 0; j < m->cols; j++)
                         en += pow(m->elements[i][j], 2.0);
         en = sqrt(en);
 
@@ -96,8 +96,8 @@ void randomize_nguyen_widrow(struct matrix *m, struct network *n)
          *
          * w_ij = (beta * w_ij) / en
          */
-        for (int i = 0; i < m->rows; i++)
-                for (int j = 0; j < m->cols; j++)
+        for (uint32_t i = 0; i < m->rows; i++)
+                for (uint32_t j = 0; j < m->cols; j++)
                         m->elements[i][j] = (beta * m->elements[i][j]) / en;
 }
 
@@ -135,8 +135,8 @@ void randomize_fan_in(struct matrix *m, struct network *n)
          * where h is the number of units in the group
          * that is projected to.
          */
-        for (int i = 0; i < m->rows; i++)
-                for (int j = 0; j < m->cols; j++)
+        for (uint32_t i = 0; i < m->rows; i++)
+                for (uint32_t j = 0; j < m->cols; j++)
                         m->elements[i][j] = n->random_min / m->cols
                                 + m->elements[i][j]
                                 * ((n->random_max - n->random_min) / m->cols);
@@ -147,7 +147,7 @@ void randomize_fan_in(struct matrix *m, struct network *n)
  *************************************************************************/
 void randomize_binary(struct matrix *m, struct network *n)
 {
-        for (int i = 0; i < m->rows; i++)
-                for (int j = 0; j < m->cols; j++)
+        for (uint32_t i = 0; i < m->rows; i++)
+                for (uint32_t j = 0; j < m->cols; j++)
                         m->elements[i][j] = round((double)rand() / RAND_MAX);
 }

@@ -33,12 +33,12 @@
 
 /**************************************************************************
  *************************************************************************/
-void pprint_vector(struct vector *v, int scheme);
-void pprint_matrix(struct matrix *m, int scheme);
+void pprint_vector(struct vector *v, uint32_t scheme);
+void pprint_matrix(struct matrix *m, uint32_t scheme);
 
 /**************************************************************************
  *************************************************************************/
 double pprint_scale_value(double v, double min, double max);
-void pprint_value_as_color(double v, int scheme);
+void pprint_value_as_color(double v, uint32_t scheme);
 
 #endif /* PPRINT_H */

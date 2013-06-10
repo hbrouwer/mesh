@@ -89,7 +89,7 @@ struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
          * dynamic learning parameter matrices.
          */
         un->rec_groups = rnn_recurrent_groups(n);
-        int block_size = un->rec_groups->num_elements * sizeof(struct matrix *);
+        uint32_t block_size = un->rec_groups->num_elements * sizeof(struct matrix *);
 
         /* array for weight matrices */
         if (!(un->rec_weights = malloc(block_size)))
@@ -110,9 +110,9 @@ struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
          * Fill the constructed arrays with the required matrices,
          * and initialize these appropriately.
          */
-        for (int i = 0; i < un->rec_groups->num_elements; i++) {
+        for (uint32_t i = 0; i < un->rec_groups->num_elements; i++) {
                 struct group *g = un->rec_groups->elements[i];
-                int vz = g->vector->size;
+                uint32_t vz = g->vector->size;
 
                 /* construct a random weight matrix */
                 un->rec_weights[i] = create_matrix(vz, vz);
@@ -155,7 +155,7 @@ struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
          * networks are connected to the network that precedes them on the
          * stack.
          */
-        for (int i = 0; i < un->stack_size; i++) {
+        for (uint32_t i = 0; i < un->stack_size; i++) {
                 un->stack[i] = rnn_duplicate_network(n);
                 if (i == 0) {
                         rnn_attach_recurrent_groups(un, un->stack[0]);
@@ -179,11 +179,11 @@ void rnn_dispose_unfolded_network(struct rnn_unfolded_network *un)
         rnn_detach_recurrent_groups(un, un->stack[0]);
         
         /* disconnect each network from the one preceding it */
-        for (int i = 1; i < un->stack_size; i++)
+        for (uint32_t i = 1; i < un->stack_size; i++)
                 rnn_disconnect_duplicate_networks(un, un->stack[i - 1], un->stack[i]);
 
         /* dispose recurrent matrices (and their arrays) */
-        for (int i = 0; i < un->rec_groups->num_elements; i++) {
+        for (uint32_t i = 0; i < un->rec_groups->num_elements; i++) {
                 dispose_matrix(un->rec_weights[i]);
                 dispose_matrix(un->rec_prev_weight_deltas[i]);
                 dispose_matrix(un->rec_dyn_learning_pars[i]);
@@ -196,7 +196,7 @@ void rnn_dispose_unfolded_network(struct rnn_unfolded_network *un)
         dispose_array(un->rec_groups);
 
         /* dispose networks and stack */
-        for (int i = 0; i < un->stack_size; i++)
+        for (uint32_t i = 0; i < un->stack_size; i++)
                 rnn_dispose_duplicate_network(un->stack[i]);
         free(un->stack);
 
@@ -245,7 +245,7 @@ struct group *rnn_duplicate_group(struct group *g)
                 goto error_out;
         memset(dg, 0, sizeof(struct group));
 
-        int block_size = (strlen(g->name) + 1) * sizeof(char);
+        uint32_t block_size = (strlen(g->name) + 1) * sizeof(char);
         if (!(dg->name = malloc(block_size)))
                 goto error_out;
         memset(dg->name, 0, block_size);
@@ -297,7 +297,7 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
                 dn->output = dg;
          
         /* if the current group has a bias group, duplicate it */
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
                 struct group *bg = ip->to;
                 
@@ -328,7 +328,7 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
         }
 
         /* recursively duplicate the current group's outgoing projections */
-        for (int i = 0; i < g->out_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
                 struct group *g2 = op->to;
 
@@ -355,7 +355,7 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
                  * Note: We want to add this projection in the same array
                  *   location as the original projection.
                  */
-                for (int j = 0; j < g2->inc_projs->num_elements; j++) {
+                for (uint32_t j = 0; j < g2->inc_projs->num_elements; j++) {
                         struct projection *ip = g2->inc_projs->elements[j];
                         if (ip->to == g)
                                 rg->inc_projs->elements[j] =
@@ -371,7 +371,7 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
 void rnn_dispose_duplicate_groups(struct group *dg)
 {
         /* recursively dispose incoming projections */
-        for (int i = 0; i < dg->inc_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < dg->inc_projs->num_elements; i++) {
                 struct projection *ip = dg->inc_projs->elements[i];
                 rnn_dispose_duplicate_groups(ip->to);
                 rnn_dispose_duplicate_projection(ip);
@@ -379,7 +379,7 @@ void rnn_dispose_duplicate_groups(struct group *dg)
         dispose_array(dg->inc_projs);
 
         /* free outgoing projections */
-        for (int i = 0; i < dg->out_projs->num_elements; i++)
+        for (uint32_t i = 0; i < dg->out_projs->num_elements; i++)
                 free(dg->out_projs->elements[i]);
         dispose_array(dg->out_projs);
 
@@ -443,7 +443,7 @@ void rnn_collect_recurrent_groups(struct group *g, struct array *gs)
 {
         if (g->recurrent)
                 add_to_array(gs, g);
-        for (int i = 0; i < g->out_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
                 rnn_collect_recurrent_groups(op->to, gs);
         }
@@ -454,11 +454,11 @@ void rnn_collect_recurrent_groups(struct group *g, struct array *gs)
 void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
                 struct network *n)
 {
-        for (int i = 0; i < un->rec_groups->num_elements; i++) {
+        for (uint32_t i = 0; i < un->rec_groups->num_elements; i++) {
                 /* recurrent group */
                 struct group *rg = un->rec_groups->elements[i];
                 struct group *g1 = find_array_element_by_name(n->groups, rg->name);
-                int vz = g1->vector->size;
+                uint32_t vz = g1->vector->size;
 
                 /* "terminal" group */
                 struct group *g2 = create_group(g1->name, vz, false, true);
@@ -495,13 +495,13 @@ void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
 void rnn_detach_recurrent_groups(struct rnn_unfolded_network *un,
                 struct network *n)
 {
-        for (int i = 0; i < un->rec_groups->num_elements; i++) {
+        for (uint32_t i = 0; i < un->rec_groups->num_elements; i++) {
                 /* recurrent group */
                 struct group *rg = un->rec_groups->elements[i];
                 struct group *g1 = find_array_element_by_name(n->groups, rg->name);
 
                 /* "terminal" group */
-                int z = g1->inc_projs->num_elements - 1;
+                uint32_t z = g1->inc_projs->num_elements - 1;
                 struct projection *ip = g1->inc_projs->elements[z];
                 struct group *g2 = ip->to;
 
@@ -525,7 +525,7 @@ void rnn_detach_recurrent_groups(struct rnn_unfolded_network *un,
 void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,
                 struct network *n1, struct network *n2)
 {
-        for (int i = 0; i < un->rec_groups->num_elements; i++) {
+        for (uint32_t i = 0; i < un->rec_groups->num_elements; i++) {
                 /* find recurrent groups to connect */
                 struct group *rg = un->rec_groups->elements[i];
                 struct group *g1 = find_array_element_by_name(n1->groups, rg->name);
@@ -559,7 +559,7 @@ void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,
 void rnn_disconnect_duplicate_networks(struct rnn_unfolded_network *un,
                 struct network *n1, struct network *n2)
 {
-        for (int i = 0; i < un->rec_groups->num_elements; i++) {
+        for (uint32_t i = 0; i < un->rec_groups->num_elements; i++) {
                 struct group *rg = un->rec_groups->elements[i];
                 struct group *g1 = find_array_element_by_name(n1->groups, rg->name);
                 struct group *g2 = find_array_element_by_name(n2->groups, rg->name);
@@ -579,7 +579,7 @@ void rnn_disconnect_duplicate_networks(struct rnn_unfolded_network *un,
  *************************************************************************/
 void rnn_sum_gradients(struct rnn_unfolded_network *un)
 {
-        for (int i = 1; i < un->stack_size; i++)
+        for (uint32_t i = 1; i < un->stack_size; i++)
                 rnn_add_gradients(un->stack[0]->output, un->stack[i]->output);
 }
 
@@ -587,12 +587,12 @@ void rnn_sum_gradients(struct rnn_unfolded_network *un)
  *************************************************************************/
 void rnn_add_gradients(struct group *g1, struct group *g2)
 {
-        for (int i = 0; i < g1->inc_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g1->inc_projs->num_elements; i++) {
                 struct projection *p1 = g1->inc_projs->elements[i];
                 struct projection *p2 = g2->inc_projs->elements[i];
 
-                for (int r = 0; r < p1->gradients->rows; r++)
-                        for (int c = 0; c < p1->gradients->cols; c++)
+                for (uint32_t r = 0; r < p1->gradients->rows; r++)
+                        for (uint32_t c = 0; c < p1->gradients->cols; c++)
                                 p1->gradients->elements[r][c] +=
                                         p2->gradients->elements[r][c];
 
@@ -631,7 +631,7 @@ void rnn_cycle_stack(struct rnn_unfolded_network *un)
          * Isolate the network in stack[0] by rewiring all of its recurrent
          * terminals to their corresponding groups in stack[1].
          */
-        for (int i = 0; i < un->rec_groups->num_elements; i++) {
+        for (uint32_t i = 0; i < un->rec_groups->num_elements; i++) {
                 struct group *rg = un->rec_groups->elements[i];
 
                 /* recurrent groups in stack[0] and stack[1] */
@@ -639,7 +639,7 @@ void rnn_cycle_stack(struct rnn_unfolded_network *un)
                 struct group *g2 = find_array_element_by_name(un->stack[1]->groups, rg->name);
 
                 /* store a reference to [recur1] */
-                int z = --g1->inc_projs->num_elements;
+                uint32_t z = --g1->inc_projs->num_elements;
                 struct projection *p1 = g1->inc_projs->elements[z];
                 struct group *g0 = p1->to;
                 
@@ -686,7 +686,7 @@ void rnn_cycle_stack(struct rnn_unfolded_network *un)
          * stack[0] in stack[n].
          */
         struct network *n = un->stack[0];
-        for (int i = 0; i < un->stack_size - 1; i++)
+        for (uint32_t i = 0; i < un->stack_size - 1; i++)
                 un->stack[i] = un->stack[i + 1];
         un->stack[un->stack_size - 1] = n;
 

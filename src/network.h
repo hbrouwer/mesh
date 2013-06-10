@@ -19,6 +19,8 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+#include <stdint.h>
+
 #include "array.h"
 #include "main.h"
 #include "matrix.h"
@@ -41,7 +43,7 @@
 struct network
 {
         char *name;                 /* network name */
-        int type;                   /* network type */
+        uint32_t type;              /* network type */
         
         struct array *groups;       /* groups in the network */
         struct group *input;        /* input group */
@@ -52,7 +54,7 @@ struct network
 
         void (*random_algorithm)    /* randomization algorithm */
                 (struct matrix *m, struct network *n);
-        int random_seed;            /* random number generator seed */
+        uint32_t random_seed;            /* random number generator seed */
         double random_mu;           /* mu for Gaussian random numbers */
         double random_sigma;        /* sigma for Gaussian random numbers */
         double random_min;          /* minimum for random ranges */
@@ -76,8 +78,8 @@ struct network
         double zero_error_radius;   /* zero error radius */
 
         double error_threshold;     /* error threshold */
-        int max_epochs;             /* maximum number of training epochs */
-        int report_after;           /* report status after #epochs
+        uint32_t max_epochs;        /* maximum number of training epochs */
+        uint32_t report_after;      /* report status after #epochs
                                        number of training epochs after
                                        which to report status */
 
@@ -86,19 +88,19 @@ struct network
         void (*update_algorithm)    /* weight update algorithm */
                 (struct network *n);
 
-        int history_length;         /* history length for BPTT */
+        uint32_t history_length;    /* history length for BPTT */
 
-        int batch_size;             /* update after #items */
-        int training_order;         /* order in which training items are
+        uint32_t batch_size;        /* update after #items */
+        uint32_t training_order;    /* order in which training items are
                                        presented */        
 
-        int sd_type;                /* type of steepest descent */
+        uint32_t sd_type;           /* type of steepest descent */
         double sd_scale_factor;     /* scaling factor */
 
         double rp_init_update;      /* initial update value for Rprop */
         double rp_eta_plus;         /* update value increase rate */
         double rp_eta_minus;        /* update value decrease rate */
-        int rp_type;                /* type of Rprop */
+        uint32_t rp_type;                /* type of Rprop */
 
         double dbd_rate_increment;  /* LR increment factor for DBD */
         double dbd_rate_decrement;  /* LR decrement factor for DBD */
@@ -155,9 +157,9 @@ struct projection
 struct act_fun 
 {
         double (*fun)               /* activation function  */
-                (struct vector *, int);
+                (struct vector *, uint32_t);
         double (*deriv)             /* activation function derivative */
-                (struct vector *, int);
+                (struct vector *, uint32_t);
         struct vector *lookup;      /* activation lookup vector */
 };
 
@@ -175,7 +177,7 @@ struct err_fun
  *************************************************************************/
 struct status
 {
-        int epoch;                  /* current training epoch */
+        uint32_t epoch;             /* current training epoch */
         double error;               /* network error */
         double prev_error;          /* previous network error */
         double weight_cost;         /* weight cost */
@@ -188,14 +190,15 @@ struct status
 
 /**************************************************************************
  *************************************************************************/
-struct network *create_network(char *name, int type);
+struct network *create_network(char *name, uint32_t type);
 void init_network(struct network *n);
 void reset_network(struct network *n);
 void dispose_network(struct network *n);
 
 /**************************************************************************
  *************************************************************************/
-struct group *create_group(char *name, int size, bool bias, bool recurrent);
+struct group *create_group(char *name, uint32_t size, bool bias,
+                bool recurrent);
 struct group *attach_bias_group(struct network *n, struct group *g);
 void dispose_group(struct group *g);
 void dispose_groups(struct array *gs);

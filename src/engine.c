@@ -55,7 +55,7 @@ void print_training_summary(struct network *n)
 
 /**************************************************************************
  *************************************************************************/
-void print_testing_summary(struct network *n, int tr)
+void print_testing_summary(struct network *n, uint32_t tr)
 {
         pprintf("Number of items: \t\t %d\n",
                         n->asp->items->num_elements);
@@ -71,7 +71,7 @@ void print_testing_summary(struct network *n, int tr)
  *************************************************************************/
 void scale_learning_rate(struct network *n)
 {
-        int sa = n->lr_scale_after * n->max_epochs;
+        uint32_t sa = n->lr_scale_after * n->max_epochs;
         if (sa > 0 && n->status->epoch % sa == 0) {
                 double lr = n->learning_rate;
                 n->learning_rate *= n->lr_scale_factor;
@@ -84,7 +84,7 @@ void scale_learning_rate(struct network *n)
  *************************************************************************/
 void scale_momentum(struct network *n)
 {
-        int sa = n->mn_scale_after * n->max_epochs;
+        uint32_t sa = n->mn_scale_after * n->max_epochs;
         if (sa > 0 && n->status->epoch % sa == 0) {
                 double mn = n->momentum;
                 n->momentum *= n->mn_scale_factor;
@@ -97,7 +97,7 @@ void scale_momentum(struct network *n)
  *************************************************************************/
 void scale_weight_decay(struct network *n)
 {
-        int sa = n->wd_scale_after * n->max_epochs;
+        uint32_t sa = n->wd_scale_after * n->max_epochs;
         if (sa > 0 && n->status->epoch % sa == 0) {
                 double wd = n->weight_decay;
                 n->weight_decay *= n->wd_scale_factor;
@@ -113,8 +113,8 @@ void train_network_with_bp(struct network *n)
         if (n->training_order == TRAIN_ORDERED)
                 order_set(n->asp);
 
-        int item_itr = 0;
-        for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
+        uint32_t item_itr = 0;
+        for (uint32_t epoch = 1; epoch <= n->max_epochs; epoch++) {
                 n->status->epoch = epoch;
                 n->status->prev_error = n->status->error;
                 n->status->error = 0.0;
@@ -126,8 +126,8 @@ void train_network_with_bp(struct network *n)
                                 randomize_set(n->asp);
                 }
 
-                for (int i = 0; i < n->batch_size; i++) {
-                        int item_idx = n->asp->order[item_itr++];
+                for (uint32_t i = 0; i < n->batch_size; i++) {
+                        uint32_t item_idx = n->asp->order[item_itr++];
                         if (item_itr == n->asp->items->num_elements)
                                 item_itr = 0;
                         struct item *item = n->asp->items->elements[item_idx];
@@ -157,7 +157,7 @@ void train_network_with_bp(struct network *n)
  *************************************************************************/
 void train_ffn_network_with_item(struct network *n, struct item *item)
 {
-        for (int i = 0; i < item->num_events; i++) {
+        for (uint32_t i = 0; i < item->num_events; i++) {
                 if (i > 0 && n->type == TYPE_SRN)
                         shift_context_groups(n);
                 
@@ -194,8 +194,8 @@ void train_network_with_bptt(struct network *n)
         if (n->training_order == TRAIN_ORDERED)
                 order_set(n->asp);
 
-        int item_itr = 0;
-        for (int epoch = 1; epoch <= n->max_epochs; epoch++) {
+        uint32_t item_itr = 0;
+        for (uint32_t epoch = 1; epoch <= n->max_epochs; epoch++) {
                 n->status->epoch = epoch;
                 n->status->prev_error = n->status->error;
                 n->status->error = 0.0;
@@ -207,13 +207,13 @@ void train_network_with_bptt(struct network *n)
                                 randomize_set(n->asp);
                 }
 
-                int item_idx = n->asp->order[item_itr++];
+                uint32_t item_idx = n->asp->order[item_itr++];
                 if (item_itr == n->asp->items->num_elements)
                         item_itr = 0;
                 struct item *item = n->asp->items->elements[item_idx];
 
                 un->sp = 0;
-                for (int i = 0; i < un->stack_size; i++) {
+                for (uint32_t i = 0; i < un->stack_size; i++) {
                         reset_recurrent_groups(un->stack[i]);
                         reset_error_signals(un->stack[i]);
                 }
@@ -239,8 +239,8 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
 
-        for (int i = 0; i < item->num_events; i++) {
-                int sp = un->sp;
+        for (uint32_t i = 0; i < item->num_events; i++) {
+                uint32_t sp = un->sp;
 
                 copy_vector(un->stack[sp]->input->vector, item->inputs[i]);
                 feed_forward(un->stack[sp], un->stack[sp]->input);
@@ -289,15 +289,15 @@ void test_network(struct network *n)
 void test_ffn_network(struct network *n)
 {
         n->status->error = 0.0;
-        int threshold_reached = 0;
+        uint32_t threshold_reached = 0;
 
-        for (int i = 0; i < n->asp->items->num_elements; i++) {
+        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
 
                 if (n->type == TYPE_SRN)
                         reset_context_groups(n);
 
-                for (int j = 0; j < item->num_events; j++) {
+                for (uint32_t j = 0; j < item->num_events; j++) {
                         if (j > 0 && n->type == TYPE_SRN)
                                 shift_context_groups(n);
 
@@ -331,17 +331,17 @@ void test_rnn_network(struct network *n)
         struct rnn_unfolded_network *un = n->unfolded_net;
         
         n->status->error = 0.0;
-        int threshold_reached = 0;
+        uint32_t threshold_reached = 0;
 
         un->sp = 0;
-        for (int i = 0; i < n->asp->items->num_elements; i++) {
-                int sp = un->sp;
+        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                uint32_t sp = un->sp;
                 struct item *item = n->asp->items->elements[i];
 
-                for (int j = 0; j < un->stack_size; j++)
+                for (uint32_t j = 0; j < un->stack_size; j++)
                         reset_recurrent_groups(un->stack[j]);
 
-                for (int j = 0; j < item->num_events; j++) {
+                for (uint32_t j = 0; j < item->num_events; j++) {
                         copy_vector(un->stack[sp]->input->vector, item->inputs[j]);
                         feed_forward(un->stack[sp], un->stack[sp]->input);
 
@@ -372,7 +372,8 @@ cycle_stack:
 
 /**************************************************************************
  *************************************************************************/
-void test_network_with_item(struct network *n, struct item *item, bool pprint, int scheme)
+void test_network_with_item(struct network *n, struct item *item,
+                bool pprint, uint32_t scheme)
 {
         if (n->type == TYPE_FFN)
                 test_ffn_network_with_item(n, item, pprint, scheme);
@@ -384,7 +385,8 @@ void test_network_with_item(struct network *n, struct item *item, bool pprint, i
 
 /**************************************************************************
  *************************************************************************/
-void test_ffn_network_with_item(struct network *n, struct item *item, bool pprint, int scheme)
+void test_ffn_network_with_item(struct network *n, struct item *item,
+                bool pprint, uint32_t scheme)
 {
         n->status->error = 0.0;
 
@@ -393,7 +395,7 @@ void test_ffn_network_with_item(struct network *n, struct item *item, bool pprin
 
         pprintf("Item: \t\"%s\" --  \"%s\"\n", item->name, item->meta);
 
-        for (int i = 0; i < item->num_events; i++) {
+        for (uint32_t i = 0; i < item->num_events; i++) {
                 pprintf("\n");
                 pprintf("Event: \t%d\n", i);
                 pprintf("Input: \t");
@@ -442,21 +444,22 @@ void test_ffn_network_with_item(struct network *n, struct item *item, bool pprin
 
 /**************************************************************************
  *************************************************************************/
-void test_rnn_network_with_item(struct network *n, struct item *item, bool pprint, int scheme)
+void test_rnn_network_with_item(struct network *n, struct item *item,
+                bool pprint, uint32_t scheme)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
         
         n->status->error = 0.0;
         
         un->sp = 0;
-        for (int i = 0; i < un->stack_size; i++)
+        for (uint32_t i = 0; i < un->stack_size; i++)
                 reset_recurrent_groups(un->stack[i]);
 
         pprintf("Item: \t\"%s\" --  \"%s\"\n", item->name, item->meta);
 
 
-        for (int i = 0; i < item->num_events; i++) {
-                int sp = un->sp;
+        for (uint32_t i = 0; i < item->num_events; i++) {
+                uint32_t sp = un->sp;
 
                 pprintf("\n");
                 pprintf("Event: \t%d\n", i);

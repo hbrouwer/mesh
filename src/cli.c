@@ -40,7 +40,7 @@ void cli_loop(struct session *s)
                 printf("> ");
                 
                 /* get a line */
-                int num_chars;
+                ssize_t num_chars;
                 if ((num_chars = getline(&line, &linecap, stdin)) == -1)
                         goto error_out;
 

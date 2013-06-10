@@ -19,26 +19,28 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
+#include <stdint.h>
+
 #include "network.h"
 #include "vector.h"
 
 struct matrix
 {
-        int rows;
-        int cols;
+        uint32_t rows;
+        uint32_t cols;
         double **elements;
 };
 
 /**************************************************************************
  *************************************************************************/
-struct matrix *create_matrix(int rows, int cols);
+struct matrix *create_matrix(uint32_t rows, uint32_t cols);
 void dispose_matrix(struct matrix *m);
 void copy_matrix(struct matrix *m1, struct matrix *m2);
 
 /**************************************************************************
  *************************************************************************/
-struct vector *row_to_vector(struct matrix *m, int row);
-struct vector *column_to_vector(struct matrix *m, int col);
+struct vector *row_to_vector(struct matrix *m, uint32_t row);
+struct vector *column_to_vector(struct matrix *m, uint32_t col);
 
 /**************************************************************************
  *************************************************************************/

@@ -21,22 +21,22 @@
 
 #define VALUE_SYMBOL "  "
 
-int PALETTE_BLUE_RED[10]    = {196, 160, 124, 88, 52, 17, 18, 19, 20, 21};
-int PALETTE_BLUE_YELLOW[10] = {226, 220, 214, 208, 202, 27, 33, 39, 45, 51};
-int PALETTE_GRAYSCALE[10]   = {255, 253, 251, 249, 247, 245, 243, 241, 239, 237};
-int PALETTE_SPACEPIGS[10]   = {82, 77, 113, 108, 144, 139, 175, 170, 206, 201};
-int PALETTE_MOODY_BLUES[10] = {129, 128, 127, 91, 90, 55, 54, 19, 20, 21};
-int PALETTE_FOR_JOHN[10]    = {46, 40, 34, 28, 64, 100, 136, 166, 202, 196};
-int PALETTE_GRAY_ORANGE[10] = {220, 221, 222, 223, 224, 255, 253, 251, 249, 247};
+uint32_t PALETTE_BLUE_RED[10]    = {196, 160, 124, 88, 52, 17, 18, 19, 20, 21};
+uint32_t PALETTE_BLUE_YELLOW[10] = {226, 220, 214, 208, 202, 27, 33, 39, 45, 51};
+uint32_t PALETTE_GRAYSCALE[10]   = {255, 253, 251, 249, 247, 245, 243, 241, 239, 237};
+uint32_t PALETTE_SPACEPIGS[10]   = {82, 77, 113, 108, 144, 139, 175, 170, 206, 201};
+uint32_t PALETTE_MOODY_BLUES[10] = {129, 128, 127, 91, 90, 55, 54, 19, 20, 21};
+uint32_t PALETTE_FOR_JOHN[10]    = {46, 40, 34, 28, 64, 100, 136, 166, 202, 196};
+uint32_t PALETTE_GRAY_ORANGE[10] = {220, 221, 222, 223, 224, 255, 253, 251, 249, 247};
 
 /**************************************************************************
  *************************************************************************/
-void pprint_vector(struct vector *v, int scheme)
+void pprint_vector(struct vector *v, uint32_t scheme)
 {
         double min = vector_minimum(v);
         double max = vector_maximum(v);
 
-        for (int i = 0; i < v->size; i++) {
+        for (uint32_t i = 0; i < v->size; i++) {
                 double sv = pprint_scale_value(v->elements[i], min, max);
                 pprint_value_as_color(sv, scheme);
         }
@@ -45,13 +45,13 @@ void pprint_vector(struct vector *v, int scheme)
 
 /**************************************************************************
  *************************************************************************/
-void pprint_matrix(struct matrix *m, int scheme)
+void pprint_matrix(struct matrix *m, uint32_t scheme)
 {
         double min = matrix_minimum(m);
         double max = matrix_maximum(m);
 
-        for (int i = 0; i < m->rows; i++) {
-                for (int j = 0; j < m->cols; j++) {
+        for (uint32_t i = 0; i < m->rows; i++) {
+                for (uint32_t j = 0; j < m->cols; j++) {
                         double sv = pprint_scale_value(m->elements[i][j], min, max);
                         pprint_value_as_color(sv, scheme);
                 }
@@ -93,9 +93,9 @@ double pprint_scale_value(double v, double min, double max)
 
 /**************************************************************************
  *************************************************************************/
-void pprint_value_as_color(double v, int scheme)
+void pprint_value_as_color(double v, uint32_t scheme)
 {
-        int *palette;
+        uint32_t *palette;
 
         if (scheme == SCHEME_BLUE_RED)
                 palette = PALETTE_BLUE_RED;

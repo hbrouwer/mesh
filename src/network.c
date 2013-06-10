@@ -29,14 +29,14 @@
 
 /**************************************************************************
  *************************************************************************/
-struct network *create_network(char *name, int type)
+struct network *create_network(char *name, uint32_t type)
 {
         struct network *n;
         if (!(n = malloc(sizeof(struct network))))
                 goto error_out;
         memset(n, 0, sizeof(struct network));
 
-        int block_size = (strlen(name) + 1) * sizeof(char);
+        uint32_t block_size = (strlen(name) + 1) * sizeof(char);
         if (!(n->name = malloc(block_size)))
                 goto error_out;
         memset(n->name, 0, block_size);
@@ -124,14 +124,15 @@ void dispose_network(struct network *n)
 
 /**************************************************************************
  *************************************************************************/
-struct group *create_group(char *name, int size, bool bias, bool recurrent)
+struct group *create_group(char *name, uint32_t size, bool bias,
+                bool recurrent)
 {
         struct group *g;
         if (!(g = malloc(sizeof(struct group))))
                 goto error_out;
         memset(g, 0, sizeof(struct group));
 
-        int block_size = (strlen(name) + 1) * sizeof(char);
+        uint32_t block_size = (strlen(name) + 1) * sizeof(char);
         if (!(g->name = malloc(block_size)))
                 goto error_out;
         memset(g->name, 0, block_size);
@@ -174,7 +175,7 @@ struct group *attach_bias_group(struct network *n, struct group *g)
 {
         /* create a new "bias" group */
         char *tmp;
-        int block_size = (strlen(g->name) + 6) * sizeof(char);
+        uint32_t block_size = (strlen(g->name) + 6) * sizeof(char);
         if (!(tmp = malloc(block_size)))
                 goto error_out;
         memset(tmp, 0, sizeof(block_size));
@@ -250,9 +251,9 @@ void dispose_group(struct group *g)
                 free(g->err_fun);
         }
 
-        for (int j = 0; j < g->inc_projs->num_elements; j++)
+        for (uint32_t j = 0; j < g->inc_projs->num_elements; j++)
                 dispose_projection(g->inc_projs->elements[j]);
-        for (int j = 0; j < g->out_projs->num_elements; j++)
+        for (uint32_t j = 0; j < g->out_projs->num_elements; j++)
                 free(g->out_projs->elements[j]);
 
         dispose_array(g->inc_projs);
@@ -267,7 +268,7 @@ void dispose_group(struct group *g)
  *************************************************************************/
 void dispose_groups(struct array *gs)
 {
-        for (int i = 0; i < gs->num_elements; i++)
+        for (uint32_t i = 0; i < gs->num_elements; i++)
                 dispose_group(gs->elements[i]);
 }
 
@@ -275,9 +276,9 @@ void dispose_groups(struct array *gs)
  *************************************************************************/
 void shift_context_groups(struct network *n)
 {
-        for (int i = 0; i < n->groups->num_elements; i++) {
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
-                for (int j = 0; j < g->ctx_groups->num_elements; j++) {
+                for (uint32_t j = 0; j < g->ctx_groups->num_elements; j++) {
                         struct group *cg = g->ctx_groups->elements[j];
                         shift_context_group_chain(cg, g->vector);
                 }
@@ -293,7 +294,7 @@ void shift_context_groups(struct network *n)
 void shift_context_group_chain(struct group *g,
                 struct vector *v)
 {
-        for (int i = 0; i < g->ctx_groups->num_elements; i++) {
+        for (uint32_t i = 0; i < g->ctx_groups->num_elements; i++) {
                 struct group *cg = g->ctx_groups->elements[i];
                 shift_context_group_chain(cg, g->vector);
         }
@@ -305,9 +306,9 @@ void shift_context_group_chain(struct group *g,
  *************************************************************************/
 void reset_context_groups(struct network *n)
 {
-        for (int i = 0; i < n->groups->num_elements; i++) {
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
-                for (int j = 0; j < g->ctx_groups->num_elements; j++) {
+                for (uint32_t j = 0; j < g->ctx_groups->num_elements; j++) {
                         struct group *cg = g->ctx_groups->elements[j];
                         reset_context_group_chain(cg);
                 }
@@ -318,7 +319,7 @@ void reset_context_groups(struct network *n)
  *************************************************************************/
 void reset_context_group_chain(struct group *g)
 {
-        for (int i = 0; i < g->ctx_groups->num_elements; i++)
+        for (uint32_t i = 0; i < g->ctx_groups->num_elements; i++)
                 reset_context_group_chain(g->ctx_groups->elements[i]);
         fill_vector_with_value(g->vector, 0.5);
 }
@@ -326,7 +327,7 @@ void reset_context_group_chain(struct group *g)
 /**************************************************************************
  *************************************************************************/
 void reset_recurrent_groups(struct network *n) {
-        for (int i = 0; i < n->groups->num_elements; i++) {
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
                 if (g->recurrent)
                         fill_vector_with_value(g->vector, 0.5);
@@ -337,7 +338,7 @@ void reset_recurrent_groups(struct network *n) {
  *************************************************************************/
 void reset_error_signals(struct network *n)
 {
-        for (int i = 0; i < n->groups->num_elements; i++) {
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
                 zero_out_vector(g->error);
         }
@@ -392,7 +393,7 @@ void dispose_projection(struct projection *p)
  *************************************************************************/
 void dispose_sets(struct array *ss)
 {
-        for (int i = 0; i < ss->num_elements; i++)
+        for (uint32_t i = 0; i < ss->num_elements; i++)
                 dispose_set(ss->elements[i]);
 }
 
@@ -400,11 +401,11 @@ void dispose_sets(struct array *ss)
  *************************************************************************/
 void randomize_weight_matrices(struct group *g, struct network *n)
 {
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
                 n->random_algorithm(ip->weights, n);
         }
-        for (int i = 0; i < g->out_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
                 randomize_weight_matrices(op->to, n);
         }
@@ -421,12 +422,12 @@ void initialize_dyn_learning_pars(struct group *g, struct network *n)
                 v = n->rp_init_update;
         }
 
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
                 fill_matrix_with_value(ip->dyn_learning_pars, v);
         }
 
-        for (int i = 0; i < g->out_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
                 initialize_dyn_learning_pars(op->to, n);
         }
@@ -436,7 +437,7 @@ void initialize_dyn_learning_pars(struct group *g, struct network *n)
  *************************************************************************/
 void initialize_act_lookup_vectors(struct network *n)
 {
-        for (int i = 0; i < n->groups->num_elements; i++) {
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
                 if (g == n->input || g->bias)
                         continue;
@@ -475,13 +476,13 @@ error_out:
 void save_weight_matrix(struct group *g, FILE *fd)
 {
         /* write all incoming projections */
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
                 
                 fprintf(fd, "%s -> %s\n", ip->to->name, g->name);
                 
-                for (int r = 0; r < ip->weights->rows; r++) {
-                        for (int c = 0; c < ip->weights->cols; c++) {
+                for (uint32_t r = 0; r < ip->weights->rows; r++) {
+                        for (uint32_t c = 0; c < ip->weights->cols; c++) {
                                 fprintf(fd, "%f", ip->weights->elements[r][c]);
                                 if (c < ip->weights->cols - 1)
                                         fprintf(fd, " ");
@@ -494,7 +495,7 @@ void save_weight_matrix(struct group *g, FILE *fd)
         }
 
         /* write all outgoing projections */
-        for (int i = 0; i < g->out_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
                 if (!op->recurrent)
                         save_weight_matrix(op->to, fd);
@@ -539,18 +540,18 @@ bool load_weight_matrices(struct network *n, char *fn)
 
                 /* find the projection */
                 struct projection *p = NULL;
-                for (int i = 0; i < g1->out_projs->num_elements; i++) {
+                for (uint32_t i = 0; i < g1->out_projs->num_elements; i++) {
                         p = g1->out_projs->elements[i];
                         if (p->to == g2)
                                 break;
                 }
 
                 /* read the matrix values */
-                for (int r = 0; r < p->weights->rows; r++) {
+                for (uint32_t r = 0; r < p->weights->rows; r++) {
                         if (!fgets(buf, sizeof(buf), fd))
                                 goto error_out;
                         char *tokens = strtok(buf, " ");
-                        for (int c = 0; c < p->weights->cols; c++) {
+                        for (uint32_t c = 0; c < p->weights->cols; c++) {
                                 if (!sscanf(tokens, "%lf", &p->weights->elements[r][c]))
                                         goto error_out;
                                 tokens = strtok(NULL, " ");

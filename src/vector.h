@@ -19,15 +19,17 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include <stdint.h>
+
 struct vector
 {
-        int size;
+        uint32_t size;
         double *elements;
 };
 
 /**************************************************************************
  *************************************************************************/
-struct vector *create_vector(int size);
+struct vector *create_vector(uint32_t size);
 void dispose_vector(struct vector *v);
 void copy_vector(struct vector *v1, struct vector *v2);
 

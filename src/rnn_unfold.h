@@ -19,6 +19,8 @@
 #ifndef RNN_UNFOLD_H
 #define RNN_UNFOLD_H
 
+#include <stdint.h>
+
 #include "array.h"
 #include "network.h"
 #include "vector.h"
@@ -33,9 +35,9 @@ struct rnn_unfolded_network
                 **rec_prev_weight_deltas;
         struct matrix             /* dynamic learning parameters for RCs */
                 **rec_dyn_learning_pars;
-        int stack_size;           /* state stack size */
+        uint32_t stack_size;      /* state stack size */
         struct network **stack;   /* network state stack */
-        int sp;                   /* stack pointer */
+        uint32_t sp;              /* stack pointer */
 };
 
 /**************************************************************************

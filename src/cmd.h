@@ -46,14 +46,15 @@ bool cmd_set_err_func(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_toggle_act_lookup(char *cmd, char *fmt, struct network *n, char *msg);
 
 bool cmd_create_projection(char *cmd, char *fmt, struct network *n, char *msg);
-bool cmd_create_elman_projection(char *cmd, char *fmt, struct network *n, char *msg);
+bool cmd_create_elman_projection(char *cmd, char *fmt, struct network *n,
+                char *msg);
 bool cmd_dispose_projection(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_list_projections(char *cmd, char *fmt, struct network *n,
                 struct group *g, char *msg);
 bool cmd_freeze_projection(char *cmd, char *fmt, struct network *n, char *msg);
 
 bool cmd_set_double_parameter(char *cmd, char *fmt, double *par, char *msg);
-bool cmd_set_int_parameter(char *cmd, char *fmt, int *par, char *msg);
+bool cmd_set_int_parameter(char *cmd, char *fmt, uint32_t *par, char *msg);
 
 bool cmd_list_sets(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_load_set(char *cmd, char *fmt, struct network *n, char *msg);
@@ -61,7 +62,7 @@ bool cmd_dispose_set(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_change_set(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_list_items(char *cmd, char *fmt, struct network *n, char *msg);
 
-bool cmd_set_training_order(char *cmd, char *fmt, int *training_order,
+bool cmd_set_training_order(char *cmd, char *fmt, uint32_t *training_order,
                 char *msg);
 
 bool cmd_set_rand_algorithm(char *cmd, char *fmt, struct network *n,
@@ -79,9 +80,12 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s, char *msg);
 
 bool cmd_weight_stats(char *cmd, char *fmt, struct network *n, char *msg);
 
-bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s, char *msg);
-bool cmd_show_vector(char *cmd, char *fmt, struct session *s, char *msg, int type);
-bool cmd_show_matrix(char *cmd, char *fmt, struct session *s, char *msg, int type);
+bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s, 
+                char *msg);
+bool cmd_show_vector(char *cmd, char *fmt, struct session *s, char *msg,
+                uint32_t type);
+bool cmd_show_matrix(char *cmd, char *fmt, struct session *s, char *msg,
+                uint32_t type);
 
 bool cmd_load_weights(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_save_weights(char *cmd, char *fmt, struct network *n, char *msg);

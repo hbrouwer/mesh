@@ -81,7 +81,7 @@ double error_sum_of_squares(struct group *g, struct vector *t, double tr,
 #ifdef _OPENMP
 #pragma omp parallel for if(g->vector->size >= OMP_MIN_ITERATIONS) reduction(+:se)
 #endif /* _OPENMP */
-        for (int i = 0; i < g->vector->size; i++) {
+        for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
                 double d = adjust_target(y, t->elements[i], tr, zr);
 
@@ -102,7 +102,7 @@ void error_sum_of_squares_deriv(struct group *g, struct vector *t, double tr,
 #ifdef _OPENMP
 #pragma omp parallel for if(g->vector->size >= OMP_MIN_ITERATIONS)
 #endif /* _OPENMP */
-        for (int i = 0; i < g->vector->size; i++) {
+        for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
                 double d = adjust_target(y, t->elements[i], tr, zr);
 
@@ -135,7 +135,7 @@ double error_cross_entropy(struct group *g, struct vector *t, double tr,
 #ifdef _OPENMP
 #pragma omp parallel for if(g->vector->size >= OMP_MIN_ITERATIONS) reduction(+:ce)
 #endif /* _OPENMP */
-        for (int i = 0; i < g->vector->size; i++) {
+        for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
                 double d = adjust_target(y, t->elements[i], tr, zr);
 
@@ -236,7 +236,7 @@ void error_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
 #ifdef _OPENMP
 #pragma omp parallel for if(g->vector->size >= OMP_MIN_ITERATIONS)
 #endif /* _OPENMP */
-        for (int i = 0; i < g->vector->size; i++) {
+        for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
                 double d = adjust_target(y, t->elements[i], tr, zr);
 
@@ -326,7 +326,7 @@ double error_divergence(struct group *g, struct vector *t, double tr,
 #ifdef _OPENMP
 #pragma omp parallel for if(g->vector->size >= OMP_MIN_ITERATIONS) reduction(+:de)
 #endif /* _OPENMP */
-        for (int i = 0; i < g->vector->size; i++) {
+        for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
                 double d = adjust_target(y, t->elements[i], tr, zr);
 
@@ -372,7 +372,7 @@ void error_divergence_deriv(struct group *g, struct vector *t, double tr,
 #ifdef _OPENMP
 #pragma omp parallel for if(g->vector->size >= OMP_MIN_ITERATIONS)
 #endif /* _OPENMP */
-        for (int i = 0; i < g->vector->size; i++) {
+        for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
                 double d = adjust_target(y, t->elements[i], tr, zr);
 

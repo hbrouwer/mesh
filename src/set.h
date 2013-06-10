@@ -19,6 +19,8 @@
 #ifndef SET_H
 #define SET_H
 
+#include <stdint.h>
+
 #include "array.h"
 #include "vector.h"
 
@@ -26,13 +28,13 @@ struct set
 {
         char *name;               /* name of this set */
         struct array *items;      /* items */
-        int *order;               /* order in which to present elements */
+        uint32_t *order;               /* order in which to present elements */
 };
 
 struct item
 {
         char *name;               /* name of this element */
-        int num_events;           /* number of events */
+        uint32_t num_events;           /* number of events */
         char *meta;               /* meta information */
         struct vector **inputs;   /* input vectors */
         struct vector **targets;  /* target vectors */
@@ -45,13 +47,14 @@ void dispose_set(struct set *s);
 
 /**************************************************************************
  *************************************************************************/
-struct item *create_item(char *name, int num_events, char *meta,
+struct item *create_item(char *name, uint32_t num_events, char *meta,
                 struct vector **inputs, struct vector **targets);
 void dispose_item(struct item *item);
 
 /**************************************************************************
  *************************************************************************/
-struct set *load_set(char *name, char *filename, int input_size, int output_size);
+struct set *load_set(char *name, char *filename, uint32_t input_size,
+                uint32_t output_size);
 
 /**************************************************************************
  *************************************************************************/

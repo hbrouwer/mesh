@@ -19,6 +19,8 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
+#include <stdint.h>
+
 #define MAX_ARRAY_ELEMENTS 10
 
 #define TYPE_NETWORKS   0
@@ -29,13 +31,13 @@
 
 struct array
 {
-        int type;
-        int num_elements;
-        int max_elements;
+        uint32_t type;
+        uint32_t num_elements;
+        uint32_t max_elements;
         void **elements;
 };
 
-struct array *create_array(int type);
+struct array *create_array(uint32_t type);
 void add_to_array(struct array *a, void *e);
 void remove_from_array(struct array *a, void *e);
 void increase_array_size(struct array *a);

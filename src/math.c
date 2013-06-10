@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 
+#include <stdint.h>
+#include <math.h>
+
 #include "main.h"
 #include "math.h"
-
-#include <math.h>
 
 /**************************************************************************
  *************************************************************************/
@@ -94,7 +95,7 @@ double cosine_similarity(struct vector *v1, struct vector *v2)
 {
         double nom = 0.0, xsq = 0.0, ysq = 0.0;
 
-        for (int i = 0; i < v1->size; i++) {
+        for (uint32_t i = 0; i < v1->size; i++) {
                 nom += v1->elements[i] * v2->elements[i];
                 xsq += pow(v1->elements[i], 2.0);
                 ysq += pow(v2->elements[i], 2.0);
@@ -119,7 +120,7 @@ double pearson_correlation(struct vector *v1, struct vector *v2)
 {
         double xmn = 0.0, ymn = 0.0;
 
-        for (int i = 0; i < v1->size; i++) {
+        for (uint32_t i = 0; i < v1->size; i++) {
                 xmn += v1->elements[i];
                 ymn += v2->elements[i];
         }
@@ -129,7 +130,7 @@ double pearson_correlation(struct vector *v1, struct vector *v2)
 
         double nom = 0.0, xsq = 0.0, ysq = 0.0;
 
-        for (int i = 0; i < v1->size; i++) {
+        for (uint32_t i = 0; i < v1->size; i++) {
                 nom += (v1->elements[i] - xmn) * (v2->elements[i] - ymn);
                 xsq += pow(v1->elements[i] - xmn, 2.0);
                 ysq += pow(v2->elements[i] - ymn, 2.0);

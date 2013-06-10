@@ -24,7 +24,7 @@
 
 /**************************************************************************
  *************************************************************************/
-struct array *create_array(int type)
+struct array *create_array(uint32_t type)
 {
         struct array *a;
         if (!(a = malloc(sizeof(struct array))))
@@ -35,7 +35,7 @@ struct array *create_array(int type)
         a->num_elements = 0;
         a->max_elements = MAX_ARRAY_ELEMENTS;
 
-        int block_size = a->max_elements * sizeof(void *);
+        uint32_t block_size = a->max_elements * sizeof(void *);
         if (!(a->elements = malloc(block_size)))
                 goto error_out;
 
@@ -59,11 +59,11 @@ void add_to_array(struct array *a, void *e)
  *************************************************************************/
 void remove_from_array(struct array *a, void *e)
 {
-        int i;
+        uint32_t i;
         for (i = 0; i < a->num_elements; i++)
                 if (a->elements[i] == e)
                         break;
-        for (int j = i; j < a->num_elements - 1; j++)
+        for (uint32_t j = i; j < a->num_elements - 1; j++)
                 a->elements[j] = a->elements[j + 1];
         a->elements[a->num_elements - 1] = NULL;
         a->num_elements--;
@@ -76,12 +76,12 @@ void increase_array_size(struct array *a)
         a->max_elements = a->max_elements + MAX_ARRAY_ELEMENTS;
 
         /* increase array size */
-        int block_size = a->max_elements * sizeof(void *);
+        uint32_t block_size = a->max_elements * sizeof(void *);
         if (!(a->elements = realloc(a->elements, block_size)))
                 goto error_out;
 
         /* zero out all additional cells */
-        for (int i = a->num_elements; i < a->max_elements; i++)
+        for (uint32_t i = a->num_elements; i < a->max_elements; i++)
                 a->elements[i] = NULL;
 
         return;
@@ -104,7 +104,7 @@ void dispose_array(struct array *a)
  *************************************************************************/
 void *find_array_element_by_name(struct array *a, char *name)
 {
-        for (int i = 0; i < a->num_elements; i++) {
+        for (uint32_t i = 0; i < a->num_elements; i++) {
                 void *e = a->elements[i];
 
                 if (a->type == TYPE_NETWORKS) {

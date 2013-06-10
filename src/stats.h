@@ -23,7 +23,7 @@
 
 struct weight_stats
 {
-        int num_weights;  /* number of weights */
+        uint32_t num_weights;  /* number of weights */
         double mean;      /* mean */
         double mean_abs;  /* absolute mean */
         double mean_dist; /* mean distance */

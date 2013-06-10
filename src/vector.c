@@ -22,7 +22,7 @@
 
 /**************************************************************************
  *************************************************************************/
-struct vector *create_vector(int size)
+struct vector *create_vector(uint32_t size)
 {
         struct vector *v;
         if (!(v = malloc(sizeof(struct vector))))
@@ -59,7 +59,7 @@ void copy_vector(struct vector *v1, struct vector *v2)
 #ifdef _OPENMP
 #pragma omp parallel for if(v1->size >= OMP_MIN_ITERATIONS)
 #endif /* _OPENMP */
-        for (int i = 0; i < v1->size; i++)
+        for (uint32_t i = 0; i < v1->size; i++)
                 v1->elements[i] = v2->elements[i];
 }
 
@@ -70,7 +70,7 @@ void zero_out_vector(struct vector *v)
 #ifdef _OPENMP
 #pragma omp parallel for if(v->size >= OMP_MIN_ITERATIONS)
 #endif /* _OPENMP */
-        for (int i = 0; i < v->size; i++)
+        for (uint32_t i = 0; i < v->size; i++)
                 v->elements[i] = 0.0;
 }
 
@@ -81,7 +81,7 @@ void fill_vector_with_value(struct vector *v, double val)
 #ifdef _OPENMP
 #pragma omp parallel for if(v->size >= OMP_MIN_ITERATIONS)
 #endif /* _OPENMP */
-        for (int i = 0; i < v->size; i++)
+        for (uint32_t i = 0; i < v->size; i++)
                 v->elements[i] = val;
 }
 
@@ -91,7 +91,7 @@ double vector_minimum(struct vector *v)
 {
         double min = v->elements[0];
 
-        for (int i = 0; i < v->size; i++)
+        for (uint32_t i = 0; i < v->size; i++)
                 if (v->elements[i] < min)
                         min = v->elements[i];
 
@@ -104,7 +104,7 @@ double vector_maximum(struct vector *v)
 {
         double max = v->elements[0];
 
-        for (int i = 0; i < v->size; i++)
+        for (uint32_t i = 0; i < v->size; i++)
                 if (v->elements[i] > max)
                         max = v->elements[i];
 
@@ -115,7 +115,7 @@ double vector_maximum(struct vector *v)
  *************************************************************************/
 void print_vector(struct vector *v)
 {
-        for (int i = 0; i < v->size; i++)
+        for (uint32_t i = 0; i < v->size; i++)
                 printf("%lf\t", v->elements[i]);
         printf("\n");
 }

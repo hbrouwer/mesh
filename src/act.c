@@ -49,7 +49,7 @@ void feed_forward(struct network *n, struct group *g)
          * the activation levels of all the groups towards which the
          * current group maintains a projection.
          */
-        for (int i = 0; i < g->out_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
 
                 /*
@@ -67,7 +67,7 @@ void feed_forward(struct network *n, struct group *g)
 #ifdef _OPENMP
 #pragma omp parallel for if(rg->vector->size >= OMP_MIN_ITERATIONS)
 #endif /* _OPENMP */
-                for (int j = 0; j < rg->vector->size; j++) {
+                for (uint32_t j = 0; j < rg->vector->size; j++) {
                         /* 
                          * Reset the activation level of the current unit.
                          */ 
@@ -81,11 +81,11 @@ void feed_forward(struct network *n, struct group *g)
                          * Note: A unit can receive activation from units
                          * in different projecting groups.
                          */
-                        for (int x = 0; x < rg->inc_projs->num_elements; x++) {
+                        for (uint32_t x = 0; x < rg->inc_projs->num_elements; x++) {
                                 struct projection *ip = rg->inc_projs->elements[x];
                                 struct group *pg = ip->to;
                                 struct matrix *w = ip->weights;
-                                for (int z = 0; z < pg->vector->size; z++)
+                                for (uint32_t z = 0; z < pg->vector->size; z++)
                                         rg->vector->elements[j] += pg->vector->elements[z]
                                                 * w->elements[z][j];
                         }
@@ -111,7 +111,7 @@ void feed_forward(struct network *n, struct group *g)
          * propagate through the network of the current timestep during
          * BPTT.
          */
-        for (int i = 0; i < g->out_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
                 if (!op->recurrent)
                         feed_forward(n, op->to);
@@ -131,11 +131,12 @@ double ACT_LOOKUP_STEP_SIZE = ((double)ACT_LOOKUP_MAXIMUM
 /**************************************************************************
  * Creates a lookup vector for the specified activation function.
  *************************************************************************/
-struct vector *create_act_lookup_vector(double (*fun)(struct vector *, int))
+struct vector *create_act_lookup_vector(double (*fun)(struct vector *,
+                        uint32_t))
 {
         struct vector *lv = create_vector(ACT_LOOKUP_GRANULARITY);
 
-        for (int i = 0; i < ACT_LOOKUP_GRANULARITY; i++) {
+        for (uint32_t i = 0; i < ACT_LOOKUP_GRANULARITY; i++) {
                 lv->elements[i] = ACT_LOOKUP_MINIMUM + i * ACT_LOOKUP_STEP_SIZE;
                 lv->elements[i] = fun(lv, i);
         }
@@ -153,7 +154,7 @@ double act_lookup(double x, struct vector *lv)
         if (x > ACT_LOOKUP_MAXIMUM)
                 x = ACT_LOOKUP_MAXIMUM;
 
-        int i = ((ACT_LOOKUP_MAXIMUM + x) / ACT_LOOKUP_STEP_SIZE) - 1;
+        uint32_t i = ((ACT_LOOKUP_MAXIMUM + x) / ACT_LOOKUP_STEP_SIZE) - 1;
 
         return lv->elements[i];
 }
@@ -163,7 +164,7 @@ double act_lookup(double x, struct vector *lv)
  *
  * f(x) = 1 / (1 + e ^ (-x))
  *************************************************************************/
-double act_fun_binary_sigmoid(struct vector *v, int i)
+double act_fun_binary_sigmoid(struct vector *v, uint32_t i)
 {
         double x = v->elements[i];
 
@@ -175,7 +176,7 @@ double act_fun_binary_sigmoid(struct vector *v, int i)
  *
  * f'(x) = y * (1 - y)
  *************************************************************************/
-double act_fun_binary_sigmoid_deriv(struct vector *v, int i)
+double act_fun_binary_sigmoid_deriv(struct vector *v, uint32_t i)
 {
         double y = v->elements[i];
 
@@ -187,7 +188,7 @@ double act_fun_binary_sigmoid_deriv(struct vector *v, int i)
  *
  * f(x) = (-1) + 2 / (1 / e ^ (-x))
  *************************************************************************/
-double act_fun_bipolar_sigmoid(struct vector *v, int i)
+double act_fun_bipolar_sigmoid(struct vector *v, uint32_t i)
 {
         double x = v->elements[i];
 
@@ -199,7 +200,7 @@ double act_fun_bipolar_sigmoid(struct vector *v, int i)
  *
  * f'(x) = 0.5 * (1 + y) * (1 - y)
  *************************************************************************/
-double act_fun_bipolar_sigmoid_deriv(struct vector *v, int i)
+double act_fun_bipolar_sigmoid_deriv(struct vector *v, uint32_t i)
 {
         double y = v->elements[i];
 
@@ -211,12 +212,12 @@ double act_fun_bipolar_sigmoid_deriv(struct vector *v, int i)
  *
  * f(x) = (e ^ x) / sum_j (e ^ x_j)
  *************************************************************************/
-double act_fun_softmax(struct vector *v, int i)
+double act_fun_softmax(struct vector *v, uint32_t i)
 {
         double x = exp(v->elements[i]);
 
         double sum = 0.0;
-        for (int j = 0; j < v->size; j++)
+        for (uint32_t j = 0; j < v->size; j++)
                 sum += exp(v->elements[j]);
 
         return x / sum;
@@ -227,7 +228,7 @@ double act_fun_softmax(struct vector *v, int i)
  *
  * f'(x) = 1
  *************************************************************************/
-double act_fun_softmax_deriv(struct vector *v, int i)
+double act_fun_softmax_deriv(struct vector *v, uint32_t i)
 {
         return 1.0;
 }
@@ -237,7 +238,7 @@ double act_fun_softmax_deriv(struct vector *v, int i)
  *
  * f(x) = (e ^ (2 * x) - 1) / (e ^ (2 * x) + 1)
  *************************************************************************/
-double act_fun_tanh(struct vector *v, int i)
+double act_fun_tanh(struct vector *v, uint32_t i)
 {
         double x = v->elements[i];
 
@@ -249,7 +250,7 @@ double act_fun_tanh(struct vector *v, int i)
  *
  * f'(x) = 1 - y ^ 2;
  *************************************************************************/
-double act_fun_tanh_deriv(struct vector *v, int i)
+double act_fun_tanh_deriv(struct vector *v, uint32_t i)
 {
         double y = v->elements[i];
 
@@ -261,7 +262,7 @@ double act_fun_tanh_deriv(struct vector *v, int i)
  *
  * f(x) = x
  *************************************************************************/
-double act_fun_linear(struct vector *v, int i)
+double act_fun_linear(struct vector *v, uint32_t i)
 {
         double x = v->elements[i];
 
@@ -273,7 +274,7 @@ double act_fun_linear(struct vector *v, int i)
  *
  * f'(x) = 1
  *************************************************************************/
-double act_fun_linear_deriv(struct vector *v, int i)
+double act_fun_linear_deriv(struct vector *v, uint32_t i)
 {
         return 1.0;
 }
@@ -285,7 +286,7 @@ double act_fun_linear_deriv(struct vector *v, int i)
  * f(x) = |
  *        | 0 , otherwise
  *************************************************************************/
-double act_fun_step(struct vector *v, int i)
+double act_fun_step(struct vector *v, uint32_t i)
 {
         double x = v->elements[i];
 
@@ -300,7 +301,7 @@ double act_fun_step(struct vector *v, int i)
  *
  * f'(x) = 1
  *************************************************************************/
-double act_fun_step_deriv(struct vector *v, int i)
+double act_fun_step_deriv(struct vector *v, uint32_t i)
 {
         return 1.0;
 }

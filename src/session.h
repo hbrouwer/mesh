@@ -27,7 +27,7 @@ struct session
         struct array *networks; /* networks in this session */
         struct network *anp;    /* active network pointer */
         bool pprint;            /* flag for pretty printing */
-        int pprint_scheme;      /* pretty priniting scheme */
+        uint32_t pprint_scheme; /* pretty priniting scheme */
 };
 
 struct session *create_session();

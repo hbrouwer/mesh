@@ -28,7 +28,7 @@ struct set *create_set(char *name)
                 goto error_out;
         memset(s, 0, sizeof(struct set));
 
-        int block_size = (strlen(name) + 1) * sizeof(char);
+        uint32_t block_size = (strlen(name) + 1) * sizeof(char);
         if (!(s->name = malloc(block_size)))
                 goto error_out;
         memset(s->name, 0, block_size);
@@ -54,7 +54,7 @@ void dispose_set(struct set *s)
 
 /**************************************************************************
  *************************************************************************/
-struct item *create_item(char *name, int num_events, char *meta,
+struct item *create_item(char *name, uint32_t num_events, char *meta,
                 struct vector **inputs, struct vector **targets)
 {
         struct item *item;
@@ -82,7 +82,7 @@ void dispose_item(struct item *item)
 {
         free(item->name);
 
-        for (int i = 0; i < item->num_events; i++) {
+        for (uint32_t i = 0; i < item->num_events; i++) {
                 if (item->inputs[i])
                         dispose_vector(item->inputs[i]);
                 if (item->targets[i])
@@ -97,7 +97,8 @@ void dispose_item(struct item *item)
 
 /**************************************************************************
  *************************************************************************/
-struct set *load_set(char *name, char *filename, int input_size, int output_size)
+struct set *load_set(char *name, char *filename, uint32_t input_size,
+                uint32_t output_size)
 {
         struct set *s = create_set(name);
 
@@ -108,14 +109,14 @@ struct set *load_set(char *name, char *filename, int input_size, int output_size
         char buf[MAX_BUF_SIZE];
         while (fgets(buf, sizeof(buf), fd)) {
                 char tmp1[MAX_BUF_SIZE], tmp2[MAX_BUF_SIZE];
-                int num_events;
+                uint32_t num_events;
 
                 if (sscanf(buf, "Item \"%[^\"]\" %d \"%[^\"]\"", tmp1, &num_events, tmp2) != 3)
                         continue;
 
                 /* item name */
                 char *name;
-                int block_size = ((strlen(tmp1) + 1) * sizeof(char));
+                uint32_t block_size = ((strlen(tmp1) + 1) * sizeof(char));
                 if (!(name = malloc(block_size)))
                         goto error_out;
                 memset(name, 0, block_size);
@@ -140,7 +141,7 @@ struct set *load_set(char *name, char *filename, int input_size, int output_size
                         goto error_out;
                 memset(targets, 0, block_size);
 
-                for (int i = 0; i < num_events; i++) {
+                for (uint32_t i = 0; i < num_events; i++) {
                         if (!(fgets(buf, sizeof(buf), fd)))
                                 goto error_out;
                         char *tokens = strtok(buf, " ");
@@ -148,7 +149,7 @@ struct set *load_set(char *name, char *filename, int input_size, int output_size
                         /* input vector */
                         if (strcmp(tokens, "Input") == 0) {
                                 inputs[i] = create_vector(input_size);
-                                for (int j = 0; j < input_size; j++) {
+                                for (uint32_t j = 0; j < input_size; j++) {
                                         if (!(tokens = strtok(NULL, " ")))
                                                 goto error_out;
                                         if (sscanf(tokens, "%lf", &inputs[i]->elements[j]) != 1)
@@ -160,7 +161,7 @@ struct set *load_set(char *name, char *filename, int input_size, int output_size
                         if ((tokens = strtok(NULL, " ")) != NULL) {
                                 targets[i] = create_vector(output_size);
                                 if (strcmp(tokens, "Target") == 0) {
-                                        for (int j = 0; j < output_size; j++) {
+                                        for (uint32_t j = 0; j < output_size; j++) {
                                                 if (!(tokens = strtok(NULL, " ")))
                                                         goto error_out;
                                                 if (sscanf(tokens, "%lf", &targets[i]->elements[j]) != 1)
@@ -177,12 +178,12 @@ struct set *load_set(char *name, char *filename, int input_size, int output_size
         fclose(fd);
 
         /* item order */
-        int block_size = s->items->num_elements * sizeof(int);
+        uint32_t block_size = s->items->num_elements * sizeof(int);
         if (!(s->order = malloc(block_size)))
                 goto error_out;
         memset(s->order, 0, block_size);
 
-        for (int i = 0; i < s->items->num_elements; i++)
+        for (uint32_t i = 0; i < s->items->num_elements; i++)
                 s->order[i] = i;
 
         return s;
@@ -196,7 +197,7 @@ error_out:
  *************************************************************************/
 void order_set(struct set *s)
 {
-        for (int i = 0; i < s->items->num_elements; i++)
+        for (uint32_t i = 0; i < s->items->num_elements; i++)
                 s->order[i] = i;
 }
 
@@ -204,12 +205,12 @@ void order_set(struct set *s)
  *************************************************************************/
 void permute_set(struct set *s)
 {
-        for (int i = 0; i < s->items->num_elements; i++) {
-                int pe = ((double)rand() / (double)RAND_MAX)
+        for (uint32_t i = 0; i < s->items->num_elements; i++) {
+                uint32_t pe = ((double)rand() / (double)RAND_MAX)
                         * (s->items->num_elements);
 
                 bool duplicate = false;
-                for (int j = 0; j < i; j++)
+                for (uint32_t j = 0; j < i; j++)
                         if (s->order[j] == pe)
                                 duplicate = true;
 
@@ -224,8 +225,8 @@ void permute_set(struct set *s)
  *************************************************************************/
 void randomize_set(struct set *s)
 {
-        for (int i = 0; i < s->items->num_elements; i++) {
-                int re = ((double)rand() / (double)RAND_MAX)
+        for (uint32_t i = 0; i < s->items->num_elements; i++) {
+                uint32_t re = ((double)rand() / (double)RAND_MAX)
                         * (s->items->num_elements);
                 s->order[i] = re;
         }

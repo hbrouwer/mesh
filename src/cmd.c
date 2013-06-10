@@ -410,7 +410,7 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s, char *msg)
                 return false;
 
         /* network type */
-        int type = 0;
+        uint32_t type = 0;
         if (strcmp(tmp2, "ffn") == 0)
                 type = TYPE_FFN;
         else if (strcmp(tmp2, "srn") == 0)
@@ -498,7 +498,7 @@ bool cmd_list_networks(char *cmd, char *fmt, struct session *s, char *msg)
         if (s->networks->num_elements == 0) {
                 printf("(No networks)\n");
         } else {
-                for (int i = 0; i < s->networks->num_elements; i++) {
+                for (uint32_t i = 0; i < s->networks->num_elements; i++) {
                         struct network *n = s->networks->elements[i];
                         printf("* %s", n->name);
                         if (n == s->anp) {
@@ -534,7 +534,7 @@ bool cmd_change_network(char *cmd, char *fmt, struct session *s, char *msg)
 bool cmd_create_group(char *cmd, char *fmt, struct network *n, char *msg)
 {
         char tmp[MAX_ARG_SIZE];
-        int tmp_int;
+        uint32_t tmp_int;
         if (sscanf(cmd, fmt, tmp, &tmp_int) != 2)
                 return false;
 
@@ -577,7 +577,7 @@ bool cmd_list_groups(char *cmd, char *fmt, struct network *n, char *msg)
         if (n->groups->num_elements == 0) {
                 printf("(No groups)\n");
         } else {
-                for (int i = 0; i < n->groups->num_elements; i++) {
+                for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                         struct group *g = n->groups->elements[i];
                         printf("* %s", g->name);
                         if (g == n->input) {
@@ -886,12 +886,12 @@ bool cmd_dispose_projection(char *cmd, char *fmt, struct network *n, char *msg)
         }
 
         struct projection *fg_to_tg = NULL;
-        for (int i = 0; i < fg->out_projs->num_elements; i++)
+        for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
                 if (((struct projection *)fg->out_projs->elements[i])->to == tg)
                         fg_to_tg = fg->out_projs->elements[i];
 
         struct projection *tg_to_fg = NULL;
-        for (int i = 0; i < tg->inc_projs->num_elements; i++)
+        for (uint32_t i = 0; i < tg->inc_projs->num_elements; i++)
                 if (((struct projection *)tg->inc_projs->elements[i])->to == fg)
                         tg_to_fg = tg->inc_projs->elements[i];
 
@@ -925,10 +925,10 @@ bool cmd_list_projections(char *cmd, char *fmt, struct network *n,
         if (g == n->output)
                 mprintf(msg);
 
-        for (int i = 0; i < g->inc_projs->num_elements; i++)
+        for (uint32_t i = 0; i < g->inc_projs->num_elements; i++)
                 printf("* %s -> %s\n", ((struct projection *)g->inc_projs->elements[i])->to->name, g->name);
 
-        for (int i = 0; i < g->inc_projs->num_elements; i++)
+        for (uint32_t i = 0; i < g->inc_projs->num_elements; i++)
                 cmd_list_projections(cmd, fmt, n,
                                 ((struct projection *)g->inc_projs->elements[i])->to, msg);
         
@@ -956,12 +956,12 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct network *n, char *msg)
         }
 
         struct projection *fg_to_tg = NULL;
-        for (int i = 0; i < fg->out_projs->num_elements; i++)
+        for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
                 if (((struct projection *)fg->out_projs->elements[i])->to == tg)
                         fg_to_tg = fg->out_projs->elements[i];
 
         struct projection *tg_to_fg = NULL;
-        for (int i = 0; i < tg->inc_projs->num_elements; i++)
+        for (uint32_t i = 0; i < tg->inc_projs->num_elements; i++)
                 if (((struct projection *)tg->inc_projs->elements[i])->to == fg)
                         tg_to_fg = tg->inc_projs->elements[i];
 
@@ -989,7 +989,7 @@ bool cmd_set_double_parameter(char *cmd, char *fmt, double *par, char *msg)
         return true;
 }
 
-bool cmd_set_int_parameter(char *cmd, char *fmt, int *par, char *msg)
+bool cmd_set_int_parameter(char *cmd, char *fmt, uint32_t *par, char *msg)
 {
         if (sscanf(cmd, fmt, par) != 1)
                 return false;
@@ -1009,7 +1009,7 @@ bool cmd_list_sets(char *cmd, char *fmt, struct network *n, char *msg)
         if (n->sets->num_elements == 0) {
                 printf("(No sets)\n");
         } else {
-                for (int i = 0; i < n->sets->num_elements; i++) {
+                for (uint32_t i = 0; i < n->sets->num_elements; i++) {
                         struct set *s = n->sets->elements[i];
                         printf("* %s", s->name);
                         if (s == n->asp) {
@@ -1106,7 +1106,7 @@ bool cmd_list_items(char *cmd, char *fmt, struct network *n, char *msg)
 
         mprintf(msg, n->asp->name);
 
-        for (int i = 0; i < n->asp->items->num_elements; i++) {
+        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
                 printf("* \"%s\" %d \"%s\"\n", item->name, item->num_events, item->meta);
         }
@@ -1114,7 +1114,7 @@ bool cmd_list_items(char *cmd, char *fmt, struct network *n, char *msg)
         return true;
 }
 
-bool cmd_set_training_order(char *cmd, char *fmt, int *training_order,
+bool cmd_set_training_order(char *cmd, char *fmt, uint32_t *training_order,
                 char *msg)
 {
         char tmp[MAX_ARG_SIZE];
@@ -1360,7 +1360,7 @@ bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s, char *m
         return true;
 }
 
-bool cmd_show_vector(char *cmd, char *fmt, struct session *s, char *msg, int type)
+bool cmd_show_vector(char *cmd, char *fmt, struct session *s, char *msg, uint32_t type)
 {
         char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
@@ -1396,7 +1396,7 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s, char *msg, int typ
         return true;
 }
 
-bool cmd_show_matrix(char *cmd, char *fmt, struct session *s, char *msg, int type)
+bool cmd_show_matrix(char *cmd, char *fmt, struct session *s, char *msg, uint32_t type)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
@@ -1417,7 +1417,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s, char *msg, int typ
         }
 
         struct projection *fg_to_tg = NULL;
-        for (int i = 0; i < fg->out_projs->num_elements; i++)
+        for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
                 if (((struct projection *)fg->out_projs->elements[i])->to == tg)
                         fg_to_tg = (struct projection *)fg->out_projs->elements[i];
 

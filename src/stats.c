@@ -61,12 +61,12 @@ void collect_weight_statistics(struct weight_stats *ws, struct group *g)
          * Recursively collect weight statistics for all groups that
          * project to the current group.
          */ 
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
                 struct matrix *w = p->weights;
 
-                for (int r = 0; r < w->rows; r++) {
-                        for (int c = 0; c < w->cols; c++) {
+                for (uint32_t r = 0; r < w->rows; r++) {
+                        for (uint32_t c = 0; c < w->cols; c++) {
                                 ws->num_weights++;
                                 ws->mean += w->elements[r][c];
                                 ws->mean_abs += fabs(w->elements[r][c]);
@@ -89,12 +89,12 @@ void collect_mean_dependent_ws(struct weight_stats *ws, struct group *g)
          * Recursively collect mean dependent weight statistics for all
          * groups that project to the current group.
          */
-        for (int i = 0; i < g->inc_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
                 struct matrix *w = p->weights;
 
-                for (int r = 0; r < w->rows; r++) {
-                        for (int c = 0; c < w->cols; c++) {
+                for (uint32_t r = 0; r < w->rows; r++) {
+                        for (uint32_t c = 0; c < w->cols; c++) {
                                 ws->mean_dist += fabs(w->elements[r][c] - ws->mean);
                                 ws->variance += pow(w->elements[r][c] - ws->mean, 2.0);
                         }
