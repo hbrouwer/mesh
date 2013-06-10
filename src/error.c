@@ -16,9 +16,10 @@
  * limitations under the License.
  */
 
-#include "error.h"
-
 #include <math.h>
+#include <stdint.h>
+
+#include "error.h"
 
 /**************************************************************************
  * Adjust a unit's target based on the target radius and zero-error radius.

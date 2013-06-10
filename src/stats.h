@@ -19,17 +19,19 @@
 #ifndef STATS_H
 #define STATS_H
 
+#include <stdint.h>
+
 #include "network.h"
 
 struct weight_stats
 {
-        uint32_t num_weights;  /* number of weights */
-        double mean;      /* mean */
-        double mean_abs;  /* absolute mean */
-        double mean_dist; /* mean distance */
-        double variance;  /* variance */
-        double minimum;   /* minimum */
-        double maximum;   /* maximum */
+        uint32_t num_weights; /* number of weights */
+        double mean;          /* mean */
+        double mean_abs;      /* absolute mean */
+        double mean_dist;     /* mean distance */
+        double variance;      /* variance */
+        double minimum;       /* minimum */
+        double maximum;       /* maximum */
 };
 
 struct weight_stats *create_weight_statistics(struct network *n);

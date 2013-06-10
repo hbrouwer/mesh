@@ -19,6 +19,8 @@
 #ifndef SESSION_H
 #define SESSION_H
 
+#include <stdint.h>
+
 #include "array.h"
 #include "network.h"
 

@@ -19,6 +19,8 @@
 #ifndef PPRINT_H
 #define PPRINT_H
 
+#include <stdint.h>
+
 #include "matrix.h"
 #include "vector.h"
 #include "stats.h"

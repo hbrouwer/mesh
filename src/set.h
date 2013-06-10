@@ -28,13 +28,13 @@ struct set
 {
         char *name;               /* name of this set */
         struct array *items;      /* items */
-        uint32_t *order;               /* order in which to present elements */
+        uint32_t *order;          /* order in which to present elements */
 };
 
 struct item
 {
         char *name;               /* name of this element */
-        uint32_t num_events;           /* number of events */
+        uint32_t num_events;      /* number of events */
         char *meta;               /* meta information */
         struct vector **inputs;   /* input vectors */
         struct vector **targets;  /* target vectors */

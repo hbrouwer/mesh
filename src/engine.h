@@ -19,6 +19,8 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#include <stdint.h>
+
 #include "network.h"
 #include "session.h"
 

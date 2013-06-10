@@ -19,6 +19,8 @@
 #ifndef CMD_H
 #define CMD_H
 
+#include <stdint.h>
+
 #include "network.h"
 #include "session.h"
 
