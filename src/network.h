@@ -54,7 +54,7 @@ struct network
 
         void (*random_algorithm)    /* randomization algorithm */
                 (struct matrix *m, struct network *n);
-        uint32_t random_seed;            /* random number generator seed */
+        uint32_t random_seed;       /* random number generator seed */
         double random_mu;           /* mu for Gaussian random numbers */
         double random_sigma;        /* sigma for Gaussian random numbers */
         double random_min;          /* minimum for random ranges */
@@ -88,7 +88,7 @@ struct network
         void (*update_algorithm)    /* weight update algorithm */
                 (struct network *n);
 
-        uint32_t history_length;    /* history length for BPTT */
+        uint32_t back_ticks;        /* number of back ticks for BPTT */
 
         uint32_t batch_size;        /* update after #items */
         uint32_t training_order;    /* order in which training items are

@@ -157,9 +157,9 @@ void process_command(char *cmd, struct session *s)
                                 &s->anp->random_seed,
                                 "Set random seed ... \t\t ( %d )"))
                 return;
-        if (cmd_set_int_parameter(cmd, "set HistoryLength %d",
-                                &s->anp->history_length,
-                                "Set BPTT history length ... \t ( %d )"))
+        if (cmd_set_int_parameter(cmd, "set BackTicks %d",
+                                &s->anp->back_ticks,
+                                "Set BPTT back ticks ... \t ( %d )"))
                 return;
         
         /*
