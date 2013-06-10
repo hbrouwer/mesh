@@ -29,6 +29,8 @@ int PALETTE_MOODY_BLUES[10] = {129, 128, 127, 91, 90, 55, 54, 19, 20, 21};
 int PALETTE_FOR_JOHN[10]    = {46, 40, 34, 28, 64, 100, 136, 166, 202, 196};
 int PALETTE_GRAY_ORANGE[10] = {220, 221, 222, 223, 224, 255, 253, 251, 249, 247};
 
+/**************************************************************************
+ *************************************************************************/
 void pprint_vector(struct vector *v, int scheme)
 {
         double min = vector_minimum(v);
@@ -41,6 +43,8 @@ void pprint_vector(struct vector *v, int scheme)
         printf("\n");
 }
 
+/**************************************************************************
+ *************************************************************************/
 void pprint_matrix(struct matrix *m, int scheme)
 {
         double min = matrix_minimum(m);
@@ -55,6 +59,8 @@ void pprint_matrix(struct matrix *m, int scheme)
         }
 }
 
+/**************************************************************************
+ *************************************************************************/
 double pprint_scale_value(double v, double min, double max)
 {
         double sv = 0.0;
@@ -85,6 +91,8 @@ double pprint_scale_value(double v, double min, double max)
         return sv;
 }
 
+/**************************************************************************
+ *************************************************************************/
 void pprint_value_as_color(double v, int scheme)
 {
         int *palette;

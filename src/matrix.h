@@ -29,19 +29,29 @@ struct matrix
         double **elements;
 };
 
+/**************************************************************************
+ *************************************************************************/
 struct matrix *create_matrix(int rows, int cols);
 void dispose_matrix(struct matrix *m);
 void copy_matrix(struct matrix *m1, struct matrix *m2);
 
+/**************************************************************************
+ *************************************************************************/
 struct vector *row_to_vector(struct matrix *m, int row);
 struct vector *column_to_vector(struct matrix *m, int col);
 
+/**************************************************************************
+ *************************************************************************/
 void zero_out_matrix(struct matrix *m);
 void fill_matrix_with_value(struct matrix *m, double val);
 
+/**************************************************************************
+ *************************************************************************/
 double matrix_minimum(struct matrix *m);
 double matrix_maximum(struct matrix *m);
 
+/**************************************************************************
+ *************************************************************************/
 void print_matrix(struct matrix *m);
 
 #endif /* MATRIX_H */

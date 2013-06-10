@@ -25,16 +25,24 @@ struct vector
         double *elements;
 };
 
+/**************************************************************************
+ *************************************************************************/
 struct vector *create_vector(int size);
 void dispose_vector(struct vector *v);
 void copy_vector(struct vector *v1, struct vector *v2);
 
+/**************************************************************************
+ *************************************************************************/
 void zero_out_vector(struct vector *v);
 void fill_vector_with_value(struct vector *v, double val);
 
+/**************************************************************************
+ *************************************************************************/
 double vector_minimum(struct vector *v);
 double vector_maximum(struct vector *v);
 
+/**************************************************************************
+ *************************************************************************/
 void print_vector(struct vector *v);
 
 #endif /* VECTOR_H */

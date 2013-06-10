@@ -26,28 +26,36 @@ void feed_forward(struct network *n, struct group *g);
 
 /**************************************************************************
  *************************************************************************/
-
 struct vector *create_act_lookup_vector(double (*fun)(struct vector *, int));
 double act_lookup(double x, struct vector *lv);
 
 /**************************************************************************
  *************************************************************************/
-
 double act_fun_binary_sigmoid(struct vector *v, int i);
 double act_fun_binary_sigmoid_deriv(struct vector *v, int i);
 
+/**************************************************************************
+ *************************************************************************/
 double act_fun_bipolar_sigmoid(struct vector *v, int i);
 double act_fun_bipolar_sigmoid_deriv(struct vector *v, int i);
 
+/**************************************************************************
+ *************************************************************************/
 double act_fun_softmax(struct vector *v, int i);
 double act_fun_softmax_deriv(struct vector *v, int i);
 
+/**************************************************************************
+ *************************************************************************/
 double act_fun_tanh(struct vector *v, int i);
 double act_fun_tanh_deriv(struct vector *v, int i);
 
+/**************************************************************************
+ *************************************************************************/
 double act_fun_linear(struct vector *v, int i);
 double act_fun_linear_deriv(struct vector *v, int i);
 
+/**************************************************************************
+ *************************************************************************/
 double act_fun_step(struct vector *v, int i);
 double act_fun_step_deriv(struct vector *v, int i);
 

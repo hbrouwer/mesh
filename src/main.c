@@ -28,6 +28,8 @@
 
 #define VERSION "0.99a"
 
+/**************************************************************************
+ *************************************************************************/
 int main(int argc, char **argv)
 {
         struct session *s;
@@ -61,6 +63,8 @@ leave_session:
         exit(EXIT_SUCCESS);
 }
 
+/**************************************************************************
+ *************************************************************************/
 void print_help(char *exec_name)
 {
         mprintf(
@@ -85,7 +89,9 @@ void print_version()
         
 }
 
-/* print console message */
+/**************************************************************************
+ * Print console message
+ *************************************************************************/
 void cprintf(const char *fmt, ...)
 {
         va_list args;
@@ -95,7 +101,9 @@ void cprintf(const char *fmt, ...)
         fprintf(stdout, "\n");
 }
 
-/* print program message */
+/**************************************************************************
+ * Print program message
+ *************************************************************************/
 void mprintf(const char *fmt, ...)
 {
         va_list args;
@@ -106,7 +114,9 @@ void mprintf(const char *fmt, ...)
         fprintf(stderr, "\n");
 }
 
-/* print error message */
+/**************************************************************************
+ * Print error message
+ *************************************************************************/
 void eprintf(const char *fmt, ...)
 {
         va_list args;
@@ -118,7 +128,9 @@ void eprintf(const char *fmt, ...)
         fprintf(stderr, "\n");
 }
 
-/* print progress message */
+/**************************************************************************
+ * Print progress message
+ *************************************************************************/
 void pprintf(const char *fmt, ...)
 {
         va_list args;

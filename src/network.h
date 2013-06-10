@@ -36,16 +36,10 @@
 #define TRAIN_PERMUTED    1
 #define TRAIN_RANDOMIZED  2
 
-/*
- * ########################################################################
- * ## Network                                                            ##
- * ########################################################################
- */
-
+/**************************************************************************
+ *************************************************************************/
 struct network
 {
-        /* ## General ################################################## */
-
         char *name;                 /* network name */
         int type;                   /* network type */
         
@@ -56,8 +50,6 @@ struct network
         bool act_lookup;            /* use activation lookup */
         bool initialized;           /* flags initialization status */
 
-        /* ## Random numbers ########################################### */
-
         void (*random_algorithm)    /* randomization algorithm */
                 (struct matrix *m, struct network *n);
         int random_seed;            /* random number generator seed */
@@ -65,8 +57,6 @@ struct network
         double random_sigma;        /* sigma for Gaussian random numbers */
         double random_min;          /* minimum for random ranges */
         double random_max;          /* maximum for random ranges */
-
-        /* ## Learning parameters and algorithms ####################### */
 
         struct status *status;      /* network status */
         
@@ -102,40 +92,26 @@ struct network
         int training_order;         /* order in which training items are
                                        presented */        
 
-        /* ## Steepest descent parameters ############################## */
-
         int sd_type;                /* type of steepest descent */
         double sd_scale_factor;     /* scaling factor */
-
-        /* ## Rprop parameters ######################################### */
 
         double rp_init_update;      /* initial update value for Rprop */
         double rp_eta_plus;         /* update value increase rate */
         double rp_eta_minus;        /* update value decrease rate */
         int rp_type;                /* type of Rprop */
 
-        /* ## Delta-Bar-Delta parameters ############################### */
-
         double dbd_rate_increment;  /* LR increment factor for DBD */
         double dbd_rate_decrement;  /* LR decrement factor for DBD */
 
-        /* ## Sets ##################################################### */
-
         struct array *sets;         /* sets in this network */
         struct set *asp;            /* active set pointer */
-
-        /* ## Unfolded recurrent network ############################### */
 
         struct rnn_unfolded_network /* unfolded recurrent network */
                 *unfolded_net;
 };
 
-/*
- * ########################################################################
- * ## Groups                                                             ##
- * ########################################################################
- */
-
+/**************************************************************************
+ *************************************************************************/
 struct group
 {
         char *name;                 /* name of the group */
@@ -155,12 +131,8 @@ struct group
         bool recurrent;             /* flags recurrent groups */
 };
 
-/*
- * ########################################################################
- * ## Projections                                                        ##
- * ########################################################################
- */
-
+/**************************************************************************
+ *************************************************************************/
 struct projection
 {
         struct group *to;           /* group projected to */
@@ -178,12 +150,8 @@ struct projection
         bool recurrent;             /* flags recurrent projections (BPTT) */
 };
 
-/*
- * ########################################################################
- * ## Activation function and derivative                                 ##
- * ########################################################################
- */
-
+/**************************************************************************
+ *************************************************************************/
 struct act_fun 
 {
         double (*fun)               /* activation function  */
@@ -193,12 +161,8 @@ struct act_fun
         struct vector *lookup;      /* activation lookup vector */
 };
 
-/*
- * ########################################################################
- * ## Error function and derivative                                      ##
- * ########################################################################
- */
-
+/**************************************************************************
+ *************************************************************************/
 struct err_fun
 {
         double (*fun)               /* error function */
@@ -207,12 +171,8 @@ struct err_fun
                 (struct group *g, struct vector *t, double tr, double zr);
 };
 
-/*
- * ########################################################################
- * ## Network status                                                     ##
- * ########################################################################
- */
-
+/**************************************************************************
+ *************************************************************************/
 struct status
 {
         int epoch;                  /* current training epoch */
@@ -226,29 +186,34 @@ struct status
         double gradients_length;    /* length of weight gradients vector */
 };
 
-/*
- * ########################################################################
- * ## Function prototypes                                                ##
- * ########################################################################
- */
-
+/**************************************************************************
+ *************************************************************************/
 struct network *create_network(char *name, int type);
 void init_network(struct network *n);
 void reset_network(struct network *n);
 void dispose_network(struct network *n);
 
+/**************************************************************************
+ *************************************************************************/
 struct group *create_group(char *name, int size, bool bias, bool recurrent);
 struct group *attach_bias_group(struct network *n, struct group *g);
 void dispose_group(struct group *g);
 void dispose_groups(struct array *gs);
 
+/**************************************************************************
+ *************************************************************************/
 void shift_context_groups(struct network *n);
 void shift_context_group_chain(struct group *g, struct vector *v);
+
+/**************************************************************************
+ *************************************************************************/
 void reset_context_groups(struct network *n);
 void reset_context_group_chain(struct group *g);
 void reset_recurrent_groups(struct network *n);
 void reset_error_signals(struct network *n);
 
+/**************************************************************************
+ *************************************************************************/
 struct projection *create_projection(
                 struct group *to,
                 struct matrix *weights,
@@ -259,12 +224,18 @@ struct projection *create_projection(
                 bool recurrent);
 void dispose_projection(struct projection *p);
 
+/**************************************************************************
+ *************************************************************************/
 void dispose_sets(struct array *ss);
 
+/**************************************************************************
+ *************************************************************************/
 void randomize_weight_matrices(struct group *g, struct network *n);
 void initialize_dyn_learning_pars(struct group *g, struct network *n);
 void initialize_act_lookup_vectors(struct network *n);
 
+/**************************************************************************
+ *************************************************************************/
 bool save_weight_matrices(struct network *n, char *fn);
 void save_weight_matrix(struct group *g, FILE *fd);
 bool load_weight_matrices(struct network *n, char *fn);

@@ -20,6 +20,8 @@
 #include "math.h"
 #include "matrix.h"
 
+/**************************************************************************
+ *************************************************************************/
 struct matrix *create_matrix(int rows, int cols)
 {
         struct matrix *m;
@@ -50,6 +52,8 @@ error_out:
         return NULL;
 }
 
+/**************************************************************************
+ *************************************************************************/
 void dispose_matrix(struct matrix *m)
 {
         for (int i = 0; i < m->rows; i++)
@@ -58,6 +62,8 @@ void dispose_matrix(struct matrix *m)
         free(m);
 }
 
+/**************************************************************************
+ *************************************************************************/
 void copy_matrix(struct matrix *m1, struct matrix *m2)
 {
         if(m1->rows != m2->rows || m1->cols != m2->cols)
@@ -71,6 +77,8 @@ void copy_matrix(struct matrix *m1, struct matrix *m2)
                         m1->elements[i][j] = m2->elements[i][j];
 }
 
+/**************************************************************************
+ *************************************************************************/
 struct vector *row_to_vector(struct matrix *m, int row)
 {
         struct vector *v = create_vector(m->cols);
@@ -84,6 +92,8 @@ struct vector *row_to_vector(struct matrix *m, int row)
         return v;
 }
 
+/**************************************************************************
+ *************************************************************************/
 struct vector *column_to_vector(struct matrix *m, int col)
 {
         struct vector *v = create_vector(m->rows);
@@ -97,6 +107,8 @@ struct vector *column_to_vector(struct matrix *m, int col)
         return v;
 }
 
+/**************************************************************************
+ *************************************************************************/
 void zero_out_matrix(struct matrix *m)
 {
 #ifdef _OPENMP
@@ -107,6 +119,8 @@ void zero_out_matrix(struct matrix *m)
                         m->elements[i][j] = 0.0;
 }
 
+/**************************************************************************
+ *************************************************************************/
 void fill_matrix_with_value(struct matrix *m, double val)
 {
 #ifdef _OPENMP
@@ -117,6 +131,8 @@ void fill_matrix_with_value(struct matrix *m, double val)
                         m->elements[i][j] = val;
 }
 
+/**************************************************************************
+ *************************************************************************/
 double matrix_minimum(struct matrix *m)
 {
         double min = m->elements[0][0];
@@ -129,6 +145,8 @@ double matrix_minimum(struct matrix *m)
         return min;
 }
 
+/**************************************************************************
+ *************************************************************************/
 double matrix_maximum(struct matrix *m)
 {
         double max = m->elements[0][0];
@@ -141,6 +159,8 @@ double matrix_maximum(struct matrix *m)
         return max;
 }
 
+/**************************************************************************
+ *************************************************************************/
 void print_matrix(struct matrix *m)
 {
         for (int i = 0; i < m->rows; i++) {

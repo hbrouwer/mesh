@@ -32,6 +32,8 @@
 void print_help(char *exec_name);
 void print_version();
 
+/**************************************************************************
+ *************************************************************************/
 void cprintf(const char *fmt, ...);
 void mprintf(const char *fmt, ...);
 void eprintf(const char *fmt, ...);

@@ -24,24 +24,36 @@
 
 void train_network(struct network *n);
 
+/**************************************************************************
+ *************************************************************************/
 void print_training_progress(struct network *n);
 void print_training_summary(struct network *n);
 void print_testing_summary(struct network *n, int tr);
 
+/**************************************************************************
+ *************************************************************************/
 void scale_learning_rate(struct network *n);
 void scale_momentum(struct network *n);
 void scale_weight_decay(struct network *n);
 
+/**************************************************************************
+ *************************************************************************/
 void train_network_with_bp(struct network *n);
 void train_ffn_network_with_item(struct network *n, struct item *item);
 
+/**************************************************************************
+ *************************************************************************/
 void train_network_with_bptt(struct network *n);
 void train_rnn_network_with_item(struct network *n, struct item *item);
 
+/**************************************************************************
+ *************************************************************************/
 void test_network(struct network *n);
 void test_ffn_network(struct network *n);
 void test_rnn_network(struct network *n);
 
+/**************************************************************************
+ *************************************************************************/
 void test_network_with_item(struct network *n, struct item *item,
                 bool pprint, int scheme);
 void test_ffn_network_with_item(struct network *n, struct item *item,

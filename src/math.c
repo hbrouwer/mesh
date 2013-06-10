@@ -21,6 +21,8 @@
 
 #include <math.h>
 
+/**************************************************************************
+ *************************************************************************/
 double minimum(double x, double y)
 {
         if (x <= y)
@@ -29,6 +31,8 @@ double minimum(double x, double y)
                 return y;
 }
 
+/**************************************************************************
+ *************************************************************************/
 double maximum(double x, double y)
 {
         if (x >= y)
@@ -37,6 +41,8 @@ double maximum(double x, double y)
                 return y;
 }
 
+/**************************************************************************
+ *************************************************************************/
 double sign(double x)
 {
         if (x == 0.0)
@@ -47,15 +53,14 @@ double sign(double x)
                 return -1.0;
 }
 
-/*
+/**************************************************************************
  * Box-Muller transform for the generation of pairs of normally distributed
  * random numbers. See:
  *
  * Box, G. E. P. and Muller, M. E. (1958). A note on the generation of
  *     random normal deviates. The Annals of Mathematical Statistics, 29 
  *     (2), 610-611.
- */
-
+ *************************************************************************/
 double normrand(double mu, double sigma)
 {
         double rs1;
@@ -78,14 +83,13 @@ double normrand(double mu, double sigma)
         return rs1 * sigma + mu;
 }
 
-/*
+/**************************************************************************
  * Cosine similarity:
  *
  *                  sum_i (x_i * y_i)
  * cs = ---------------------------------------------
  *      sqrt(sum_i (x_i ^ 2)) * sqrt(sum_i (y_i ^ 2))
- */
-
+ *************************************************************************/
 double cosine_similarity(struct vector *v1, struct vector *v2)
 {
         double nom = 0.0, xsq = 0.0, ysq = 0.0;
@@ -102,7 +106,7 @@ double cosine_similarity(struct vector *v1, struct vector *v2)
         return nom / (xsq * ysq);
 }
 
-/*
+/**************************************************************************
  * Pearson's correlation:
  *
  *                   sum_i ((x_i - x) * (y_i - y))
@@ -110,8 +114,7 @@ double cosine_similarity(struct vector *v1, struct vector *v2)
  *      sqrt(sum_i (x_i - x) ^ 2) * sqrt(sum_i (y_i - y) ^ 2)
  *
  * where x is the average of vector x, and y the average of vector y.
- */
-
+ *************************************************************************/
 double pearson_correlation(struct vector *v1, struct vector *v2)
 {
         double xmn = 0.0, ymn = 0.0;

@@ -38,15 +38,23 @@ struct item
         struct vector **targets;  /* target vectors */
 };
 
+/**************************************************************************
+ *************************************************************************/
 struct set *create_set(char *name);
 void dispose_set(struct set *s);
 
+/**************************************************************************
+ *************************************************************************/
 struct item *create_item(char *name, int num_events, char *meta,
                 struct vector **inputs, struct vector **targets);
 void dispose_item(struct item *item);
 
+/**************************************************************************
+ *************************************************************************/
 struct set *load_set(char *name, char *filename, int input_size, int output_size);
 
+/**************************************************************************
+ *************************************************************************/
 void order_set(struct set *s);
 void permute_set(struct set *s);
 void randomize_set(struct set *s);

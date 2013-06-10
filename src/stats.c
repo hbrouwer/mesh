@@ -22,6 +22,8 @@
 #include "matrix.h"
 #include "stats.h"
 
+/**************************************************************************
+ *************************************************************************/
 struct weight_stats *create_weight_statistics(struct network *n)
 {
         struct weight_stats *ws;
@@ -44,11 +46,15 @@ error_out:
         return NULL;
 }
 
+/**************************************************************************
+ *************************************************************************/
 void dispose_weight_statistics(struct weight_stats *ws)
 {
         free(ws);
 }
 
+/**************************************************************************
+ *************************************************************************/
 void collect_weight_statistics(struct weight_stats *ws, struct group *g)
 {
         /*
@@ -75,6 +81,8 @@ void collect_weight_statistics(struct weight_stats *ws, struct group *g)
         }
 }
 
+/**************************************************************************
+ *************************************************************************/
 void collect_mean_dependent_ws(struct weight_stats *ws, struct group *g)
 {
         /* 

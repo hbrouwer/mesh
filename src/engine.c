@@ -22,6 +22,8 @@
 #include "math.h"
 #include "pprint.h"
 
+/**************************************************************************
+ *************************************************************************/
 void train_network(struct network *n)
 {
         pprintf("Epoch \t Error \t\t Weight Cost \t Gradient Lin.\n");
@@ -30,6 +32,8 @@ void train_network(struct network *n)
         n->learning_algorithm(n);
 }
 
+/**************************************************************************
+ *************************************************************************/
 void print_training_progress(struct network *n)
 {
         if (n->status->epoch == 1 || n->status->epoch % n->report_after == 0)
@@ -40,6 +44,8 @@ void print_training_progress(struct network *n)
                                 n->status->gradient_linearity);
 }
 
+/**************************************************************************
+ *************************************************************************/
 void print_training_summary(struct network *n)
 {
         pprintf("\n");
@@ -47,6 +53,8 @@ void print_training_summary(struct network *n)
                         n->status->epoch, n->status->error);
 }
 
+/**************************************************************************
+ *************************************************************************/
 void print_testing_summary(struct network *n, int tr)
 {
         pprintf("Number of items: \t\t %d\n",
@@ -59,6 +67,8 @@ void print_testing_summary(struct network *n, int tr)
                         tr, ((double)tr / n->asp->items->num_elements) * 100.0);
 }
 
+/**************************************************************************
+ *************************************************************************/
 void scale_learning_rate(struct network *n)
 {
         int sa = n->lr_scale_after * n->max_epochs;
@@ -70,6 +80,8 @@ void scale_learning_rate(struct network *n)
         }
 }
 
+/**************************************************************************
+ *************************************************************************/
 void scale_momentum(struct network *n)
 {
         int sa = n->mn_scale_after * n->max_epochs;
@@ -81,6 +93,8 @@ void scale_momentum(struct network *n)
         }
 }
 
+/**************************************************************************
+ *************************************************************************/
 void scale_weight_decay(struct network *n)
 {
         int sa = n->wd_scale_after * n->max_epochs;
@@ -92,6 +106,8 @@ void scale_weight_decay(struct network *n)
         }
 }
 
+/**************************************************************************
+ *************************************************************************/
 void train_network_with_bp(struct network *n)
 {
         if (n->training_order == TRAIN_ORDERED)
@@ -137,6 +153,8 @@ void train_network_with_bp(struct network *n)
         }
 }
 
+/**************************************************************************
+ *************************************************************************/
 void train_ffn_network_with_item(struct network *n, struct item *item)
 {
         for (int i = 0; i < item->num_events; i++) {
@@ -167,7 +185,8 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
         }
 }
 
-
+/**************************************************************************
+ *************************************************************************/
 void train_network_with_bptt(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
@@ -214,6 +233,8 @@ void train_network_with_bptt(struct network *n)
         }
 }
 
+/**************************************************************************
+ *************************************************************************/
 void train_rnn_network_with_item(struct network *n, struct item *item)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
@@ -241,7 +262,7 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
                         rnn_sum_gradients(un);
                         n->update_algorithm(un->stack[0]);
                 }
-               
+              
 cycle_stack:
                 if (un->sp == un->stack_size - 1) {
                         rnn_cycle_stack(un);
@@ -251,6 +272,8 @@ cycle_stack:
         }
 }
 
+/**************************************************************************
+ *************************************************************************/
 void test_network(struct network *n)
 {
         if (n->type == TYPE_FFN)
@@ -261,6 +284,8 @@ void test_network(struct network *n)
                 test_rnn_network(n);
 }
 
+/**************************************************************************
+ *************************************************************************/
 void test_ffn_network(struct network *n)
 {
         n->status->error = 0.0;
@@ -299,6 +324,8 @@ void test_ffn_network(struct network *n)
 
 }
 
+/**************************************************************************
+ *************************************************************************/
 void test_rnn_network(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
@@ -343,6 +370,8 @@ cycle_stack:
         print_testing_summary(n, threshold_reached);
 }
 
+/**************************************************************************
+ *************************************************************************/
 void test_network_with_item(struct network *n, struct item *item, bool pprint, int scheme)
 {
         if (n->type == TYPE_FFN)
@@ -353,6 +382,8 @@ void test_network_with_item(struct network *n, struct item *item, bool pprint, i
                 test_rnn_network_with_item(n, item, pprint, scheme);
 }
 
+/**************************************************************************
+ *************************************************************************/
 void test_ffn_network_with_item(struct network *n, struct item *item, bool pprint, int scheme)
 {
         n->status->error = 0.0;
@@ -409,6 +440,8 @@ void test_ffn_network_with_item(struct network *n, struct item *item, bool pprin
         }
 }
 
+/**************************************************************************
+ *************************************************************************/
 void test_rnn_network_with_item(struct network *n, struct item *item, bool pprint, int scheme)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
@@ -464,6 +497,7 @@ void test_rnn_network_with_item(struct network *n, struct item *item, bool pprin
                 pprintf("Error: \t%lf\n", n->status->error);
 
 cycle_stack:
+                un->sp++;
                 if (sp == un->stack_size - 1) {
                         rnn_cycle_stack(un);
                 } else {

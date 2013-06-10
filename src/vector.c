@@ -20,6 +20,8 @@
 #include "math.h"
 #include "vector.h"
 
+/**************************************************************************
+ *************************************************************************/
 struct vector *create_vector(int size)
 {
         struct vector *v;
@@ -39,12 +41,16 @@ error_out:
         return NULL;
 }
 
+/**************************************************************************
+ *************************************************************************/
 void dispose_vector(struct vector *v)
 {
         free(v->elements);
         free(v);
 }
 
+/**************************************************************************
+ *************************************************************************/
 void copy_vector(struct vector *v1, struct vector *v2)
 {
         if(v1->size != v2->size)
@@ -57,6 +63,8 @@ void copy_vector(struct vector *v1, struct vector *v2)
                 v1->elements[i] = v2->elements[i];
 }
 
+/**************************************************************************
+ *************************************************************************/
 void zero_out_vector(struct vector *v)
 {
 #ifdef _OPENMP
@@ -66,6 +74,8 @@ void zero_out_vector(struct vector *v)
                 v->elements[i] = 0.0;
 }
 
+/**************************************************************************
+ *************************************************************************/
 void fill_vector_with_value(struct vector *v, double val)
 {
 #ifdef _OPENMP
@@ -75,6 +85,8 @@ void fill_vector_with_value(struct vector *v, double val)
                 v->elements[i] = val;
 }
 
+/**************************************************************************
+ *************************************************************************/
 double vector_minimum(struct vector *v)
 {
         double min = v->elements[0];
@@ -86,6 +98,8 @@ double vector_minimum(struct vector *v)
         return min;
 }
 
+/**************************************************************************
+ *************************************************************************/
 double vector_maximum(struct vector *v)
 {
         double max = v->elements[0];
@@ -97,6 +111,8 @@ double vector_maximum(struct vector *v)
         return max;
 }
 
+/**************************************************************************
+ *************************************************************************/
 void print_vector(struct vector *v)
 {
         for (int i = 0; i < v->size; i++)
