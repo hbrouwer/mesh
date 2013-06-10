@@ -28,7 +28,7 @@ struct set *create_set(char *name)
                 goto error_out;
         memset(s, 0, sizeof(struct set));
 
-        uint32_t block_size = (strlen(name) + 1) * sizeof(char);
+        size_t block_size = (strlen(name) + 1) * sizeof(char);
         if (!(s->name = malloc(block_size)))
                 goto error_out;
         memset(s->name, 0, block_size);
@@ -116,7 +116,7 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
 
                 /* item name */
                 char *name;
-                uint32_t block_size = ((strlen(tmp1) + 1) * sizeof(char));
+                size_t block_size = ((strlen(tmp1) + 1) * sizeof(char));
                 if (!(name = malloc(block_size)))
                         goto error_out;
                 memset(name, 0, block_size);
@@ -178,7 +178,7 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
         fclose(fd);
 
         /* item order */
-        uint32_t block_size = s->items->num_elements * sizeof(int);
+        size_t block_size = s->items->num_elements * sizeof(int);
         if (!(s->order = malloc(block_size)))
                 goto error_out;
         memset(s->order, 0, block_size);

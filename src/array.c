@@ -35,7 +35,7 @@ struct array *create_array(uint32_t type)
         a->num_elements = 0;
         a->max_elements = MAX_ARRAY_ELEMENTS;
 
-        uint32_t block_size = a->max_elements * sizeof(void *);
+        size_t block_size = a->max_elements * sizeof(void *);
         if (!(a->elements = malloc(block_size)))
                 goto error_out;
 
@@ -76,7 +76,7 @@ void increase_array_size(struct array *a)
         a->max_elements = a->max_elements + MAX_ARRAY_ELEMENTS;
 
         /* increase array size */
-        uint32_t block_size = a->max_elements * sizeof(void *);
+        size_t block_size = a->max_elements * sizeof(void *);
         if (!(a->elements = realloc(a->elements, block_size)))
                 goto error_out;
 

@@ -89,7 +89,7 @@ struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
          * dynamic learning parameter matrices.
          */
         un->rec_groups = rnn_recurrent_groups(n);
-        uint32_t block_size = un->rec_groups->num_elements * sizeof(struct matrix *);
+        size_t block_size = un->rec_groups->num_elements * sizeof(struct matrix *);
 
         /* array for weight matrices */
         if (!(un->rec_weights = malloc(block_size)))
@@ -245,7 +245,7 @@ struct group *rnn_duplicate_group(struct group *g)
                 goto error_out;
         memset(dg, 0, sizeof(struct group));
 
-        uint32_t block_size = (strlen(g->name) + 1) * sizeof(char);
+        size_t block_size = (strlen(g->name) + 1) * sizeof(char);
         if (!(dg->name = malloc(block_size)))
                 goto error_out;
         memset(dg->name, 0, block_size);

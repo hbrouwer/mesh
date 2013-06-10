@@ -36,7 +36,7 @@ struct network *create_network(char *name, uint32_t type)
                 goto error_out;
         memset(n, 0, sizeof(struct network));
 
-        uint32_t block_size = (strlen(name) + 1) * sizeof(char);
+        size_t block_size = (strlen(name) + 1) * sizeof(char);
         if (!(n->name = malloc(block_size)))
                 goto error_out;
         memset(n->name, 0, block_size);
@@ -132,7 +132,7 @@ struct group *create_group(char *name, uint32_t size, bool bias,
                 goto error_out;
         memset(g, 0, sizeof(struct group));
 
-        uint32_t block_size = (strlen(name) + 1) * sizeof(char);
+        size_t block_size = (strlen(name) + 1) * sizeof(char);
         if (!(g->name = malloc(block_size)))
                 goto error_out;
         memset(g->name, 0, block_size);
@@ -175,7 +175,7 @@ struct group *attach_bias_group(struct network *n, struct group *g)
 {
         /* create a new "bias" group */
         char *tmp;
-        uint32_t block_size = (strlen(g->name) + 6) * sizeof(char);
+        size_t block_size = (strlen(g->name) + 6) * sizeof(char);
         if (!(tmp = malloc(block_size)))
                 goto error_out;
         memset(tmp, 0, sizeof(block_size));
