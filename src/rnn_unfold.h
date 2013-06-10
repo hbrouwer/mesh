@@ -25,6 +25,8 @@
 #include "network.h"
 #include "vector.h"
 
+/**************************************************************************
+ *************************************************************************/
 struct rnn_unfolded_network
 {
         struct array              /* recurrent groups */
@@ -32,9 +34,9 @@ struct rnn_unfolded_network
         struct matrix             /* weights for RCs */
                 **rec_weights;
         struct matrix             /* previous weight changes for RCs */
-                **rec_prev_weight_deltas;
+                **rec_prev_deltas;
         struct matrix             /* dynamic learning parameters for RCs */
-                **rec_dyn_learning_pars;
+                **rec_dynamic_pars;
         uint32_t stack_size;      /* state stack size */
         struct network **stack;   /* network state stack */
         uint32_t sp;              /* stack pointer */

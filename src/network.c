@@ -81,7 +81,7 @@ void init_network(struct network *n)
         srand(n->random_seed);
         randomize_weight_matrices(n->input, n);
        
-        initialize_dyn_learning_pars(n->input, n);
+        initialize_dynamic_pars(n->input, n);
 
         if (n->act_lookup)
                 initialize_act_lookup_vectors(n);
@@ -100,7 +100,7 @@ void init_network(struct network *n)
 void reset_network(struct network *n)
 {
         randomize_weight_matrices(n->input, n);
-        initialize_dyn_learning_pars(n->input, n);
+        initialize_dynamic_pars(n->input, n);
 }
 
 /**************************************************************************
@@ -210,24 +210,24 @@ struct group *attach_bias_group(struct network *n, struct group *g)
                         g->vector->size);
 
         /* previous weight deltas matrix */
-        struct matrix *prev_weight_deltas = create_matrix(
+        struct matrix *prev_deltas = create_matrix(
                         bg->vector->size,
                         g->vector->size);
 
         /* dynamic learning parameters matrix */
-        struct matrix *dyn_learning_pars = create_matrix(
+        struct matrix *dynamic_pars = create_matrix(
                         bg->vector->size,
                         g->vector->size);
 
         /* add projections */
         struct projection *op;
         op = create_projection(g, weights, gradients, prev_gradients,
-                                prev_weight_deltas, dyn_learning_pars, false);
+                                prev_deltas, dynamic_pars, false);
         add_to_array(bg->out_projs, op);
         
         struct projection *ip;
         ip = create_projection(bg, weights, gradients, prev_gradients,
-                                prev_weight_deltas, dyn_learning_pars, false);
+                                prev_deltas, dynamic_pars, false);
         add_to_array(g->inc_projs, ip);
 
         return bg;
@@ -351,8 +351,8 @@ struct projection *create_projection(
                 struct matrix *weights,
                 struct matrix *gradients,
                 struct matrix *prev_gradients,
-                struct matrix *prev_weight_deltas,
-                struct matrix *dyn_learning_pars,
+                struct matrix *prev_deltas,
+                struct matrix *dynamic_pars,
                 bool recurrent)
 {
         struct projection *p;
@@ -365,8 +365,8 @@ struct projection *create_projection(
         p->weights = weights;
         p->gradients = gradients;
         p->prev_gradients = prev_gradients;
-        p->prev_weight_deltas = prev_weight_deltas;
-        p->dyn_learning_pars = dyn_learning_pars;
+        p->prev_deltas = prev_deltas;
+        p->dynamic_pars = dynamic_pars;
         p->recurrent = recurrent;
 
         return p;
@@ -383,8 +383,8 @@ void dispose_projection(struct projection *p)
         dispose_matrix(p->weights);
         dispose_matrix(p->gradients);
         dispose_matrix(p->prev_gradients);
-        dispose_matrix(p->prev_weight_deltas);
-        dispose_matrix(p->dyn_learning_pars);
+        dispose_matrix(p->prev_deltas);
+        dispose_matrix(p->dynamic_pars);
 
         free(p);
 }
@@ -413,7 +413,7 @@ void randomize_weight_matrices(struct group *g, struct network *n)
 
 /**************************************************************************
  *************************************************************************/
-void initialize_dyn_learning_pars(struct group *g, struct network *n)
+void initialize_dynamic_pars(struct group *g, struct network *n)
 {
         double v = 0.0;
         if (n->update_algorithm == bp_update_dbd) {
@@ -424,12 +424,12 @@ void initialize_dyn_learning_pars(struct group *g, struct network *n)
 
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
-                fill_matrix_with_value(ip->dyn_learning_pars, v);
+                fill_matrix_with_value(ip->dynamic_pars, v);
         }
 
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
-                initialize_dyn_learning_pars(op->to, n);
+                initialize_dynamic_pars(op->to, n);
         }
 }
 

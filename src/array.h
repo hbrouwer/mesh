@@ -29,6 +29,8 @@
 #define TYPE_SETS       3
 #define TYPE_ITEMS      4
 
+/**************************************************************************
+ *************************************************************************/
 struct array
 {
         uint32_t type;
@@ -37,6 +39,8 @@ struct array
         void **elements;
 };
 
+/**************************************************************************
+ *************************************************************************/
 struct array *create_array(uint32_t type);
 void add_to_array(struct array *a, void *e);
 void remove_from_array(struct array *a, void *e);

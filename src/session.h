@@ -24,6 +24,8 @@
 #include "array.h"
 #include "network.h"
 
+/**************************************************************************
+ *************************************************************************/
 struct session
 {
         struct array *networks; /* networks in this session */
@@ -32,6 +34,8 @@ struct session
         uint32_t pprint_scheme; /* pretty priniting scheme */
 };
 
+/**************************************************************************
+ *************************************************************************/
 struct session *create_session();
 void dispose_session(struct session *s);
 

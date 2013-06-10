@@ -800,21 +800,21 @@ bool cmd_create_projection(char *cmd, char *fmt, struct network *n, char *msg)
                 struct matrix *prev_gradients = create_matrix(
                                 fg->vector->size,
                                 tg->vector->size);
-                struct matrix *prev_weight_deltas = create_matrix(
+                struct matrix *prev_deltas = create_matrix(
                                 fg->vector->size,
                                 tg->vector->size);
-                struct matrix *dyn_learning_pars = create_matrix(
+                struct matrix *dynamic_pars = create_matrix(
                                 fg->vector->size,
                                 tg->vector->size);
 
                 struct projection *op;
                 op = create_projection(tg, weights, gradients, prev_gradients,
-                                prev_weight_deltas, dyn_learning_pars, false);
+                                prev_deltas, dynamic_pars, false);
                 add_to_array(fg->out_projs, op);
 
                 struct projection *ip;
                 ip = create_projection(fg, weights, gradients, prev_gradients,
-                                prev_weight_deltas, dyn_learning_pars, false);
+                                prev_deltas, dynamic_pars, false);
                 add_to_array(tg->inc_projs, ip);
 
         }
@@ -1441,9 +1441,9 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s, char *msg, uint32_
                 }
                 if (type == MTYPE_DYN_PARS) {
                         if (s->pprint) {
-                                pprint_matrix(fg_to_tg->dyn_learning_pars, s->pprint_scheme);
+                                pprint_matrix(fg_to_tg->dynamic_pars, s->pprint_scheme);
                         } else {
-                                print_matrix(fg_to_tg->dyn_learning_pars);
+                                print_matrix(fg_to_tg->dynamic_pars);
                         }
                 }
 

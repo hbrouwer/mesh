@@ -145,9 +145,9 @@ struct projection
         struct matrix               /* previous gradients */
                 *prev_gradients;
         struct matrix               /* previous weight deltas */
-                *prev_weight_deltas;
+                *prev_deltas;
         struct matrix               /* update values (Rprop) or LRs (DBD) */
-                *dyn_learning_pars;
+                *dynamic_pars;
 
         bool recurrent;             /* flags recurrent projections (BPTT) */
 };
@@ -182,7 +182,7 @@ struct status
         double prev_error;          /* previous network error */
         double weight_cost;         /* weight cost */
         double gradient_linearity;  /* gradient linearity */
-        double last_weight_deltas_length;
+        double last_deltas_length;
                                     /* length of last weight changes vector */ 
 
         double gradients_length;    /* length of weight gradients vector */
@@ -222,8 +222,8 @@ struct projection *create_projection(
                 struct matrix *weights,
                 struct matrix *gradients,
                 struct matrix *prev_gradients,
-                struct matrix *prev_weight_deltas,
-                struct matrix *dyn_learning_pars,
+                struct matrix *prev_deltas,
+                struct matrix *dynamic_pars,
                 bool recurrent);
 void dispose_projection(struct projection *p);
 
@@ -234,7 +234,7 @@ void dispose_sets(struct array *ss);
 /**************************************************************************
  *************************************************************************/
 void randomize_weight_matrices(struct group *g, struct network *n);
-void initialize_dyn_learning_pars(struct group *g, struct network *n);
+void initialize_dynamic_pars(struct group *g, struct network *n);
 void initialize_act_lookup_vectors(struct network *n);
 
 /**************************************************************************

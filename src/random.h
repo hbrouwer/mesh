@@ -21,6 +21,8 @@
 
 #include "network.h"
 
+/**************************************************************************
+ *************************************************************************/
 void randomize_gaussian(struct matrix *m, struct network *n);
 void randomize_range(struct matrix *m, struct network *n);
 void randomize_nguyen_widrow(struct matrix *m, struct network *n);

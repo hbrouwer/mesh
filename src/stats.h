@@ -23,6 +23,8 @@
 
 #include "network.h"
 
+/**************************************************************************
+ *************************************************************************/
 struct weight_stats
 {
         uint32_t num_weights; /* number of weights */
@@ -34,6 +36,8 @@ struct weight_stats
         double maximum;       /* maximum */
 };
 
+/**************************************************************************
+ *************************************************************************/
 struct weight_stats *create_weight_statistics(struct network *n);
 void dispose_weight_statistics(struct weight_stats *ws);
 
