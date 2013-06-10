@@ -30,13 +30,13 @@
 struct rnn_unfolded_network
 {
         struct array              /* recurrent groups */
-                *rec_groups;    
+                *rcr_groups;    
         struct matrix             /* weights for RCs */
-                **rec_weights;
+                **rcr_weights;
         struct matrix             /* previous weight changes for RCs */
-                **rec_prev_deltas;
+                **rcr_prev_deltas;
         struct matrix             /* dynamic learning parameters for RCs */
-                **rec_dynamic_pars;
+                **rcr_dynamic_pars;
         uint32_t stack_size;      /* state stack size */
         struct network **stack;   /* network state stack */
         uint32_t sp;              /* stack pointer */
