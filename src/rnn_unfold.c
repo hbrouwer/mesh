@@ -291,7 +291,7 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
                 dn->input = dg;
         if (n->output == g)
                 dn->output = dg;
-         
+
         /* if the current group has a bias group, duplicate it */
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
@@ -353,9 +353,10 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
                  */
                 for (uint32_t j = 0; j < g2->inc_projs->num_elements; j++) {
                         struct projection *ip = g2->inc_projs->elements[j];
-                        if (ip->to == g)
-                                rg->inc_projs->elements[j] =
-                                        rnn_duplicate_projection(dg, ip, gradients, prev_gradients);
+                        if (ip->to != g)
+                                continue;
+                        rg->inc_projs->elements[j] =
+                                rnn_duplicate_projection(dg, ip, gradients, prev_gradients);
                 }
         }
 
@@ -591,8 +592,7 @@ void rnn_add_gradients(struct group *g1, struct group *g2)
 
                 for (uint32_t r = 0; r < p1->gradients->rows; r++)
                         for (uint32_t c = 0; c < p1->gradients->cols; c++)
-                                p1->gradients->elements[r][c] +=
-                                        p2->gradients->elements[r][c];
+                                p1->gradients->elements[r][c] += p2->gradients->elements[r][c];
 
                 copy_matrix(p2->gradients, p2->prev_gradients);
                 zero_out_matrix(p2->gradients);
