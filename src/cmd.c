@@ -317,6 +317,10 @@ void process_command(char *cmd, struct session *s)
                                 s,
                                 "Testing network '%s' with item '%s'"))
                 return;
+        if (cmd_test_vector(cmd, "testVector %[^\"]",
+                                s,
+                                "Testing network '%s' with custom vector"))
+                return;
 
         if (cmd_weight_stats(cmd, "weightStats",
                                 s->anp,
@@ -1317,6 +1321,55 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s, char *msg)
         mprintf(" ");
 
         return true;
+}
+
+// XXX: Hack-O-Rama
+bool cmd_test_vector(char *cmd, char *fmt, struct session *s, char *msg)
+{
+        char tmp[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        uint32_t input_size = s->anp->input->vector->size;
+
+        struct vector **inputs;
+        size_t block_size = sizeof(struct vector *);
+        if (!(inputs = malloc(block_size)))
+                goto error_out;
+        memset(inputs, 0, block_size);
+        inputs[0] = create_vector(input_size);
+
+        struct vector **targets;
+        if (!(targets = malloc(block_size))) {
+                goto error_out;
+        }
+        memset(targets, 0, block_size);
+
+        char *tokens = strtok(tmp, " ");
+        for (uint32_t i = 0; i < input_size; i++) {
+                if (sscanf(tokens, "%lf", &inputs[0]->elements[i]) != 1)
+                        goto error_out;
+                if (i < input_size - 1 && !(tokens = strtok(NULL, " ")))
+                        goto error_out;
+        }
+
+        struct item *item = create_item(NULL, 1, NULL, inputs, targets);
+
+        mprintf(msg, s->anp->name);
+        mprintf(" ");
+
+        test_network_with_item(s->anp, item, s->pprint, s->pprint_scheme);
+
+        mprintf(" ");
+
+        dispose_item(item);
+
+        return true;
+
+error_out:
+        perror("[cmd_test_vector()]");
+        return true;
+
 }
 
 bool cmd_weight_stats(char *cmd, char *fmt, struct network *n, char *msg)

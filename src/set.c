@@ -81,6 +81,7 @@ error_out:
 void dispose_item(struct item *item)
 {
         free(item->name);
+        free(item->meta);
 
         for (uint32_t i = 0; i < item->num_events; i++) {
                 if (item->inputs[i])

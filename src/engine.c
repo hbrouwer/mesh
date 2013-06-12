@@ -411,15 +411,14 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 
-                if (!item->targets[i])
-                        continue;
-
-                pprintf("\n");
-                pprintf("Target: \t");
-                if (pprint) {
-                        pprint_vector(item->targets[i], scheme);
-                } else  {
-                        print_vector(item->targets[i]);
+                if (item->targets[i]) {
+                        pprintf("\n");
+                        pprintf("Target: \t");
+                        if (pprint) {
+                                pprint_vector(item->targets[i], scheme);
+                        } else  {
+                                print_vector(item->targets[i]);
+                        }
                 }
                 pprintf("Output: \t");
                 if (pprint) {
@@ -428,7 +427,7 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
                         print_vector(n->output->vector);
                 }
 
-                if (!(i == item->num_events - 1))
+                if (!(i == item->num_events - 1) || !item->targets[i])
                         continue;
 
                 struct group *g = n->output;
@@ -473,15 +472,14 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                 copy_vector(un->stack[sp]->input->vector, item->inputs[i]);
                 feed_forward(un->stack[sp], un->stack[sp]->input);
 
-                if (!item->targets[i])
-                        goto cycle_stack;
-             
-                pprintf("\n");
-                pprintf("Target: \t");
-                if (pprint) {
-                        pprint_vector(item->targets[i], scheme);
-                } else {
-                        print_vector(item->targets[i]);
+                if (item->targets[i]) {
+                        pprintf("\n");
+                        pprintf("Target: \t");
+                        if (pprint) {
+                                pprint_vector(item->targets[i], scheme);
+                        } else {
+                                print_vector(item->targets[i]);
+                        }
                 }
                 pprintf("Output: \t");
                 if (pprint) {
@@ -489,6 +487,9 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                 } else {
                         print_vector(un->stack[sp]->output->vector);
                 }
+
+                if (!item->targets[i])
+                        goto cycle_stack;
 
                 struct group *g = un->stack[sp]->output;
                 struct vector *tv = item->targets[i];
