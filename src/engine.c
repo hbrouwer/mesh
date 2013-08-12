@@ -213,10 +213,9 @@ void train_network_with_bptt(struct network *n)
                 struct item *item = n->asp->items->elements[item_idx];
 
                 un->sp = 0;
-                for (uint32_t i = 0; i < un->stack_size; i++) {
-                        reset_recurrent_groups(un->stack[i]);
+                reset_recurrent_groups(un->stack[un->sp]);
+                for (uint32_t i = 0; i < un->stack_size; i++)
                         reset_error_signals(un->stack[i]);
-                }
 
                 train_rnn_network_with_item(n, item);
                 
@@ -333,13 +332,12 @@ void test_rnn_network(struct network *n)
         n->status->error = 0.0;
         uint32_t threshold_reached = 0;
 
-        un->sp = 0;
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                uint32_t sp = un->sp;
+                un->sp = 0;
+                uint32_t sp = un->sp;;
                 struct item *item = n->asp->items->elements[i];
 
-                for (uint32_t j = 0; j < un->stack_size; j++)
-                        reset_recurrent_groups(un->stack[j]);
+                reset_recurrent_groups(un->stack[sp]);
 
                 for (uint32_t j = 0; j < item->num_events; j++) {
                         copy_vector(un->stack[sp]->input->vector, item->inputs[j]);
@@ -357,13 +355,13 @@ void test_rnn_network(struct network *n)
                         n->status->error += error;
                         if (error < n->error_threshold)
                                 threshold_reached++;
-                }
-                       
+
 cycle_stack:
-                if (sp == un->stack_size - 1) {
-                        rnn_cycle_stack(un);
-                } else {
-                        un->sp++;
+                        if (sp == un->stack_size - 1) {
+                                rnn_cycle_stack(un);
+                        } else {
+                                un->sp++;
+                        }
                 }
         }
 
@@ -451,11 +449,9 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
         n->status->error = 0.0;
         
         un->sp = 0;
-        for (uint32_t i = 0; i < un->stack_size; i++)
-                reset_recurrent_groups(un->stack[i]);
+        reset_recurrent_groups(un->stack[un->sp]);
 
         pprintf("Item: \t\"%s\" --  \"%s\"\n", item->name, item->meta);
-
 
         for (uint32_t i = 0; i < item->num_events; i++) {
                 uint32_t sp = un->sp;
@@ -501,8 +497,7 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                 pprintf("Error: \t%lf\n", n->status->error);
 
 cycle_stack:
-                un->sp++;
-                if (sp == un->stack_size - 1) {
+                if (un->sp == un->stack_size - 1) {
                         rnn_cycle_stack(un);
                 } else {
                         un->sp++;

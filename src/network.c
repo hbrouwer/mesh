@@ -329,8 +329,18 @@ void reset_context_group_chain(struct group *g)
 void reset_recurrent_groups(struct network *n) {
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
-                if (g->recurrent)
-                        fill_vector_with_value(g->vector, 0.5);
+
+                // !!! DEBUG DEBUG DEBUG !!! //////////////////////////////
+                
+                if (g->recurrent) {
+                        for (uint32_t j = 0; j < g->inc_projs->num_elements; j++) {
+                                struct projection *p = g->inc_projs->elements[j];
+                                if (p->to->recurrent)
+                                        fill_vector_with_value(p->to->vector, 0.5);
+                        }
+                }
+
+                // !!! DEBUG DEBUG DEBUG !!! //////////////////////////////
         }
 }
 
@@ -341,6 +351,19 @@ void reset_error_signals(struct network *n)
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
                 zero_out_vector(g->error);
+
+                // !!! DEBUG DEBUG DEBUG !!! //////////////////////////////
+
+                if (g->recurrent) {
+                        for (uint32_t j = 0; j < g->inc_projs->num_elements; j++) {
+                                struct projection *p = g->inc_projs->elements[j];
+                                if (p->to->recurrent)
+                                        zero_out_vector(p->to->vector);
+                        }
+                }
+
+                
+                // !!! DEBUG DEBUG DEBUG !!! //////////////////////////////
         }
 }
 
