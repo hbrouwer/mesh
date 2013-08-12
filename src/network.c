@@ -330,8 +330,6 @@ void reset_recurrent_groups(struct network *n) {
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
 
-                // !!! DEBUG DEBUG DEBUG !!! //////////////////////////////
-                
                 if (g->recurrent) {
                         for (uint32_t j = 0; j < g->inc_projs->num_elements; j++) {
                                 struct projection *p = g->inc_projs->elements[j];
@@ -339,8 +337,6 @@ void reset_recurrent_groups(struct network *n) {
                                         fill_vector_with_value(p->to->vector, 0.5);
                         }
                 }
-
-                // !!! DEBUG DEBUG DEBUG !!! //////////////////////////////
         }
 }
 
@@ -351,19 +347,31 @@ void reset_error_signals(struct network *n)
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
                 zero_out_vector(g->error);
+        }
+}
 
-                // !!! DEBUG DEBUG DEBUG !!! //////////////////////////////
+/**************************************************************************
+ * XXX: Check...
+ *************************************************************************/
+void reset_rnn_error_signals(struct network *n)
+{
+        struct rnn_unfolded_network *un = n->unfolded_net;
 
-                if (g->recurrent) {
-                        for (uint32_t j = 0; j < g->inc_projs->num_elements; j++) {
-                                struct projection *p = g->inc_projs->elements[j];
-                                if (p->to->recurrent)
-                                        zero_out_vector(p->to->vector);
+        for (uint32_t i = 0; i < un->stack_size; i++) {
+                struct network *net = un->stack[i];
+                
+                for (uint32_t j = 0; j < net->groups->num_elements; j++) {
+                        struct group *g = net->groups->elements[j];
+                        zero_out_vector(g->error);
+
+                        if (i == 0 && g->recurrent) {
+                                for (uint32_t x = 0; x < g->inc_projs->num_elements; x++) {
+                                        struct projection *p = g->inc_projs->elements[x];
+                                        if (p->to->recurrent)
+                                                zero_out_vector(p->to->vector);
+                                }
                         }
                 }
-
-                
-                // !!! DEBUG DEBUG DEBUG !!! //////////////////////////////
         }
 }
 

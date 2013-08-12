@@ -214,8 +214,7 @@ void train_network_with_bptt(struct network *n)
 
                 un->sp = 0;
                 reset_recurrent_groups(un->stack[un->sp]);
-                for (uint32_t i = 0; i < un->stack_size; i++)
-                        reset_error_signals(un->stack[i]);
+                reset_rnn_error_signals(n);
 
                 train_rnn_network_with_item(n, item);
                 
@@ -247,13 +246,11 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
                 if (!item->targets[i])
                         goto cycle_stack;
 
-                reset_error_signals(un->stack[sp]);
-                        
                 struct group *g = un->stack[sp]->output;
                 struct vector *tv = item->targets[i];
                 double tr = n->target_radius;
                 double zr = n->zero_error_radius;
-                       
+                
                 bp_output_error(g, tv, tr, zr);
                 if (sp == un->stack_size - 1) {
                         bp_backpropagate_error(un->stack[un->sp], g);
@@ -261,7 +258,7 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
                         rnn_sum_gradients(un);
                         n->update_algorithm(un->stack[0]);
                 }
-              
+
 cycle_stack:
                 if (un->sp == un->stack_size - 1) {
                         rnn_cycle_stack(un);
@@ -320,7 +317,6 @@ void test_ffn_network(struct network *n)
         }
 
         print_testing_summary(n, threshold_reached);
-
 }
 
 /**************************************************************************
