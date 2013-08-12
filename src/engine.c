@@ -167,7 +167,7 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
                 if (!item->targets[i])
                         continue;
 
-                reset_error_signals(n);
+                reset_ffn_error_signals(n);
 
                 struct group *g = n->output;
                 struct vector *tv = item->targets[i];

@@ -213,7 +213,7 @@ void shift_context_group_chain(struct group *g, struct vector *v);
 void reset_context_groups(struct network *n);
 void reset_context_group_chain(struct group *g);
 void reset_recurrent_groups(struct network *n);
-void reset_error_signals(struct network *n);
+void reset_ffn_error_signals(struct network *n);
 void reset_rnn_error_signals(struct network *n);
 
 /**************************************************************************

@@ -342,7 +342,7 @@ void reset_recurrent_groups(struct network *n) {
 
 /**************************************************************************
  *************************************************************************/
-void reset_error_signals(struct network *n)
+void reset_ffn_error_signals(struct network *n)
 {
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
