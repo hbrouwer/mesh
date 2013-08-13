@@ -351,24 +351,21 @@ void reset_ffn_error_signals(struct network *n)
 }
 
 /**************************************************************************
- * XXX: Check...
  *************************************************************************/
 void reset_rnn_error_signals(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
 
         for (uint32_t i = 0; i < un->stack_size; i++) {
-                struct network *net = un->stack[i];
-                
-                for (uint32_t j = 0; j < net->groups->num_elements; j++) {
-                        struct group *g = net->groups->elements[j];
+                struct network *sn = un->stack[i];
+                for (uint32_t j = 0; j < sn->groups->num_elements; j++) {
+                        struct group *g = sn->groups->elements[j];
                         zero_out_vector(g->error);
-
                         if (i == 0 && g->recurrent) {
                                 for (uint32_t x = 0; x < g->inc_projs->num_elements; x++) {
                                         struct projection *p = g->inc_projs->elements[x];
                                         if (p->to->recurrent)
-                                                zero_out_vector(p->to->vector);
+                                                zero_out_vector(p->to->error);
                                 }
                         }
                 }
