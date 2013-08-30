@@ -126,4 +126,9 @@ bool cmd_save_weights(char *cmd, char *fmt, struct network *n, char *msg);
  *************************************************************************/
 bool cmd_set_colorscheme(char *cmd, char *fmt, struct session *s, char *msg);
 
+/**************************************************************************
+ * Module commands
+ *************************************************************************/
+bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s, char *msg);
+
 #endif /* CMD_H */

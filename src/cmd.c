@@ -30,6 +30,8 @@
 #include "set.h"
 #include "stats.h"
 
+#include "mods/erps.h"
+
 #define VTYPE_UNITS 0
 #define VTYPE_ERROR 1
 
@@ -379,6 +381,12 @@ void process_command(char *cmd, struct session *s)
         if (cmd_set_colorscheme(cmd, "set ColorScheme %s",
                                 s,
                                 "Set color scheme ... \t\t ( %s )"))
+                return;
+
+
+        if (cmd_erp_generate_table(cmd, "erpGenerateTable %s",
+                                s,
+                                "ERP amplitude table:"))
                 return;
 
         /*
@@ -1648,6 +1656,23 @@ bool cmd_set_colorscheme(char *cmd, char *fmt, struct session *s, char *msg)
         }
 
         mprintf(msg, tmp);
+
+        return true;
+}
+
+/**************************************************************************
+ * Module commands
+ *************************************************************************/
+
+/**************************************************************************
+ *************************************************************************/
+bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s, char *msg)
+{
+        char tmp[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        erp_generate_table(s->anp, tmp);
 
         return true;
 }

@@ -102,7 +102,6 @@ void randomize_nguyen_widrow(struct matrix *m, struct network *n)
                         m->elements[i][j] = (beta * m->elements[i][j]) / en;
 }
 
-
 /**************************************************************************
  * Randomize a matrix using Fan-In (FI) randomization. In FI randomization,
  * each weight is defined as:

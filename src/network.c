@@ -326,10 +326,10 @@ void reset_context_group_chain(struct group *g)
 
 /**************************************************************************
  *************************************************************************/
-void reset_recurrent_groups(struct network *n) {
+void reset_recurrent_groups(struct network *n)
+{
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
-
                 if (g->recurrent) {
                         for (uint32_t j = 0; j < g->inc_projs->num_elements; j++) {
                                 struct projection *p = g->inc_projs->elements[j];
@@ -359,14 +359,22 @@ void reset_rnn_error_signals(struct network *n)
         for (uint32_t i = 0; i < un->stack_size; i++) {
                 struct network *sn = un->stack[i];
                 for (uint32_t j = 0; j < sn->groups->num_elements; j++) {
+                        /* reset group's error vector */
                         struct group *g = sn->groups->elements[j];
                         zero_out_vector(g->error);
-                        if (i == 0 && g->recurrent) {
-                                for (uint32_t x = 0; x < g->inc_projs->num_elements; x++) {
-                                        struct projection *p = g->inc_projs->elements[x];
-                                        if (p->to->recurrent)
-                                                zero_out_vector(p->to->error);
-                                }
+
+                        /* 
+                         * Reset error vector of "terminal" group, if
+                         * required.
+                         */
+                        if (i > 0 || !g->recurrent)
+                                continue;
+
+                        for (uint32_t x = 0; x < g->inc_projs->num_elements; x++) {
+                                struct projection *p = g->inc_projs->elements[x];
+                                if (p->to->recurrent)
+                                        zero_out_vector(p->to->error);
+                                
                         }
                 }
         }

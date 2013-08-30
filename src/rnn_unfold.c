@@ -603,7 +603,7 @@ void rnn_add_gradients(struct group *g1, struct group *g2)
 }
 
 /**************************************************************************
- * Cycle the network stack. Assume the following unfolded network:
+ * Shift the network stack. Assume the following unfolded network:
  *
  *         .   ...........
  *         |        |
@@ -623,7 +623,7 @@ void rnn_add_gradients(struct group *g1, struct group *g2)
  *
  * The aim is to completely isolate stack[0], and move it into stack[n].
  *************************************************************************/
-void rnn_cycle_stack(struct rnn_unfolded_network *un)
+void rnn_shift_stack(struct rnn_unfolded_network *un)
 {
         /* 
          * Isolate the network in stack[0] by rewiring all of its recurrent

@@ -81,14 +81,15 @@
  *
  * Fahlman, S. E. (1988). An empirical study of learning speed in back-
  *     propagation networks. Technical report CMU-CS-88-162. School of
- *     Computer Science, Caernie Mellon University, Pittsburgh, PA 15213.
+ *     Computer Science, Carnegie Mellon University, Pittsburgh, PA 15213.
  *************************************************************************/
 #define BP_FLAT_SPOT_CORRECTION 0.1
 
 /**************************************************************************
  * This computes the error signal delta_j for each output unit j.
  *************************************************************************/
-void bp_output_error(struct group *g, struct vector *t, double tr, double zr)
+void bp_output_error(struct group *g, struct vector *t, double tr,
+                double zr)
 {
         /*
          * First, compute error derivates dE/dy for all units in the output

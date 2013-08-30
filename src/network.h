@@ -34,9 +34,9 @@
 #define TYPE_RNN 2
 
 /* training orders */
-#define TRAIN_ORDERED     0
-#define TRAIN_PERMUTED    1
-#define TRAIN_RANDOMIZED  2
+#define TRAIN_ORDERED    0
+#define TRAIN_PERMUTED   1
+#define TRAIN_RANDOMIZED 2
 
 /**************************************************************************
  *************************************************************************/
@@ -169,7 +169,7 @@ struct err_fun
 {
         double (*fun)               /* error function */
                 (struct group *g, struct vector *t, double tr, double zr);
-        void(*deriv)                /* error function derivative */
+        void (*deriv)               /* error function derivative */
                 (struct group *g, struct vector *t, double tr, double zr);
 };
 
@@ -182,9 +182,7 @@ struct status
         double prev_error;          /* previous network error */
         double weight_cost;         /* weight cost */
         double gradient_linearity;  /* gradient linearity */
-        double last_deltas_length;
-                                    /* length of last weight changes vector */ 
-
+        double last_deltas_length;  /* length of last weight changes vector */ 
         double gradients_length;    /* length of weight gradients vector */
 };
 

@@ -91,6 +91,6 @@ void rnn_add_gradients(struct group *g1, struct group *g2);
 
 /**************************************************************************
  *************************************************************************/
-void rnn_cycle_stack(struct rnn_unfolded_network *un);
+void rnn_shift_stack(struct rnn_unfolded_network *un);
 
 #endif /* RNN_UNFOLD_H */
