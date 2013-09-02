@@ -30,18 +30,6 @@ void train_network(struct network *n);
 
 /**************************************************************************
  *************************************************************************/
-void print_training_progress(struct network *n);
-void print_training_summary(struct network *n);
-void print_testing_summary(struct network *n, uint32_t tr);
-
-/**************************************************************************
- *************************************************************************/
-void scale_learning_rate(struct network *n);
-void scale_momentum(struct network *n);
-void scale_weight_decay(struct network *n);
-
-/**************************************************************************
- *************************************************************************/
 void train_network_with_bp(struct network *n);
 void train_ffn_network_with_item(struct network *n, struct item *item);
 
@@ -64,5 +52,17 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
                 bool pprint, uint32_t scheme);
 void test_rnn_network_with_item(struct network *n, struct item *item,
                 bool pprint, uint32_t scheme);
+
+/**************************************************************************
+ *************************************************************************/
+void print_training_progress(struct network *n);
+void print_training_summary(struct network *n);
+void print_testing_summary(struct network *n, uint32_t tr);
+
+/**************************************************************************
+ *************************************************************************/
+void scale_learning_rate(struct network *n);
+void scale_momentum(struct network *n);
+void scale_weight_decay(struct network *n);
 
 #endif /* ENGINE_H */

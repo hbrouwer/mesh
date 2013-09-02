@@ -33,80 +33,7 @@ void train_network(struct network *n)
 }
 
 /**************************************************************************
- *************************************************************************/
-void print_training_progress(struct network *n)
-{
-        if (n->status->epoch == 1 || n->status->epoch % n->report_after == 0)
-                pprintf("%.4d \t %lf \t %lf \t %lf\n",
-                                n->status->epoch,
-                                n->status->error,
-                                n->status->weight_cost,
-                                n->status->gradient_linearity);
-}
-
-/**************************************************************************
- *************************************************************************/
-void print_training_summary(struct network *n)
-{
-        pprintf("\n");
-        pprintf("Training finished after %d epoch(s) -- Network error: %f\n",
-                        n->status->epoch, n->status->error);
-}
-
-/**************************************************************************
- *************************************************************************/
-void print_testing_summary(struct network *n, uint32_t tr)
-{
-        pprintf("Number of items: \t\t %d\n",
-                        n->asp->items->num_elements);
-        pprintf("Total error: \t\t %lf\n",
-                        n->status->error);
-        pprintf("Error per example:\t\t %lf\n",
-                        n->status->error / n->asp->items->num_elements);
-        pprintf("# Items reached threshold:  %d (%.2lf%%)\n",
-                        tr, ((double)tr / n->asp->items->num_elements) * 100.0);
-}
-
-/**************************************************************************
- *************************************************************************/
-void scale_learning_rate(struct network *n)
-{
-        uint32_t sa = n->lr_scale_after * n->max_epochs;
-        if (sa > 0 && n->status->epoch % sa == 0) {
-                double lr = n->learning_rate;
-                n->learning_rate *= n->lr_scale_factor;
-                mprintf("Scaled learning rate ... \t  ( %lf => %lf )",
-                                lr, n->learning_rate);
-        }
-}
-
-/**************************************************************************
- *************************************************************************/
-void scale_momentum(struct network *n)
-{
-        uint32_t sa = n->mn_scale_after * n->max_epochs;
-        if (sa > 0 && n->status->epoch % sa == 0) {
-                double mn = n->momentum;
-                n->momentum *= n->mn_scale_factor;
-                mprintf("Scaled momentum ... \t ( %lf => %lf )",
-                                mn, n->momentum);
-        }
-}
-
-/**************************************************************************
- *************************************************************************/
-void scale_weight_decay(struct network *n)
-{
-        uint32_t sa = n->wd_scale_after * n->max_epochs;
-        if (sa > 0 && n->status->epoch % sa == 0) {
-                double wd = n->weight_decay;
-                n->weight_decay *= n->wd_scale_factor;
-                mprintf("Scaled weight decay ... \t ( %lf => %lf)",
-                                wd, n->weight_decay);
-        }
-}
-
-/**************************************************************************
+ * Backpropagation training
  *************************************************************************/
 void train_network_with_bp(struct network *n)
 {
@@ -212,6 +139,7 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
 }
 
 /**************************************************************************
+ * Backpropagation Through Time (BPTT) training
  *************************************************************************/
 void train_network_with_bptt(struct network *n)
 {
@@ -517,7 +445,7 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
         struct rnn_unfolded_network *un = n->unfolded_net;
         un->sp = 0;
         n->status->error = 0.0;
-       
+        
         /* reset recurrent groups */
         reset_recurrent_groups(un->stack[un->sp]);
 
@@ -582,5 +510,79 @@ shift_stack:
                 } else {
                         un->sp++;
                 }
+        }
+}
+
+/**************************************************************************
+ *************************************************************************/
+void print_training_progress(struct network *n)
+{
+        if (n->status->epoch == 1 || n->status->epoch % n->report_after == 0)
+                pprintf("%.4d \t %lf \t %lf \t %lf\n",
+                                n->status->epoch,
+                                n->status->error,
+                                n->status->weight_cost,
+                                n->status->gradient_linearity);
+}
+
+/**************************************************************************
+ *************************************************************************/
+void print_training_summary(struct network *n)
+{
+        pprintf("\n");
+        pprintf("Training finished after %d epoch(s) -- Network error: %f\n",
+                        n->status->epoch, n->status->error);
+}
+
+/**************************************************************************
+ *************************************************************************/
+void print_testing_summary(struct network *n, uint32_t tr)
+{
+        pprintf("Number of items: \t\t %d\n",
+                        n->asp->items->num_elements);
+        pprintf("Total error: \t\t %lf\n",
+                        n->status->error);
+        pprintf("Error per example:\t\t %lf\n",
+                        n->status->error / n->asp->items->num_elements);
+        pprintf("# Items reached threshold:  %d (%.2lf%%)\n",
+                        tr, ((double)tr / n->asp->items->num_elements) * 100.0);
+}
+
+/**************************************************************************
+ *************************************************************************/
+void scale_learning_rate(struct network *n)
+{
+        uint32_t sa = n->lr_scale_after * n->max_epochs;
+        if (sa > 0 && n->status->epoch % sa == 0) {
+                double lr = n->learning_rate;
+                n->learning_rate *= n->lr_scale_factor;
+                mprintf("Scaled learning rate ... \t  ( %lf => %lf )",
+                                lr, n->learning_rate);
+        }
+}
+
+/**************************************************************************
+ *************************************************************************/
+void scale_momentum(struct network *n)
+{
+        uint32_t sa = n->mn_scale_after * n->max_epochs;
+        if (sa > 0 && n->status->epoch % sa == 0) {
+                double mn = n->momentum;
+                n->momentum *= n->mn_scale_factor;
+                mprintf("Scaled momentum ... \t ( %lf => %lf )",
+                                mn, n->momentum);
+        }
+}
+
+/**************************************************************************
+ *************************************************************************/
+void scale_weight_decay(struct network *n)
+{
+        uint32_t sa = n->wd_scale_after * n->max_epochs;
+        if (sa > 0 && n->status->epoch % sa == 0) {
+                double wd = n->weight_decay;
+                n->weight_decay *= n->wd_scale_factor;
+                mprintf("Scaled weight decay ... \t ( %lf => %lf)",
+                                wd, n->weight_decay);
         }
 }
