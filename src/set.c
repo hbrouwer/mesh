@@ -214,11 +214,11 @@ void permute_set(struct set *s)
                 for (uint32_t j = 0; j < i; j++)
                         if (s->order[j] == pe)
                                 duplicate = true;
-
-                if (duplicate)
+                if (duplicate) {
                         i--;
-                else
+                } else {
                         s->order[i] = pe;
+                }
         }
 }
 

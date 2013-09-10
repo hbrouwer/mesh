@@ -28,7 +28,7 @@ void erp_generate_table(struct network *n, char *fn)
         //fprintf(fd,"item_id,item_name,item_meta,n400_amp,p600_amp\n");
         fprintf(fd,"item_id,item_name,item_meta,word_pos,n400_amp,p600_amp\n");
 
-        for (int i = 0; i < n->asp->items->num_elements; i++) {
+        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
 
                 struct vector *n4av = erp_amplitudes_for_item(n,
@@ -38,7 +38,7 @@ void erp_generate_table(struct network *n, char *fn)
                                 find_array_element_by_name(n->groups, "lIFG_hidden"),
                                 cosine_similarity, item);
 
-                for (int j = 0; j < item->num_events; j++)
+                for (uint32_t j = 0; j < item->num_events; j++)
                         fprintf(fd,"%d,\"%s\",\"%s\",%d,%f,%f\n",
                                         i, item->name, item->meta, j,
                                         n4av->elements[j],
