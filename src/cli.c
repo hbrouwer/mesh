@@ -31,13 +31,13 @@ void cli_loop(struct session *s)
         do {
                 /* prompt */
                 if (s->anp) {
-                        printf("%s", s->anp->name);
+                        cprintf("%s", s->anp->name);
                         if (s->anp->asp)
-                                printf(":%s", s->anp->asp->name);
+                                cprintf(":%s", s->anp->asp->name);
                 } else {
-                        printf("mesh");
+                        cprintf("mesh");
                 }
-                printf("> ");
+                cprintf("> ");
                 
                 /* get a line */
                 ssize_t num_chars;

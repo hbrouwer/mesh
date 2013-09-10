@@ -40,7 +40,7 @@ void pprint_vector(struct vector *v, uint32_t scheme)
                 double sv = pprint_scale_value(v->elements[i], min, max);
                 pprint_value_as_color(sv, scheme);
         }
-        printf("\n");
+        cprintf("\n");
 }
 
 /**************************************************************************
@@ -55,7 +55,7 @@ void pprint_matrix(struct matrix *m, uint32_t scheme)
                         double sv = pprint_scale_value(m->elements[i][j], min, max);
                         pprint_value_as_color(sv, scheme);
                 }
-                printf("\n");
+                cprintf("\n");
         }
 }
 
@@ -113,23 +113,23 @@ void pprint_value_as_color(double v, uint32_t scheme)
                 palette = PALETTE_GRAY_ORANGE;
 
         if (v >= 0.90)
-                printf("\x1b[48;05;%dm%s\x1b[0m", palette[0], VALUE_SYMBOL);
+                cprintf("\x1b[48;05;%dm%s\x1b[0m", palette[0], VALUE_SYMBOL);
         if (v >= 0.80 && v < 0.90)
-                printf("\x1b[48;05;%dm%s\x1b[0m", palette[1], VALUE_SYMBOL);
+                cprintf("\x1b[48;05;%dm%s\x1b[0m", palette[1], VALUE_SYMBOL);
         if (v >= 0.70 && v < 0.80)
-                printf("\x1b[48;05;%dm%s\x1b[0m", palette[2], VALUE_SYMBOL);
+                cprintf("\x1b[48;05;%dm%s\x1b[0m", palette[2], VALUE_SYMBOL);
         if (v >= 0.60 && v < 0.70)
-                printf("\x1b[48;05;%dm%s\x1b[0m", palette[3], VALUE_SYMBOL);
+                cprintf("\x1b[48;05;%dm%s\x1b[0m", palette[3], VALUE_SYMBOL);
         if (v >= 0.50 && v < 0.60)
-                printf("\x1b[48;05;%dm%s\x1b[0m", palette[4], VALUE_SYMBOL);
+                cprintf("\x1b[48;05;%dm%s\x1b[0m", palette[4], VALUE_SYMBOL);
         if (v >= 0.40 && v < 0.50)
-                printf("\x1b[48;05;%dm%s\x1b[0m", palette[5], VALUE_SYMBOL);
+                cprintf("\x1b[48;05;%dm%s\x1b[0m", palette[5], VALUE_SYMBOL);
         if (v >= 0.30 && v < 0.40)
-                printf("\x1b[48;05;%dm%s\x1b[0m", palette[6], VALUE_SYMBOL);
+                cprintf("\x1b[48;05;%dm%s\x1b[0m", palette[6], VALUE_SYMBOL);
         if (v >= 0.20 && v < 0.30)
-                printf("\x1b[48;05;%dm%s\x1b[0m", palette[7], VALUE_SYMBOL);
+                cprintf("\x1b[48;05;%dm%s\x1b[0m", palette[7], VALUE_SYMBOL);
         if (v >= 0.10 && v < 0.20)
-                printf("\x1b[48;05;%dm%s\x1b[0m", palette[8], VALUE_SYMBOL);
+                cprintf("\x1b[48;05;%dm%s\x1b[0m", palette[8], VALUE_SYMBOL);
         if (v < 0.10)
-                printf("\x1b[48;05;%dm%s\x1b[0m", palette[9], VALUE_SYMBOL);
+                cprintf("\x1b[48;05;%dm%s\x1b[0m", palette[9], VALUE_SYMBOL);
 }

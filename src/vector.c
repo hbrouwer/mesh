@@ -116,6 +116,6 @@ double vector_maximum(struct vector *v)
 void print_vector(struct vector *v)
 {
         for (uint32_t i = 0; i < v->size; i++)
-                printf("%lf\t", v->elements[i]);
-        printf("\n");
+                cprintf("%lf\t", v->elements[i]);
+        cprintf("\n");
 }

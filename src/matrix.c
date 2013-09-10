@@ -165,7 +165,7 @@ void print_matrix(struct matrix *m)
 {
         for (uint32_t i = 0; i < m->rows; i++) {
                 for (uint32_t j = 0; j < m->cols; j++)
-                        printf("%lf\t", m->elements[i][j]);
-                printf("\n");
+                        cprintf("%lf\t", m->elements[i][j]);
+                cprintf("\n");
         }
 }

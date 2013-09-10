@@ -50,7 +50,7 @@ void process_command(char *cmd, struct session *s)
 
         /* comment */
         if (cmd[0] == '#') {
-                // printf("%s\n", cmd);
+                // cprintf("%s\n", cmd);
                 return;
         }
 
@@ -388,6 +388,11 @@ void process_command(char *cmd, struct session *s)
                                 s,
                                 "ERP amplitude table:"))
                 return;
+        if (cmd_erps_for_item(cmd, "erpsForItem \"%[^\"]\"",
+                                s,
+                                "ERP amplitude table:"))
+                return;
+
 
         /*
          * Invalid command.
@@ -514,15 +519,15 @@ bool cmd_list_networks(char *cmd, char *fmt, struct session *s, char *msg)
         mprintf(msg);
 
         if (s->networks->num_elements == 0) {
-                printf("(No networks)\n");
+                cprintf("(No networks)\n");
         } else {
                 for (uint32_t i = 0; i < s->networks->num_elements; i++) {
                         struct network *n = s->networks->elements[i];
-                        printf("* %s", n->name);
+                        cprintf("* %s", n->name);
                         if (n == s->anp) {
-                                printf("\t <- Active network\n");
+                                cprintf("\t <- Active network\n");
                         } else {
-                                printf("\n");
+                                cprintf("\n");
                         }
                 }
         }
@@ -601,17 +606,17 @@ bool cmd_list_groups(char *cmd, char *fmt, struct network *n, char *msg)
         mprintf(msg);
 
         if (n->groups->num_elements == 0) {
-                printf("(No groups)\n");
+                cprintf("(No groups)\n");
         } else {
                 for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                         struct group *g = n->groups->elements[i];
-                        printf("* %s", g->name);
+                        cprintf("* %s", g->name);
                         if (g == n->input) {
-                                printf("\t <- Input group\n");
+                                cprintf("\t <- Input group\n");
                         } else if (g == n->output) {
-                                printf("\t <- Output group\n");
+                                cprintf("\t <- Output group\n");
                         } else {
-                                printf("\n");
+                                cprintf("\n");
                         }
                 }
         }
@@ -972,7 +977,7 @@ bool cmd_list_projections(char *cmd, char *fmt, struct network *n,
                 mprintf(msg);
 
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++)
-                printf("* %s -> %s\n", ((struct projection *)g->inc_projs->elements[i])->to->name, g->name);
+                cprintf("* %s -> %s\n", ((struct projection *)g->inc_projs->elements[i])->to->name, g->name);
 
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++)
                 cmd_list_projections(cmd, fmt, n,
@@ -1061,15 +1066,15 @@ bool cmd_list_sets(char *cmd, char *fmt, struct network *n, char *msg)
         mprintf(msg);
 
         if (n->sets->num_elements == 0) {
-                printf("(No sets)\n");
+                cprintf("(No sets)\n");
         } else {
                 for (uint32_t i = 0; i < n->sets->num_elements; i++) {
                         struct set *s = n->sets->elements[i];
-                        printf("* %s", s->name);
+                        cprintf("* %s", s->name);
                         if (s == n->asp) {
-                                printf("\t <- Active set\n");
+                                cprintf("\t <- Active set\n");
                         } else {
-                                printf("\n");
+                                cprintf("\n");
                         }
                 }
         }
@@ -1170,7 +1175,7 @@ bool cmd_list_items(char *cmd, char *fmt, struct network *n, char *msg)
 
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
-                printf("* \"%s\" %d \"%s\"\n", item->name, item->num_events, item->meta);
+                cprintf("* \"%s\" %d \"%s\"\n", item->name, item->num_events, item->meta);
         }
 
         return true;
@@ -1462,14 +1467,14 @@ bool cmd_weight_stats(char *cmd, char *fmt, struct network *n, char *msg)
 
         struct weight_stats *ws = create_weight_statistics(n);
         
-        cprintf("");
-        cprintf("Number of weights:\t\t%d", ws->num_weights);
-        cprintf("Mean:\t\t\t\t%f", ws->mean);
-        cprintf("Absolute mean:\t\t\t%f", ws->mean_abs);
-        cprintf("Mean dist.:\t\t\t%f", ws->mean_dist);
-        cprintf("Variance:\t\t\t%f", ws->variance);
-        cprintf("Minimum:\t\t\t%f", ws->minimum);
-        cprintf("Maximum:\t\t\t%f", ws->maximum);
+        cprintf("\n");
+        cprintf("Number of weights:\t\t%d\n", ws->num_weights);
+        cprintf("Mean:\t\t\t\t%f\n", ws->mean);
+        cprintf("Absolute mean:\t\t\t%f\n", ws->mean_abs);
+        cprintf("Mean dist.:\t\t\t%f\n", ws->mean_dist);
+        cprintf("Variance:\t\t\t%f\n", ws->variance);
+        cprintf("Minimum:\t\t\t%f\n", ws->minimum);
+        cprintf("Maximum:\t\t\t%f\n", ws->maximum);
         cprintf("");
         
         dispose_weight_statistics(ws);
@@ -1673,6 +1678,23 @@ bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s, char *msg)
                 return false;
 
         erp_generate_table(s->anp, tmp);
+
+        return true;
+}
+
+bool cmd_erps_for_item(char *cmd, char *fmt, struct session *s, char *msg)
+{
+        char tmp[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        struct item *item = find_array_element_by_name(s->anp->asp->items, tmp);
+        if (!item) {
+                eprintf("Cannot generate ERPs--no such item '%s'", tmp);
+                return true;
+        }
+
+        erps_for_item(s->anp, item);
 
         return true;
 }

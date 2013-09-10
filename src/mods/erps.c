@@ -51,6 +51,44 @@ void erp_generate_table(struct network *n, char *fn)
         fclose(fd);
 }
 
+void erps_for_item(struct network *n, struct item *item)
+{
+        struct group *g = find_array_element_by_name(n->groups, "lIFG");
+
+        struct vector *av = create_vector(item->num_events);
+        struct vector *pv = create_vector(g->vector->size);
+        fill_vector_with_value(pv, 0.5);
+
+        if (n->type == TYPE_SRN)
+                reset_context_groups(n);
+
+        for (uint32_t i = 0; i < item->num_events; i++) {
+                /*
+                 * Shift context group chain, in case of 
+                 * "Elman-towers".
+                 */
+                if (i > 0 && n->type == TYPE_SRN)
+                        shift_context_groups(n);
+                
+                copy_vector(n->input->vector, item->inputs[i]);
+                feed_forward(n, n->input);
+
+                print_vector(pv);
+                printf("\n");
+                print_vector(g->vector);
+                printf("\n");
+
+                /* compute vector dissimilarity */
+                av->elements[i] = 1.0 - cosine_similarity(g->vector, pv);
+
+                printf("%f\n\n", av->elements[i]);
+
+                copy_vector(pv, g->vector);
+        }
+
+        dispose_vector(pv);
+}
+
 struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
                 double (*vsf)(struct vector *, struct vector *),
                 struct item *item)
@@ -63,6 +101,13 @@ struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
                 reset_context_groups(n);
 
         for (uint32_t i = 0; i < item->num_events; i++) {
+                /*
+                 * Shift context group chain, in case of 
+                 * "Elman-towers".
+                 */
+                if (i > 0 && n->type == TYPE_SRN)
+                        shift_context_groups(n);
+
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 
