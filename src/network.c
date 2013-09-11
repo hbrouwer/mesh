@@ -25,6 +25,7 @@
 #include "main.h"
 #include "network.h"
 #include "pprint.h"
+#include "sanity.h"
 #include "stats.h"
 
 /**************************************************************************
@@ -65,6 +66,12 @@ void init_network(struct network *n)
 {
         n->initialized = false;
 
+        if (!verify_network_sanity(n)) {
+                eprintf("Cannot initialize network--network is not 'sane'");
+                return;
+        }
+
+        /*
         if (n->groups->num_elements == 0) {
                 eprintf("Cannot initialize network--network has no groups");
                 return;
@@ -77,6 +84,7 @@ void init_network(struct network *n)
                 eprintf("Cannot initialize network--network has no output group");
                 return;
         }
+        */
 
         srand(n->random_seed);
         randomize_weight_matrices(n->input, n);
@@ -85,10 +93,8 @@ void init_network(struct network *n)
 
         if (n->act_lookup)
                 initialize_act_lookup_vectors(n);
-        
         if (n->batch_size == 0 && n->asp)
                 n->batch_size = n->asp->items->num_elements;
-
         if (n->learning_algorithm == train_network_with_bptt)
                 n->unfolded_net = rnn_init_unfolded_network(n);
 

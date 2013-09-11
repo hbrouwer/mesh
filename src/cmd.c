@@ -680,7 +680,7 @@ bool cmd_dispose_group(char *cmd, char *fmt, struct network *n, char *msg)
          */
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *fg = n->groups->elements[i];
-                for (int j = 0; j < fg->ctx_groups->num_elements; j++) {
+                for (uint32_t j = 0; j < fg->ctx_groups->num_elements; j++) {
                         if (fg->ctx_groups->elements[j] == g) {
                                 remove_from_array(fg->ctx_groups, g);
                                 break;

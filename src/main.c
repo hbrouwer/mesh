@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 
         s = create_session();
 
-        for (int i = 1; i < argc; i++) {
+        for (uint32_t i = 1; i < argc; i++) {
                 if (strcmp(argv[i],"--help") == 0) {
                         print_help(argv[0]);
                         goto leave_session;

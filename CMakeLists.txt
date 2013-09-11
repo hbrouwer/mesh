@@ -22,6 +22,7 @@ add_executable(mesh
         src/pprint.c
         src/random.c
         src/rnn_unfold.c
+        src/sanity.c
         src/session.c
         src/set.c
         src/stats.c

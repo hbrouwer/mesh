@@ -123,6 +123,5 @@ bool cmd_set_colorscheme(char *cmd, char *fmt, struct session *s, char *msg);
 /**************************************************************************
  *************************************************************************/
 bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s, char *msg);
-bool cmd_erps_for_item(char *cmd, char *fmt, struct session *s, char *msg);
 
 #endif /* CMD_H */
