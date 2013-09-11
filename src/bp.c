@@ -409,7 +409,7 @@ void bp_update_projection_sd(struct network *n, struct group *g,
  * sf = |
  *      | 1.0             , otherwise
  *
- * where sf is the scaling factor. 
+ * where sf is the scaling factor.
  *************************************************************************/
 void bp_determine_sd_sf(struct network *n)
 {
