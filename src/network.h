@@ -100,7 +100,7 @@ struct network
         double rp_init_update;      /* initial update value for Rprop */
         double rp_eta_plus;         /* update value increase rate */
         double rp_eta_minus;        /* update value decrease rate */
-        uint32_t rp_type;                /* type of Rprop */
+        uint32_t rp_type;           /* type of Rprop */
 
         double dbd_rate_increment;  /* LR increment factor for DBD */
         double dbd_rate_decrement;  /* LR decrement factor for DBD */
