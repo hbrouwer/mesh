@@ -140,7 +140,6 @@ double error_cross_entropy(struct group *g, struct vector *t, double tr,
                 double y = g->vector->elements[i];
                 double d = adjust_target(y, t->elements[i], tr, zr);
 
-
                 if (d == 0.0) {
                         /*
                          * If d = 0 and y = 1, we obtain:
