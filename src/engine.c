@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 
+#include <math.h>
+
 #include "act.h"
 #include "bp.h"
 #include "engine.h"
@@ -296,7 +298,6 @@ void test_ffn_network(struct network *n)
                         if (error <= n->error_threshold)
                                 threshold_reached++;
                 }
-                
         }
 
         print_testing_summary(n, threshold_reached);
@@ -515,6 +516,157 @@ shift_stack:
 
 /**************************************************************************
  *************************************************************************/
+void test_network_with_dm(struct network *n)
+{
+        if (n->type == TYPE_FFN)
+                test_ffn_network_with_dm(n);
+        if (n->type == TYPE_SRN)
+                test_ffn_network_with_dm(n);
+        if (n->type == TYPE_RNN)
+                test_rnn_network_with_dm(n);
+}
+
+/**************************************************************************
+ *************************************************************************/
+void test_ffn_network_with_dm(struct network *n)
+{
+        uint32_t d = n->asp->items->num_elements;
+        uint32_t threshold_reached = d;
+        struct matrix *dm = create_matrix(d, d);
+
+        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                struct item *item = n->asp->items->elements[i];
+
+                /* reset context groups */
+                if (n->type == TYPE_SRN)
+                        reset_context_groups(n);
+
+                for (uint32_t j = 0; j < item->num_events; j++) {
+                        /* 
+                         * Shift context group chain, in case of 
+                         * "Elman-towers".
+                         */
+                        if (j > 0 && n->type == TYPE_SRN)
+                                shift_context_groups(n);
+
+                        /* feed activation forward */
+                        copy_vector(n->input->vector, item->inputs[j]);
+                        feed_forward(n, n->input);
+                        
+                        /* only compute distance metrics for last event */
+                        if (!(item->targets[j] && j == item->num_events - 1))
+                                continue;
+
+                        /* compute distance metric */
+                        struct group *g = n->output;
+                        for (uint32_t x = 0; x < n->asp->items->num_elements; x++) {
+                                struct item *citem = n->asp->items->elements[x];
+                                struct vector *tv = citem->targets[citem->num_events - 1];
+                                if (!tv)
+                                        continue;
+                                dm->elements[i][x] = cosine_similarity(g->vector, tv);
+                        }
+                }
+        }
+
+        /*
+         * Compute mean similarity, and its standard deviation. Also,
+         * determine how may items reached threshold.
+         */
+        double sim_mean = 0.0, sim_sd = 0.0;
+        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                double s = dm->elements[i][i];
+                for (uint32_t x = 0; x < n->asp->items->num_elements; x++) {
+                        if (dm->elements[i][x] > s) {
+                                threshold_reached--; /* note: we count down */
+                                break;
+                        }
+                }
+                sim_mean += s;
+        }
+        sim_mean /= n->asp->items->num_elements;
+        for (uint32_t i = 0; i < dm->rows; i++)
+                sim_sd += pow(dm->elements[i][i] - sim_mean, 2.0);
+        sim_sd = sqrt(sim_sd / n->asp->items->num_elements);
+
+        dispose_matrix(dm);
+
+        print_testing_summary_dm(n, sim_mean, sim_sd, threshold_reached);
+
+}
+
+/**************************************************************************
+ *************************************************************************/
+void test_rnn_network_with_dm(struct network *n)
+{
+        struct rnn_unfolded_network *un = n->unfolded_net;
+
+        uint32_t d = n->asp->items->num_elements;
+        uint32_t threshold_reached = d;
+        struct matrix *dm = create_matrix(d, d);
+
+        /* test network on all items in the current set */
+        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                struct item *item = n->asp->items->elements[i];
+
+                /* reset recurrent groups */
+                reset_recurrent_groups(un->stack[un->sp]);
+
+                for (uint32_t j = 0; j < item->num_events; j++) {
+                        /* feed activation forward */
+                        copy_vector(un->stack[un->sp]->input->vector, item->inputs[j]);
+                        feed_forward(un->stack[un->sp], un->stack[un->sp]->input);
+
+                        /* only compute distance metrics for last event */
+                        if (!(item->targets[j] && j == item->num_events - 1))
+                                goto shift_stack;
+
+                        /* compute distance metric */
+                        struct group *g = un->stack[un->sp]->output;
+                        for (uint32_t x = 0; x < n->asp->items->num_elements; x++) {
+                                struct item *citem = n->asp->items->elements[x];
+                                struct vector *tv = citem->targets[citem->num_events - 1];
+                                if (!tv)
+                                        continue;
+                                dm->elements[i][x] = cosine_similarity(g->vector, tv);
+                        }
+
+shift_stack:
+                        if (un->sp == un->stack_size - 1) {
+                                rnn_shift_stack(un);
+                        } else {
+                                un->sp++;
+                        }
+                }
+        }
+
+        /*
+         * Compute mean similarity, and its standard deviation. Also,
+         * determine how may items reached threshold.
+         */
+        double sim_mean = 0.0, sim_sd = 0.0;
+        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                double s = dm->elements[i][i];
+                for (uint32_t x = 0; x < n->asp->items->num_elements; x++) {
+                        if (dm->elements[i][x] > s) {
+                                threshold_reached--; /* note: we count down */
+                                break;
+                        }
+                }
+                sim_mean += s;
+        }
+        sim_mean /= n->asp->items->num_elements;
+        for (uint32_t i = 0; i < dm->rows; i++)
+                sim_sd += pow(dm->elements[i][i] - sim_mean, 2.0);
+        sim_sd = sqrt(sim_sd / n->asp->items->num_elements);
+
+        dispose_matrix(dm);
+
+        print_testing_summary_dm(n, sim_mean, sim_sd, threshold_reached);
+}
+
+/**************************************************************************
+ *************************************************************************/
 void print_training_progress(struct network *n)
 {
         if (n->status->epoch == 1 || n->status->epoch % n->report_after == 0)
@@ -544,6 +696,21 @@ void print_testing_summary(struct network *n, uint32_t tr)
                         n->status->error);
         pprintf("Error per example:\t\t %lf\n",
                         n->status->error / n->asp->items->num_elements);
+        pprintf("# Items reached threshold:  %d (%.2lf%%)\n",
+                        tr, ((double)tr / n->asp->items->num_elements) * 100.0);
+}
+
+/**************************************************************************
+ *************************************************************************/
+void print_testing_summary_dm(struct network *n, double sim_mean,
+                double sim_sd, uint32_t tr)
+{
+        pprintf("Number of items: \t\t %d\n",
+                        n->asp->items->num_elements);
+        pprintf("Mean similarity: \t\t %lf\n",
+                        sim_mean);
+        pprintf("SD of similarity:\t\t %lf\n",
+                        sim_sd);
         pprintf("# Items reached threshold:  %d (%.2lf%%)\n",
                         tr, ((double)tr / n->asp->items->num_elements) * 100.0);
 }

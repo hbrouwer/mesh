@@ -97,6 +97,7 @@ bool cmd_reset(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_train(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_test(char *cmd, char *fmt, struct network *n, char *msg);
 bool cmd_test_item(char *cmd, char *fmt, struct session *s, char *msg);
+bool cmd_test_dist_matrix(char *cmd, char *fmt, struct network *n, char *msg);
 
 /**************************************************************************
  *************************************************************************/
