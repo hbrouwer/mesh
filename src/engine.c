@@ -516,23 +516,23 @@ shift_stack:
 
 /**************************************************************************
  *************************************************************************/
-void test_network_with_dm(struct network *n)
+void test_network_with_sm(struct network *n)
 {
         if (n->type == TYPE_FFN)
-                test_ffn_network_with_dm(n);
+                test_ffn_network_with_sm(n);
         if (n->type == TYPE_SRN)
-                test_ffn_network_with_dm(n);
+                test_ffn_network_with_sm(n);
         if (n->type == TYPE_RNN)
-                test_rnn_network_with_dm(n);
+                test_rnn_network_with_sm(n);
 }
 
 /**************************************************************************
  *************************************************************************/
-void test_ffn_network_with_dm(struct network *n)
+void test_ffn_network_with_sm(struct network *n)
 {
         uint32_t d = n->asp->items->num_elements;
         uint32_t threshold_reached = d;
-        struct matrix *dm = create_matrix(d, d);
+        struct matrix *sm = create_matrix(d, d);
 
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
@@ -564,7 +564,7 @@ void test_ffn_network_with_dm(struct network *n)
                                 struct vector *tv = citem->targets[citem->num_events - 1];
                                 if (!tv)
                                         continue;
-                                dm->elements[i][x] = cosine_similarity(g->vector, tv);
+                                sm->elements[i][x] = cosine(g->vector, tv);
                         }
                 }
         }
@@ -575,9 +575,9 @@ void test_ffn_network_with_dm(struct network *n)
          */
         double sim_mean = 0.0, sim_sd = 0.0;
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                double s = dm->elements[i][i];
+                double s = sm->elements[i][i];
                 for (uint32_t x = 0; x < n->asp->items->num_elements; x++) {
-                        if (dm->elements[i][x] > s) {
+                        if (sm->elements[i][x] > s) {
                                 threshold_reached--; /* note: we count down */
                                 break;
                         }
@@ -585,25 +585,25 @@ void test_ffn_network_with_dm(struct network *n)
                 sim_mean += s;
         }
         sim_mean /= n->asp->items->num_elements;
-        for (uint32_t i = 0; i < dm->rows; i++)
-                sim_sd += pow(dm->elements[i][i] - sim_mean, 2.0);
+        for (uint32_t i = 0; i < sm->rows; i++)
+                sim_sd += pow(sm->elements[i][i] - sim_mean, 2.0);
         sim_sd = sqrt(sim_sd / n->asp->items->num_elements);
 
-        dispose_matrix(dm);
+        dispose_matrix(sm);
 
-        print_testing_summary_dm(n, sim_mean, sim_sd, threshold_reached);
+        print_testing_summary_sm(n, sim_mean, sim_sd, threshold_reached);
 
 }
 
 /**************************************************************************
  *************************************************************************/
-void test_rnn_network_with_dm(struct network *n)
+void test_rnn_network_with_sm(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
 
         uint32_t d = n->asp->items->num_elements;
         uint32_t threshold_reached = d;
-        struct matrix *dm = create_matrix(d, d);
+        struct matrix *sm = create_matrix(d, d);
 
         /* test network on all items in the current set */
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
@@ -628,7 +628,7 @@ void test_rnn_network_with_dm(struct network *n)
                                 struct vector *tv = citem->targets[citem->num_events - 1];
                                 if (!tv)
                                         continue;
-                                dm->elements[i][x] = cosine_similarity(g->vector, tv);
+                                sm->elements[i][x] = cosine(g->vector, tv);
                         }
 
 shift_stack:
@@ -646,9 +646,9 @@ shift_stack:
          */
         double sim_mean = 0.0, sim_sd = 0.0;
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                double s = dm->elements[i][i];
+                double s = sm->elements[i][i];
                 for (uint32_t x = 0; x < n->asp->items->num_elements; x++) {
-                        if (dm->elements[i][x] > s) {
+                        if (sm->elements[i][x] > s) {
                                 threshold_reached--; /* note: we count down */
                                 break;
                         }
@@ -656,13 +656,13 @@ shift_stack:
                 sim_mean += s;
         }
         sim_mean /= n->asp->items->num_elements;
-        for (uint32_t i = 0; i < dm->rows; i++)
-                sim_sd += pow(dm->elements[i][i] - sim_mean, 2.0);
+        for (uint32_t i = 0; i < sm->rows; i++)
+                sim_sd += pow(sm->elements[i][i] - sim_mean, 2.0);
         sim_sd = sqrt(sim_sd / n->asp->items->num_elements);
 
-        dispose_matrix(dm);
+        dispose_matrix(sm);
 
-        print_testing_summary_dm(n, sim_mean, sim_sd, threshold_reached);
+        print_testing_summary_sm(n, sim_mean, sim_sd, threshold_reached);
 }
 
 /**************************************************************************
@@ -702,7 +702,7 @@ void print_testing_summary(struct network *n, uint32_t tr)
 
 /**************************************************************************
  *************************************************************************/
-void print_testing_summary_dm(struct network *n, double sim_mean,
+void print_testing_summary_sm(struct network *n, double sim_mean,
                 double sim_sd, uint32_t tr)
 {
         pprintf("Number of items: \t\t %d\n",

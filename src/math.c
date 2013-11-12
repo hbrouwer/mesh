@@ -85,13 +85,47 @@ double normrand(double mu, double sigma)
 }
 
 /**************************************************************************
- * Cosine similarity:
+ * Inner product:
+ *
+ * ip = sum_i (x_i * y_i)
+ *************************************************************************/
+double inner_product(struct vector *v1, struct vector *v2)
+{
+        double ip = 0.0;
+
+        for (uint32_t i = 0; i < v1->size; i++)
+                ip += v1->elements[i] * v2->elements[i];
+
+        return ip;
+}
+
+/**************************************************************************
+ * Harmonic mean:
+ *
+ *                x_i * y_i
+ * hm = 2 * sum_i ---------
+ *                x_i + y_i
+ *************************************************************************/
+double harmonic_mean(struct vector *v1, struct vector *v2)
+{
+        double nom = 0.0, denom = 0.0;
+
+        for (uint32_t i = 0; i < v1->size; i++) {
+                nom += v1->elements[i] * v2->elements[i];
+                denom += v1->elements[i] + v2->elements[i];
+        }
+
+        return 2.0 * nom / denom;
+}
+
+/**************************************************************************
+ * Cosine:
  *
  *                  sum_i (x_i * y_i)
  * cs = ---------------------------------------------
  *      sqrt(sum_i (x_i ^ 2)) * sqrt(sum_i (y_i ^ 2))
  *************************************************************************/
-double cosine_similarity(struct vector *v1, struct vector *v2)
+double cosine(struct vector *v1, struct vector *v2)
 {
         double nom = 0.0, xsq = 0.0, ysq = 0.0;
 
@@ -104,8 +138,55 @@ double cosine_similarity(struct vector *v1, struct vector *v2)
         xsq = sqrt(xsq);
         ysq = sqrt(ysq);
 
-        return nom / (xsq * ysq);
+        double denom = xsq * ysq;
+
+        /* check if vectors are non-orthogonal */
+        if (nom > 0 && denom > 0)
+                return nom / (xsq * ysq);
+        else
+                return 0.0;
 }
+
+/**************************************************************************
+ * Tanimoto:
+ *
+ *                        sum_i (x_i * y_i)
+ * jc = -----------------------------------------------------
+ *      sum_i (x_i ^ 2) + sum_i (y_i ^ 2) - sum_i (x_i * y_i)
+ *************************************************************************/
+double tanimoto(struct vector *v1, struct vector *v2)
+{
+        double nom = 0.0, xsq = 0.0, ysq = 0.0;;
+
+        for (uint32_t i = 0; i < v1->size; i++) {
+                nom += v1->elements[i] * v2->elements[i];
+                xsq += pow(v1->elements[i], 2.0);
+                ysq += pow(v2->elements[i], 2.0);
+        }
+
+        return nom / (xsq + ysq - nom);
+}
+
+/**************************************************************************
+ * Dice:
+ *
+ *            2 * sum_i (x_i * y_i)
+ * dc = ---------------------------------
+ *      sum_i (x_i ^ 2) * sum_i (y_i ^ 2)
+ *************************************************************************/
+double dice(struct vector *v1, struct vector *v2)
+{
+        double nom = 0.0, xsq = 0.0, ysq = 0.0;
+
+        for (uint32_t i = 0; i < v1->size; i++) {
+                nom += v1->elements[i] * v2->elements[i];
+                xsq += pow(v1->elements[i], 2.0);
+                ysq += pow(v2->elements[i], 2.0);
+        }
+
+        return (2.0 * nom) / (xsq + ysq);
+}
+
 
 /**************************************************************************
  * Pearson's correlation:

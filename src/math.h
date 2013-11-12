@@ -33,7 +33,14 @@ double normrand(double mu, double sigma);
 
 /**************************************************************************
  *************************************************************************/
-double cosine_similarity(struct vector *v1, struct vector *v2);
+double inner_product(struct vector *v1, struct vector *v2);
+double harmonic_mean(struct vector *v1, struct vector *v2);
+double cosine(struct vector *v1, struct vector *v2);
+double tanimoto(struct vector *v1, struct vector *v2);
+double dice(struct vector *v1, struct vector *v2);
 double pearson_correlation(struct vector *v1, struct vector *v2);
+
+
+double test_sim(struct vector *v1, struct vector *v2);
 
 #endif /* MATH_H */

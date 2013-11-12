@@ -24,8 +24,6 @@
 #include "../vector.h"
 
 void erp_generate_table(struct network *n, char *fn);
-void erps_for_item(struct network *n, struct item *item);
-
 struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
                 double (*vsf)(struct vector *, struct vector *),
                 struct item *item);

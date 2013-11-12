@@ -379,10 +379,10 @@ void process_command(char *cmd, struct session *s)
                                 s,
                                 "Testing network '%s' with item '%s'"
                                 )) goto done;
-        if (cmd_test_dist_matrix(cmd,
-                                "testDistMatrix",
+        if (cmd_test_sim_matrix(cmd,
+                                "testSimMatrix",
                                 s->anp,
-                                "Testing network '%s' using a distance matrix"
+                                "Testing network '%s' using a similarity matrix"
                                 )) goto done;
 
         /* weight statistics */
@@ -1621,7 +1621,7 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s, char *msg)
 
 /**************************************************************************
  *************************************************************************/
-bool cmd_test_dist_matrix(char *cmd, char *fmt, struct network *n, char *msg)
+bool cmd_test_sim_matrix(char *cmd, char *fmt, struct network *n, char *msg)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
@@ -1629,7 +1629,7 @@ bool cmd_test_dist_matrix(char *cmd, char *fmt, struct network *n, char *msg)
         mprintf(msg, n->name);
         mprintf(" ");
 
-        test_network_with_dm(n);
+        test_network_with_sm(n);
 
         mprintf(" ");
 

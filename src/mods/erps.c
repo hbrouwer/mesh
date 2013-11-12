@@ -25,7 +25,6 @@ void erp_generate_table(struct network *n, char *fn)
 {
         FILE *fd = fopen(fn, "w");
 
-        //fprintf(fd,"item_id,item_name,item_meta,n400_amp,p600_amp\n");
         fprintf(fd,"item_id,item_name,item_meta,word_pos,n400_amp,p600_amp\n");
 
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
@@ -33,12 +32,12 @@ void erp_generate_table(struct network *n, char *fn)
 
                 struct vector *n4av = erp_amplitudes_for_item(n,
                                 find_array_element_by_name(n->groups, "lpMTG_hidden"),
-                                cosine_similarity, item);
+                                tanimoto, item);
                 struct vector *p6av = erp_amplitudes_for_item(n,
                                 find_array_element_by_name(n->groups, "lIFG_hidden"),
-                                cosine_similarity, item);
+                                tanimoto, item);
 
-                for (uint32_t j = 0; j < item->num_events; j++)
+                for (uint32_t j = 0; j < item->num_events; j++) 
                         fprintf(fd,"%d,\"%s\",\"%s\",%d,%f,%f\n",
                                         i, item->name, item->meta, j,
                                         n4av->elements[j],
@@ -49,44 +48,6 @@ void erp_generate_table(struct network *n, char *fn)
         }
 
         fclose(fd);
-}
-
-void erps_for_item(struct network *n, struct item *item)
-{
-        struct group *g = find_array_element_by_name(n->groups, "lIFG");
-
-        struct vector *av = create_vector(item->num_events);
-        struct vector *pv = create_vector(g->vector->size);
-        fill_vector_with_value(pv, 0.5);
-
-        if (n->type == TYPE_SRN)
-                reset_context_groups(n);
-
-        for (uint32_t i = 0; i < item->num_events; i++) {
-                /*
-                 * Shift context group chain, in case of 
-                 * "Elman-towers".
-                 */
-                if (i > 0 && n->type == TYPE_SRN)
-                        shift_context_groups(n);
-                
-                copy_vector(n->input->vector, item->inputs[i]);
-                feed_forward(n, n->input);
-
-                print_vector(pv);
-                printf("\n");
-                print_vector(g->vector);
-                printf("\n");
-
-                /* compute vector dissimilarity */
-                av->elements[i] = 1.0 - cosine_similarity(g->vector, pv);
-
-                printf("%f\n\n", av->elements[i]);
-
-                copy_vector(pv, g->vector);
-        }
-
-        dispose_vector(pv);
 }
 
 struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,

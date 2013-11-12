@@ -55,16 +55,16 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
 
 /**************************************************************************
  *************************************************************************/
-void test_network_with_dm(struct network *n);
-void test_ffn_network_with_dm(struct network *n);
-void test_rnn_network_with_dm(struct network *n);
+void test_network_with_sm(struct network *n);
+void test_ffn_network_with_sm(struct network *n);
+void test_rnn_network_with_sm(struct network *n);
 
 /**************************************************************************
  *************************************************************************/
 void print_training_progress(struct network *n);
 void print_training_summary(struct network *n);
 void print_testing_summary(struct network *n, uint32_t tr);
-void print_testing_summary_dm(struct network *n, double sim_mean,
+void print_testing_summary_sm(struct network *n, double sim_mean,
                 double sim_sd, uint32_t tr);
 
 /**************************************************************************
