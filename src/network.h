@@ -108,6 +108,9 @@ struct network
         struct array *sets;         /* sets in this network */
         struct set *asp;            /* active set pointer */
 
+        double (*similarity_metric) /* vector similarity metric */
+                (struct vector *v1, struct vector *v2);
+
         struct rnn_unfolded_network /* unfolded recurrent network */
                 *unfolded_net;
 };

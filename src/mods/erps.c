@@ -31,11 +31,9 @@ void erp_generate_table(struct network *n, char *fn)
                 struct item *item = n->asp->items->elements[i];
 
                 struct vector *n4av = erp_amplitudes_for_item(n,
-                                find_array_element_by_name(n->groups, "lpMTG_hidden"),
-                                tanimoto, item);
+                                find_array_element_by_name(n->groups, "lpMTG_hidden"), item);
                 struct vector *p6av = erp_amplitudes_for_item(n,
-                                find_array_element_by_name(n->groups, "lIFG_hidden"),
-                                tanimoto, item);
+                                find_array_element_by_name(n->groups, "lIFG_hidden"), item);
 
                 for (uint32_t j = 0; j < item->num_events; j++) 
                         fprintf(fd,"%d,\"%s\",\"%s\",%d,%f,%f\n",
@@ -51,7 +49,6 @@ void erp_generate_table(struct network *n, char *fn)
 }
 
 struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
-                double (*vsf)(struct vector *, struct vector *),
                 struct item *item)
 {
         struct vector *av = create_vector(item->num_events);
@@ -73,7 +70,7 @@ struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
                 feed_forward(n, n->input);
 
                 /* compute vector dissimilarity */
-                av->elements[i] = 1.0 - vsf(g->vector, pv);
+                av->elements[i] = 1.0 - n->similarity_metric(g->vector, pv);
 
                 copy_vector(pv, g->vector);
         }

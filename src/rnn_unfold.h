@@ -33,7 +33,6 @@ struct rnn_unfolded_network
         struct matrix **rcr_weights;      /* .. weights */
         struct matrix **rcr_prev_deltas;  /* .. previous weight deltas */
         struct matrix **rcr_dynamic_pars; /* .. dynamic parameters */
-
         uint32_t stack_size;              /* state stack size */
         struct network **stack;           /* network state stack */
         uint32_t sp;                      /* stack pointer */

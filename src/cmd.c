@@ -345,6 +345,13 @@ void process_command(char *cmd, struct session *s)
                                 "Set update algorithm ... \t ( %s )"
                                 )) goto done;
 
+        /* similarity metric */
+        if (cmd_set_similarity_metric(cmd,
+                                "set SimilarityMetric %s",
+                                s->anp,
+                                "Set similarity metric ... \t ( %s )"
+                                )) goto done;
+
         /* initialization */
         if (cmd_init(cmd, "init", s->anp, "Initialized network '%s'")) goto done;
 
@@ -379,8 +386,8 @@ void process_command(char *cmd, struct session *s)
                                 s,
                                 "Testing network '%s' with item '%s'"
                                 )) goto done;
-        if (cmd_test_sim_matrix(cmd,
-                                "testSimMatrix",
+        if (cmd_test_similarity_matrix(cmd,
+                                "testSimilarityMatrix",
                                 s->anp,
                                 "Testing network '%s' using a similarity matrix"
                                 )) goto done;
@@ -1535,6 +1542,38 @@ bool cmd_set_update_algorithm(char *cmd, char *fmt, struct network *n,
 
 /**************************************************************************
  *************************************************************************/
+bool cmd_set_similarity_metric(char *cmd, char *fmt, struct network *n,
+                char *msg)
+{
+        char tmp[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        if (strcmp(tmp, "inner_product") == 0)
+                n->similarity_metric = inner_product;
+        else if (strcmp(tmp, "harmonic_mean") == 0)
+                n->similarity_metric = harmonic_mean;
+        else if (strcmp(tmp, "cosine") == 0)
+                n->similarity_metric = cosine;
+        else if (strcmp(tmp, "tanimoto") == 0)
+                n->similarity_metric = tanimoto;
+        else if (strcmp(tmp, "dice") == 0)
+                n->similarity_metric = dice;
+        else if (strcmp(tmp, "pearson_correlation") == 0)
+                n->similarity_metric = pearson_correlation;
+        else {
+                eprintf("Invalid similarity metric '%s'", tmp);
+                return true;
+        }
+
+        if (n->similarity_metric)
+                mprintf(msg, tmp);
+
+        return true;
+}
+
+/**************************************************************************
+ *************************************************************************/
 bool cmd_init(char *cmd, char *fmt, struct network *n, char *msg)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
@@ -1621,7 +1660,8 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s, char *msg)
 
 /**************************************************************************
  *************************************************************************/
-bool cmd_test_sim_matrix(char *cmd, char *fmt, struct network *n, char *msg)
+bool cmd_test_similarity_matrix(char *cmd, char *fmt, struct network *n,
+                char *msg)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;

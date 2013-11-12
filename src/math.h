@@ -40,7 +40,4 @@ double tanimoto(struct vector *v1, struct vector *v2);
 double dice(struct vector *v1, struct vector *v2);
 double pearson_correlation(struct vector *v1, struct vector *v2);
 
-
-double test_sim(struct vector *v1, struct vector *v2);
-
 #endif /* MATH_H */

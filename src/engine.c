@@ -564,7 +564,7 @@ void test_ffn_network_with_sm(struct network *n)
                                 struct vector *tv = citem->targets[citem->num_events - 1];
                                 if (!tv)
                                         continue;
-                                sm->elements[i][x] = cosine(g->vector, tv);
+                                sm->elements[i][x] = n->similarity_metric(g->vector, tv);
                         }
                 }
         }
@@ -628,7 +628,7 @@ void test_rnn_network_with_sm(struct network *n)
                                 struct vector *tv = citem->targets[citem->num_events - 1];
                                 if (!tv)
                                         continue;
-                                sm->elements[i][x] = cosine(g->vector, tv);
+                                sm->elements[i][x] = n->similarity_metric(g->vector, tv);
                         }
 
 shift_stack:
