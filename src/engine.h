@@ -73,4 +73,9 @@ void scale_learning_rate(struct network *n);
 void scale_momentum(struct network *n);
 void scale_weight_decay(struct network *n);
 
+/**************************************************************************
+ *************************************************************************/
+void training_signal_handler(int signal);
+void testing_signal_handler(int signal);
+
 #endif /* ENGINE_H */

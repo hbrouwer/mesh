@@ -26,5 +26,7 @@
 void erp_generate_table(struct network *n, char *fn);
 struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
                 struct item *item);
+struct vector *bold_responses_for_item(struct network *n, struct group *g,
+                struct item *item);
 
 #endif /* ERPS_H */

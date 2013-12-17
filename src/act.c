@@ -154,6 +154,7 @@ double act_lookup(double x, struct vector *lv)
         if (x > ACT_LOOKUP_MAXIMUM)
                 x = ACT_LOOKUP_MAXIMUM;
 
+        // XXX: Here, the index might be computed in wrong the way?
         uint32_t i = ((ACT_LOOKUP_MAXIMUM + x) / ACT_LOOKUP_STEP_SIZE) - 1;
 
         return lv->elements[i];

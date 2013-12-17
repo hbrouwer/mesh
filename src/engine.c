@@ -17,6 +17,7 @@
  */
 
 #include <math.h>
+#include <signal.h>
 
 #include "act.h"
 #include "bp.h"
@@ -24,12 +25,23 @@
 #include "math.h"
 #include "pprint.h"
 
+static bool keep_training = true;
+static bool keep_testing = true;
+
 /**************************************************************************
  *************************************************************************/
 void train_network(struct network *n)
 {
         pprintf("Epoch \t Error \t\t Weight Cost \t Gradient Lin.\n");
         pprintf("----- \t ----- \t\t ----------- \t -------------\n");
+
+        struct sigaction sa;
+        sa.sa_handler = training_signal_handler;
+        sigemptyset(&sa.sa_mask);
+        sa.sa_flags = SA_RESTART;
+        sigaction(SIGINT, &sa, NULL);
+
+        keep_training = true;
 
         n->learning_algorithm(n);
 }
@@ -59,6 +71,10 @@ void train_network_with_bp(struct network *n)
 
                 /* train network on one batch */
                 for (uint32_t i = 0; i < n->batch_size; i++) {
+                        /* abort after signal */
+                        if (!keep_training)
+                                return;
+
                         /* 
                          * Select training item, and set training item
                          * iterator to the beginning of the training set
@@ -155,6 +171,10 @@ void train_network_with_bptt(struct network *n)
                 n->status->prev_error = n->status->error;
                 n->status->error = 0.0;
 
+                /* abort after signal */
+                if (!keep_training)
+                        return;
+
                 /* reorder training set, if required */
                 if (item_itr == 0) {
                         if (n->training_order == TRAIN_PERMUTED)
@@ -248,6 +268,14 @@ shift_stack:
  *************************************************************************/
 void test_network(struct network *n)
 {
+        struct sigaction sa;
+        sa.sa_handler = testing_signal_handler;
+        sigemptyset(&sa.sa_mask);
+        sa.sa_flags = SA_RESTART;
+        sigaction(SIGINT, &sa, NULL);
+
+        keep_testing = true;
+
         if (n->type == TYPE_FFN)
                 test_ffn_network(n);
         if (n->type == TYPE_SRN)
@@ -266,6 +294,10 @@ void test_ffn_network(struct network *n)
         /* test network on all items in the current set */
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
+
+                /* abort after signal */
+                if (!keep_testing)
+                        return;
 
                 /* reset context groups */
                 if (n->type == TYPE_SRN)
@@ -314,6 +346,10 @@ void test_rnn_network(struct network *n)
         /* test network on all items in the current set */
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
+
+                /* abort after signal */
+                if (!keep_testing)
+                        return;
 
                 /* reset recurrent groups */
                 reset_recurrent_groups(un->stack[un->sp]);
@@ -518,6 +554,14 @@ shift_stack:
  *************************************************************************/
 void test_network_with_sm(struct network *n)
 {
+        struct sigaction sa;
+        sa.sa_handler = testing_signal_handler;
+        sigemptyset(&sa.sa_mask);
+        sa.sa_flags = SA_RESTART;
+        sigaction(SIGINT, &sa, NULL);
+
+        keep_testing = true;
+
         if (n->type == TYPE_FFN)
                 test_ffn_network_with_sm(n);
         if (n->type == TYPE_SRN)
@@ -536,6 +580,10 @@ void test_ffn_network_with_sm(struct network *n)
 
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
+
+                /* abort after signal */
+                if (!keep_testing)
+                        return;
 
                 /* reset context groups */
                 if (n->type == TYPE_SRN)
@@ -577,6 +625,10 @@ void test_ffn_network_with_sm(struct network *n)
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 double s = sm->elements[i][i];
                 for (uint32_t x = 0; x < n->asp->items->num_elements; x++) {
+                        /* abort after signal */
+                        if (!keep_testing)
+                                return;
+
                         if (sm->elements[i][x] > s) {
                                 threshold_reached--; /* note: we count down */
                                 break;
@@ -608,6 +660,10 @@ void test_rnn_network_with_sm(struct network *n)
         /* test network on all items in the current set */
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
+
+                /* abort after signal */
+                if (!keep_testing)
+                        return;
 
                 /* reset recurrent groups */
                 reset_recurrent_groups(un->stack[un->sp]);
@@ -648,6 +704,10 @@ shift_stack:
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 double s = sm->elements[i][i];
                 for (uint32_t x = 0; x < n->asp->items->num_elements; x++) {
+                        /* abort after signal */
+                        if (!keep_testing)
+                                return;
+
                         if (sm->elements[i][x] > s) {
                                 threshold_reached--; /* note: we count down */
                                 break;
@@ -752,4 +812,26 @@ void scale_weight_decay(struct network *n)
                 mprintf("Scaled weight decay ... \t ( %lf => %lf)",
                                 wd, n->weight_decay);
         }
+}
+
+/**************************************************************************
+ *************************************************************************/
+void training_signal_handler(int signal)
+{
+        mprintf("Training interrupted. Abort [y/n]");
+        int c = getc(stdin);
+        if (c == 'y' || c == 'Y')
+                keep_training = false;
+        fpurge(stdin);
+}
+
+/**************************************************************************
+ *************************************************************************/
+void testing_signal_handler(int signal)
+{
+        mprintf("Testing interrupted. Abort [y/n]");
+        int c = getc(stdin);
+        if (c == 'y' || c == 'Y')
+                keep_testing = false;
+        fpurge(stdin);
 }
