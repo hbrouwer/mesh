@@ -820,9 +820,9 @@ void training_signal_handler(int signal)
 {
         mprintf("Training interrupted. Abort [y/n]");
         int c = getc(stdin);
+        getc(stdin); /* get newline */
         if (c == 'y' || c == 'Y')
                 keep_training = false;
-        fpurge(stdin);
 }
 
 /**************************************************************************
@@ -831,7 +831,7 @@ void testing_signal_handler(int signal)
 {
         mprintf("Testing interrupted. Abort [y/n]");
         int c = getc(stdin);
+        getc(stdin); /* get newline */
         if (c == 'y' || c == 'Y')
                 keep_testing = false;
-        fpurge(stdin);
 }
