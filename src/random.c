@@ -119,8 +119,8 @@ void randomize_fan_in(struct matrix *m, struct network *n)
         double random_min = n->random_min;
         double random_max = n->random_max;
 
-        n->random_min = -1;
-        n->random_max = 1;
+        n->random_min = -1.0;
+        n->random_max = 1.0;
 
         randomize_range(m, n);
 

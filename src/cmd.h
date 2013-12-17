@@ -129,6 +129,13 @@ bool cmd_set_colorscheme(char *cmd, char *fmt, struct session *s, char *msg);
 
 /**************************************************************************
  *************************************************************************/
+
+#ifdef _OPENMP
+bool cmd_omp_set_num_threads(char *cmd, char *fmt, char *msg);
+#endif /* _OPENMP */
+
+/**************************************************************************
+ *************************************************************************/
 bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s, char *msg);
 
 #endif /* CMD_H */
