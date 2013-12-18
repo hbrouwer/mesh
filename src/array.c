@@ -1,7 +1,7 @@
 /*
  * array.c
  *
- * Copyright 2012, 2013 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@
  * limitations under the License.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 #include "array.h"
-#include "main.h"
 #include "network.h"
-#include "session.h"
 #include "set.h"
 
 /**************************************************************************

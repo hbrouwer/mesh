@@ -1,7 +1,7 @@
 /*
  * similarity.c
  *
- * Copyright 2012, 2013 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,16 @@
  * limitations under the License.
  */
 
-#include <signal.h>
 #include <math.h>
+#include <signal.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 #include "act.h"
+#include "main.h"
 #include "similarity.h"
-#include "test.h"
 
-bool keep_running = true;
+static bool keep_running = true;
 
 /**************************************************************************
  *************************************************************************/
@@ -217,10 +219,10 @@ void print_sm_summary(struct network *n, double sim_mean,
 
 /**************************************************************************
  *************************************************************************/
-void sm_signal_handler(int signal)
+void sm_signal_handler(int32_t signal)
 {
         mprintf("Similarity matrix computation interrupted. Abort [y/n]");
-        int c = getc(stdin);
+        int32_t c = getc(stdin);
         getc(stdin); /* get newline */
         if (c == 'y' || c == 'Y')
                 keep_running = false;

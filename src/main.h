@@ -1,7 +1,7 @@
 /*
  * main.h
  *
- * Copyright 2012, 2013 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,6 @@
 
 #define MAX_ARG_SIZE 128
 #define MAX_BUF_SIZE 32768
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
 
 /**************************************************************************
  *************************************************************************/

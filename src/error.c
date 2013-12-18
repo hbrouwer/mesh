@@ -1,7 +1,7 @@
 /*
  * error.c
  *
- * Copyright 2012, 2013 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@
  */
 
 #include <math.h>
-#include <stdint.h>
 
 #include "error.h"
+#include "main.h"
 
 /**************************************************************************
  * Adjust a unit's target based on the target radius and zero-error radius.

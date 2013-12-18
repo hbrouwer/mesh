@@ -1,7 +1,7 @@
 /*
  * train.h
  *
- * Copyright 2012, 2013 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,10 @@
 #ifndef TRAIN_H
 #define TRAIN_H
 
+#include <stdint.h>
+
 #include "network.h"
+#include "set.h"
 
 /**************************************************************************
  *************************************************************************/
@@ -48,6 +51,6 @@ void scale_weight_decay(struct network *n);
 
 /**************************************************************************
  *************************************************************************/
-void training_signal_handler(int signal);
+void training_signal_handler(int32_t signal);
 
 #endif /* TRAIN_H */

@@ -1,7 +1,7 @@
 /*
  * network.c
  *
- * Copyright 2012, 2013 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@
  * limitations under the License.
  */
 
-#include <math.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "act.h"
 #include "bp.h"
-#include "error.h"
 #include "main.h"
 #include "network.h"
-#include "pprint.h"
 #include "sanity.h"
-#include "stats.h"
 #include "train.h"
 
 /**************************************************************************
@@ -70,21 +70,6 @@ void init_network(struct network *n)
                 eprintf("Cannot initialize network--network is not 'sane'");
                 return;
         }
-
-        /*
-        if (n->groups->num_elements == 0) {
-                eprintf("Cannot initialize network--network has no groups");
-                return;
-        }
-        if (!n->input) {
-                eprintf("Cannot initialize network--network has no input group");
-                return;
-        }
-        if (!n->output) {
-                eprintf("Cannot initialize network--network has no output group");
-                return;
-        }
-        */
 
         srand(n->random_seed);
         randomize_weight_matrices(n->input, n);

@@ -1,7 +1,7 @@
 /*
  * main.c
  *
- * Copyright 2012, 2013 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,13 @@
  */
 
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "cli.h"
 #include "cmd.h"
 #include "main.h"
-#include "network.h"
 #include "session.h"
 
 #define VERSION "0.99a"

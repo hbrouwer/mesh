@@ -1,7 +1,7 @@
 /*
  * rnn_unfold.c
  *
- * Copyright 2012, 2013 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "bp.h"
 #include "rnn_unfold.h"

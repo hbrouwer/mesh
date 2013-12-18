@@ -1,7 +1,7 @@
 /*
  * pprint.h
  *
- * Copyright 2012, 2013 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@
 
 #include "matrix.h"
 #include "vector.h"
-#include "stats.h"
 
 #define SCHEME_BLUE_RED    0
 #define SCHEME_BLUE_YELLOW 1

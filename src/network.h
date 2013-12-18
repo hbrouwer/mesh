@@ -1,7 +1,7 @@
 /*
  * network.h
  *
- * Copyright 2012, 2013 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,11 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+#include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "array.h"
-#include "main.h"
 #include "matrix.h"
 #include "rnn_unfold.h"
 #include "set.h"

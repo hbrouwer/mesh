@@ -1,7 +1,7 @@
 /*
  * test.c
  *
- * Copyright 2012, 2013 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,13 @@
  */
 
 #include <signal.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 #include "act.h"
-#include "test.h"
+#include "main.h"
 #include "pprint.h"
+#include "test.h"
 
 static bool keep_running = true;
 
@@ -326,10 +329,10 @@ void print_testing_summary(struct network *n, uint32_t tr)
 
 /**************************************************************************
  *************************************************************************/
-void testing_signal_handler(int signal)
+void testing_signal_handler(int32_t signal)
 {
         mprintf("Testing interrupted. Abort [y/n]");
-        int c = getc(stdin);
+        int32_t c = getc(stdin);
         getc(stdin); /* get newline */
         if (c == 'y' || c == 'Y')
                 keep_running = false;
