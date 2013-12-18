@@ -14,7 +14,6 @@ add_executable(mesh
         src/bp.c
         src/cli.c
         src/cmd.c
-        src/engine.c
         src/error.c
         src/main.c
         src/math.c
@@ -25,7 +24,10 @@ add_executable(mesh
         src/sanity.c
         src/session.c
         src/set.c
+        src/similarity.c
         src/stats.c
+        src/test.c
+        src/train.c
         src/network.c
         src/vector.c
         src/mods/erps.c)

@@ -20,10 +20,8 @@
 
 #include "cli.h"
 #include "cmd.h"
-#include "engine.h"
 #include "main.h"
 #include "network.h"
-#include "rnn_unfold.h"
 #include "session.h"
 
 #define VERSION "0.99a"

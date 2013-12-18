@@ -1,5 +1,5 @@
 /*
- * engine.h
+ * train.h
  *
  * Copyright 2012, 2013 Harm Brouwer <me@hbrouwer.eu>
  *
@@ -16,13 +16,10 @@
  * limitations under the License.
  */
 
-#ifndef ENGINE_H
-#define ENGINE_H
-
-#include <stdint.h>
+#ifndef TRAIN_H
+#define TRAIN_H
 
 #include "network.h"
-#include "session.h"
 
 /**************************************************************************
  *************************************************************************/
@@ -40,32 +37,8 @@ void train_rnn_network_with_item(struct network *n, struct item *item);
 
 /**************************************************************************
  *************************************************************************/
-void test_network(struct network *n);
-void test_ffn_network(struct network *n);
-void test_rnn_network(struct network *n);
-
-/**************************************************************************
- *************************************************************************/
-void test_network_with_item(struct network *n, struct item *item,
-                bool pprint, uint32_t scheme);
-void test_ffn_network_with_item(struct network *n, struct item *item,
-                bool pprint, uint32_t scheme);
-void test_rnn_network_with_item(struct network *n, struct item *item,
-                bool pprint, uint32_t scheme);
-
-/**************************************************************************
- *************************************************************************/
-void test_network_with_sm(struct network *n);
-void test_ffn_network_with_sm(struct network *n);
-void test_rnn_network_with_sm(struct network *n);
-
-/**************************************************************************
- *************************************************************************/
 void print_training_progress(struct network *n);
 void print_training_summary(struct network *n);
-void print_testing_summary(struct network *n, uint32_t tr);
-void print_testing_summary_sm(struct network *n, double sim_mean,
-                double sim_sd, uint32_t tr);
 
 /**************************************************************************
  *************************************************************************/
@@ -76,6 +49,5 @@ void scale_weight_decay(struct network *n);
 /**************************************************************************
  *************************************************************************/
 void training_signal_handler(int signal);
-void testing_signal_handler(int signal);
 
-#endif /* ENGINE_H */
+#endif /* TRAIN_H */

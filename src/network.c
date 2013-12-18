@@ -20,13 +20,13 @@
 
 #include "act.h"
 #include "bp.h"
-#include "engine.h"
 #include "error.h"
 #include "main.h"
 #include "network.h"
 #include "pprint.h"
 #include "sanity.h"
 #include "stats.h"
+#include "train.h"
 
 /**************************************************************************
  *************************************************************************/

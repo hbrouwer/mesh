@@ -23,7 +23,6 @@
 #include "act.h"
 #include "bp.h"
 #include "cmd.h"
-#include "engine.h"
 #include "error.h"
 #include "main.h"
 #include "math.h"
@@ -33,6 +32,9 @@
 #include "random.h"
 #include "set.h"
 #include "stats.h"
+#include "similarity.h"
+#include "test.h"
+#include "train.h"
 
 #include "mods/erps.h"
 
@@ -390,10 +392,12 @@ void process_command(char *cmd, struct session *s)
                                 s,
                                 "Testing network '%s' with item '%s'"
                                 )) goto done;
-        if (cmd_test_similarity_matrix(cmd,
-                                "testSimilarityMatrix",
+
+        /* similarity matrix */
+        if (cmd_similarity_matrix(cmd,
+                                "similarityMatrix",
                                 s->anp,
-                                "Testing network '%s' using a similarity matrix"
+                                "Computing similarity matrix for network '%s'"
                                 )) goto done;
 
         /* weight statistics */
@@ -1672,7 +1676,7 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s, char *msg)
 
 /**************************************************************************
  *************************************************************************/
-bool cmd_test_similarity_matrix(char *cmd, char *fmt, struct network *n,
+bool cmd_similarity_matrix(char *cmd, char *fmt, struct network *n,
                 char *msg)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
@@ -1681,7 +1685,7 @@ bool cmd_test_similarity_matrix(char *cmd, char *fmt, struct network *n,
         mprintf(msg, n->name);
         mprintf(" ");
 
-        test_network_with_sm(n);
+        similarity_matrix(n);
 
         mprintf(" ");
 
