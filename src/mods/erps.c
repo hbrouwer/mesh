@@ -20,8 +20,7 @@
 
 #include "../act.h"
 #include "../math.h"
-
-#include <math.h>
+#include "../vector.h"
 
 void erp_generate_table(struct network *n, char *fn)
 {
