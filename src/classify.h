@@ -1,5 +1,5 @@
 /*
- * similarity.h
+ * classify.h
  *
  * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
  *
@@ -16,26 +16,26 @@
  * limitations under the License.
  */
 
-#ifndef SIMILARITY_H
-#define SIMILARITY_H
+#ifndef CLASSIFY_H
+#define CLASSIFY_H
 
 #include <stdint.h>
 
-#include "matrix.h"
 #include "network.h"
+#include "matrix.h"
 
 /**************************************************************************
  *************************************************************************/
-void similarity_matrix(struct network *n);
-void ffn_network_sm(struct network *n);
-void rnn_network_sm(struct network *n);
+void confusion_matrix(struct network *n);
+void ffn_network_cm(struct network *n);
+void rnn_network_cm(struct network *n);
 
 /**************************************************************************
  *************************************************************************/
-void print_sm_summary(struct network *n, struct matrix *sm);
+void print_cm_summary(struct network *n, struct matrix *cm);
 
 /**************************************************************************
  *************************************************************************/
-void sm_signal_handler(int32_t signal);
+void cm_signal_handler(int32_t signal);
 
-#endif /* SIMILARITY_H */
+#endif /* CLASSIFY_H */

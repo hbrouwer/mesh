@@ -26,6 +26,7 @@
 
 #include "act.h"
 #include "bp.h"
+#include "classify.h"
 #include "cmd.h"
 #include "error.h"
 #include "main.h"
@@ -397,11 +398,16 @@ void process_command(char *cmd, struct session *s)
                                 "Testing network '%s' with item '%s'"
                                 )) goto done;
 
-        /* similarity matrix */
+        /* similarity and confusion matrices */
         if (cmd_similarity_matrix(cmd,
                                 "similarityMatrix",
                                 s->anp,
                                 "Computing similarity matrix for network '%s'"
+                                )) goto done;
+        if (cmd_confusion_matrix(cmd,
+                                "confusionMatrix",
+                                s->anp,
+                                "Computing confusion matrix for network '%s'"
                                 )) goto done;
 
         /* weight statistics */
@@ -1690,6 +1696,24 @@ bool cmd_similarity_matrix(char *cmd, char *fmt, struct network *n,
         mprintf(" ");
 
         similarity_matrix(n);
+
+        mprintf(" ");
+
+        return true;
+}
+
+/**************************************************************************
+ *************************************************************************/
+bool cmd_confusion_matrix(char *cmd, char *fmt, struct network *n,
+                char *msg)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf(msg, n->name);
+        mprintf(" ");
+
+        confusion_matrix(n);
 
         mprintf(" ");
 

@@ -12,6 +12,7 @@ add_executable(mesh
         src/act.c
         src/array.c
         src/bp.c
+        src/classify.c
         src/cli.c
         src/cmd.c
         src/error.c

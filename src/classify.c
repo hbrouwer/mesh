@@ -1,5 +1,5 @@
 /*
- * similarity.c
+ * classify.c
  *
  * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
  *
@@ -23,16 +23,16 @@
 
 #include "act.h"
 #include "main.h"
-#include "similarity.h"
+#include "classify.h"
 
 static bool keep_running = true;
 
 /**************************************************************************
  *************************************************************************/
-void similarity_matrix(struct network *n)
+void confusion_matrix(struct network *n)
 {
         struct sigaction sa;
-        sa.sa_handler = sm_signal_handler;
+        sa.sa_handler = cm_signal_handler;
         sigemptyset(&sa.sa_mask);
         sa.sa_flags = SA_RESTART;
         sigaction(SIGINT, &sa, NULL);
@@ -40,19 +40,19 @@ void similarity_matrix(struct network *n)
         keep_running = true;
 
         if (n->type == TYPE_FFN)
-                ffn_network_sm(n);
+                ffn_network_cm(n);
         if (n->type == TYPE_SRN)
-                ffn_network_sm(n);
+                ffn_network_cm(n);
         if (n->type == TYPE_RNN)
-                rnn_network_sm(n);
+                rnn_network_cm(n);
 }
 
 /**************************************************************************
  *************************************************************************/
-void ffn_network_sm(struct network *n)
+void ffn_network_cm(struct network *n)
 {
-        uint32_t d = n->asp->items->num_elements;
-        struct matrix *sm = create_matrix(d, d);
+        uint32_t d = n->output->vector->size;
+        struct matrix *cm = create_matrix(d, d);
 
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
@@ -81,31 +81,35 @@ void ffn_network_sm(struct network *n)
                         if (!(item->targets[j] && j == item->num_events - 1))
                                 continue;
 
-                        /* compute distance metric */
-                        struct group *g = n->output;
-                        for (uint32_t x = 0; x < n->asp->items->num_elements; x++) {
-                                struct item *citem = n->asp->items->elements[x];
-                                struct vector *tv = citem->targets[citem->num_events - 1];
-                                if (!tv)
-                                        continue;
-                                sm->elements[i][x] = n->similarity_metric(g->vector, tv);
+                        /* classify */
+                        struct vector *ov = n->output->vector;
+                        struct vector *tv = item->targets[j];
+
+                        uint32_t t = 0, o = 0;
+                        for (uint32_t x = 0; x < ov->size; x++) {
+                                if (tv->elements[x] > tv->elements[t])
+                                        t = x;
+                                if (ov->elements[x] > ov->elements[o])
+                                        o = x;
                         }
+                        cm->elements[t][o]++;
+
                 }
         }
 
-        print_sm_summary(n, sm);
+        print_cm_summary(n, cm);
 
-        dispose_matrix(sm);
+        dispose_matrix(cm);
 }
 
 /**************************************************************************
  *************************************************************************/
-void rnn_network_sm(struct network *n)
+void rnn_network_cm(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
 
-        uint32_t d = n->asp->items->num_elements;
-        struct matrix *sm = create_matrix(d, d);
+        uint32_t d = n->output->vector->size;
+        struct matrix *cm = create_matrix(d, d);
 
         /* test network on all items in the current set */
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
@@ -127,15 +131,20 @@ void rnn_network_sm(struct network *n)
                         if (!(item->targets[j] && j == item->num_events - 1))
                                 goto shift_stack;
 
-                        /* compute distance metric */
-                        struct group *g = un->stack[un->sp]->output;
-                        for (uint32_t x = 0; x < n->asp->items->num_elements; x++) {
-                                struct item *citem = n->asp->items->elements[x];
-                                struct vector *tv = citem->targets[citem->num_events - 1];
-                                if (!tv)
-                                        continue;
-                                sm->elements[i][x] = n->similarity_metric(g->vector, tv);
+                        /* classify */
+                        /*
+                        struct vector *ov = n->output->vector;
+                        struct vector *tv = item->targets[j];
+
+                        uint32_t t = 0, o = 0;
+                        for (uint32_t x = 0; x < ov->size; x++) {
+                                if (tv->elements[x] > tv->elements[t])
+                                        t = x;
+                                if (ov->elements[x] > ov->elements[o])
+                                        o = x;
                         }
+                        cm->elements[t][o]++;
+                        */
 
 shift_stack:
                         if (un->sp == un->stack_size - 1) {
@@ -146,56 +155,70 @@ shift_stack:
                 }
         }
 
-        print_sm_summary(n, sm);
+        print_cm_summary(n, cm);
 
-        dispose_matrix(sm);
+        dispose_matrix(cm);
 }
 
 /**************************************************************************
  *************************************************************************/
-void print_sm_summary(struct network *n, struct matrix *sm)
+void print_cm_summary(struct network *n, struct matrix *cm)
 {
-        uint32_t tr = n->asp->items->num_elements;
+        cprintf("Confusion Matrix--(Actual x Predicted):\n\n");
+        print_matrix(cm);
 
-        /*
-         * Compute mean similarity, and its standard deviation. Also,
-         * determine how may items reached threshold.
-         */
-        double sim_mean = 0.0, sim_sd = 0.0;
-        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                double s = sm->elements[i][i];
-                for (uint32_t x = 0; x < n->asp->items->num_elements; x++) {
-                        /* abort after signal */
-                        if (!keep_running)
-                                return;
+        cprintf("\nClassification statistics:\n\n");
 
-                        if (sm->elements[i][x] > s) {
-                                tr--; /* note: we count down */
-                                break;
+        /* row and column totals */
+        struct vector *rows = create_vector(cm->rows);
+        struct vector *cols = create_vector(cm->cols);
+
+        for (uint32_t r = 0; r < cm->rows; r++) {
+                for (uint32_t c = 0; c < cm->cols; c++) {
+                        rows->elements[r] += cm->elements[r][c];
+                        cols->elements[c] += cm->elements[r][c];
+                }
+        }
+
+        /* compute statistics */
+        double cc = 0.0, ic = 0.0, pr = 0.0, rc = 0.0;
+        
+        for (uint32_t r = 0; r < cm->rows; r++) {
+                for (uint32_t c = 0; c < cm->cols; c++) {
+                        if (r == c) {
+                                cc += cm->elements[r][c];
+                                if (cols->elements[c] > 0)
+                                        pr += cm->elements[r][c] / cols->elements[c];
+                                if (rows->elements[r] > 0)
+                                        rc += cm->elements[r][c] / rows->elements[r];
+                        } else {
+                                ic += cm->elements[r][c];
                         }
                 }
-                sim_mean += s;
         }
-        sim_mean /= n->asp->items->num_elements;
-        for (uint32_t i = 0; i < sm->rows; i++)
-                sim_sd += pow(sm->elements[i][i] - sim_mean, 2.0);
-        sim_sd = sqrt(sim_sd / n->asp->items->num_elements);
 
-        pprintf("Number of items: \t\t %d\n",
-                        n->asp->items->num_elements);
-        pprintf("Mean similarity: \t\t %lf\n",
-                        sim_mean);
-        pprintf("SD of similarity:\t\t %lf\n",
-                        sim_sd);
-        pprintf("# Items reached threshold:  %d (%.2lf%%)\n",
-                        tr, ((double)tr / n->asp->items->num_elements) * 100.0);
+        pr /= cols->size;
+        rc /= rows->size;
+
+        double beta = 1.0; // XXX: make beta a parameter
+        double fs = (1.0 + pow(beta,2.0))  * (pr * rc) / ((pr * pow(beta,2.0)) + rc);
+
+        /* report statistics */
+        printf("Accurracy:\t%f\n\n", cc / (cc + ic));
+
+        printf("Precision:\t%f\n", pr);
+        printf("Recall:\t\t%f\n", rc);
+        printf("F(%.2f)-score:\t%f\n", beta, fs);
+        
+        dispose_vector(rows);
+        dispose_vector(cols);
 }
 
 /**************************************************************************
  *************************************************************************/
-void sm_signal_handler(int32_t signal)
+void cm_signal_handler(int32_t signal)
 {
-        mprintf("Similarity matrix computation interrupted. Abort [y/n]");
+        mprintf("Confusion matrix computation interrupted. Abort [y/n]");
         int32_t c = getc(stdin);
         getc(stdin); /* get newline */
         if (c == 'y' || c == 'Y')

@@ -107,6 +107,8 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s, char *msg);
  *************************************************************************/
 bool cmd_similarity_matrix(char *cmd, char *fmt, struct network *n,
                 char *msg);
+bool cmd_confusion_matrix(char *cmd, char *fmt, struct network *n,
+                char *msg);
 
 /**************************************************************************
  *************************************************************************/
