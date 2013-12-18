@@ -198,7 +198,7 @@ void print_sm_summary(struct network *n, struct matrix *sm)
  *************************************************************************/
 void sm_signal_handler(int32_t signal)
 {
-        mprintf("Similarity matrix computation interrupted. Abort [y/n]");
+        cprintf("Similarity matrix computation interrupted. Abort [y/n]");
         int32_t c = getc(stdin);
         getc(stdin); /* get newline */
         if (c == 'y' || c == 'Y')

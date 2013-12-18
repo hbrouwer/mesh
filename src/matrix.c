@@ -73,7 +73,7 @@ void copy_matrix(struct matrix *m1, struct matrix *m2)
                 return;
 
 #ifdef _OPENMP
-#pragma omp parallel for if(m1->rows >= OMP_MIN_ITERATIONS)
+#pragma omp parallel for
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < m1->rows; i++)
                 for (uint32_t j = 0; j < m1->cols; j++)
@@ -87,7 +87,7 @@ struct vector *row_to_vector(struct matrix *m, uint32_t row)
         struct vector *v = create_vector(m->cols);
 
 #ifdef _OPENMP
-#pragma omp parallel for if(m->cols >= OMP_MIN_ITERATIONS)
+#pragma omp parallel for
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < m->cols; i++)
                 v->elements[i] = m->elements[row][i];
@@ -102,7 +102,7 @@ struct vector *column_to_vector(struct matrix *m, uint32_t col)
         struct vector *v = create_vector(m->rows);
 
 #ifdef _OPENMP
-#pragma omp parallel for if(m->rows >= OMP_MIN_ITERATIONS)
+#pragma omp parallel for
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < m->rows; i++)
                 v->elements[i] = m->elements[i][col];
@@ -115,7 +115,7 @@ struct vector *column_to_vector(struct matrix *m, uint32_t col)
 void zero_out_matrix(struct matrix *m)
 {
 #ifdef _OPENMP
-#pragma omp parallel for if(m->rows >= OMP_MIN_ITERATIONS)
+#pragma omp parallel for
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < m->rows; i++)
                 for (uint32_t j = 0; j < m->cols; j++)
@@ -127,7 +127,7 @@ void zero_out_matrix(struct matrix *m)
 void fill_matrix_with_value(struct matrix *m, double val)
 {
 #ifdef _OPENMP
-#pragma omp parallel for if(m->rows >= OMP_MIN_ITERATIONS)
+#pragma omp parallel for
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < m->rows; i++)
                 for (uint32_t j = 0; j < m->cols; j++)

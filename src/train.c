@@ -124,7 +124,7 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
                  */
                 if (i > 0 && n->type == TYPE_SRN)
                         shift_context_groups(n);
-                
+               
                 /* feed activation forward */
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
@@ -330,7 +330,7 @@ void scale_weight_decay(struct network *n)
  *************************************************************************/
 void training_signal_handler(int32_t signal)
 {
-        mprintf("Training interrupted. Abort [y/n]");
+        cprintf("Training interrupted. Abort [y/n]");
         int32_t c = getc(stdin);
         getc(stdin); /* get newline */
         if (c == 'y' || c == 'Y')

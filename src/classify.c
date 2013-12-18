@@ -220,7 +220,7 @@ void print_cm_summary(struct network *n, struct matrix *cm)
  *************************************************************************/
 void cm_signal_handler(int32_t signal)
 {
-        mprintf("Confusion matrix computation interrupted. Abort [y/n]");
+        cprintf("Confusion matrix computation interrupted. Abort [y/n]");
         int32_t c = getc(stdin);
         getc(stdin); /* get newline */
         if (c == 'y' || c == 'Y')

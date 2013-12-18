@@ -16,6 +16,9 @@
  * limitations under the License.
  */
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif /* OPENMP */
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,6 +38,9 @@ int main(int argc, char **argv)
         struct session *s;
 
         mprintf("MESH, version %s: http://hbrouwer.github.io/mesh/", VERSION);
+#ifdef _OPENMP
+        print_openmp_status();
+#endif /* _OPENMP */
 
         s = create_session();
 
@@ -62,6 +68,33 @@ leave_session:
 
         exit(EXIT_SUCCESS);
 }
+
+/**************************************************************************
+ *************************************************************************/
+#ifdef _OPENMP
+void print_openmp_status()
+{
+        mprintf("[+openmp: %d processors available]", omp_get_num_procs());
+
+        omp_sched_t k;
+        int m;
+        omp_get_schedule(&k, &m);
+        switch(k) {
+                case 1:
+                        mprintf("[+openmp: static schedule (chunk size: %d)]", m);
+                        break;
+                case 2:
+                        mprintf("[+openmp: dynamic schedule (chunk size: %d)]", m);
+                        break;
+                case 3:
+                        mprintf("[+openmp: guided schedule (chunk size: %d)]", m);
+                        break;
+                case 4:
+                        mprintf("[+openmp: auto schedule]");
+                        break;
+        }
+}
+#endif /* _OPENMP */
 
 /**************************************************************************
  *************************************************************************/

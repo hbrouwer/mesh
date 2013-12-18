@@ -334,7 +334,7 @@ void print_testing_summary(struct network *n, uint32_t tr)
  *************************************************************************/
 void testing_signal_handler(int32_t signal)
 {
-        mprintf("Testing interrupted. Abort [y/n]");
+        cprintf("Testing interrupted. Abort [y/n]");
         int32_t c = getc(stdin);
         getc(stdin); /* get newline */
         if (c == 'y' || c == 'Y')

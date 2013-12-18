@@ -80,7 +80,7 @@ double error_sum_of_squares(struct group *g, struct vector *t, double tr,
         double se = 0.0;
 
 #ifdef _OPENMP
-#pragma omp parallel for if(g->vector->size >= OMP_MIN_ITERATIONS) reduction(+:se)
+#pragma omp parallel for reduction(+:se)
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
@@ -101,7 +101,7 @@ void error_sum_of_squares_deriv(struct group *g, struct vector *t, double tr,
                 double zr)
 {
 #ifdef _OPENMP
-#pragma omp parallel for if(g->vector->size >= OMP_MIN_ITERATIONS)
+#pragma omp parallel for
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
@@ -134,7 +134,7 @@ double error_cross_entropy(struct group *g, struct vector *t, double tr,
         double ce = 0.0;
 
 #ifdef _OPENMP
-#pragma omp parallel for if(g->vector->size >= OMP_MIN_ITERATIONS) reduction(+:ce)
+#pragma omp parallel for reduction(+:ce)
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
@@ -234,7 +234,7 @@ void error_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
                 double zr)
 {
 #ifdef _OPENMP
-#pragma omp parallel for if(g->vector->size >= OMP_MIN_ITERATIONS)
+#pragma omp parallel for
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
@@ -324,7 +324,7 @@ double error_divergence(struct group *g, struct vector *t, double tr,
         double de = 0.0;
 
 #ifdef _OPENMP
-#pragma omp parallel for if(g->vector->size >= OMP_MIN_ITERATIONS) reduction(+:de)
+#pragma omp parallel for reduction(+:de)
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
@@ -370,7 +370,7 @@ void error_divergence_deriv(struct group *g, struct vector *t, double tr,
                 double zr)
 {
 #ifdef _OPENMP
-#pragma omp parallel for if(g->vector->size >= OMP_MIN_ITERATIONS)
+#pragma omp parallel for
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];

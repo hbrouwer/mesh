@@ -5,10 +5,9 @@ project(mesh)
 include(CheckIncludeFile)
 
 set(CMAKE_C_COMPILER "/opt/local/bin/gcc-mp-4.7")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -march=core2")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -march=core2 -fopenmp")
-
-add_executable(mesh
+set(SOURCE_FILES 
         src/act.c
         src/array.c
         src/bp.c
@@ -32,3 +31,8 @@ add_executable(mesh
         src/network.c
         src/vector.c
         src/mods/erps.c)
+
+add_executable(mesh ${SOURCE_FILES})
+
+add_executable(mesh-mp ${SOURCE_FILES})
+set_target_properties(mesh-mp PROPERTIES COMPILE_FLAGS -fopenmp LINK_FLAGS -fopenmp)
