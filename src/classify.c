@@ -132,7 +132,6 @@ void rnn_network_cm(struct network *n)
                                 goto shift_stack;
 
                         /* classify */
-                        /*
                         struct vector *ov = n->output->vector;
                         struct vector *tv = item->targets[j];
 
@@ -144,7 +143,6 @@ void rnn_network_cm(struct network *n)
                                         o = x;
                         }
                         cm->elements[t][o]++;
-                        */
 
 shift_stack:
                         if (un->sp == un->stack_size - 1) {
