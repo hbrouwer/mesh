@@ -43,6 +43,9 @@ void train_network(struct network *n)
         keep_running = true;
 
         n->learning_algorithm(n);
+
+        sa.sa_handler = SIG_DFL;
+        sigaction(SIGINT, &sa, NULL);
 }
 
 /**************************************************************************

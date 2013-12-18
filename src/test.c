@@ -45,6 +45,9 @@ void test_network(struct network *n)
                 test_ffn_network(n);
         if (n->type == TYPE_RNN)
                 test_rnn_network(n);
+
+        sa.sa_handler = SIG_DFL;
+        sigaction(SIGINT, &sa, NULL);
 }
 
 /**************************************************************************

@@ -68,10 +68,7 @@ void process_command(char *cmd, struct session *s)
                                 )) goto done;
 
         /* network commands */
-        if (cmd_create_network(cmd,
-                                "createNetwork %s %s", s,
-                                "Created network ... \t\t ( %s :: %s )"
-                                )) goto done;
+        if (cmd_create_network(cmd, "createNetwork %s %s", s, "Created network ... \t\t ( %s :: %s )")) goto done;
         if (cmd_dispose_network(cmd,
                                 "disposeNetwork %s %s", s,
                                 "Disposed network ... \t\t ( %s )"

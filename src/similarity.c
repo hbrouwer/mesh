@@ -45,6 +45,9 @@ void similarity_matrix(struct network *n)
                 ffn_network_sm(n);
         if (n->type == TYPE_RNN)
                 rnn_network_sm(n);
+
+        sa.sa_handler = SIG_DFL;
+        sigaction(SIGINT, &sa, NULL);
 }
 
 /**************************************************************************

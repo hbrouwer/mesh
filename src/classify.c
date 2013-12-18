@@ -45,6 +45,9 @@ void confusion_matrix(struct network *n)
                 ffn_network_cm(n);
         if (n->type == TYPE_RNN)
                 rnn_network_cm(n);
+
+        sa.sa_handler = SIG_DFL;
+        sigaction(SIGINT, &sa, NULL);
 }
 
 /**************************************************************************
