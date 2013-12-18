@@ -399,12 +399,12 @@ void process_command(char *cmd, struct session *s)
         if (cmd_similarity_matrix(cmd,
                                 "similarityMatrix",
                                 s->anp,
-                                "Computing similarity matrix for network '%s'"
+                                "Computing similarity matrix for network '%s' ..."
                                 )) goto done;
         if (cmd_confusion_matrix(cmd,
                                 "confusionMatrix",
                                 s->anp,
-                                "Computing confusion matrix for network '%s'"
+                                "Computing confusion matrix for network '%s' ..."
                                 )) goto done;
 
         /* weight statistics */

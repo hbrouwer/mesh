@@ -165,7 +165,7 @@ shift_stack:
  *************************************************************************/
 void print_cm_summary(struct network *n, struct matrix *cm)
 {
-        cprintf("Confusion Matrix--(Actual x Predicted):\n\n");
+        cprintf("Confusion matrix (actual x predicted):\n\n");
         print_matrix(cm);
 
         cprintf("\nClassification statistics:\n\n");
@@ -205,7 +205,8 @@ void print_cm_summary(struct network *n, struct matrix *cm)
         double fs = (1.0 + pow(beta,2.0))  * (pr * rc) / ((pr * pow(beta,2.0)) + rc);
 
         /* report statistics */
-        printf("Accurracy:\t%f\n\n", cc / (cc + ic));
+        printf("Accurracy:\t%f\n", cc / (cc + ic));
+        printf("Error rate:\t%f\n\n", ic / (cc + ic));
 
         printf("Precision:\t%f\n", pr);
         printf("Recall:\t\t%f\n", rc);
