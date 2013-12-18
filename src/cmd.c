@@ -470,14 +470,6 @@ void process_command(char *cmd, struct session *s)
                                 "Set color scheme ... \t\t ( %s )"
                                 )) goto done;
 
-#ifdef _OPENMP
-        /* OpenMP commands */
-        if (cmd_omp_set_num_threads(cmd,
-                                "ompSetNumThreads %d",
-                                "Set numer of threads ... \t ( %d )"
-                                )) goto done;
-#endif /* _OPENMP */
-
         /* event-related potentials module commands */
         if (cmd_erp_generate_table(cmd,
                                 "erpGenerateTable %s",
@@ -1932,24 +1924,6 @@ bool cmd_set_colorscheme(char *cmd, char *fmt, struct session *s, char *msg)
 
         return true;
 }
-
-/**************************************************************************
- * OpenMP commands
- *************************************************************************/
-#ifdef _OPENMP
-bool cmd_omp_set_num_threads(char *cmd, char *fmt, char *msg)
-{
-        int par;
-        if (sscanf(cmd, fmt, &par) != 1)
-                return false;
-
-        mprintf(msg, par);
-
-        omp_set_num_threads(par);
-
-        return true;
-}
-#endif /* _OPENMP */
 
 /**************************************************************************
  * Module commands
