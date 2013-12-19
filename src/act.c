@@ -146,6 +146,7 @@ double ACT_LOOKUP_STEP_SIZE = ((double)ACT_LOOKUP_MAXIMUM
 struct vector *create_act_lookup_vector(double (*fun)(struct vector *,
                         uint32_t))
 {
+        /* skip softmax */
         if (fun == act_fun_softmax)
                 return NULL;
 
@@ -164,13 +165,15 @@ struct vector *create_act_lookup_vector(double (*fun)(struct vector *,
  *************************************************************************/
 double act_lookup(double x, struct vector *lv)
 {
-        if (x < ACT_LOOKUP_MINIMUM)
-                x = ACT_LOOKUP_MINIMUM;
-        if (x > ACT_LOOKUP_MAXIMUM)
-                x = ACT_LOOKUP_MAXIMUM;
+        uint32_t i;
 
-        // XXX: Here, the index might be computed in wrong the way?
-        uint32_t i = ((ACT_LOOKUP_MAXIMUM + x) / ACT_LOOKUP_STEP_SIZE) - 1;
+        if (x <= ACT_LOOKUP_MINIMUM) {
+                i = 0;
+        } else if (x >= ACT_LOOKUP_MAXIMUM) {
+                i = ACT_LOOKUP_GRANULARITY - 1;
+        } else {
+                i = ((ACT_LOOKUP_MAXIMUM + x) / ACT_LOOKUP_STEP_SIZE) - 1;
+        }
 
         return lv->elements[i];
 }
