@@ -80,7 +80,7 @@ void ffn_network_cm(struct network *n)
                         copy_vector(n->input->vector, item->inputs[j]);
                         feed_forward(n, n->input);
                         
-                        /* only compute distance metrics for last event */
+                        /* only classify last event */
                         if (!(item->targets[j] && j == item->num_events - 1))
                                 continue;
 
@@ -130,7 +130,7 @@ void rnn_network_cm(struct network *n)
                         copy_vector(un->stack[un->sp]->input->vector, item->inputs[j]);
                         feed_forward(un->stack[un->sp], un->stack[un->sp]->input);
 
-                        /* only compute distance metrics for last event */
+                        /* only classify metrics for last event */
                         if (!(item->targets[j] && j == item->num_events - 1))
                                 goto shift_stack;
 
