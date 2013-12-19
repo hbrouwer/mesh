@@ -87,24 +87,31 @@ void feed_forward(struct network *n, struct group *g)
                                         rg->vector->elements[j] += pg->vector->elements[z]
                                                 * w->elements[z][j];
                         }
+
+                        /*
+                         * Apply an activation function to the net input
+                         * (unless the softmax function is used, which
+                         * requires all net inputs to be computed first).
+                         *
+                         * y_j = f(x_j)
+                         */
+                        if (rg->act_fun->fun != act_fun_softmax) {
+                                if (!n->act_lookup) {
+                                        rg->vector->elements[j] = rg->act_fun->fun(rg->vector, j);
+                                } else {
+                                        rg->vector->elements[j] = act_lookup(rg->vector->elements[j],
+                                                        rg->act_fun->lookup);
+                                }
+                        }
                 }
 
-
-                /*
-                 * Apply an activation function to the net input to each
-                 * unit that the current group projects to.
-                 *
-                 * y_j = f(x_j)
-                 */
+                /* apply softmax activation function (if required) */
+                if (rg->act_fun->fun == act_fun_softmax) {
 #ifdef _OPENMP
 #pragma omp parallel for
-#endif /* _OPENMP */                
-                for (uint32_t j = 0; j < rg->vector->size; j++) {
-                        if (!n->act_lookup) {
+#endif /* _OPENMP */
+                        for (uint32_t j = 0; j < rg->vector->size; j++) {
                                 rg->vector->elements[j] = rg->act_fun->fun(rg->vector, j);
-                        } else {
-                                rg->vector->elements[j] = act_lookup(rg->vector->elements[j],
-                                                rg->act_fun->lookup);
                         }
                 }
         }
@@ -139,6 +146,9 @@ double ACT_LOOKUP_STEP_SIZE = ((double)ACT_LOOKUP_MAXIMUM
 struct vector *create_act_lookup_vector(double (*fun)(struct vector *,
                         uint32_t))
 {
+        if (fun == act_fun_softmax)
+                return NULL;
+
         struct vector *lv = create_vector(ACT_LOOKUP_GRANULARITY);
 
         for (uint32_t i = 0; i < ACT_LOOKUP_GRANULARITY; i++) {
