@@ -193,6 +193,7 @@ struct status
 /**************************************************************************
  *************************************************************************/
 struct network *create_network(char *name, uint32_t type);
+void set_network_defaults(struct network *n);
 void init_network(struct network *n);
 void reset_network(struct network *n);
 void dispose_network(struct network *n);

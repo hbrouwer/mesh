@@ -23,8 +23,11 @@
 
 #include "act.h"
 #include "bp.h"
+#include "defaults.h"
 #include "main.h"
+#include "math.h"
 #include "network.h"
+#include "random.h"
 #include "sanity.h"
 #include "train.h"
 
@@ -53,11 +56,53 @@ struct network *create_network(char *name, uint32_t type)
                 goto error_out;
         memset(n->status, 0, block_size);
 
+        set_network_defaults(n);
+
         return n;
 
 error_out:
         perror("[create_network()]");
         return NULL;
+}
+
+/**************************************************************************
+ *************************************************************************/
+void set_network_defaults(struct network *n)
+{
+        n->random_algorithm   = DFLT_RANDOM_ALGORITHM;
+        n->random_seed        = DFLT_RANDOM_SEED;
+        n->random_mu          = DFLT_RANDOM_MU;
+        n->random_sigma       = DFLT_RANDOM_SIGMA;
+        n->random_min         = DFLT_RANDOM_MIN;
+        n->random_max         = DFLT_RANDOM_MAX;
+
+        n->learning_rate      = DFLT_LEARNING_RATE;
+        n->lr_scale_factor    = DFLT_LR_SCALE_FACTOR;
+        n->lr_scale_after     = DFLT_LR_SCALE_AFTER;
+
+        n->momentum           = DFLT_MOMENTUM;
+        n->mn_scale_factor    = DFLT_MN_SCALE_FACTOR;
+        n->mn_scale_after     = DFLT_MN_SCALE_AFTER;
+
+        n->weight_decay       = DFLT_WEIGHT_DECAY;
+        n->wd_scale_factor    = DFLT_WD_SCALE_FACTOR;
+        n->wd_scale_after     = DFLT_WD_SCALE_AFTER;
+
+        n->target_radius      = DFLT_TARGET_RADIUS;
+        n->zero_error_radius  = DFLT_ZERO_ERROR_RADIUS;
+
+        n->error_threshold    = DFLT_ERROR_THRESHOLD;
+        n->max_epochs         = DFLT_MAX_EPOCHS;
+        n->report_after       = DFLT_REPORT_AFTER;
+
+        n->rp_init_update     = DFLT_RP_INIT_UPDATE;
+        n->rp_eta_plus        = DFLT_RP_ETA_PLUS;
+        n->rp_eta_minus       = DFLT_RP_ETA_MINUS;
+
+        n->dbd_rate_increment = DFLT_DBD_RATE_INCREMENT;
+        n->dbd_rate_decrement = DFLT_DBD_RATE_DECREMENT;
+
+        n->similarity_metric  = DFLT_SIMILARITY_METRIC;
 }
 
 /**************************************************************************
@@ -71,18 +116,29 @@ void init_network(struct network *n)
                 return;
         }
 
+        /* randomize weights */
         srand(n->random_seed);
         randomize_weight_matrices(n->input, n);
-       
+
+        /* initialize dynamic learning parameters */
         initialize_dynamic_pars(n->input, n);
 
+        /* initialize activation function look up table (if required) */
         if (n->act_lookup)
                 initialize_act_lookup_vectors(n);
+
+        /* 
+         * If batch size is set to 0, set it to the number of items
+         * in the active set.
+         */
         if (n->batch_size == 0 && n->asp)
                 n->batch_size = n->asp->items->num_elements;
+
+        /* unfold RNN (if required) */
         if (n->learning_algorithm == train_network_with_bptt)
                 n->unfolded_net = rnn_init_unfolded_network(n);
 
+        /* flag network as initialized */
         n->initialized = true;
 }
 

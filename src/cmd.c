@@ -63,21 +63,25 @@ void process_command(char *cmd, struct session *s)
 
         /* load file */
         if (cmd_load_file(cmd,
-                                "loadFile %s", s,
+                                "loadFile %s",
+                                s,
                                 "Loaded file ... \t\t ( %s )"
                                 )) goto done;
 
         /* network commands */
         if (cmd_create_network(cmd,
-                                "createNetwork %s %s", s,
+                                "createNetwork %s %s",
+                                s,
                                 "Created network ... \t\t ( %s :: %s )"
                                 )) goto done;
         if (cmd_dispose_network(cmd,
-                                "disposeNetwork %s %s", s,
+                                "disposeNetwork %s %s",
+                                s,
                                 "Disposed network ... \t\t ( %s )"
                                 )) goto done;
         if (cmd_list_networks(cmd,
-                                "listNetworks", s,
+                                "listNetworks",
+                                s,
                                 "Available networks:"
                                 )) goto done;
         if (cmd_change_network(cmd,
@@ -496,9 +500,9 @@ void cmd_quit(char *cmd, char *fmt, struct session *s, char *msg)
 {
         if (strcmp(cmd, fmt) != 0)
                 return;
-
+        
         mprintf(msg);
-
+        
         dispose_session(s);
         exit(EXIT_SUCCESS);
 }
