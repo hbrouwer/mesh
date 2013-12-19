@@ -167,8 +167,9 @@ double matrix_maximum(struct matrix *m)
 void print_matrix(struct matrix *m)
 {
         for (uint32_t i = 0; i < m->rows; i++) {
+                printf("[\t");
                 for (uint32_t j = 0; j < m->cols; j++)
                         cprintf("%lf\t", m->elements[i][j]);
-                cprintf("\n");
+                cprintf("]\n");
         }
 }

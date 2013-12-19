@@ -16,11 +16,44 @@
  * limitations under the License.
  */
 
+#include "main.h"
 #include "sanity.h"
 
 /**************************************************************************
  *************************************************************************/
 bool verify_network_sanity(struct network *n)
 {
+        if (!n->input) {
+                eprintf("Network has no input group");
+                return false;
+        }
+        if (!n->output) {
+                eprintf("Network has no output group");
+                return false;
+        }
+
+        if(!verify_input_to_output(n, n->input)) {
+                eprintf("No pathway from input group to output group");
+                return false;
+        }
+
         return true;
+}
+
+/**************************************************************************
+ *************************************************************************/
+bool verify_input_to_output(struct network *n, struct group *g)
+{
+        bool reachable = false;
+
+        for (int i = 0; i < g->out_projs->num_elements; i++) {
+                struct projection *p = g->out_projs->elements[i];
+
+                if (p->to == n->output)
+                        return true;
+
+                reachable = verify_input_to_output(n, p->to);
+        }
+
+        return reachable;
 }

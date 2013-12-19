@@ -70,7 +70,6 @@ error_out:
 void set_network_defaults(struct network *n)
 {
         n->random_algorithm   = DFLT_RANDOM_ALGORITHM;
-        n->random_seed        = DFLT_RANDOM_SEED;
         n->random_mu          = DFLT_RANDOM_MU;
         n->random_sigma       = DFLT_RANDOM_SIGMA;
         n->random_min         = DFLT_RANDOM_MIN;

@@ -165,10 +165,12 @@ shift_stack:
  *************************************************************************/
 void print_cm_summary(struct network *n, struct matrix *cm)
 {
-        cprintf("Confusion matrix (actual x predicted):\n\n");
+        pprintf("Confusion matrix (actual x predicted):\n\n");
         print_matrix(cm);
 
-        cprintf("\nClassification statistics:\n\n");
+        cprintf("\n");
+        pprintf("Classification statistics:\n");
+        pprintf("\n");
 
         /* row and column totals */
         struct vector *rows = create_vector(cm->rows);
@@ -205,12 +207,11 @@ void print_cm_summary(struct network *n, struct matrix *cm)
         double fs = (1.0 + pow(beta,2.0))  * (pr * rc) / ((pr * pow(beta,2.0)) + rc);
 
         /* report statistics */
-        printf("Accurracy:\t%f\n", cc / (cc + ic));
-        printf("Error rate:\t%f\n\n", ic / (cc + ic));
-
-        printf("Precision:\t%f\n", pr);
-        printf("Recall:\t\t%f\n", rc);
-        printf("F(%.2f)-score:\t%f\n", beta, fs);
+        pprintf("Accurracy:\t\t%f\n", cc / (cc + ic));
+        pprintf("Error rate:\t%f\n", ic / (cc + ic));
+        pprintf("Precision:\t\t%f\n", pr);
+        pprintf("Recall:\t\t%f\n", rc);
+        pprintf("F(%.2f)-score:\t%f\n", beta, fs);
         
         dispose_vector(rows);
         dispose_vector(cols);

@@ -179,12 +179,12 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
 
-        pprintf("Item: \t\"%s\" --  \"%s\"\n", item->name, item->meta);
+        pprintf("Item:\t\"%s\" -- \"%s\"\n", item->name, item->meta);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* print event number, and input vector */
                 pprintf("\n");
-                pprintf("Event: \t%d\n", i);
-                pprintf("Input: \t");
+                pprintf("Event:\t%d\n", i);
+                pprintf("Input:\n\n");
                 if (pprint) {
                         pprint_vector(item->inputs[i], scheme);
                 } else {
@@ -207,8 +207,8 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
                  * event has one.
                  */
                 if (item->targets[i]) {
-                        pprintf("\n");
-                        pprintf("Target: \t");
+                        cprintf("\n");
+                        pprintf("Target:\n\n");
                         if (pprint) {
                                 pprint_vector(item->targets[i], scheme);
                         } else  {
@@ -217,7 +217,8 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
                 }
 
                 /* print output vector */
-                pprintf("Output: \t");
+                cprintf("\n");
+                pprintf("Output:\n\n");
                 if (pprint) {
                         pprint_vector(n->output->vector, scheme);
                 } else {
@@ -235,8 +236,8 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
 
                 /* compute and print error */
                 n->status->error += n->output->err_fun->fun(g, tv, tr, zr);
-                pprintf("\n");
-                pprintf("Error: \t%lf\n", n->status->error);
+                cprintf("\n");
+                pprintf("Error:\t%lf\n", n->status->error);
         }
 }
 
@@ -252,12 +253,12 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
         /* reset recurrent groups */
         reset_recurrent_groups(un->stack[un->sp]);
 
-        pprintf("Item: \t\"%s\" --  \"%s\"\n", item->name, item->meta);
+        pprintf("Item: \t\"%s\" -- \"%s\"\n", item->name, item->meta);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* print event number, and input vector */
                 pprintf("\n");
-                pprintf("Event: \t%d\n", i);
-                pprintf("Input: \t");
+                pprintf("Event:\t%d\n", i);
+                pprintf("Input:\n\n");
                 if (pprint) {
                         pprint_vector(item->inputs[i], scheme);
                 } else {
@@ -273,8 +274,8 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                  * event has one.
                  */                
                 if (item->targets[i]) {
-                        pprintf("\n");
-                        pprintf("Target: \t");
+                        cprintf("\n");
+                        pprintf("Target:\n\n");
                         if (pprint) {
                                 pprint_vector(item->targets[i], scheme);
                         } else {
@@ -283,7 +284,8 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                 }
 
                 /* print output vector */
-                pprintf("Output: \t");
+                cprintf("\n");
+                pprintf("Output:\n\n");
                 if (pprint) {
                         pprint_vector(un->stack[un->sp]->output->vector, scheme);
                 } else {
@@ -305,7 +307,7 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                 /* compute and print error */
                 n->status->error += n->output->err_fun->fun(g, tv, tr, zr);
                 pprintf("\n");
-                pprintf("Error: \t%lf\n", n->status->error);
+                pprintf("Error:\t%lf\n", n->status->error);
 
 shift_stack:
                 if (un->sp == un->stack_size - 1) {

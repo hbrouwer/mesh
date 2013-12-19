@@ -153,15 +153,17 @@ void eprintf(const char *fmt, ...)
 {
         va_list args;
 
-        fprintf(stderr, "Error: ");
+        fprintf(stderr, "\x1b[31m");
+        fprintf(stderr, "ERROR: ");
         va_start(args, fmt);
         vfprintf(stderr, fmt, args);
         va_end(args);
         fprintf(stderr, "\n");
+        fprintf(stderr, "\x1b[0m");
 }
 
 /**************************************************************************
- * Print progress message
+ * Print progress/report message
  *************************************************************************/
 void pprintf(const char *fmt, ...)
 {

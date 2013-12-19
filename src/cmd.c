@@ -1065,6 +1065,7 @@ bool cmd_dispose_projection(char *cmd, char *fmt, struct network *n, char *msg)
                 remove_from_array(tg->inc_projs, tg_to_fg);
                 dispose_projection(fg_to_tg);
                 free(tg_to_fg);
+                n->initialized = false;
         } else {
                 eprintf("Cannot dispose projection--no projection between groups '%s' and '%s')",
                                 tmp1, tmp2);
@@ -1603,7 +1604,8 @@ bool cmd_init(char *cmd, char *fmt, struct network *n, char *msg)
 
         init_network(n);
 
-        mprintf(msg, n->name);
+        if (n->initialized)
+                mprintf(msg, n->name);
 
         return true;
 }
