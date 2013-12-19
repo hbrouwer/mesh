@@ -58,8 +58,8 @@ void feed_forward(struct network *n, struct group *g)
                         continue;
 
                 /*
-                 * Compute net input and activation level for the units in 
-                 * each group that the current group projects to.
+                 * Compute net input for the units in each group that the
+                 * current group projects to.
                  */
                 struct group *rg = op->to;
 #ifdef _OPENMP
@@ -87,12 +87,19 @@ void feed_forward(struct network *n, struct group *g)
                                         rg->vector->elements[j] += pg->vector->elements[z]
                                                 * w->elements[z][j];
                         }
+                }
 
-                        /*
-                         * Apply an activation function to the net input.
-                         *
-                         * y_j = f(x_j)
-                         */
+
+                /*
+                 * Apply an activation function to the net input to each
+                 * unit that the current group projects to.
+                 *
+                 * y_j = f(x_j)
+                 */
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif /* _OPENMP */                
+                for (uint32_t j = 0; j < rg->vector->size; j++) {
                         if (!n->act_lookup) {
                                 rg->vector->elements[j] = rg->act_fun->fun(rg->vector, j);
                         } else {
@@ -213,11 +220,14 @@ double act_fun_bipolar_sigmoid_deriv(struct vector *v, uint32_t i)
  *************************************************************************/
 double act_fun_softmax(struct vector *v, uint32_t i)
 {
-        double x = exp(v->elements[i]);
+        static double sum;
+        if (i == 0) {
+                sum = 0.0;
+                for (uint32_t j = 0; j < v->size; j++)
+                        sum += exp(v->elements[j]);
+        }
 
-        double sum = 0.0;
-        for (uint32_t j = 0; j < v->size; j++)
-                sum += exp(v->elements[j]);
+        double x = exp(v->elements[i]);
 
         return x / sum;
 }
