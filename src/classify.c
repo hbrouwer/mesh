@@ -22,14 +22,16 @@
 #include <stdio.h>
 
 #include "act.h"
-#include "main.h"
 #include "classify.h"
+#include "main.h"
+#include "pprint.h"
 
 static bool keep_running = true;
 
 /**************************************************************************
  *************************************************************************/
-void confusion_matrix(struct network *n)
+void confusion_matrix(struct network *n, bool print, bool pprint,
+                uint32_t scheme)
 {
         struct sigaction sa;
         sa.sa_handler = cm_signal_handler;
@@ -40,11 +42,11 @@ void confusion_matrix(struct network *n)
         keep_running = true;
 
         if (n->type == TYPE_FFN)
-                ffn_network_cm(n);
+                ffn_network_cm(n, print, pprint, scheme);
         if (n->type == TYPE_SRN)
-                ffn_network_cm(n);
+                ffn_network_cm(n, print, pprint, scheme);
         if (n->type == TYPE_RNN)
-                rnn_network_cm(n);
+                rnn_network_cm(n, print, pprint, scheme);
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
@@ -52,7 +54,8 @@ void confusion_matrix(struct network *n)
 
 /**************************************************************************
  *************************************************************************/
-void ffn_network_cm(struct network *n)
+void ffn_network_cm(struct network *n, bool print, bool pprint,
+                uint32_t scheme)
 {
         uint32_t d = n->output->vector->size;
         struct matrix *cm = create_matrix(d, d);
@@ -100,14 +103,15 @@ void ffn_network_cm(struct network *n)
                 }
         }
 
-        print_cm_summary(n, cm);
+        print_cm_summary(n, cm, print, pprint, scheme);
 
         dispose_matrix(cm);
 }
 
 /**************************************************************************
  *************************************************************************/
-void rnn_network_cm(struct network *n)
+void rnn_network_cm(struct network *n, bool print, bool pprint,
+                uint32_t scheme)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
 
@@ -156,19 +160,26 @@ shift_stack:
                 }
         }
 
-        print_cm_summary(n, cm);
+        print_cm_summary(n, cm, print, pprint, scheme);
 
         dispose_matrix(cm);
 }
 
 /**************************************************************************
  *************************************************************************/
-void print_cm_summary(struct network *n, struct matrix *cm)
+void print_cm_summary(struct network *n, struct matrix *cm, bool print,
+                bool pprint, uint32_t scheme)
 {
-        pprintf("Confusion matrix (actual x predicted):\n\n");
-        print_matrix(cm);
+        if (print) {
+                pprintf("Confusion matrix (actual x predicted):\n\n");
+                if (pprint) {
+                        pprint_matrix(cm, scheme);
+                } else {
+                        print_matrix(cm);
+                }
+                cprintf("\n");
+        }
 
-        cprintf("\n");
         pprintf("Classification statistics:\n");
         pprintf("\n");
 

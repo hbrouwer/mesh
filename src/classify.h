@@ -26,13 +26,17 @@
 
 /**************************************************************************
  *************************************************************************/
-void confusion_matrix(struct network *n);
-void ffn_network_cm(struct network *n);
-void rnn_network_cm(struct network *n);
+void confusion_matrix(struct network *n, bool print, bool pprint,
+                uint32_t scheme);
+void ffn_network_cm(struct network *n, bool print, bool pprint,
+                uint32_t scheme);
+void rnn_network_cm(struct network *n, bool print, bool pprint,
+                uint32_t scheme);
 
 /**************************************************************************
  *************************************************************************/
-void print_cm_summary(struct network *n, struct matrix *cm);
+void print_cm_summary(struct network *n, struct matrix *cm, bool print,
+                bool pprint, uint32_t scheme);
 
 /**************************************************************************
  *************************************************************************/

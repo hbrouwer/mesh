@@ -405,13 +405,27 @@ void process_command(char *cmd, struct session *s)
         /* similarity and confusion matrices */
         if (cmd_similarity_matrix(cmd,
                                 "similarityMatrix",
-                                s->anp,
-                                "Computing similarity matrix for network '%s' ..."
+                                s,
+                                "Computing similarity matrix for network '%s' ...",
+                                false
+                                )) goto done;
+        if (cmd_similarity_matrix(cmd,
+                                "showSimilarityMatrix",
+                                s,
+                                "Computing similarity matrix for network '%s' ...",
+                                true
                                 )) goto done;
         if (cmd_confusion_matrix(cmd,
                                 "confusionMatrix",
-                                s->anp,
-                                "Computing confusion matrix for network '%s' ..."
+                                s,
+                                "Computing confusion matrix for network '%s' ...",
+                                false
+                                )) goto done;
+        if (cmd_confusion_matrix(cmd,
+                                "showConfusionMatrix",
+                                s,
+                                "Computing confusion matrix for network '%s' ...",
+                                true
                                 )) goto done;
 
         /* weight statistics */
@@ -1684,16 +1698,16 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s, char *msg)
 
 /**************************************************************************
  *************************************************************************/
-bool cmd_similarity_matrix(char *cmd, char *fmt, struct network *n,
-                char *msg)
+bool cmd_similarity_matrix(char *cmd, char *fmt, struct session *s,
+                char *msg, bool print_matrix)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
-        mprintf(msg, n->name);
+        mprintf(msg, s->anp->name);
         mprintf(" ");
 
-        similarity_matrix(n);
+        similarity_matrix(s->anp, print_matrix, s->pprint, s->pprint_scheme);
 
         mprintf(" ");
 
@@ -1702,16 +1716,16 @@ bool cmd_similarity_matrix(char *cmd, char *fmt, struct network *n,
 
 /**************************************************************************
  *************************************************************************/
-bool cmd_confusion_matrix(char *cmd, char *fmt, struct network *n,
-                char *msg)
+bool cmd_confusion_matrix(char *cmd, char *fmt, struct session *s,
+                char *msg, bool print_matrix)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
-        mprintf(msg, n->name);
+        mprintf(msg, s->anp->name);
         mprintf(" ");
 
-        confusion_matrix(n);
+        confusion_matrix(s->anp, print_matrix, s->pprint, s->pprint_scheme);
 
         mprintf(" ");
 

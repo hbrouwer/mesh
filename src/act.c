@@ -107,9 +107,6 @@ void feed_forward(struct network *n, struct group *g)
 
                 /* apply softmax activation function (if required) */
                 if (rg->act_fun->fun == act_fun_softmax) {
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif /* _OPENMP */
                         for (uint32_t j = 0; j < rg->vector->size; j++) {
                                 rg->vector->elements[j] = rg->act_fun->fun(rg->vector, j);
                         }

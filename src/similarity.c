@@ -23,13 +23,15 @@
 
 #include "act.h"
 #include "main.h"
+#include "pprint.h"
 #include "similarity.h"
 
 static bool keep_running = true;
 
 /**************************************************************************
  *************************************************************************/
-void similarity_matrix(struct network *n)
+void similarity_matrix(struct network *n, bool print, bool pprint,
+                uint32_t scheme)
 {
         struct sigaction sa;
         sa.sa_handler = sm_signal_handler;
@@ -40,11 +42,11 @@ void similarity_matrix(struct network *n)
         keep_running = true;
 
         if (n->type == TYPE_FFN)
-                ffn_network_sm(n);
+                ffn_network_sm(n, print, pprint, scheme);
         if (n->type == TYPE_SRN)
-                ffn_network_sm(n);
+                ffn_network_sm(n, print, pprint, scheme);
         if (n->type == TYPE_RNN)
-                rnn_network_sm(n);
+                rnn_network_sm(n, print, pprint, scheme);
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
@@ -52,7 +54,8 @@ void similarity_matrix(struct network *n)
 
 /**************************************************************************
  *************************************************************************/
-void ffn_network_sm(struct network *n)
+void ffn_network_sm(struct network *n, bool print, bool pprint,
+                uint32_t scheme)
 {
         uint32_t d = n->asp->items->num_elements;
         struct matrix *sm = create_matrix(d, d);
@@ -96,14 +99,15 @@ void ffn_network_sm(struct network *n)
                 }
         }
 
-        print_sm_summary(n, sm);
+        print_sm_summary(n, sm, print, pprint, scheme);
 
         dispose_matrix(sm);
 }
 
 /**************************************************************************
  *************************************************************************/
-void rnn_network_sm(struct network *n)
+void rnn_network_sm(struct network *n, bool print, bool pprint,
+                uint32_t scheme)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
 
@@ -149,21 +153,31 @@ shift_stack:
                 }
         }
 
-        print_sm_summary(n, sm);
+        print_sm_summary(n, sm, print, pprint, scheme);
 
         dispose_matrix(sm);
 }
 
 /**************************************************************************
  *************************************************************************/
-void print_sm_summary(struct network *n, struct matrix *sm)
+void print_sm_summary(struct network *n, struct matrix *sm, bool print,
+                bool pprint, uint32_t scheme)
 {
-        uint32_t tr = n->asp->items->num_elements;
+        if (print) {
+                pprintf("Output-target similarity matrix:\n\n");
+                if (pprint) {
+                        pprint_matrix(sm, scheme);
+                } else {
+                        print_matrix(sm);
+                }
+                cprintf("\n");
+        }
 
         /*
          * Compute mean similarity, and its standard deviation. Also,
          * determine how may items reached threshold.
          */
+        uint32_t tr = n->asp->items->num_elements;
         double sim_mean = 0.0, sim_sd = 0.0;
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 double s = sm->elements[i][i];

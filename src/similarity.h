@@ -26,13 +26,17 @@
 
 /**************************************************************************
  *************************************************************************/
-void similarity_matrix(struct network *n);
-void ffn_network_sm(struct network *n);
-void rnn_network_sm(struct network *n);
+void similarity_matrix(struct network *n, bool print, bool pprint,
+                uint32_t scheme);
+void ffn_network_sm(struct network *n, bool print, bool pprint,
+                uint32_t scheme);
+void rnn_network_sm(struct network *n, bool print, bool pprint,
+                uint32_t scheme);
 
 /**************************************************************************
  *************************************************************************/
-void print_sm_summary(struct network *n, struct matrix *sm);
+void print_sm_summary(struct network *n, struct matrix *sm, bool print,
+                bool pprint, uint32_t scheme);
 
 /**************************************************************************
  *************************************************************************/
