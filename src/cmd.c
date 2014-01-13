@@ -51,6 +51,7 @@
 #define MTYPE_DYN_PARS  2
 
 /**************************************************************************
+ * Process a command
  *************************************************************************/
 void process_command(char *cmd, struct session *s)
 {
@@ -645,7 +646,6 @@ bool cmd_change_network(char *cmd, char *fmt, struct session *s, char *msg)
                 eprintf("Cannot change to network--no such network '%s'", tmp);
                 return true;
         }
-
         s->anp = n;
 
         mprintf(msg, tmp);
@@ -1070,10 +1070,12 @@ bool cmd_dispose_projection(char *cmd, char *fmt, struct network *n, char *msg)
         for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
                 if (((struct projection *)fg->out_projs->elements[i])->to == tg)
                         fg_to_tg = fg->out_projs->elements[i];
+
         struct projection *tg_to_fg = NULL;
         for (uint32_t i = 0; i < tg->inc_projs->num_elements; i++)
                 if (((struct projection *)tg->inc_projs->elements[i])->to == fg)
                         tg_to_fg = tg->inc_projs->elements[i];
+        
         if (fg_to_tg && tg_to_fg) {
                 remove_from_array(fg->out_projs, fg_to_tg);
                 remove_from_array(tg->inc_projs, tg_to_fg);
@@ -1273,10 +1275,12 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct network *n, char *msg)
         for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
                 if (((struct projection *)fg->out_projs->elements[i])->to == tg)
                         fg_to_tg = fg->out_projs->elements[i];
+
         struct projection *tg_to_fg = NULL;
         for (uint32_t i = 0; i < tg->inc_projs->num_elements; i++)
                 if (((struct projection *)tg->inc_projs->elements[i])->to == fg)
                         tg_to_fg = tg->inc_projs->elements[i];
+        
         if (fg_to_tg && tg_to_fg) {
                 fg_to_tg->frozen = true;
                 tg_to_fg->frozen = true;

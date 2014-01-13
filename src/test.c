@@ -182,7 +182,7 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
         pprintf("Item:\t\"%s\" -- \"%s\"\n", item->name, item->meta);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* print event number, and input vector */
-                pprintf("\n");
+                cprintf("\n");
                 pprintf("Event:\t%d\n", i);
                 pprintf("Input:\n\n");
                 if (pprint) {
@@ -256,7 +256,7 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
         pprintf("Item: \t\"%s\" -- \"%s\"\n", item->name, item->meta);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* print event number, and input vector */
-                pprintf("\n");
+                cprintf("\n");
                 pprintf("Event:\t%d\n", i);
                 pprintf("Input:\n\n");
                 if (pprint) {
@@ -306,7 +306,7 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
 
                 /* compute and print error */
                 n->status->error += n->output->err_fun->fun(g, tv, tr, zr);
-                pprintf("\n");
+                cprintf("\n");
                 pprintf("Error:\t%lf\n", n->status->error);
 
 shift_stack:
