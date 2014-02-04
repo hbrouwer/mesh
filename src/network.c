@@ -290,12 +290,11 @@ void dispose_group(struct group *g)
         free(g->name);
         dispose_vector(g->vector);
         dispose_vector(g->error);
-        if (!g->bias) {
-                if (g->act_fun->lookup)
-                        dispose_vector(g->act_fun->lookup);
-                free(g->act_fun);
-                free(g->err_fun);
-        }
+                
+        if (g->act_fun->lookup)
+                dispose_vector(g->act_fun->lookup);
+        free(g->act_fun);
+        free(g->err_fun);
 
         for (uint32_t j = 0; j < g->inc_projs->num_elements; j++)
                 dispose_projection(g->inc_projs->elements[j]);

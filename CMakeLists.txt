@@ -12,7 +12,7 @@ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         # Use GNU and POSIX source directives
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -march=core2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=c99 -Wall -O3 -march=core2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # Sources

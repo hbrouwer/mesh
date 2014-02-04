@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "network.h"
 #include "session.h"
 
 /**************************************************************************
@@ -44,6 +45,8 @@ error_out:
  *************************************************************************/
 void dispose_session(struct session *s)
 {
+        for (uint32_t i = 0; i < s->networks->num_elements; i++)
+                dispose_network(s->networks->elements[i]);
         dispose_array(s->networks);
         free(s);
 }

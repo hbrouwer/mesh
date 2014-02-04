@@ -17,6 +17,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "cli.h"
@@ -51,8 +52,8 @@ void cli_loop(struct session *s)
 
                 /* process command */
                 process_command(line, s);
-       
-                memset(line, 0, linecap);
+                
+                memset(line, 0, num_chars);
 
         } while (!feof(stdin));
 

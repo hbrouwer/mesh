@@ -53,7 +53,10 @@ error_out:
 void dispose_set(struct set *s)
 {
         free(s->name);
+        for (uint32_t i = 0; i < s->items->num_elements; i++)
+                dispose_item(s->items->elements[i]);
         dispose_array(s->items);
+        free(s->order);
         free(s);
 }
 

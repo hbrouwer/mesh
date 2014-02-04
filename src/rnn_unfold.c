@@ -384,8 +384,15 @@ void rnn_dispose_duplicate_groups(struct group *dg)
                 free(dg->out_projs->elements[i]);
         dispose_array(dg->out_projs);
 
+        /* dispose context groups (if allocated) */
+        if (dg->ctx_groups)
+                dispose_array(dg->ctx_groups);
+
         dispose_vector(dg->vector);
         dispose_vector(dg->error);
+
+        free(dg->act_fun);
+        free(dg->err_fun);
 
         free(dg->name);
         free(dg);
