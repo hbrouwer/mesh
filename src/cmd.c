@@ -786,17 +786,22 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct network *n, char *msg)
                 return true;
         }
 
+        /*
         char *tmp_bias;
         size_t block_size = (strlen(tmp) + 1) * sizeof(char);
         if (!(tmp_bias = malloc(block_size)))
                 goto error_out;
         memset(tmp_bias, 0, block_size);
-        asprintf(&tmp_bias, "%s_bias", tmp);
+        */
+        char *tmp_bias;
+        if (asprintf(&tmp_bias, "%s_bias", tmp) < 0)
+                goto error_out;
         if (find_array_element_by_name(n->groups, tmp_bias)) {
                 eprintf("Cannot attach bias group--group '%s' already exists in network '%s'",
                                 tmp_bias, n->name);
                 return true;
         }
+        free(tmp_bias);
 
         struct group *bg = attach_bias_group(n, g);
 
