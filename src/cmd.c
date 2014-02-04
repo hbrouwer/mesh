@@ -55,7 +55,7 @@
  *************************************************************************/
 void process_command(char *cmd, struct session *s)
 {
-        /* blank line or comment*/
+        /* blank line or comment */
         if (cmd[0] == '\0' || cmd[0] == '#') return;
 
         /* quit or exit */
