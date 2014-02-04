@@ -55,7 +55,8 @@ int main(int argc, char **argv)
                 }
                 else if (argv[i] != NULL) {
                         char *cmd;
-                        asprintf(&cmd, "loadFile %s", argv[i]);
+                        if (asprintf(&cmd, "loadFile %s", argv[i]) < 0)
+                                goto error_out;
                         process_command(cmd, s);
                         free(cmd);
                 }
@@ -67,6 +68,11 @@ leave_session:
         dispose_session(s);
 
         exit(EXIT_SUCCESS);
+
+error_out:
+        perror("[main()]");
+        
+        exit(EXIT_FAILURE);
 }
 
 /**************************************************************************
