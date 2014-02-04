@@ -4,10 +4,18 @@ project(mesh)
 
 include(CheckIncludeFile)
 
-set(CMAKE_C_COMPILER "/opt/local/bin/gcc-mp-4.8")
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -march=core2")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -march=core2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L")
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        # Use GCC for OpenMP
+        set(CMAKE_C_COMPILER "/opt/local/bin/gcc-mp-4.8")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -march=core2")
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+        # Use GNU and POSIX source directives
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -march=core2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L")
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+# Sources
 set(SOURCE_FILES 
         src/act.c
         src/array.c
@@ -33,9 +41,11 @@ set(SOURCE_FILES
         src/vector.c
         src/mods/erps.c)
 
+# mesh
 add_executable(mesh ${SOURCE_FILES})
 target_link_libraries(mesh m)
 
+# mesh + openmp
 add_executable(mesh-mp ${SOURCE_FILES})
 target_link_libraries(mesh-mp m)
 set_target_properties(mesh-mp PROPERTIES COMPILE_FLAGS -fopenmp LINK_FLAGS -fopenmp)

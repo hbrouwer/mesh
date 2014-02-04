@@ -66,12 +66,10 @@ int main(int argc, char **argv)
 
 leave_session:
         dispose_session(s);
-
         exit(EXIT_SUCCESS);
 
 error_out:
         perror("[main()]");
-        
         exit(EXIT_FAILURE);
 }
 

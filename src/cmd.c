@@ -786,13 +786,6 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct network *n, char *msg)
                 return true;
         }
 
-        /*
-        char *tmp_bias;
-        size_t block_size = (strlen(tmp) + 1) * sizeof(char);
-        if (!(tmp_bias = malloc(block_size)))
-                goto error_out;
-        memset(tmp_bias, 0, block_size);
-        */
         char *tmp_bias;
         if (asprintf(&tmp_bias, "%s_bias", tmp) < 0)
                 goto error_out;
