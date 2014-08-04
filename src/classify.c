@@ -214,7 +214,7 @@ void print_cm_summary(struct network *n, struct matrix *cm, bool print,
         pr /= cols->size;
         rc /= rows->size;
 
-        double beta = 1.0; // XXX: make beta a parameter
+        double beta = 1.0; // TODO: make beta a parameter
         double fs = (1.0 + pow(beta,2.0))  * (pr * rc) / ((pr * pow(beta,2.0)) + rc);
 
         /* report statistics */
