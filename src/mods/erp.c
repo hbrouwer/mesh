@@ -1,5 +1,5 @@
 /*
- * erps.c
+ * erp.c
  *
  * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
  *
@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-#include "erps.h"
+#include "erp.h"
 
 #include "../act.h"
 #include "../math.h"

@@ -37,8 +37,8 @@ void pprint_vector(struct vector *v, uint32_t scheme)
         double max = vector_maximum(v);
 
         for (uint32_t i = 0; i < v->size; i++) {
-                double sv = pprint_scale_value(v->elements[i], min, max);
-                pprint_value_as_color(sv, scheme);
+                double sv = scale_value(v->elements[i], min, max);
+                value_as_color(sv, scheme);
         }
         cprintf("\n");
 }
@@ -52,8 +52,8 @@ void pprint_matrix(struct matrix *m, uint32_t scheme)
 
         for (uint32_t i = 0; i < m->rows; i++) {
                 for (uint32_t j = 0; j < m->cols; j++) {
-                        double sv = pprint_scale_value(m->elements[i][j], min, max);
-                        pprint_value_as_color(sv, scheme);
+                        double sv = scale_value(m->elements[i][j], min, max);
+                        value_as_color(sv, scheme);
                 }
                 cprintf("\n");
         }
@@ -61,7 +61,7 @@ void pprint_matrix(struct matrix *m, uint32_t scheme)
 
 /**************************************************************************
  *************************************************************************/
-double pprint_scale_value(double v, double min, double max)
+double scale_value(double v, double min, double max)
 {
         double sv = 0.0;
 
@@ -93,7 +93,7 @@ double pprint_scale_value(double v, double min, double max)
 
 /**************************************************************************
  *************************************************************************/
-void pprint_value_as_color(double v, uint32_t scheme)
+void value_as_color(double v, uint32_t scheme)
 {
         uint32_t *palette;
 

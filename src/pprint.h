@@ -39,7 +39,7 @@ void pprint_matrix(struct matrix *m, uint32_t scheme);
 
 /**************************************************************************
  *************************************************************************/
-double pprint_scale_value(double v, double min, double max);
-void pprint_value_as_color(double v, uint32_t scheme);
+double scale_value(double v, double min, double max);
+void value_as_color(double v, uint32_t scheme);
 
 #endif /* PPRINT_H */

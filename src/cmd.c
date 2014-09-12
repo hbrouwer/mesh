@@ -41,7 +41,8 @@
 #include "test.h"
 #include "train.h"
 
-#include "mods/erps.h"
+#include "mods/dss.h"
+#include "mods/erp.h"
 
 #define VTYPE_UNITS 0
 #define VTYPE_ERROR 1
@@ -497,6 +498,18 @@ void process_command(char *cmd, struct session *s)
                                 "erpGenerateTable %s",
                                 s,
                                 "ERP amplitude table:"
+                                )) goto done;
+
+        /* distributed situation space module commands */
+        if (cmd_dss_test_item(cmd,
+                                "dssTestItem \"%[^\"]\"",
+                                s,
+                                "Testing network '%s' with item '%s':"
+                                )) goto done;
+        if (cmd_dss_test(cmd,
+                                "dssTest",
+                                s->anp,
+                                "Testing network '%s':"
                                 )) goto done;
 
         /* invalid command */
@@ -1963,6 +1976,48 @@ bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s, char *msg)
                 return false;
 
         erp_generate_table(s->anp, tmp);
+
+        return true;
+}
+
+/**************************************************************************
+ *************************************************************************/
+bool cmd_dss_test_item(char *cmd, char *fmt, struct session *s, char *msg)
+{
+        char tmp[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        struct item *item = find_array_element_by_name(s->anp->asp->items, tmp);
+        if (!item) {
+                eprintf("Cannot test network--no such item '%s'", tmp);
+                return true;
+        }
+
+        
+        mprintf(msg, s->anp->name, tmp);
+        mprintf(" ");
+
+        dss_test_item(s->anp, item);
+
+        mprintf(" ");
+
+        return true;
+}
+
+/**************************************************************************
+ *************************************************************************/
+bool cmd_dss_test(char *cmd, char *fmt, struct network *n, char *msg)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf(msg, n->name);
+        mprintf(" ");
+
+        dss_test(n);
+
+        mprintf(" ");
 
         return true;
 }

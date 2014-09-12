@@ -39,7 +39,8 @@ set(SOURCE_FILES
         src/train.c
         src/network.c
         src/vector.c
-        src/mods/erps.c)
+        src/mods/dss.c
+        src/mods/erp.c)
 
 # mesh
 add_executable(mesh ${SOURCE_FILES})

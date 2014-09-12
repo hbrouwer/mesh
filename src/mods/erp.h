@@ -1,5 +1,5 @@
 /*
- * erps.h
+ * erp.h
  *
  * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
  *
@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-#ifndef ERPS_H
-#define ERPS_H
+#ifndef ERP_H
+#define ERP_H
 
 #include "../network.h"
 #include "../set.h"
@@ -28,4 +28,4 @@ struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
 struct vector *bold_responses_for_item(struct network *n, struct group *g,
                 struct item *item);
 
-#endif /* ERPS_H */
+#endif /* ERP_H */
