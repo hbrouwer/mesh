@@ -48,7 +48,8 @@ void dss_test(struct network *n)
                         feed_forward(n, n->input);
                 }
 
-                double cs = dss_comprehension_score(item->targets[item->num_events - 1], n->output->vector);
+                double cs = dss_comprehension_score(item->targets[item->num_events - 1],
+                                n->output->vector);
 
                 printf("%s: %f\n", item->name, cs);
                 if (!isnan(cs)) {

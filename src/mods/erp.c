@@ -22,42 +22,44 @@
 #include "../math.h"
 #include "../vector.h"
 
-void erp_generate_table(struct network *n, char *fn)
+/**************************************************************************
+ *************************************************************************/
+void erp_generate_table(struct network *n, struct group *n400_gen,
+                struct group *p600_gen, char *filename)
 {
-        FILE *fd = fopen(fn, "w");
+        FILE *fd;
+        if (!(fd = fopen(filename, "w")))
+                goto error_out;
 
-        fprintf(fd,"item_id,item_name,item_meta,word_pos,n400_amp,p600_amp,mtg_bold,ifg_bold\n");
+        fprintf(fd,"item_id,item_name,item_meta,word_pos,n400_amp,p600_amp\n");
 
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
 
                 /* ERP amplitudes */
-                struct vector *n4av = erp_amplitudes_for_item(n,
-                                find_array_element_by_name(n->groups, "lpMTG_hidden"), item);
-                struct vector *p6av = erp_amplitudes_for_item(n,
-                                find_array_element_by_name(n->groups, "lIFG_hidden"), item);
-
-                /* BOLD responses */
-                struct vector *mtg_bv = bold_responses_for_item(n,
-                                find_array_element_by_name(n->groups, "lpMTG_hidden"), item);
-                struct vector *ifg_bv = bold_responses_for_item(n,
-                                find_array_element_by_name(n->groups, "lIFG_hidden"), item);
+                struct vector *n4av = erp_amplitudes_for_item(n, n400_gen, item);
+                struct vector *p6av = erp_amplitudes_for_item(n, p600_gen, item);
 
                 for (uint32_t j = 0; j < item->num_events; j++) 
-                        fprintf(fd,"%d,\"%s\",\"%s\",%d,%f,%f,%f,%f\n",
+                        fprintf(fd,"%d,\"%s\",\"%s\",%d,%f,%f\n",
                                         i, item->name, item->meta, j,
-                                        n4av->elements[j],
-                                        p6av->elements[j],
-                                        mtg_bv->elements[j],
-                                        ifg_bv->elements[j]);
+                                        n4av->elements[j], p6av->elements[j]);
 
                 dispose_vector(n4av);
                 dispose_vector(p6av);
         }
 
         fclose(fd);
+
+        return;
+
+error_out:
+        perror("[erp_generate_table()]");
+        return;
 }
 
+/**************************************************************************
+ *************************************************************************/
 struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
                 struct item *item)
 {
@@ -88,54 +90,4 @@ struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
         dispose_vector(pv);
 
         return av;
-}
-
-struct vector *bold_responses_for_item(struct network *n, struct group *g,
-                struct item *item)
-{
-        struct vector *bv = create_vector(item->num_events);
-        //struct vector *pv = create_vector(g->vector->size);
-        //fill_vector_with_value(pv, 0.5);
-
-        if (n->type == TYPE_SRN)
-                reset_context_groups(n);
-
-        for (uint32_t i = 0; i < item->num_events; i++) {
-                /*
-                 * Shift context group chain, in case of 
-                 * "Elman-towers".
-                 */
-                if (i > 0 && n->type == TYPE_SRN)
-                        shift_context_groups(n);
-
-                copy_vector(n->input->vector, item->inputs[i]);
-                feed_forward(n, n->input);
-
-                double lfp = 0.0;
-                for (uint32_t j = 0; j < g->vector->size; j++) {
-                        for (uint32_t x = 0; x < g->inc_projs->num_elements; x++) {
-                                struct projection *ip = g->inc_projs->elements[x];
-                                struct group *pg = ip->to;
-                                struct matrix *w = ip->weights;
-                                for (uint32_t z = 0; z < pg->vector->size; z++)
-                                        lfp += pg->vector->elements[z] * w->elements[z][j];
-                        }
-                }
-                lfp /= g->vector->size;
-
-                /*
-                double bold = 0.0;
-                for (int x = 0; x < g->vector->size; x++)
-                        bold += g->vector->elements[x];
-                        */
-                //bold /= g->vector->size;
-                
-                bv->elements[i] = lfp; 
-
-                //copy_vector(pv, g->vector);
-        }
-
-        //dispose_vector(pv);
-
-        return bv;
 }

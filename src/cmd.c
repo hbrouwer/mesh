@@ -495,7 +495,7 @@ void process_command(char *cmd, struct session *s)
 
         /* event-related potentials module commands */
         if (cmd_erp_generate_table(cmd,
-                                "erpGenerateTable %s",
+                                "erpGenerateTable %s %s %s",
                                 s,
                                 "ERP amplitude table:"
                                 )) goto done;
@@ -1971,11 +1971,25 @@ bool cmd_set_colorscheme(char *cmd, char *fmt, struct session *s, char *msg)
  *************************************************************************/
 bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s, char *msg)
 {
-        char tmp[MAX_ARG_SIZE];
-        if (sscanf(cmd, fmt, tmp) != 1)
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE], tmp3[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp1, tmp2, tmp3) != 3)
                 return false;
 
-        erp_generate_table(s->anp, tmp);
+        struct group *n400_gen = find_array_element_by_name(s->anp->groups, tmp1);
+        struct group *p600_gen = find_array_element_by_name(s->anp->groups, tmp2);
+
+        if (n400_gen == NULL) {
+                eprintf("Cannot compute ERP correlates--no such group '%s'",
+                                tmp1);
+                return true;
+        }
+        if (p600_gen == NULL) {
+                eprintf("Cannot compute ERP correlates--no such group '%s'",
+                                tmp2);
+                return true;
+        }
+
+        erp_generate_table(s->anp, n400_gen, p600_gen, tmp3);
 
         return true;
 }
