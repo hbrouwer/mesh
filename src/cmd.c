@@ -41,8 +41,8 @@
 #include "test.h"
 #include "train.h"
 
-#include "mods/dss.h"
-#include "mods/erp.h"
+#include "modules/dss.h"
+#include "modules/erp.h"
 
 #define VTYPE_UNITS 0
 #define VTYPE_ERROR 1
@@ -56,10 +56,14 @@
  *************************************************************************/
 void process_command(char *cmd, struct session *s)
 {
-        /* blank line or comment */
+        /* 
+         * Blank line or comment.
+         */
         if (cmd[0] == '\0' || cmd[0] == '#') return;
 
-        /* quit or exit */
+        /* 
+         * Quit or exit.
+         */
         cmd_quit(cmd, "quit", s, "Leaving MESH."); 
         cmd_quit(cmd, "exit", s, "Leaving MESH.");
 
@@ -70,7 +74,9 @@ void process_command(char *cmd, struct session *s)
                                 "Loaded file ... \t\t ( %s )"
                                 )) goto done;
 
-        /* network commands */
+        /* 
+         * Network commands.
+         */
         if (cmd_create_network(cmd,
                                 "createNetwork %s %s",
                                 s,
@@ -101,7 +107,9 @@ void process_command(char *cmd, struct session *s)
                 return;
         }
 
-        /* group commands */
+        /* 
+         * Group commands.
+         */
         if (cmd_create_group(cmd,
                                 "createGroup %s %d",
                                 s->anp,
@@ -148,7 +156,9 @@ void process_command(char *cmd, struct session *s)
                                 "Toggle activation lookup ... \t ( %s )"
                                 )) goto done;
 
-        /* projection commands */
+        /*
+         * Projection commands.
+         */
         if (cmd_create_projection(cmd,
                                 "createProjection %s %s",
                                 s->anp,
@@ -180,7 +190,9 @@ void process_command(char *cmd, struct session *s)
                                 "Froze projection ... \t\t ( %s -> %s )"
                                 )) goto done;
         
-        /* set integer parameters */
+        /* 
+         * Integer parameters.
+         */
         if (cmd_set_int_parameter(cmd,
                                 "set BatchSize %d",
                                 &s->anp->batch_size,
@@ -207,7 +219,9 @@ void process_command(char *cmd, struct session *s)
                                 "Set BPTT back ticks ... \t ( %d )"
                                 )) goto done;
         
-        /* set double parameters */
+        /* 
+         * Double parameters.
+         */
         if (cmd_set_double_parameter(cmd,
                                 "set RandomMu %lf",
                                 &s->anp->random_mu,
@@ -314,7 +328,9 @@ void process_command(char *cmd, struct session *s)
                                 "Set decrement rate (for Delta-Bar-Delta) ... \t ( %lf )"
                                 )) goto done;
 
-        /* item set commands */
+        /* 
+         * Training and test sets.
+         */
         if (cmd_load_set(cmd,
                                 "loadSet %s %s",
                                 s->anp,
@@ -345,7 +361,9 @@ void process_command(char *cmd, struct session *s)
                                 "Set training order ... \t\t ( %s )"
                                 )) goto done;
 
-        /* ranzomization, learning, and updating algorithms */
+        /* 
+         * Ranzomization, learning, and updating algorithms.
+         */
         if (cmd_set_rand_algorithm(cmd,
                                 "set RandomAlgorithm %s",
                                 s->anp,
@@ -362,14 +380,18 @@ void process_command(char *cmd, struct session *s)
                                 "Set update algorithm ... \t ( %s )"
                                 )) goto done;
 
-        /* similarity metric */
+        /* 
+         * Similarity metric.
+         */
         if (cmd_set_similarity_metric(cmd,
                                 "set SimilarityMetric %s",
                                 s->anp,
                                 "Set similarity metric ... \t ( %s )"
                                 )) goto done;
 
-        /* initialization */
+        /* 
+         * Initialization.
+         */
         if (cmd_init(cmd, "init", s->anp, "Initialized network '%s'")) goto done;
 
         /*
@@ -382,7 +404,9 @@ void process_command(char *cmd, struct session *s)
                 return;
         }
 
-        /* reset, training, and testing */
+        /* 
+         * Reset, training, and testing.
+         */
         if (cmd_reset(cmd,
                                 "reset",
                                 s->anp,
@@ -404,7 +428,9 @@ void process_command(char *cmd, struct session *s)
                                 "Testing network '%s' with item '%s'"
                                 )) goto done;
 
-        /* similarity and confusion matrices */
+        /* 
+         * Similarity and confusion matrices.
+         */
         if (cmd_similarity_matrix(cmd,
                                 "similarityMatrix",
                                 s,
@@ -430,14 +456,18 @@ void process_command(char *cmd, struct session *s)
                                 true
                                 )) goto done;
 
-        /* weight statistics */
+        /* 
+         * Weight statistics.
+         */
         if (cmd_weight_stats(cmd,
                                 "weightStats",
                                 s->anp,
                                 "Weight statistics for network '%s'"
                                 )) goto done;
        
-        /* show vectors and matrices */
+        /* 
+         * Show vectors and matrices.
+         */
         if (cmd_show_vector(cmd,
                                 "showUnits %s",
                                 s,
@@ -469,7 +499,9 @@ void process_command(char *cmd, struct session *s)
                                 MTYPE_DYN_PARS
                                 )) goto done;
         
-        /* weight matrix saving and loading */
+        /* 
+         * Weight matrix saving and loading.
+         */
         if (cmd_save_weights(cmd,
                                 "saveWeights %s",
                                 s->anp,
@@ -481,7 +513,9 @@ void process_command(char *cmd, struct session *s)
                                 "Loaded weights ... \t\t ( %s )"
                                 )) goto done;
 
-        /* pretty printing and color schemes */
+        /* 
+         * Pretty printing and color schemes.
+         */
         if (cmd_toggle_pretty_printing(cmd,
                                 "togglePrettyPrinting",
                                 s,
@@ -493,14 +527,18 @@ void process_command(char *cmd, struct session *s)
                                 "Set color scheme ... \t\t ( %s )"
                                 )) goto done;
 
-        /* event-related potentials module commands */
+        /* 
+         * Event-related potentials modules.
+         */
         if (cmd_erp_generate_table(cmd,
                                 "erpGenerateTable %s %s %s",
                                 s->anp,
                                 "ERP amplitude table:"
                                 )) goto done;
 
-        /* distributed situation space module commands */
+        /* 
+         * Distributed situation space (DSS) module.
+         */
         if (cmd_dss_test(cmd,
                                 "dssTest",
                                 s->anp,
@@ -512,7 +550,9 @@ void process_command(char *cmd, struct session *s)
                                 "Testing network '%s' with item '%s':"
                                 )) goto done;
 
-        /* invalid command */
+        /* 
+         * Invalid command.
+         */
         if (strlen(cmd) > 1) {
                 eprintf("invalid command: %s", cmd); 
                 eprintf("(type 'help' for a list of valid commands)");
