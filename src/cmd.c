@@ -41,18 +41,21 @@
 #include "test.h"
 #include "train.h"
 
+/* modules */
 #include "modules/dss.h"
 #include "modules/erp.h"
 
+/* vector types */
 #define VTYPE_UNITS 0
 #define VTYPE_ERROR 1
 
+/* matrix types */
 #define MTYPE_WEIGHTS   0
 #define MTYPE_GRADIENTS 1
 #define MTYPE_DYN_PARS  2
 
 /**************************************************************************
- * Process a command
+ * Process a command.
  *************************************************************************/
 void process_command(char *cmd, struct session *s)
 {
@@ -67,7 +70,9 @@ void process_command(char *cmd, struct session *s)
         cmd_quit(cmd, "quit", s, "Leaving MESH."); 
         cmd_quit(cmd, "exit", s, "Leaving MESH.");
 
-        /* load file */
+        /* 
+         * Load file.
+         */
         if (cmd_load_file(cmd,
                                 "loadFile %s",
                                 s,
@@ -528,7 +533,7 @@ void process_command(char *cmd, struct session *s)
                                 )) goto done;
 
         /* 
-         * Event-related potentials modules.
+         * Event-related potentials (ERP) module.
          */
         if (cmd_erp_generate_table(cmd,
                                 "erpGenerateTable %s %s %s",
@@ -563,6 +568,10 @@ done:
 }
 
 /**************************************************************************
+ * Quit or exit.
+ *************************************************************************/
+
+/**************************************************************************
  *************************************************************************/
 void cmd_quit(char *cmd, char *fmt, struct session *s, char *msg)
 {
@@ -574,6 +583,11 @@ void cmd_quit(char *cmd, char *fmt, struct session *s, char *msg)
         dispose_session(s);
         exit(EXIT_SUCCESS);
 }
+
+
+/**************************************************************************
+ * Load file.
+ *************************************************************************/
 
 /**************************************************************************
  *************************************************************************/
@@ -603,6 +617,10 @@ bool cmd_load_file(char *cmd, char *fmt, struct session *s, char *msg)
 }
 
 /**************************************************************************
+ * Network commands
+ *************************************************************************/
+
+/**************************************************************************
  *************************************************************************/
 bool cmd_create_network(char *cmd, char *fmt, struct session *s, char *msg)
 {
@@ -611,10 +629,13 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s, char *msg)
                 return false;
 
         uint32_t type = 0;
+        /* feed forward network */
         if (strcmp(tmp2, "ffn") == 0)
                 type = TYPE_FFN;
+         /* simple recurrent network */
         else if (strcmp(tmp2, "srn") == 0)
                 type = TYPE_SRN;
+        /* recurrent network */
         else if (strcmp(tmp2, "rnn") == 0)
                 type = TYPE_RNN;
         else {
@@ -705,6 +726,10 @@ bool cmd_change_network(char *cmd, char *fmt, struct session *s, char *msg)
 
         return true;
 }
+
+/**************************************************************************
+ * Group commands
+ *************************************************************************/
 
 /**************************************************************************
  *************************************************************************/
@@ -1121,7 +1146,7 @@ bool cmd_dispose_projection(char *cmd, char *fmt, struct network *n, char *msg)
         for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
                 if (((struct projection *)fg->out_projs->elements[i])->to == tg)
                         fg_to_tg = fg->out_projs->elements[i];
-
+        
         struct projection *tg_to_fg = NULL;
         for (uint32_t i = 0; i < tg->inc_projs->num_elements; i++)
                 if (((struct projection *)tg->inc_projs->elements[i])->to == fg)
@@ -1143,6 +1168,7 @@ bool cmd_dispose_projection(char *cmd, char *fmt, struct network *n, char *msg)
 
         return true;
 }
+
 
 /**************************************************************************
  *************************************************************************/
@@ -1347,6 +1373,10 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct network *n, char *msg)
 }
 
 /**************************************************************************
+ * Integer parameters.
+ *************************************************************************/
+
+/**************************************************************************
  *************************************************************************/
 bool cmd_set_int_parameter(char *cmd, char *fmt, uint32_t *par, char *msg)
 {
@@ -1359,6 +1389,10 @@ bool cmd_set_int_parameter(char *cmd, char *fmt, uint32_t *par, char *msg)
 }
 
 /**************************************************************************
+ * Double parameters.
+ *************************************************************************/
+
+/**************************************************************************
  *************************************************************************/
 bool cmd_set_double_parameter(char *cmd, char *fmt, double *par, char *msg)
 {
@@ -1369,6 +1403,10 @@ bool cmd_set_double_parameter(char *cmd, char *fmt, double *par, char *msg)
 
         return true;
 }
+
+/**************************************************************************
+ * Training and test sets.
+ *************************************************************************/
 
 /**************************************************************************
  *************************************************************************/
@@ -1508,10 +1546,13 @@ bool cmd_set_training_order(char *cmd, char *fmt, uint32_t *training_order,
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
+        /* ordered */
         if (strcmp(tmp, "ordered") == 0)
                 *training_order = TRAIN_ORDERED;
-        else if (strcmp(tmp, "permuted") == 0)
+        /* permuted */
+        else if (strcmp(tmp, "permuted") == 0)    
                 *training_order = TRAIN_PERMUTED;
+        /* randomized */
         else if (strcmp(tmp, "randomized") == 0)
                 *training_order = TRAIN_RANDOMIZED;
         else {
@@ -1525,6 +1566,10 @@ bool cmd_set_training_order(char *cmd, char *fmt, uint32_t *training_order,
 }
 
 /**************************************************************************
+ * Ranzomization, learning, and updating algorithms.
+ *************************************************************************/
+
+/**************************************************************************
  *************************************************************************/
 bool cmd_set_rand_algorithm(char *cmd, char *fmt, struct network *n,
                 char *msg)
@@ -1533,14 +1578,19 @@ bool cmd_set_rand_algorithm(char *cmd, char *fmt, struct network *n,
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
+        /* gaussian randomization */
         if (strcmp(tmp, "gaussian") == 0)
                 n->random_algorithm = randomize_gaussian;
+        /* range randomization */
         else if (strcmp(tmp, "range") == 0)
                 n->random_algorithm = randomize_range;
+        /* Nguyen-Widrow randomization */
         else if (strcmp(tmp, "nguyen_widrow") == 0)
                 n->random_algorithm = randomize_nguyen_widrow;
+        /* fan-in method */
         else if (strcmp(tmp, "fan_in") == 0)
                 n->random_algorithm = randomize_fan_in;
+        /* binary randomization */
         else if (strcmp(tmp, "binary") == 0)
                 n->random_algorithm = randomize_binary;
         else {
@@ -1587,40 +1637,42 @@ bool cmd_set_update_algorithm(char *cmd, char *fmt, struct network *n,
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
+        /* steepest descent */
         if (strcmp(tmp, "steepest") == 0) {
                 n->update_algorithm = bp_update_sd;
                 n->sd_type = SD_DEFAULT;
         }
+        /* bounded steepest descent */
         else if (strcmp(tmp, "bounded") == 0) {
                 n->update_algorithm = bp_update_sd;
                 n->sd_type = SD_BOUNDED;
         }
+        /* resilient propagation plus */
         else if (strcmp(tmp, "rprop+") == 0) {
                 n->update_algorithm = bp_update_rprop;
                 n->rp_type = RPROP_PLUS;
         }
-        else if (strcmp(tmp, "rprop+") == 0) {
-                n->update_algorithm = bp_update_rprop;
-                n->rp_type = RPROP_PLUS;
-        }
+        /* resilient propagation minus */
         else if (strcmp(tmp, "rprop-") == 0) {
                 n->update_algorithm = bp_update_rprop;
                 n->rp_type = RPROP_MINUS;
         }
+        /* modified resilient propagation plus */
         else if (strcmp(tmp, "irprop+") == 0) {
                 n->update_algorithm = bp_update_rprop;
                 n->rp_type = IRPROP_PLUS;
         }
+        /* modified resilient propagation minus */
         else if (strcmp(tmp, "irprop-") == 0) {
                 n->update_algorithm = bp_update_rprop;
                 n->rp_type = IRPROP_MINUS;
-        }        
-        else if (strcmp(tmp, "qprop") == 0) {
+        }
+        /* quickprop */
+        else if (strcmp(tmp, "qprop") == 0)
                 n->update_algorithm = bp_update_qprop;
-        }
-        else if (strcmp(tmp, "dbd") == 0) {
+        /* delta-bar-delta */
+        else if (strcmp(tmp, "dbd") == 0)
                 n->update_algorithm = bp_update_dbd;
-        }
         else {
                 eprintf("Invalid update algorithm '%s'", tmp);
                 return true;
@@ -1633,6 +1685,10 @@ bool cmd_set_update_algorithm(char *cmd, char *fmt, struct network *n,
 }
 
 /**************************************************************************
+ * Similarity metric.
+ *************************************************************************/
+
+/**************************************************************************
  *************************************************************************/
 bool cmd_set_similarity_metric(char *cmd, char *fmt, struct network *n,
                 char *msg)
@@ -1641,16 +1697,22 @@ bool cmd_set_similarity_metric(char *cmd, char *fmt, struct network *n,
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
+        /* inner product */
         if (strcmp(tmp, "inner_product") == 0)
                 n->similarity_metric = inner_product;
+        /* harmonic mean */
         else if (strcmp(tmp, "harmonic_mean") == 0)
                 n->similarity_metric = harmonic_mean;
+        /* cosine similarity */
         else if (strcmp(tmp, "cosine") == 0)
                 n->similarity_metric = cosine;
+        /* tanimoto */
         else if (strcmp(tmp, "tanimoto") == 0)
                 n->similarity_metric = tanimoto;
+        /* dice */
         else if (strcmp(tmp, "dice") == 0)
                 n->similarity_metric = dice;
+        /* pearson correlation */
         else if (strcmp(tmp, "pearson_correlation") == 0)
                 n->similarity_metric = pearson_correlation;
         else {
@@ -1663,6 +1725,10 @@ bool cmd_set_similarity_metric(char *cmd, char *fmt, struct network *n,
 
         return true;
 }
+
+/**************************************************************************
+ * Initialization.
+ *************************************************************************/
 
 /**************************************************************************
  *************************************************************************/
@@ -1678,6 +1744,11 @@ bool cmd_init(char *cmd, char *fmt, struct network *n, char *msg)
 
         return true;
 }
+
+
+/**************************************************************************
+ * Reset, training, and testing.
+ *************************************************************************/
 
 /**************************************************************************
  *************************************************************************/
@@ -1752,6 +1823,10 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s, char *msg)
 }
 
 /**************************************************************************
+ * Similarity and confusion matrices.
+ *************************************************************************/
+
+/**************************************************************************
  *************************************************************************/
 bool cmd_similarity_matrix(char *cmd, char *fmt, struct session *s,
                 char *msg, bool print_matrix)
@@ -1788,6 +1863,10 @@ bool cmd_confusion_matrix(char *cmd, char *fmt, struct session *s,
 }
 
 /**************************************************************************
+ * Weight statistics.
+ *************************************************************************/
+
+/**************************************************************************
  *************************************************************************/
 bool cmd_weight_stats(char *cmd, char *fmt, struct network *n, char *msg)
 {
@@ -1813,6 +1892,10 @@ bool cmd_weight_stats(char *cmd, char *fmt, struct network *n, char *msg)
 
         return true;
 }
+
+/**************************************************************************
+ * Show vectors and matrices.
+ *************************************************************************/
 
 /**************************************************************************
  *************************************************************************/
@@ -1919,6 +2002,10 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s, char *msg,
 }
 
 /**************************************************************************
+ * Weight matrix saving and loading.
+ *************************************************************************/
+
+/**************************************************************************
  *************************************************************************/
 bool cmd_save_weights(char *cmd, char *fmt, struct network *n, char *msg)
 {
@@ -1953,6 +2040,10 @@ bool cmd_load_weights(char *cmd, char *fmt, struct network *n, char *msg)
 }
 
 /**************************************************************************
+ * Pretty printing and color schemes.
+ *************************************************************************/
+
+/**************************************************************************
  *************************************************************************/
 bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s, char *msg)
 {
@@ -1979,18 +2070,25 @@ bool cmd_set_colorscheme(char *cmd, char *fmt, struct session *s, char *msg)
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
+        /* blue and red */
         if (strcmp(tmp, "blue_red") == 0)
                 s->pprint_scheme = SCHEME_BLUE_RED;
+        /* blue and yellow */
         else if (strcmp(tmp, "blue_yellow") == 0)
                 s->pprint_scheme = SCHEME_BLUE_YELLOW;
+        /* grayscale */
         else if (strcmp(tmp, "grayscale") == 0)
                 s->pprint_scheme = SCHEME_GRAYSCALE;
+        /* spacepigs */
         else if (strcmp(tmp, "spacepigs") == 0)
                 s->pprint_scheme = SCHEME_SPACEPIGS;
+        /* moody blues */
         else if (strcmp(tmp, "moody_blues") == 0)
                 s->pprint_scheme = SCHEME_MOODY_BLUES;
+        /* for John */
         else if (strcmp(tmp, "for_john") == 0)
                 s->pprint_scheme = SCHEME_FOR_JOHN;
+        /* gray and orange */
         else if (strcmp(tmp, "gray_orange") == 0)
                 s->pprint_scheme = SCHEME_GRAY_ORANGE;
         else {
@@ -2004,7 +2102,7 @@ bool cmd_set_colorscheme(char *cmd, char *fmt, struct session *s, char *msg)
 }
 
 /**************************************************************************
- * Module commands
+ * Event-related potentials (ERP) module.
  *************************************************************************/
 
 /**************************************************************************
@@ -2035,6 +2133,10 @@ bool cmd_erp_generate_table(char *cmd, char *fmt, struct network *n, char *msg)
 }
 
 /**************************************************************************
+ * Distributed situation space (DSS) module.
+ *************************************************************************/
+
+/**************************************************************************
  *************************************************************************/
 bool cmd_dss_test_item(char *cmd, char *fmt, struct network *n, char *msg)
 {
@@ -2047,7 +2149,6 @@ bool cmd_dss_test_item(char *cmd, char *fmt, struct network *n, char *msg)
                 eprintf("Cannot test network--no such item '%s'", tmp);
                 return true;
         }
-
         
         mprintf(msg, n->name, tmp);
         mprintf(" ");
