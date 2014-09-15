@@ -496,20 +496,20 @@ void process_command(char *cmd, struct session *s)
         /* event-related potentials module commands */
         if (cmd_erp_generate_table(cmd,
                                 "erpGenerateTable %s %s %s",
-                                s,
+                                s->anp,
                                 "ERP amplitude table:"
                                 )) goto done;
 
         /* distributed situation space module commands */
-        if (cmd_dss_test_item(cmd,
-                                "dssTestItem \"%[^\"]\"",
-                                s,
-                                "Testing network '%s' with item '%s':"
-                                )) goto done;
         if (cmd_dss_test(cmd,
                                 "dssTest",
                                 s->anp,
                                 "Testing network '%s':"
+                                )) goto done;
+        if (cmd_dss_test_item(cmd,
+                                "dssTestItem \"%[^\"]\"",
+                                s->anp,
+                                "Testing network '%s' with item '%s':"
                                 )) goto done;
 
         /* invalid command */
@@ -1969,14 +1969,14 @@ bool cmd_set_colorscheme(char *cmd, char *fmt, struct session *s, char *msg)
 
 /**************************************************************************
  *************************************************************************/
-bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s, char *msg)
+bool cmd_erp_generate_table(char *cmd, char *fmt, struct network *n, char *msg)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE], tmp3[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp1, tmp2, tmp3) != 3)
                 return false;
 
-        struct group *n400_gen = find_array_element_by_name(s->anp->groups, tmp1);
-        struct group *p600_gen = find_array_element_by_name(s->anp->groups, tmp2);
+        struct group *n400_gen = find_array_element_by_name(n->groups, tmp1);
+        struct group *p600_gen = find_array_element_by_name(n->groups, tmp2);
 
         if (n400_gen == NULL) {
                 eprintf("Cannot compute ERP correlates--no such group '%s'",
@@ -1989,30 +1989,30 @@ bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s, char *msg)
                 return true;
         }
 
-        erp_generate_table(s->anp, n400_gen, p600_gen, tmp3);
+        erp_generate_table(n, n400_gen, p600_gen, tmp3);
 
         return true;
 }
 
 /**************************************************************************
  *************************************************************************/
-bool cmd_dss_test_item(char *cmd, char *fmt, struct session *s, char *msg)
+bool cmd_dss_test_item(char *cmd, char *fmt, struct network *n, char *msg)
 {
         char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        struct item *item = find_array_element_by_name(s->anp->asp->items, tmp);
+        struct item *item = find_array_element_by_name(n->asp->items, tmp);
         if (!item) {
                 eprintf("Cannot test network--no such item '%s'", tmp);
                 return true;
         }
 
         
-        mprintf(msg, s->anp->name, tmp);
+        mprintf(msg, n->name, tmp);
         mprintf(" ");
 
-        dss_test_item(s->anp, item);
+        dss_test_item(n, item);
 
         mprintf(" ");
 
