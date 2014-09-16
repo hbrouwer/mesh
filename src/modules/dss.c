@@ -28,7 +28,7 @@
 void dss_test(struct network *n)
 {
         double acs = 0.0;
-        int ncs = 0; 
+        uint32_t ncs = 0; 
 
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
@@ -167,7 +167,6 @@ double dss_comprehension_score(struct vector *a, struct vector *z)
                         sig = true;
         if (!sig)
                 return NAN;
-
 
         if (tau_a_given_z > tau_a)
                 cs = (tau_a_given_z - tau_a) / (1.0 - tau_a);

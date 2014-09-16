@@ -45,6 +45,10 @@
 #include "modules/dss.h"
 #include "modules/erp.h"
 
+/* group types */
+#define GTYPE_INPUT  0
+#define GTYPE_OUTPUT 1
+
 /* vector types */
 #define VTYPE_UNITS 0
 #define VTYPE_ERROR 1
@@ -74,8 +78,8 @@ const static struct command cmds[] = {
         {"disposeGroup",            "%s",            &cmd_dispose_group},
         {"listGroups",              NULL,            &cmd_list_groups},
         {"attachBias",              "%s",            &cmd_attach_bias},
-        {"set InputGroup",          "%s",            &cmd_set_input_group},
-        {"set OutputGroup",         "%s",            &cmd_set_output_group},
+        {"set InputGroup",          "%s",            &cmd_set_io_group},
+        {"set OutputGroup",         "%s",            &cmd_set_io_group},
         {"set ActFunc",             "%s %s",         &cmd_set_act_func},
         {"set ErrFunc",             "%s %s",         &cmd_set_err_func},
         {"toggleActLookup",         NULL,            &cmd_toggle_act_lookup},
@@ -185,7 +189,7 @@ void process_command(char *cmd, struct session *s)
         if (cmd[0] == '\0' || cmd[0] == '#')
                 return;
 
-        for (int i = 0; cmds[i].cmd_base != NULL; i++) {
+        for (uint32_t i = 0; cmds[i].cmd_base != NULL; i++) {
                 if (strncmp(cmd, cmds[i].cmd_base, strlen(cmds[i].cmd_base)) == 0) {
 
                         if (i > 3 && !s->anp) {
@@ -528,10 +532,16 @@ error_out:
 
 /**************************************************************************
  *************************************************************************/
-void cmd_set_input_group(char *cmd, char *fmt, struct session *s)
+void cmd_set_io_group(char *cmd, char *fmt, struct session *s)
 {
+        uint32_t type;
+
         char tmp[MAX_ARG_SIZE];
-        if (sscanf(cmd, fmt, tmp) != 1)
+        if (sscanf(cmd, "set InputGroup %s", tmp) == 1)
+                type = GTYPE_INPUT;
+        else if((sscanf(cmd, "set OutputGroup %s", tmp) == 1))
+                type = GTYPE_OUTPUT;
+        else
                 return;
 
         struct group *g = find_array_element_by_name(s->anp->groups, tmp);
@@ -540,32 +550,16 @@ void cmd_set_input_group(char *cmd, char *fmt, struct session *s)
                 return;
         }
 
-        s->anp->input = g;
-
-        mprintf("Set input group ... \t\t ( %s )", tmp);
-
-        return;
-}
-
-/**************************************************************************
- *************************************************************************/
-void cmd_set_output_group(char *cmd, char *fmt, struct session *s)
-{
-        char tmp[MAX_ARG_SIZE];
-        if (sscanf(cmd, fmt, tmp) != 1)
-                return;
-
-        struct group *g = find_array_element_by_name(s->anp->groups, tmp);
-        if (g == NULL) {
-                eprintf("Cannot set output group--no such group '%s'", tmp);
-                return;
+        if (type == GTYPE_INPUT) {
+                s->anp->input = g;
+                mprintf("Set input group ... \t\t ( %s )", tmp);
+        } else {
+                s->anp->output = g;
+                mprintf("Set output group ... \t\t ( %s )", tmp);
         }
 
-        s->anp->output = g;
-
-        mprintf("Set output group ... \t\t ( %s )", tmp);
-
         return;
+
 }
 
 /**************************************************************************

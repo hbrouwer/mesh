@@ -46,7 +46,7 @@ bool verify_input_to_output(struct network *n, struct group *g)
 {
         bool reachable = false;
 
-        for (int i = 0; i < g->out_projs->num_elements; i++) {
+        for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *p = g->out_projs->elements[i];
 
                 if (p->to == n->output)
