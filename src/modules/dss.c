@@ -87,6 +87,42 @@ void dss_test_item(struct network *n, struct item *item)
 }
 
 /**************************************************************************
+ *************************************************************************/
+void dss_test_beliefs(struct network *n, struct set *set, struct item *item)
+{
+        if (n->type == TYPE_SRN)
+                reset_context_groups(n);
+
+        for (uint32_t i = 0; i < item->num_events; i++) {
+                /*
+                 * Shift context group chain, in case of 
+                 * "Elman-towers".
+                 */
+                if (i > 0 && n->type == TYPE_SRN)
+                        shift_context_groups(n);
+
+                copy_vector(n->input->vector, item->inputs[i]);
+                feed_forward(n, n->input);
+        }
+
+        printf("\n");
+        for (uint32_t i = 0; i < set->items->num_elements; i++) {
+                struct item *probe = set->items->elements[i];
+
+                double tau = dss_comprehension_score(
+                                probe->targets[probe->num_events - 1],
+                                n->output->vector);
+
+                if (tau > 0.0)
+                        printf("\x1b[32m%s: %f\x1b[0m\n", probe->name, tau);
+                else
+                        printf("\x1b[31m%s: %f\x1b[0m\n", probe->name, tau);
+        }
+        printf("\n");
+
+}
+
+/**************************************************************************
  * This computes the comprehension score (Frank et al., 2009), which is 
  * defined as:
  *
@@ -127,7 +163,7 @@ double dss_comprehension_score(struct vector *a, struct vector *z)
         /* heuristic for unlawful events */
         bool sig = false;
         for (uint32_t i = 0; i < a->size; i++)
-                if (a->elements[i] > 0.5)
+                if (a->elements[i] > 0.25)
                         sig = true;
         if (!sig)
                 return NAN;

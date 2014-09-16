@@ -24,11 +24,14 @@
 #include "network.h"
 #include "session.h"
 
+/**************************************************************************
+ *************************************************************************/
 struct command
 {
-        char *cmd_base;
-        char *cmd_args;
-        void (*cmd_proc)(char *cmd, char *fmt, struct session *s);
+        char *cmd_base;   /* base command */
+        char *cmd_args;   /* argument format */
+        void (*cmd_proc)  /* processor */
+                (char *cmd, char *fmt, struct session *s);
 };
 
 /**************************************************************************
@@ -135,5 +138,6 @@ void cmd_erp_generate_table(char *cmd, char *fmt, struct session *s);
  *************************************************************************/
 void cmd_dss_test(char *cmd, char *fmt, struct session *s);
 void cmd_dss_test_item(char *cmd, char *fmt, struct session *s);
+void cmd_dss_test_beliefs(char *cmd, char *fmt, struct session *s);
 
 #endif /* CMD_H */

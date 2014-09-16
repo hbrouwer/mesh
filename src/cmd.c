@@ -57,124 +57,125 @@
 /* commands */
 const static struct command cmds[] = {
         /* quit or exit */
-        {"quit",                    NULL,         &cmd_quit},
-        {"exit",                    NULL,         &cmd_quit},
+        {"quit",                    NULL,            &cmd_quit},
+        {"exit",                    NULL,            &cmd_quit},
 
         /* file loading */
-        {"loadFile",                "%s",         &cmd_load_file},
+        {"loadFile",                "%s",            &cmd_load_file},
 
         /* network commands */
-        {"createNetwork",           "%s %s",      &cmd_create_network},
-        {"disposeNetwork",          "%s",         &cmd_dispose_network},
-        {"listNetworks",            NULL,         &cmd_list_networks},
-        {"changeNetwork",           "%s",         &cmd_change_network},
+        {"createNetwork",           "%s %s",         &cmd_create_network},
+        {"disposeNetwork",          "%s",            &cmd_dispose_network},
+        {"listNetworks",            NULL,            &cmd_list_networks},
+        {"changeNetwork",           "%s",            &cmd_change_network},
 
         /* group commands */
-        {"createGroup",             "%s %d",      &cmd_create_group},
-        {"disposeGroup",            "%s",         &cmd_dispose_group},
-        {"listGroups",              NULL,         &cmd_list_groups},
-        {"attachBias",              "%s",         &cmd_attach_bias},
-        {"set InputGroup",          "%s",         &cmd_set_input_group},
-        {"set OutputGroup",         "%s",         &cmd_set_output_group},
-        {"set ActFunc",             "%s %s",      &cmd_set_act_func},
-        {"set ErrFunc",             "%s %s",      &cmd_set_err_func},
-        {"toggleActLookup",         NULL,         &cmd_toggle_act_lookup},
+        {"createGroup",             "%s %d",         &cmd_create_group},
+        {"disposeGroup",            "%s",            &cmd_dispose_group},
+        {"listGroups",              NULL,            &cmd_list_groups},
+        {"attachBias",              "%s",            &cmd_attach_bias},
+        {"set InputGroup",          "%s",            &cmd_set_input_group},
+        {"set OutputGroup",         "%s",            &cmd_set_output_group},
+        {"set ActFunc",             "%s %s",         &cmd_set_act_func},
+        {"set ErrFunc",             "%s %s",         &cmd_set_err_func},
+        {"toggleActLookup",         NULL,            &cmd_toggle_act_lookup},
 
         /* projection commands */
-        {"createProjection",        "%s %s",      &cmd_create_projection},
-        {"disposeProjection",       "%s %s",      &cmd_dispose_projection},
-        {"createElmanProjection",   "%s %s",      &cmd_create_elman_projection},
-        {"disposeElmanProjection",  "%s %s",      &cmd_dispose_elman_projection},
-        {"listProjections",         NULL,         &cmd_list_projections},
-        {"freezeProjection",        "%s %s",      &cmd_freeze_projection},
+        {"createProjection",        "%s %s",         &cmd_create_projection},
+        {"disposeProjection",       "%s %s",         &cmd_dispose_projection},
+        {"createElmanProjection",   "%s %s",         &cmd_create_elman_projection},
+        {"disposeElmanProjection",  "%s %s",         &cmd_dispose_elman_projection},
+        {"listProjections",         NULL,            &cmd_list_projections},
+        {"freezeProjection",        "%s %s",         &cmd_freeze_projection},
 
         /* integer parameters */
-        {"set BatchSize",           "%d",         &cmd_set_int_parameter},
-        {"set MaxEpochs",           "%d",         &cmd_set_int_parameter},
-        {"set ReportAfter",         "%d",         &cmd_set_int_parameter},
-        {"set RandomSeed",          "%d",         &cmd_set_int_parameter},
-        {"set BackTicks",           "%d",         &cmd_set_int_parameter},
+        {"set BatchSize",           "%d",            &cmd_set_int_parameter},
+        {"set MaxEpochs",           "%d",            &cmd_set_int_parameter},
+        {"set ReportAfter",         "%d",            &cmd_set_int_parameter},
+        {"set RandomSeed",          "%d",            &cmd_set_int_parameter},
+        {"set BackTicks",           "%d",            &cmd_set_int_parameter},
 
         /* double parameters */
-        {"set RandomMu",            "%lf",        &cmd_set_double_parameter},
-        {"set RandomSigma",         "%lf",        &cmd_set_double_parameter},
-        {"set RandomMax",           "%lf",        &cmd_set_double_parameter},
-        {"set RandomMin",           "%lf",        &cmd_set_double_parameter},
-        {"set LearningRate",        "%lf",        &cmd_set_double_parameter},
-        {"set LRScaleFactor",       "%lf",        &cmd_set_double_parameter},
-        {"set LRScaleAfter",        "%lf",        &cmd_set_double_parameter},
-        {"set Momentum",            "%lf",        &cmd_set_double_parameter},
-        {"set MNScaleFactor",       "%lf",        &cmd_set_double_parameter},
-        {"set MNScaleAfter",        "%lf",        &cmd_set_double_parameter},
-        {"set WeightDecay",         "%lf",        &cmd_set_double_parameter},
-        {"set WDScaleFactor",       "%lf",        &cmd_set_double_parameter},
-        {"set WDScaleAfter",        "%lf",        &cmd_set_double_parameter},
-        {"set ErrorThreshold",      "%lf",        &cmd_set_double_parameter},
-        {"set TargetRadius",        "%lf",        &cmd_set_double_parameter},
-        {"set ZeroErrorRadius",     "%lf",        &cmd_set_double_parameter},
-        {"set RpropInitUpdate",     "%lf",        &cmd_set_double_parameter},
-        {"set RpropEtaPlus",        "%lf",        &cmd_set_double_parameter},
-        {"set RpropEtaMinus",       "%lf",        &cmd_set_double_parameter},
-        {"set DBDRateIncrement",    "%lf",        &cmd_set_double_parameter},
-        {"set DBDRateDecrement",    "%lf",        &cmd_set_double_parameter},
+        {"set RandomMu",            "%lf",           &cmd_set_double_parameter},
+        {"set RandomSigma",         "%lf",           &cmd_set_double_parameter},
+        {"set RandomMax",           "%lf",           &cmd_set_double_parameter},
+        {"set RandomMin",           "%lf",           &cmd_set_double_parameter},
+        {"set LearningRate",        "%lf",           &cmd_set_double_parameter},
+        {"set LRScaleFactor",       "%lf",           &cmd_set_double_parameter},
+        {"set LRScaleAfter",        "%lf",           &cmd_set_double_parameter},
+        {"set Momentum",            "%lf",           &cmd_set_double_parameter},
+        {"set MNScaleFactor",       "%lf",           &cmd_set_double_parameter},
+        {"set MNScaleAfter",        "%lf",           &cmd_set_double_parameter},
+        {"set WeightDecay",         "%lf",           &cmd_set_double_parameter},
+        {"set WDScaleFactor",       "%lf",           &cmd_set_double_parameter},
+        {"set WDScaleAfter",        "%lf",           &cmd_set_double_parameter},
+        {"set ErrorThreshold",      "%lf",           &cmd_set_double_parameter},
+        {"set TargetRadius",        "%lf",           &cmd_set_double_parameter},
+        {"set ZeroErrorRadius",     "%lf",           &cmd_set_double_parameter},
+        {"set RpropInitUpdate",     "%lf",           &cmd_set_double_parameter},
+        {"set RpropEtaPlus",        "%lf",           &cmd_set_double_parameter},
+        {"set RpropEtaMinus",       "%lf",           &cmd_set_double_parameter},
+        {"set DBDRateIncrement",    "%lf",           &cmd_set_double_parameter},
+        {"set DBDRateDecrement",    "%lf",           &cmd_set_double_parameter},
         
         /* training and test sets */
-        {"loadSet",                 "%s %s",      &cmd_load_set},
-        {"disposeSet",              "%s",         &cmd_dispose_set},
-        {"listSets",                NULL,         &cmd_list_sets},
-        {"changeSet",               "%s",         &cmd_change_set},
-        {"listItems",               NULL,         &cmd_list_items},
-        {"set TrainingOrder",       "%s",         &cmd_set_training_order},
+        {"loadSet",                 "%s %s",         &cmd_load_set},
+        {"disposeSet",              "%s",            &cmd_dispose_set},
+        {"listSets",                NULL,            &cmd_list_sets},
+        {"changeSet",               "%s",            &cmd_change_set},
+        {"listItems",               NULL,            &cmd_list_items},
+        {"set TrainingOrder",       "%s",            &cmd_set_training_order},
 
         /* ranzomization, learning, and updating algorithms */
-        {"set RandomAlgorithm",     "%s"  ,       &cmd_set_random_algorithm},
-        {"set LearningAlgorithm",   "%s",         &cmd_set_learning_algorithm},
-        {"set UpdateAlgorithm",     "%s",         &cmd_set_update_algorithm},
+        {"set RandomAlgorithm",     "%s"  ,          &cmd_set_random_algorithm},
+        {"set LearningAlgorithm",   "%s",            &cmd_set_learning_algorithm},
+        {"set UpdateAlgorithm",     "%s",            &cmd_set_update_algorithm},
 
         /* similarity metric */
-        {"set SimilarityMetric",    "%s",         &cmd_set_similarity_metric},
+        {"set SimilarityMetric",    "%s",            &cmd_set_similarity_metric},
 
         /* initialization, resetting, training, and testing */
-        {"init",                    NULL,         &cmd_init},
-        {"reset",                   NULL,         &cmd_reset},
-        {"train",                   NULL,         &cmd_train},
-        {"test",                    NULL,         &cmd_test},
-        {"testItem",                "\"%[^\"]\"", &cmd_test_item},
+        {"init",                    NULL,            &cmd_init},
+        {"reset",                   NULL,            &cmd_reset},
+        {"train",                   NULL,            &cmd_train},
+        {"testItem",                "\"%[^\"]\"",    &cmd_test_item},        /* swapped */
+        {"test",                    NULL,            &cmd_test},
 
         /* similarity and confusion matrices */
-        {"similarityMatrix",        NULL,         &cmd_similarity_matrix},
-        {"confusionMatrix",         NULL,         &cmd_confusion_matrix},
+        {"similarityMatrix",        NULL,            &cmd_similarity_matrix},
+        {"confusionMatrix",         NULL,            &cmd_confusion_matrix},
 
         /* weight statistics */
-        {"weightStats",             NULL,         &cmd_weight_stats},
+        {"weightStats",             NULL,            &cmd_weight_stats},
 
         /* show vectors and matrices */
-        {"showUnits",               "%s",         &cmd_show_vector},
-        {"showError",               "%s",         &cmd_show_vector},
-        {"showWeights",             "%s",         &cmd_show_matrix},
-        {"showGradients",           "%s",         &cmd_show_matrix},
-        {"showDynPars",             "%s",         &cmd_show_matrix},
+        {"showUnits",               "%s",            &cmd_show_vector},
+        {"showError",               "%s",            &cmd_show_vector},
+        {"showWeights",             "%s",            &cmd_show_matrix},
+        {"showGradients",           "%s",            &cmd_show_matrix},
+        {"showDynPars",             "%s",            &cmd_show_matrix},
 
         /* weight matrix saving and loading */
-        {"loadWeights",             "%s",         &cmd_load_weights},
-        {"saveWeights",             "%s",         &cmd_save_weights},
+        {"loadWeights",             "%s",            &cmd_load_weights},
+        {"saveWeights",             "%s",            &cmd_save_weights},
 
         /* pretty printing and color schemes */
-        {"togglePrettyPrinting",    NULL,         &cmd_toggle_pretty_printing},
-        {"setColorScheme",          "%s",         &cmd_set_color_scheme},
+        {"togglePrettyPrinting",    NULL,            &cmd_toggle_pretty_printing},
+        {"setColorScheme",          "%s",            &cmd_set_color_scheme},
 
         /* event-related potentials module */
-        {"erpGenerateTable",        "%s %s",      &cmd_erp_generate_table},
+        {"erpGenerateTable",        "%s %s",         &cmd_erp_generate_table},
 
         /* distributed situation space module */
-        {"dssTest",                 NULL,         &cmd_dss_test},
-        {"dssTestItem",             "\"%[^\"]\"", &cmd_dss_test_item},
+        {"dssTestItem",             "\"%[^\"]\"",    &cmd_dss_test_item},    /* swapped */
+        {"dssTestBeliefs",          "%s \"%[^\"]\"", &cmd_dss_test_beliefs}, /* swapped */
+        {"dssTest",                 NULL,            &cmd_dss_test},
 
-        {NULL,                      NULL,         NULL}
+
+        {NULL,                      NULL,            NULL}
 };
 
 /**************************************************************************
- * Process a command.
  *************************************************************************/
 void process_command(char *cmd, struct session *s)
 {
@@ -1841,6 +1842,48 @@ void cmd_dss_test_item(char *cmd, char *fmt, struct session *s)
         dss_test_item(s->anp, item);
 
         mprintf(" ");
+
+        return;
+}
+
+/**************************************************************************
+ *************************************************************************/
+void cmd_dss_test_beliefs(char *cmd, char *fmt, struct session *s)
+{
+        printf("%s\n", cmd);
+
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
+                return;
+
+        struct set *set = find_array_element_by_name(s->anp->sets, tmp1);
+        if (!set) {
+                eprintf("Cannot test beliefs--no such set '%s'", tmp1);
+                return;
+        }
+
+        struct item *item = find_array_element_by_name(s->anp->asp->items, tmp2);
+        if (!item) {
+                eprintf("Cannot test beliefs--no such item '%s'", tmp2);
+                return;
+        }
+
+        dss_test_beliefs(s->anp, set, item);
+
+        /*
+        struct item *item = find_array_element_by_name(s->anp->asp->items, tmp);
+        if (!item) {
+                eprintf("Cannot test network--no such item '%s'", tmp);
+                return;
+        }
+        
+        mprintf("Testing network '%s' with item '%s':", s->anp->name, tmp);
+        mprintf(" ");
+
+        dss_test_item(s->anp, item);
+
+        mprintf(" ");
+        */
 
         return;
 }
