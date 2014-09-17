@@ -168,14 +168,14 @@ const static struct command cmds[] = {
         {"setColorScheme",          "%s",            &cmd_set_color_scheme},
 
         /* event-related potentials module */
-        {"erpGenerateTable",        "%s %s",         &cmd_erp_generate_table},
+        {"erpGenerateTable",        "%s %s %s",      &cmd_erp_generate_table},
 
         /* distributed situation space module */
         {"dssTestItem",             "\"%[^\"]\"",    &cmd_dss_test_item},    /* swapped */
         {"dssTestBeliefs",          "%s \"%[^\"]\"", &cmd_dss_test_beliefs}, /* swapped */
         {"dssTest",                 NULL,            &cmd_dss_test},
 
-
+        /************************************************/
         {NULL,                      NULL,            NULL}
 };
 
@@ -183,49 +183,53 @@ const static struct command cmds[] = {
  *************************************************************************/
 void process_command(char *cmd, struct session *s)
 {
-        /* 
-         * Blank line or comment.
-         */
-        if (cmd[0] == '\0' || cmd[0] == '#')
+        /* comment or blank line */
+        if (cmd[0] == '#' || cmd[0] == '\0')
                 return;
 
+        bool req_network = false;
+        bool req_init_network = false;
+
+        /* command */
         for (uint32_t i = 0; cmds[i].cmd_base != NULL; i++) {
-                if (strncmp(cmd, cmds[i].cmd_base, strlen(cmds[i].cmd_base)) == 0) {
-
-                        if (i > 3 && !s->anp) {
-                                eprintf("Cannot process command: %s", cmd);
-                                eprintf("No active network.");
-                                return;
-                        }
-
-                        if (i > 58 && !s->anp->initialized) {
-                                eprintf("Cannot process command: %s", cmd);
-                                eprintf("unitizialized network--use 'init' command to initialize");
-                                return;
-                        }
-
-                        char *cmd_args = NULL;
-                        if (cmds[i].cmd_args != NULL) {
-                                asprintf(&cmd_args, "%s %s", cmds[i].cmd_base, cmds[i].cmd_args);
-                                cmds[i].cmd_proc(cmd, cmd_args, s);
-                                free(cmd_args);
-                        } else {
-                                cmds[i].cmd_proc(cmd, cmds[i].cmd_base, s);
-
-                        }
-
+                if (req_network && !s->anp) {
+                        eprintf("Cannot process command: %s", cmd);
+                        eprintf("No active network");
                         return;
                 }
+                else if (req_init_network && !s->anp->initialized) {
+                        eprintf("Cannot process command: %s", cmd);
+                        eprintf("Unitizialized network--use 'init' command to initialize");
+                        return;
+                }
+                else if (strncmp(cmd, cmds[i].cmd_base, strlen(cmds[i].cmd_base)) == 0) {
+                        if (cmds[i].cmd_args != NULL) {
+                                char *cmd_args;
+                                if (asprintf(&cmd_args, "%s %s", cmds[i].cmd_base, cmds[i].cmd_args) < 0)
+                                        goto error_out;
+                                cmds[i].cmd_proc(cmd, cmd_args, s);
+                                free(cmd_args);
+                        } else {                     
+                                cmds[i].cmd_proc(cmd, cmds[i].cmd_base, s);
+                        }
+                        return;
+                }
+                else if (strcmp("createNetwork", cmds[i].cmd_base) == 0)
+                        req_network = true;
+                else if (strcmp("init", cmds[i].cmd_base) == 0)
+                        req_init_network = true;
         }
 
-        /* 
-         * Invalid command.
-         */
+        /* invalid command */
         if (strlen(cmd) > 1) {
                 eprintf("invalid command: %s", cmd); 
                 eprintf("(type 'help' for a list of valid commands)");
         }
 
+        return;
+
+error_out:
+        perror("[process_command()]");
         return;
 }
 
@@ -1863,21 +1867,6 @@ void cmd_dss_test_beliefs(char *cmd, char *fmt, struct session *s)
         }
 
         dss_test_beliefs(s->anp, set, item);
-
-        /*
-        struct item *item = find_array_element_by_name(s->anp->asp->items, tmp);
-        if (!item) {
-                eprintf("Cannot test network--no such item '%s'", tmp);
-                return;
-        }
-        
-        mprintf("Testing network '%s' with item '%s':", s->anp->name, tmp);
-        mprintf(" ");
-
-        dss_test_item(s->anp, item);
-
-        mprintf(" ");
-        */
 
         return;
 }

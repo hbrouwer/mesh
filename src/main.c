@@ -118,7 +118,7 @@ void print_version()
 {
         mprintf(
                         "\n"
-                        "(c) 2013 Harm Brouwer <me@hbrouwer.eu>\n"
+                        "(c) 2012-2014 Harm Brouwer <me@hbrouwer.eu>\n"
                         "Center for Language and Cognition Groningen (CLCG), University of Groningen\n"
                         "& Netherlands Organisation for Scientific Research (NWO)\n",
                         
