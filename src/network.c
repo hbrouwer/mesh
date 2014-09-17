@@ -415,7 +415,6 @@ void reset_rnn_error_signals(struct network *n)
                                 struct projection *p = g->inc_projs->elements[x];
                                 if (p->to->recurrent)
                                         zero_out_vector(p->to->error);
-                                
                         }
                 }
         }
