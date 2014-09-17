@@ -244,22 +244,18 @@ struct group *attach_bias_group(struct network *n, struct group *g)
         struct matrix *weights = create_matrix(
                         bg->vector->size,
                         g->vector->size);
-
         /* gradients matrix */
         struct matrix *gradients = create_matrix(
                         bg->vector->size,
                         g->vector->size);
-
         /* previous gradients matrix */
         struct matrix *prev_gradients = create_matrix(
                         bg->vector->size,
                         g->vector->size);
-
         /* previous weight deltas matrix */
         struct matrix *prev_deltas = create_matrix(
                         bg->vector->size,
                         g->vector->size);
-
         /* dynamic learning parameters matrix */
         struct matrix *dynamic_pars = create_matrix(
                         bg->vector->size,
