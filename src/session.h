@@ -28,10 +28,10 @@
  *************************************************************************/
 struct session
 {
-        struct array *networks; /* networks in this session */
-        struct network *anp;    /* active network pointer */
-        bool pprint;            /* flag for pretty printing */
-        uint32_t pprint_scheme; /* pretty priniting scheme */
+        struct array *networks;     /* networks in this session */
+        struct network *anp;        /* active network pointer */
+        bool pprint;                /* flag for pretty printing */
+        uint32_t pprint_scheme;     /* pretty priniting scheme */
 };
 
 /**************************************************************************

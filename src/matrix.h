@@ -27,9 +27,9 @@
  *************************************************************************/
 struct matrix
 {
-        uint32_t rows;
-        uint32_t cols;
-        double **elements;
+        uint32_t rows;              /* number of rows */
+        uint32_t cols;              /* number of columns */
+        double **elements;          /* elements */
 };
 
 /**************************************************************************

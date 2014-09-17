@@ -33,10 +33,10 @@
  *************************************************************************/
 struct array
 {
-        uint32_t type;
-        uint32_t num_elements;
-        uint32_t max_elements;
-        void **elements;
+        uint32_t type;              /* array type */
+        uint32_t num_elements;      /* number of elements in the array */
+        uint32_t max_elements;      /* max number of elements */
+        void **elements;            /* elements */
 };
 
 /**************************************************************************

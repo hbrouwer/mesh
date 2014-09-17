@@ -48,7 +48,8 @@ void dss_test(struct network *n)
                         feed_forward(n, n->input);
                 }
 
-                double cs = dss_comprehension_score(item->targets[item->num_events - 1],
+                double cs = dss_comprehension_score(
+                                item->targets[item->num_events - 1],
                                 n->output->vector);
 
                 printf("%s: %f\n", item->name, cs);
@@ -80,7 +81,8 @@ void dss_test_item(struct network *n, struct item *item)
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 
-                double cs = dss_comprehension_score(item->targets[i], n->output->vector);
+                double cs = dss_comprehension_score(item->targets[i],
+                                n->output->vector);
                 printf("event %d -- comprehension score: %f\n", i, cs);
         }
 }
@@ -104,7 +106,8 @@ void dss_test_beliefs(struct network *n, struct set *set, struct item *item)
                 feed_forward(n, n->input);
         }
 
-        double cs = dss_comprehension_score(item->targets[item->num_events - 1], n->output->vector);
+        double cs = dss_comprehension_score(item->targets[item->num_events - 1],
+                        n->output->vector);
         printf("\nsemantics: %s\n", item->meta);
         printf("comprehension score: %f\n\n", cs);
 

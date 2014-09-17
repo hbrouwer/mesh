@@ -28,9 +28,9 @@
  *************************************************************************/
 struct command
 {
-        char *cmd_base;   /* base command */
-        char *cmd_args;   /* argument format */
-        void (*cmd_proc)  /* processor */
+        char *cmd_base;             /* base command */
+        char *cmd_args;             /* argument format */
+        void (*cmd_proc)            /* processor */
                 (char *cmd, char *fmt, struct session *s);
 };
 

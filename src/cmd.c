@@ -60,20 +60,20 @@
 
 /* commands */
 const static struct command cmds[] = {
-        /* quit or exit */
+        /* quit or exit **************************************************/
         {"quit",                    NULL,            &cmd_quit},
         {"exit",                    NULL,            &cmd_quit},
 
-        /* file loading */
+        /* file loading **************************************************/
         {"loadFile",                "%s",            &cmd_load_file},
 
-        /* network commands */
+        /* network commands **********************************************/
         {"createNetwork",           "%s %s",         &cmd_create_network},
         {"disposeNetwork",          "%s",            &cmd_dispose_network},
         {"listNetworks",            NULL,            &cmd_list_networks},
         {"changeNetwork",           "%s",            &cmd_change_network},
 
-        /* group commands */
+        /* group commands ************************************************/
         {"createGroup",             "%s %d",         &cmd_create_group},
         {"disposeGroup",            "%s",            &cmd_dispose_group},
         {"listGroups",              NULL,            &cmd_list_groups},
@@ -84,7 +84,7 @@ const static struct command cmds[] = {
         {"set ErrFunc",             "%s %s",         &cmd_set_err_func},
         {"toggleActLookup",         NULL,            &cmd_toggle_act_lookup},
 
-        /* projection commands */
+        /* projection commands *******************************************/
         {"createProjection",        "%s %s",         &cmd_create_projection},
         {"disposeProjection",       "%s %s",         &cmd_dispose_projection},
         {"createElmanProjection",   "%s %s",         &cmd_create_elman_projection},
@@ -92,14 +92,14 @@ const static struct command cmds[] = {
         {"listProjections",         NULL,            &cmd_list_projections},
         {"freezeProjection",        "%s %s",         &cmd_freeze_projection},
 
-        /* integer parameters */
+        /* integer parameters ********************************************/
         {"set BatchSize",           "%d",            &cmd_set_int_parameter},
         {"set MaxEpochs",           "%d",            &cmd_set_int_parameter},
         {"set ReportAfter",         "%d",            &cmd_set_int_parameter},
         {"set RandomSeed",          "%d",            &cmd_set_int_parameter},
         {"set BackTicks",           "%d",            &cmd_set_int_parameter},
 
-        /* double parameters */
+        /* double parameters *********************************************/
         {"set RandomMu",            "%lf",           &cmd_set_double_parameter},
         {"set RandomSigma",         "%lf",           &cmd_set_double_parameter},
         {"set RandomMax",           "%lf",           &cmd_set_double_parameter},
@@ -122,7 +122,7 @@ const static struct command cmds[] = {
         {"set DBDRateIncrement",    "%lf",           &cmd_set_double_parameter},
         {"set DBDRateDecrement",    "%lf",           &cmd_set_double_parameter},
         
-        /* training and test sets */
+        /* training and test sets ****************************************/
         {"loadSet",                 "%s %s",         &cmd_load_set},
         {"disposeSet",              "%s",            &cmd_dispose_set},
         {"listSets",                NULL,            &cmd_list_sets},
@@ -130,7 +130,7 @@ const static struct command cmds[] = {
         {"listItems",               NULL,            &cmd_list_items},
         {"set TrainingOrder",       "%s",            &cmd_set_training_order},
 
-        /* ranzomization, learning, and updating algorithms */
+        /* ranzomization, learning, and updating algorithms **************/
         {"set RandomAlgorithm",     "%s"  ,          &cmd_set_random_algorithm},
         {"set LearningAlgorithm",   "%s",            &cmd_set_learning_algorithm},
         {"set UpdateAlgorithm",     "%s",            &cmd_set_update_algorithm},
@@ -138,45 +138,45 @@ const static struct command cmds[] = {
         /* similarity metric */
         {"set SimilarityMetric",    "%s",            &cmd_set_similarity_metric},
 
-        /* initialization, resetting, training, and testing */
+        /* initialization, resetting, training, and testing **************/
         {"init",                    NULL,            &cmd_init},
         {"reset",                   NULL,            &cmd_reset},
         {"train",                   NULL,            &cmd_train},
         {"testItem",                "\"%[^\"]\"",    &cmd_test_item},        /* swapped */
         {"test",                    NULL,            &cmd_test},
 
-        /* similarity and confusion matrices */
+        /* similarity and confusion matrices *****************************/
         {"similarityMatrix",        NULL,            &cmd_similarity_matrix},
         {"confusionMatrix",         NULL,            &cmd_confusion_matrix},
 
         /* weight statistics */
         {"weightStats",             NULL,            &cmd_weight_stats},
 
-        /* show vectors and matrices */
+        /* show vectors and matrices *************************************/
         {"showUnits",               "%s",            &cmd_show_vector},
         {"showError",               "%s",            &cmd_show_vector},
         {"showWeights",             "%s",            &cmd_show_matrix},
         {"showGradients",           "%s",            &cmd_show_matrix},
         {"showDynPars",             "%s",            &cmd_show_matrix},
 
-        /* weight matrix saving and loading */
+        /* weight matrix saving and loading ******************************/
         {"loadWeights",             "%s",            &cmd_load_weights},
         {"saveWeights",             "%s",            &cmd_save_weights},
 
-        /* pretty printing and color schemes */
+        /* pretty printing and color schemes *****************************/
         {"togglePrettyPrinting",    NULL,            &cmd_toggle_pretty_printing},
         {"setColorScheme",          "%s",            &cmd_set_color_scheme},
 
-        /* event-related potentials module */
+        /* event-related potentials module *******************************/
         {"erpGenerateTable",        "%s %s %s",      &cmd_erp_generate_table},
 
-        /* distributed situation space module */
+        /* distributed situation space module ****************************/
         {"dssTestItem",             "\"%[^\"]\"",    &cmd_dss_test_item},    /* swapped */
         {"dssTestBeliefs",          "%s \"%[^\"]\"", &cmd_dss_test_beliefs}, /* swapped */
         {"dssTest",                 NULL,            &cmd_dss_test},
 
-        /************************************************/
-        {NULL,                      NULL,            NULL}
+        /*****************************************************************/
+        {NULL,                      NULL,            NULL}                   /* tail */
 };
 
 /**************************************************************************
@@ -342,7 +342,6 @@ void cmd_list_networks(char *cmd, char *fmt, struct session *s)
                 return;
 
         mprintf("Available networks:");
-
         if (s->networks->num_elements == 0) {
                 cprintf("(No networks)\n");
         } else {
@@ -417,10 +416,7 @@ void cmd_dispose_group(char *cmd, char *fmt, struct session *s)
                 return;
         }
 
-        /* 
-         * Remove any outgoing projections from a group g' to
-         * group g.
-         */
+        /* remove outgoing projections from a group g' to group g */
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
                 struct group *fg = p->to;
@@ -433,10 +429,7 @@ void cmd_dispose_group(char *cmd, char *fmt, struct session *s)
                 }
         }
 
-        /*
-         * Remove any incoming projections to group g from a
-         * group g'.
-         */
+        /* remove incoming projections to group g from a group g' */
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *p = g->out_projs->elements[i];
                 struct group *tg = p->to;
@@ -449,10 +442,7 @@ void cmd_dispose_group(char *cmd, char *fmt, struct session *s)
                 }
         }
 
-        /*
-         * Remove any Elman projections from a group g' to
-         * group g.
-         */
+        /* remove Elman projections from a group g' to group g */
         for (uint32_t i = 0; i < s->anp->groups->num_elements; i++) {
                 struct group *fg = s->anp->groups->elements[i];
                 for (uint32_t j = 0; j < fg->ctx_groups->num_elements; j++) {
@@ -479,7 +469,6 @@ void cmd_list_groups(char *cmd, char *fmt, struct session *s)
                 return;
 
         mprintf("Available groups:");
-
         if (s->anp->groups->num_elements == 0) {
                 cprintf("(No groups)\n");
         } else {
@@ -541,8 +530,10 @@ void cmd_set_io_group(char *cmd, char *fmt, struct session *s)
         uint32_t type;
 
         char tmp[MAX_ARG_SIZE];
+        /* input group */
         if (sscanf(cmd, "set InputGroup %s", tmp) == 1)
                 type = GTYPE_INPUT;
+        /* output group */
         else if((sscanf(cmd, "set OutputGroup %s", tmp) == 1))
                 type = GTYPE_OUTPUT;
         else
@@ -563,7 +554,6 @@ void cmd_set_io_group(char *cmd, char *fmt, struct session *s)
         }
 
         return;
-
 }
 
 /**************************************************************************
@@ -576,8 +566,7 @@ void cmd_set_act_func(char *cmd, char *fmt, struct session *s)
 
         struct group *g = find_array_element_by_name(s->anp->groups, tmp1);
         if (g == NULL) {
-                eprintf("Cannot set activation function--no such group '%s'",
-                                tmp1);
+                eprintf("Cannot set activation function--no such group '%s'", tmp1);
                 return;
         }
 
@@ -586,38 +575,31 @@ void cmd_set_act_func(char *cmd, char *fmt, struct session *s)
                 g->act_fun->fun = act_fun_binary_sigmoid;
                 g->act_fun->deriv = act_fun_binary_sigmoid_deriv;
         }
-
         /* bipolar sigmoid function */
         else if (strcmp(tmp2, "bipolar_sigmoid") == 0) {
                 g->act_fun->fun = act_fun_bipolar_sigmoid;
                 g->act_fun->deriv = act_fun_bipolar_sigmoid_deriv;
         }
-
         /* softmax activation function */
         else if (strcmp(tmp2, "softmax") == 0) {
                 g->act_fun->fun = act_fun_softmax;
                 g->act_fun->deriv = act_fun_softmax_deriv;
         }
-
         /* hyperbolic tangent function */
         else if (strcmp(tmp2, "tanh") == 0) {
                 g->act_fun->fun = act_fun_tanh;
                 g->act_fun->deriv = act_fun_tanh_deriv;
         }
-
         /* linear function */
         else if (strcmp(tmp2, "linear") == 0) {
                 g->act_fun->fun = act_fun_linear;
                 g->act_fun->deriv = act_fun_linear_deriv;
         }
-
         /* step function */
         else if (strcmp(tmp2, "step") == 0) {
                 g->act_fun->fun = act_fun_step;
                 g->act_fun->deriv = act_fun_step_deriv;
-        } 
-        
-        else {
+        } else {
                 eprintf("Cannot set activation function--no such activation function '%s'", tmp2);
                 return;
         }
@@ -637,8 +619,7 @@ void cmd_set_err_func(char *cmd, char *fmt, struct session *s)
 
         struct group *g = find_array_element_by_name(s->anp->groups, tmp1);
         if (g == NULL) {
-                eprintf("Cannot set error function--no such group '%s'",
-                                tmp1);
+                eprintf("Cannot set error function--no such group '%s'", tmp1);
                 return;
         }
 
@@ -647,20 +628,16 @@ void cmd_set_err_func(char *cmd, char *fmt, struct session *s)
                 g->err_fun->fun = error_sum_of_squares;
                 g->err_fun->deriv = error_sum_of_squares_deriv;
         }
-
         /* cross-entropy */
         else if (strcmp(tmp2, "cross_entropy") == 0) {
                 g->err_fun->fun = error_cross_entropy;
                 g->err_fun->deriv = error_cross_entropy_deriv;
         }
-
         /* divergence */
         else if (strcmp(tmp2, "divergence") == 0) {
                 g->err_fun->fun = error_divergence;
                 g->err_fun->deriv = error_divergence_deriv;
-        }
-
-        else {
+        } else {
                 eprintf("Cannot set error function--no such error function '%s'", tmp2);
                 return;
         }
@@ -681,9 +658,9 @@ void cmd_toggle_act_lookup(char *cmd, char *fmt, struct session *s)
         
         if (s->anp->act_lookup) {
                 initialize_act_lookup_vectors(s->anp);
-                mprintf("Toggle activation lookup ... \t ( %s )", "on");
+                mprintf("Toggle activation lookup ... \t ( on )");
         } else {
-                mprintf("Toggle activation lookup ... \t ( %s )", "off");
+                mprintf("Toggle activation lookup ... \t ( off )");
         }
 
         return;
@@ -701,13 +678,11 @@ void cmd_create_projection(char *cmd, char *fmt, struct session *s)
         struct group *tg = find_array_element_by_name(s->anp->groups, tmp2);
 
         if (fg == NULL) {
-                eprintf("Cannot set projection--no such group '%s'",
-                                tmp1);
+                eprintf("Cannot set projection--no such group '%s'", tmp1);
                 return;
         }
         if (tg == NULL) {
-                eprintf("Cannot set projection--no such group '%s'",
-                                tmp2);
+                eprintf("Cannot set projection--no such group '%s'", tmp2);
                 return;
         }
 
@@ -726,22 +701,28 @@ void cmd_create_projection(char *cmd, char *fmt, struct session *s)
         if (fg == tg)
                 fg->recurrent = true;
         else {
+                /* weight matrix */
                 struct matrix *weights = create_matrix(
                                 fg->vector->size,
                                 tg->vector->size);
+                /* gradients matrix */
                 struct matrix *gradients = create_matrix(
                                 fg->vector->size,
                                 tg->vector->size);
+                /* previous gradients matrix */
                 struct matrix *prev_gradients = create_matrix(
                                 fg->vector->size,
                                 tg->vector->size);
+                /* previous weight deltas matrix */
                 struct matrix *prev_deltas = create_matrix(
                                 fg->vector->size,
                                 tg->vector->size);
+                /* dynamic learning parameters matrix */
                 struct matrix *dynamic_pars = create_matrix(
                                 fg->vector->size,
                                 tg->vector->size);
 
+                /* add projections */
                 struct projection *op;
                 op = create_projection(tg, weights, gradients, prev_gradients,
                                 prev_deltas, dynamic_pars, false);
@@ -771,13 +752,11 @@ void cmd_dispose_projection(char *cmd, char *fmt, struct session *s)
         struct group *tg = find_array_element_by_name(s->anp->groups, tmp2);
 
         if (fg == NULL) {
-                eprintf("Cannot dispose projection--no such group '%s'",
-                                tmp1);
+                eprintf("Cannot dispose projection--no such group '%s'", tmp1);
                 return;
         }
         if (tg == NULL) {
-                eprintf("Cannot dispose projection--no such group '%s'",
-                                tmp2);
+                eprintf("Cannot dispose projection--no such group '%s'", tmp2);
                 return;
         }
 
@@ -829,8 +808,7 @@ void cmd_create_elman_projection(char *cmd, char *fmt, struct session *s)
                 return;
         }
         if (fg == tg) {
-                eprintf("Cannot set Elman-projection--projection is recurrent for group '%s'",
-                                fg->name);
+                eprintf("Cannot set Elman-projection--projection is recurrent for group '%s'", fg->name);
                 return;
         }
         if (fg->vector->size != tg->vector->size) {
@@ -903,7 +881,6 @@ void cmd_list_projections(char *cmd, char *fmt, struct session *s)
                 return;
 
         mprintf("Available projections:");
-
         for (uint32_t i = 0; i < s->anp->groups->num_elements; i++) {
                 struct group *g = s->anp->groups->elements[i];
                 
@@ -977,13 +954,11 @@ void cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
         struct group *tg = find_array_element_by_name(s->anp->groups, tmp2);
 
         if (fg == NULL) {
-                eprintf("Cannot freeze projection--no such group '%s'",
-                                tmp1);
+                eprintf("Cannot freeze projection--no such group '%s'", tmp1);
                 return;
         }
         if (tg == NULL) {
-                eprintf("Cannot freeze projection--no such group '%s'",
-                                tmp2);
+                eprintf("Cannot freeze projection--no such group '%s'", tmp2);
                 return;
         }
 
@@ -1204,7 +1179,7 @@ void cmd_change_set(char *cmd, char *fmt, struct session *s)
                 eprintf("Cannot change to set--no such set '%s'", tmp);
                 return;
         }
-
+        
         s->anp->asp = set;
 
         mprintf("Changed to set ... \t\t ( %s )", tmp);
@@ -1289,8 +1264,7 @@ void cmd_set_random_algorithm(char *cmd, char *fmt, struct session *s)
                 return;
         }
 
-        if (s->anp->random_algorithm)
-                mprintf("Set random algorithm ... \t ( %s )", tmp);
+        mprintf("Set random algorithm ... \t ( %s )", tmp);
 
         return;
 }
@@ -1314,8 +1288,7 @@ void cmd_set_learning_algorithm(char *cmd, char *fmt, struct session *s)
                 return;
         }
         
-        if (s->anp->learning_algorithm)
-                mprintf("Set learning algorithm ... \t ( %s )", tmp);
+        mprintf("Set learning algorithm ... \t ( %s )", tmp);
 
         return;
 }
@@ -1369,8 +1342,7 @@ void cmd_set_update_algorithm(char *cmd, char *fmt, struct session *s)
                 return;
         }
 
-        if (s->anp->update_algorithm)
-                mprintf("Set update algorithm ... \t ( %s )", tmp);
+        mprintf("Set update algorithm ... \t ( %s )", tmp);
 
         return;
 }
@@ -1406,8 +1378,7 @@ void cmd_set_similarity_metric(char *cmd, char *fmt, struct session *s)
                 return;
         }
 
-        if (s->anp->similarity_metric)
-                mprintf("Set similarity metric ... \t ( %s )", tmp);
+        mprintf("Set similarity metric ... \t ( %s )", tmp);
 
         return;
 }
@@ -1546,6 +1517,7 @@ void cmd_weight_stats(char *cmd, char *fmt, struct session *s)
         struct weight_stats *ws = create_weight_statistics(s->anp);
      
         pprintf("Number of weights:\t\t%d\n", ws->num_weights);
+        pprintf("Cost:\t\t\t%f\n", ws->cost);
         pprintf("Mean:\t\t\t%f\n", ws->mean);
         pprintf("Absolute mean:\t\t%f\n", ws->mean_abs);
         pprintf("Mean dist.:\t\t%f\n", ws->mean_dist);
@@ -1611,10 +1583,13 @@ void cmd_show_matrix(char *cmd, char *fmt, struct session *s)
         uint32_t type;
 
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
+        /* weights */
         if (sscanf(cmd, "showWeights %s %s", tmp1, tmp2) == 2)
                 type = MTYPE_WEIGHTS;
+        /* gradients */
         else if (sscanf(cmd, "showGradients %s %s", tmp1, tmp2) == 2)
                 type = MTYPE_GRADIENTS;
+        /* dynamic learning parameters */
         else if (sscanf(cmd, "showDynPars %s %s", tmp1, tmp2) == 2)
                 type = MTYPE_DYN_PARS;
         else
@@ -1659,7 +1634,8 @@ void cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                         }
                 }
                 if (type == MTYPE_DYN_PARS) {
-                        mprintf("Dynamic learning parameters for projection '%s -> %s'", tmp1, tmp2);
+                        mprintf("Dynamic learning parameters for projection '%s -> %s'",
+                                        tmp1, tmp2);
                         mprintf(" ");                        
                         if (s->pprint) {
                                 pprint_matrix(fg_to_tg->dynamic_pars, s->pprint_scheme);
@@ -1723,9 +1699,9 @@ void cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s)
         s->pprint = !s->pprint;
 
         if (s->pprint) {
-                mprintf("Toggled pretty printing ... \t ( %s )", "on");
+                mprintf("Toggled pretty printing ... \t ( on )");
         } else {
-                mprintf("Toggled pretty printing ... \t ( %s )", "off");
+                mprintf("Toggled pretty printing ... \t ( off )");
         }
 
         return;

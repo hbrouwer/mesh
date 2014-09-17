@@ -71,6 +71,7 @@ void collect_weight_statistics(struct weight_stats *ws, struct group *g)
                 for (uint32_t r = 0; r < w->rows; r++) {
                         for (uint32_t c = 0; c < w->cols; c++) {
                                 ws->num_weights++;
+                                ws->cost += pow(w->elements[r][c], 2.0);
                                 ws->mean += w->elements[r][c];
                                 ws->mean_abs += fabs(w->elements[r][c]);
                                 if (w->elements[r][c] < ws->minimum)
