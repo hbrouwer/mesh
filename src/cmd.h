@@ -30,7 +30,7 @@ struct command
 {
         char *cmd_base;             /* base command */
         char *cmd_args;             /* argument format */
-        void (*cmd_proc)            /* processor */
+        bool (*cmd_proc)            /* processor */
                 (char *cmd, char *fmt, struct session *s);
 };
 
@@ -40,103 +40,103 @@ void process_command(char *cmd, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_quit(char *cmd, char *fmt, struct session *s);
+bool cmd_quit(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_load_file(char *cmd, char *fmt, struct session *s);
+bool cmd_load_file(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_create_network(char *cmd, char *fmt, struct session *s);
-void cmd_dispose_network(char *cmd, char *fmt, struct session *s);
-void cmd_list_networks(char *cmd, char *fmt, struct session *s);
-void cmd_change_network(char *cmd, char *fmt, struct session *s);
+bool cmd_create_network(char *cmd, char *fmt, struct session *s);
+bool cmd_dispose_network(char *cmd, char *fmt, struct session *s);
+bool cmd_list_networks(char *cmd, char *fmt, struct session *s);
+bool cmd_change_network(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_create_group(char *cmd, char *fmt, struct session *s);
-void cmd_dispose_group(char *cmd, char *fmt, struct session *s); 
-void cmd_list_groups(char *cmd, char *fmt, struct session *s);
-void cmd_attach_bias(char *cmd, char *fmt, struct session *s);
-void cmd_set_io_group(char *cmd, char *fmt, struct session *s);
-void cmd_set_act_func(char *cmd, char *fmt, struct session *s);
-void cmd_set_err_func(char *cmd, char *fmt, struct session *s);
-void cmd_toggle_act_lookup(char *cmd, char *fmt, struct session *s);
+bool cmd_create_group(char *cmd, char *fmt, struct session *s);
+bool cmd_dispose_group(char *cmd, char *fmt, struct session *s); 
+bool cmd_list_groups(char *cmd, char *fmt, struct session *s);
+bool cmd_attach_bias(char *cmd, char *fmt, struct session *s);
+bool cmd_set_io_group(char *cmd, char *fmt, struct session *s);
+bool cmd_set_act_func(char *cmd, char *fmt, struct session *s);
+bool cmd_set_err_func(char *cmd, char *fmt, struct session *s);
+bool cmd_toggle_act_lookup(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_create_projection(char *cmd, char *fmt, struct session *s);
-void cmd_dispose_projection(char *cmd, char *fmt, struct session *s);
-void cmd_create_elman_projection(char *cmd, char *fmt, struct session *s);
-void cmd_dispose_elman_projection(char *cmd, char *fmt, struct session *s);
-void cmd_list_projections(char *cmd, char *fmt, struct session *s);
-void cmd_freeze_projection(char *cmd, char *fmt, struct session *s);
+bool cmd_create_projection(char *cmd, char *fmt, struct session *s);
+bool cmd_dispose_projection(char *cmd, char *fmt, struct session *s);
+bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s);
+bool cmd_dispose_elman_projection(char *cmd, char *fmt, struct session *s);
+bool cmd_list_projections(char *cmd, char *fmt, struct session *s);
+bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_set_int_parameter(char *cmd, char *fmt, struct session *s);
-void cmd_set_double_parameter(char *cmd, char *fmt, struct session *s);
+bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s);
+bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_load_set(char *cmd, char *fmt, struct session *s);
-void cmd_dispose_set(char *cmd, char *fmt, struct session *s);
-void cmd_list_sets(char *cmd, char *fmt, struct session *s);
-void cmd_change_set(char *cmd, char *fmt, struct session *s);
-void cmd_list_items(char *cmd, char *fmt, struct session *s);
-void cmd_set_training_order(char *cmd, char *fmt, struct session *s);
+bool cmd_load_set(char *cmd, char *fmt, struct session *s);
+bool cmd_dispose_set(char *cmd, char *fmt, struct session *s);
+bool cmd_list_sets(char *cmd, char *fmt, struct session *s);
+bool cmd_change_set(char *cmd, char *fmt, struct session *s);
+bool cmd_list_items(char *cmd, char *fmt, struct session *s);
+bool cmd_set_training_order(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_set_random_algorithm(char *cmd, char *fmt, struct session *s);
-void cmd_set_learning_algorithm(char *cmd, char *fmt, struct session *s);
-void cmd_set_update_algorithm(char *cmd, char *fmt, struct session *s);
+bool cmd_set_random_algorithm(char *cmd, char *fmt, struct session *s);
+bool cmd_set_learning_algorithm(char *cmd, char *fmt, struct session *s);
+bool cmd_set_update_algorithm(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_set_similarity_metric(char *cmd, char *fmt, struct session *s);
+bool cmd_set_similarity_metric(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_init(char *cmd, char *fmt, struct session *s);
-void cmd_reset(char *cmd, char *fmt, struct session *s);
-void cmd_train(char *cmd, char *fmt, struct session *s);
-void cmd_test(char *cmd, char *fmt, struct session *s);
-void cmd_test_item(char *cmd, char *fmt, struct session *s);
+bool cmd_init(char *cmd, char *fmt, struct session *s);
+bool cmd_reset(char *cmd, char *fmt, struct session *s);
+bool cmd_train(char *cmd, char *fmt, struct session *s);
+bool cmd_test(char *cmd, char *fmt, struct session *s);
+bool cmd_test_item(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_similarity_matrix(char *cmd, char *fmt, struct session *s);
-void cmd_confusion_matrix(char *cmd, char *fmt, struct session *s);
+bool cmd_similarity_matrix(char *cmd, char *fmt, struct session *s);
+bool cmd_confusion_matrix(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_weight_stats(char *cmd, char *fmt, struct session *s);
+bool cmd_weight_stats(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_show_vector(char *cmd, char *fmt, struct session *s);
-void cmd_show_matrix(char *cmd, char *fmt, struct session *s);
+bool cmd_show_vector(char *cmd, char *fmt, struct session *s);
+bool cmd_show_matrix(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_save_weights(char *cmd, char *fmt, struct session *s);
-void cmd_load_weights(char *cmd, char *fmt, struct session *s);
+bool cmd_save_weights(char *cmd, char *fmt, struct session *s);
+bool cmd_load_weights(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s);
-void cmd_set_color_scheme(char *cmd, char *fmt, struct session *s);
+bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s);
+bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_erp_generate_table(char *cmd, char *fmt, struct session *s);
+bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-void cmd_dss_test(char *cmd, char *fmt, struct session *s);
-void cmd_dss_test_item(char *cmd, char *fmt, struct session *s);
-void cmd_dss_test_beliefs(char *cmd, char *fmt, struct session *s);
+bool cmd_dss_test(char *cmd, char *fmt, struct session *s);
+bool cmd_dss_test_item(char *cmd, char *fmt, struct session *s);
+bool cmd_dss_test_beliefs(char *cmd, char *fmt, struct session *s);
 
 #endif /* CMD_H */
