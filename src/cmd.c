@@ -1158,7 +1158,7 @@ bool cmd_list_sets(char *cmd, char *fmt, struct session *s)
         } else {
                 for (uint32_t i = 0; i < s->anp->sets->num_elements; i++) {
                         struct set *set = s->anp->sets->elements[i];
-                        cprintf("* %s", set->name);
+                        cprintf("* %s (%d)", set->name, set->items->num_elements);
                         if (set == s->anp->asp) {
                                 cprintf("\t <- Active set\n");
                         } else {

@@ -22,6 +22,8 @@
 #include "../network.h"
 #include "../set.h"
 
+/**************************************************************************
+ *************************************************************************/
 void erp_generate_table(struct network *n, struct group *n400_gen,
                 struct group *p600_gen, char *filename);
 struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,

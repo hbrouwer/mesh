@@ -23,16 +23,26 @@
 #include "../vector.h"
 
 /**************************************************************************
+ * This implements the estimation of ERP correlates, as described in:
+ * 
+ * Brouwer, H. (2014). The Electrophysiology of Language Comprehension: A
+ *     Neurocomputational Model. PhD thesis, University of Groningen.
+ *************************************************************************/
+
+/**************************************************************************
  *************************************************************************/
 void erp_generate_table(struct network *n, struct group *n400_gen,
                 struct group *p600_gen, char *filename)
 {
+        /* only use on SRNs */
+        if (n->type != TYPE_SRN)
+                return;
+
         FILE *fd;
         if (!(fd = fopen(filename, "w")))
                 goto error_out;
 
         fprintf(fd,"item_id,item_name,item_meta,word_pos,n400_amp,p600_amp\n");
-
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
 
@@ -41,8 +51,7 @@ void erp_generate_table(struct network *n, struct group *n400_gen,
                 struct vector *p6av = erp_amplitudes_for_item(n, p600_gen, item);
 
                 for (uint32_t j = 0; j < item->num_events; j++) 
-                        fprintf(fd,"%d,\"%s\",\"%s\",%d,%f,%f\n",
-                                        i, item->name, item->meta, j,
+                        fprintf(fd,"%d,\"%s\",\"%s\",%d,%f,%f\n", i, item->name, item->meta, j,
                                         n4av->elements[j], p6av->elements[j]);
 
                 dispose_vector(n4av);

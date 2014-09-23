@@ -21,6 +21,8 @@
 
 #include "../network.h"
 
+/**************************************************************************
+ *************************************************************************/
 void dss_test(struct network *n);
 void dss_test_item(struct network *n, struct item *item);
 void dss_test_beliefs(struct network *n, struct set *set, struct item *item);

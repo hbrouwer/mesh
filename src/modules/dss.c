@@ -24,6 +24,14 @@
 #include "../math.h"
 
 /**************************************************************************
+ * This implements a variety of functions for dealing with Distributed
+ * Situation Space vectors, see:
+ *
+ * Frank, S. L., Haselager, W. F. G, & van Rooij, I. (2009). Connectionist
+ *     semantic systematicity. Cognition, 110, 358-379.
+ *************************************************************************/
+
+/**************************************************************************
  *************************************************************************/
 void dss_test(struct network *n)
 {
@@ -48,19 +56,23 @@ void dss_test(struct network *n)
                         feed_forward(n, n->input);
                 }
 
-                double cs = dss_comprehension_score(
+                double tau = dss_comprehension_score(
                                 item->targets[item->num_events - 1],
                                 n->output->vector);
 
-                printf("%s: %f\n", item->name, cs);
-                if (!isnan(cs)) {
-                        acs += cs;
+
+                if (tau > 0.0)
+                        printf("\x1b[32m%s: %f\x1b[0m\n", item->name, tau);
+                else
+                        printf("\x1b[31m%s: %f\x1b[0m\n", item->name, tau);
+
+                if (!isnan(tau)) {
+                        acs += tau;
                         ncs++;
                 }
         }
 
-        acs /= ncs;
-        printf("Average comprehension score: %f\n", acs);
+        printf("Average comprehension score: (%f / %d =) %f\n", acs, ncs, acs / ncs);
 }
 
 /**************************************************************************
@@ -124,7 +136,6 @@ void dss_test_beliefs(struct network *n, struct set *set, struct item *item)
                         printf("\x1b[31m%s: %f\x1b[0m\n", probe->name, tau);
         }
         printf("\n");
-
 }
 
 /**************************************************************************
@@ -163,14 +174,6 @@ double dss_comprehension_score(struct vector *a, struct vector *z)
 
         /* unlawful event */
         if (tau_a == 0.0)
-                return NAN;
-
-        /* heuristic for unlawful events */
-        bool sig = false;
-        for (uint32_t i = 0; i < a->size; i++)
-                if (a->elements[i] > 0.25)
-                        sig = true;
-        if (!sig)
                 return NAN;
 
         if (tau_a_given_z > tau_a)

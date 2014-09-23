@@ -164,7 +164,6 @@ double error_cross_entropy(struct group *g, struct vector *t, double tr,
                          */
                         else
                                 ce += -log(1.0 - y);
-
                 } else if (d == 1.0) {
                         /*
                          * If d = 1 and y = 0, we obtain:
