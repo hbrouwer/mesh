@@ -33,6 +33,15 @@ double normrand(double mu, double sigma);
 
 /**************************************************************************
  *************************************************************************/
+double runge_kutta4(double (*f)(double, double), double h, double xn,
+       double yn);
+
+/**************************************************************************
+ *************************************************************************/
+double euclidean_norm(struct vector *v);
+
+/**************************************************************************
+ *************************************************************************/
 double inner_product(struct vector *v1, struct vector *v2);
 double harmonic_mean(struct vector *v1, struct vector *v2);
 double cosine(struct vector *v1, struct vector *v2);

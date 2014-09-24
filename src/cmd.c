@@ -43,6 +43,7 @@
 
 /* modules */
 #include "modules/dss.h"
+#include "modules/dynsys.h"
 #include "modules/erp.h"
 
 /* group types */
@@ -174,6 +175,9 @@ const static struct command cmds[] = {
         {"dssTestItem",             "\"%[^\"]\"",    &cmd_dss_test_item},    /* swapped */
         {"dssTestBeliefs",          "%s \"%[^\"]\"", &cmd_dss_test_beliefs}, /* swapped */
         {"dssTest",                 NULL,            &cmd_dss_test},
+
+        /* dynamic systems module ****************************************/
+        {"dynsysTestItem",          "%s \"%[^\"]\"", &cmd_dynsys_test_item},
 
         /*****************************************************************/
         {NULL,                      NULL,            NULL}                   /* tail */
@@ -1843,6 +1847,40 @@ bool cmd_dss_test_beliefs(char *cmd, char *fmt, struct session *s)
         }
 
         dss_test_beliefs(s->anp, set, item);
+
+        return true;
+}
+
+/**************************************************************************
+ * Dynamic systems module.
+ *************************************************************************/
+
+/**************************************************************************
+ *************************************************************************/
+bool cmd_dynsys_test_item(char *cmd, char *fmt, struct session *s)
+{
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
+                return false;
+
+        struct group *group = find_array_element_by_name(s->anp->groups, tmp1);
+        if (group == NULL) {
+                eprintf("Cannot test network--no such group '%s'", tmp1);
+                return true;
+        }
+
+        struct item *item = find_array_element_by_name(s->anp->asp->items, tmp2);
+        if (!item) {
+                eprintf("Cannot test network--no such item '%s'", tmp2);
+                return true;
+        }
+        
+        mprintf("Testing network '%s' with item '%s':", s->anp->name, tmp2);
+        mprintf(" ");
+
+        dynsys_test_item(s->anp, group, item);
+
+        mprintf(" ");
 
         return true;
 }

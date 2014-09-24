@@ -139,4 +139,8 @@ bool cmd_dss_test(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_test_item(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_test_beliefs(char *cmd, char *fmt, struct session *s);
 
+/**************************************************************************
+ *************************************************************************/
+bool cmd_dynsys_test_item(char *cmd, char *fmt, struct session *s);
+
 #endif /* CMD_H */

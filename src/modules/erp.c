@@ -34,10 +34,6 @@
 void erp_generate_table(struct network *n, struct group *n400_gen,
                 struct group *p600_gen, char *filename)
 {
-        /* only use on SRNs */
-        if (n->type != TYPE_SRN)
-                return;
-
         FILE *fd;
         if (!(fd = fopen(filename, "w")))
                 goto error_out;

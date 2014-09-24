@@ -40,6 +40,7 @@ set(SOURCE_FILES
         src/network.c
         src/vector.c
         src/modules/dss.c
+        src/modules/dynsys.c
         src/modules/erp.c)
 
 # mesh
