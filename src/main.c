@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 {
         struct session *s;
 
-        mprintf("MESH, version %s: http://hbrouwer.github.io/mesh/", VERSION);
+        print_welcome();
 #ifdef _OPENMP
         print_openmp_status();
 #endif /* _OPENMP */
@@ -47,10 +47,6 @@ int main(int argc, char **argv)
         for (uint32_t i = 1; i < argc; i++) {
                 if (strcmp(argv[i],"--help") == 0) {
                         print_help(argv[0]);
-                        goto leave_session;
-                }
-                else if (strcmp(argv[i],"--version") == 0) {
-                        print_version();
                         goto leave_session;
                 }
                 else if (argv[i] != NULL) {
@@ -102,28 +98,33 @@ void print_openmp_status()
 
 /**************************************************************************
  *************************************************************************/
+void print_welcome()
+{
+        mprintf(
+                        "         ______                                                             \n"
+                        "    __---   )  --_      MESH, version %s: http://hbrouwer.github.io/mesh/   \n"
+                        "  --       /      -_                                                        \n"
+                        " /        (         )   (c) 2012-2014 Harm Brouwer <me@hbrouwer.eu>         \n"
+                        "(         ____       )                                                      \n"
+                        "(      _--            ) Saarland University, Department of Computational    \n"
+                        " (____/         _____)  Linguistics and Phonetics (Psycholinguistics)       \n"
+                        "      (____  ---  )                                                         \n"
+                        "           \\ \\-__/      Licensed under the Apache License, Version 2.0      \n",
+
+                        VERSION);
+}
+
+/**************************************************************************
+ *************************************************************************/
 void print_help(char *exec_name)
 {
         mprintf(
                         "Usage: %s [options-and-file]\n\n"
 
                         "  Basic information for users:\n"
-                        "    --help\t\t\tShows this help message\n"
-                        "    --version\t\t\tShows version\n",
+                        "    --help\t\t\tShows this help message\n",
 
                         exec_name);
-}
-
-void print_version()
-{
-        mprintf(
-                        "\n"
-                        "(c) 2012-2014 Harm Brouwer <me@hbrouwer.eu>\n"
-                        "Center for Language and Cognition Groningen (CLCG), University of Groningen\n"
-                        "& Netherlands Organisation for Scientific Research (NWO)\n",
-                        
-                        VERSION);
-        
 }
 
 /**************************************************************************
