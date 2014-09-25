@@ -101,15 +101,15 @@ void print_openmp_status()
 void print_welcome()
 {
         mprintf(
-                        "         ______                                                             \n"
-                        "    __---   )  --_      MESH, version %s: http://hbrouwer.github.io/mesh/   \n"
-                        "  --       /      -_                                                        \n"
-                        " /        (         )   (c) 2012-2014 Harm Brouwer <me@hbrouwer.eu>         \n"
-                        "(         ____       )                                                      \n"
-                        "(      _--            ) Saarland University, Department of Computational    \n"
-                        " (____/         _____)  Linguistics and Phonetics (Psycholinguistics)       \n"
-                        "      (____  ---  )                                                         \n"
-                        "           \\ \\-__/      Licensed under the Apache License, Version 2.0      \n",
+                        "         ______                                                              \n"
+                        "    __---   )  --_       MESH, version %s: http://hbrouwer.github.io/mesh/   \n"
+                        "  --       /      -_                                                         \n"
+                        " /        (         )    (c) 2012-2014 Harm Brouwer <me@hbrouwer.eu>         \n"
+                        "(         ____       )                                                       \n"
+                        "(      _--            )  Saarland University, Department of Computational    \n"
+                        " (____/         _____)   Linguistics and Phonetics (Psycholinguistics)       \n"
+                        "      (____  ---  )                                                          \n"
+                        "           \\ \\-__/       Licensed under the Apache License, Version 2.0      \n",
 
                         VERSION);
 }
