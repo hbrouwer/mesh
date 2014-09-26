@@ -173,8 +173,9 @@ const static struct command cmds[] = {
 
         /* distributed situation space module ****************************/
         {"dssTestItem",             "\"%[^\"]\"",    &cmd_dss_test_item},    /* swapped */
-        {"dssTestBeliefs",          "%s \"%[^\"]\"", &cmd_dss_test_beliefs}, /* swapped */
         {"dssTest",                 NULL,            &cmd_dss_test},
+        {"dssBeliefs",              "%s \"%[^\"]\"", &cmd_dss_beliefs},
+        {"dssSurprisal",            "\"%[^\"]\"",    &cmd_dss_surprisal},
 
         /* dynamic systems module ****************************************/
         {"dynsysTestItem",          "%s \"%[^\"]\"", &cmd_dynsys_test_item},
@@ -1828,7 +1829,7 @@ bool cmd_dss_test_item(char *cmd, char *fmt, struct session *s)
 
 /**************************************************************************
  *************************************************************************/
-bool cmd_dss_test_beliefs(char *cmd, char *fmt, struct session *s)
+bool cmd_dss_beliefs(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
@@ -1846,7 +1847,31 @@ bool cmd_dss_test_beliefs(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        dss_test_beliefs(s->anp, set, item);
+        dss_beliefs(s->anp, set, item);
+
+        return true;
+}
+
+/**************************************************************************
+ *************************************************************************/
+bool cmd_dss_surprisal(char *cmd, char *fmt, struct session *s)
+{
+        char tmp[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        struct item *item = find_array_element_by_name(s->anp->asp->items, tmp);
+        if (!item) {
+                eprintf("Cannot test surprisal--no such item '%s'", tmp);
+                return true;
+        }
+        
+        mprintf("Testing network '%s' with item '%s':", s->anp->name, tmp);
+        mprintf(" ");
+
+        dss_surprisal(s->anp, item);
+
+        mprintf(" ");
 
         return true;
 }

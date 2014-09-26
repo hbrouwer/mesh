@@ -19,6 +19,8 @@
 #include "dss.h"
 
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "../act.h"
 #include "../math.h"
@@ -101,7 +103,7 @@ void dss_test_item(struct network *n, struct item *item)
 
 /**************************************************************************
  *************************************************************************/
-void dss_test_beliefs(struct network *n, struct set *set, struct item *item)
+void dss_beliefs(struct network *n, struct set *set, struct item *item)
 {
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
@@ -227,4 +229,94 @@ double dss_tau_conjunction(struct vector *a, struct vector *b)
 double dss_tau_conditional(struct vector *a, struct vector *b)
 {
         return dss_tau_conjunction(a, b) / dss_tau_prior(b);
+}
+
+/**************************************************************************
+ *************************************************************************/
+void dss_surprisal(struct network *n, struct item *item)
+{
+        struct vector *pv = create_vector(n->output->vector->size);
+
+        if (n->type == TYPE_SRN)
+                reset_context_groups(n);
+
+        printf("Word\t\tSyntactic\t\tSemantic\n");
+        printf("====\t\t=========\t\t========\n");
+
+        for (uint32_t i = 0; i < item->num_events; i++) {
+                printf("%d: %f\n", i, dss_syntactic_surprisal(n->asp, item, i + 1));
+
+
+
+                /*
+                for (uint32_t j = 0; j < i; j++)
+                        word = index(item->name, ' ');
+                        */
+
+                /*
+                 * Shift context group chain, in case of 
+                 * "Elman-towers".
+                 */
+                /*
+                if (i > 0 && n->type == TYPE_SRN)
+                        shift_context_groups(n);
+
+                copy_vector(n->input->vector, item->inputs[i]);
+                feed_forward(n, n->input);
+
+                double ssyn = 0.0;
+                double ssem = 0.0;
+                printf("%s\t\t%f\t\t%f\n", word, ssyn, ssem);
+
+                copy_vector(pv, n->output->vector);
+                */
+        }
+
+        dispose_vector(pv);
+
+        return;
+}
+
+double dss_syntactic_surprisal(struct set *s, struct item *item,
+                uint32_t word)
+{
+        char pfx1[strlen(item->name) + 1];
+        strncpy(pfx1, item->name, strlen(item->name));
+        char pfx2[strlen(item->name) + 1];
+        strncpy(pfx2, item->name, strlen(item->name));
+
+        uint32_t word_pos = 0;
+        uint32_t char_pos = 0; 
+
+        uint32_t i1 = 0;
+        uint32_t i2 = strlen(item->name);
+
+        for (char *p = item->name; *p != '\0'; p++) {
+                if (*p == ' ') {
+                        word_pos++;
+                        if (word_pos == word - 1)
+                                i1 = char_pos;
+                        if (word_pos == word)
+                                i2 = char_pos;
+                }
+                char_pos++;
+        }
+
+        pfx1[i1] = '\0';
+        pfx2[i2] = '\0';
+
+        double n_pfx1 = 0;
+        double n_pfx2 = 0;
+
+        for (uint32_t i = 0; i < s->items->num_elements; i++) {
+                struct item *target = s->items->elements[i];
+
+                if (strncmp(target->name, pfx1, strlen(pfx1)) == 0) n_pfx1++;
+                if (strncmp(target->name, pfx2, strlen(pfx2)) == 0) n_pfx2++;
+        }
+
+        double surprisal = -log((n_pfx2 / s->items->num_elements)
+                        / (n_pfx1 / s->items->num_elements));
+
+        return surprisal;
 }

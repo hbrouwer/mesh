@@ -25,7 +25,7 @@
  *************************************************************************/
 void dss_test(struct network *n);
 void dss_test_item(struct network *n, struct item *item);
-void dss_test_beliefs(struct network *n, struct set *set, struct item *item);
+void dss_beliefs(struct network *n, struct set *set, struct item *item);
 
 /**************************************************************************
  *************************************************************************/
@@ -35,5 +35,12 @@ double dss_comprehension_score(struct vector *a, struct vector *z);
  *************************************************************************/
 double dss_tau_prior(struct vector *a);
 double dss_tau_conditional(struct vector *a, struct vector *z);
+
+/**************************************************************************
+ *************************************************************************/
+void dss_surprisal(struct network *n, struct item *item);
+double dss_syntactic_surprisal(struct set *s, struct item *item,
+                uint32_t word);
+double dss_semantic_surprisal(struct vector *pv, struct vector *v);
 
 #endif /* DSS_H */

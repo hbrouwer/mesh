@@ -24,6 +24,33 @@
 #include "../math.h"
 
 /**************************************************************************
+ * This implements machinery to transform a connectionist model into a 
+ * dynamic system by turning the activation function of a specified group:
+ *
+ *     a_out(i+1) = f(W_out a_rec(i+1) + b_out)
+ *
+ * into a simple differential equation:
+ *
+ *     da_out
+ *     ------ = f(W_out a_rec(i+1) + b_out) - a_out
+ *       dt
+ *
+ * such that a_out changes from a_out(i) into a_out(i+1) over processing
+ * time (cf. Frank & Viliocco, 2011). Ideally, this process converges when
+ * da_out/dt = 0, meaning that a_out(i) = aout(i+1) = f(W_out a_rec(i+1)
+ * + b_out). However, as convergence is aymptotic, this will never happen,
+ * and as such the process is stopped when:
+ *
+ *     |da_out/dt| < max{1.0 * |a_out|, 10^-8}
+ *
+ * References
+ *
+ * Frank, S. L. and Vigliocco, G. (2011). Sentence comprehension as mental
+ *     simulation: an information-theoretic perspective. Information, 2,
+ *     672-696.
+ *************************************************************************/
+
+/**************************************************************************
  *************************************************************************/
 void dynsys_test_item(struct network *n, struct group *g, struct item *item)
 {
@@ -32,7 +59,9 @@ void dynsys_test_item(struct network *n, struct group *g, struct item *item)
 
         /* initial vector */
         struct vector *pv = create_vector(g->vector->size);
-        fill_vector_with_value(pv, 0.5);
+        // XXX: This should be set to the UNIT vector */
+        
+        // fill_vector_with_value(pv, 0.0);
 
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /*
@@ -58,47 +87,45 @@ void dynsys_test_item(struct network *n, struct group *g, struct item *item)
 
 /**************************************************************************
  *************************************************************************/
-
-/**************************************************************************
- *************************************************************************/
-double dynsys_processing_time(struct network *n, struct vector *iv,
-                struct vector *tv)
+double dynsys_processing_time(struct network *n, struct vector *a_out0,
+                struct vector *a_out1)
 {
-        struct vector *diff = create_vector(tv->size);
-        struct vector *step = create_vector(tv->size);
-        struct vector *delt = create_vector(tv->size);
-        copy_vector(diff, iv);
+        struct vector *da_out_dt = create_vector(a_out0->size);
+        struct vector *a_outx = create_vector(a_out0->size);
+        copy_vector(a_outx, a_out0);
 
-        ///////////////////////////////////
+        double h = 0.001; /* step size */
+        double dt = 0.0;  /* time */
 
-        double h = 0.01;
-        double t = 0.0;
+        double norm_da_out_dt = 0.0; 
+        double norm_a_outx = 0.0;
 
-        double delt_en, step_en;
         do {
-                copy_vector(step, diff);
+                /* update a_out */
+                for (uint32_t i = 0; i < a_out0->size; i++)
+                        a_outx->elements[i] = runge_kutta4(&dynsys_unit_act, h,
+                                        a_out1->elements[i], a_outx->elements[i]);
 
-                for (uint32_t i = 0; i < tv->size; i++) {
-                        diff->elements[i] = runge_kutta4(&dynsys_unit_act, h, tv->elements[i], step->elements[i]);
-                        delt->elements[i] = (diff->elements[i] - step->elements[i]) / t;
-                }
+                /* update dt */
+                dt += h;
 
-                t += h;
+                /* compute da_out/dt */
+                for (uint32_t i = 0; i < a_out0->size; i++)
+                        da_out_dt->elements[i] = (a_outx->elements[i] -
+                                        a_out0->elements[i]) / dt;
 
-                print_vector(diff);
+                /* compute norm for a_out */
+                norm_a_outx = euclidean_norm(a_outx);
 
-                delt_en = euclidean_norm(delt);
-                step_en = euclidean_norm(step);
+                /* compute norm for da_out/dt */
+                norm_da_out_dt = euclidean_norm(da_out_dt);
 
-        } while (delt_en > maximum(0.1 * step_en, pow(10.0,-8.0)));
+        } while (norm_da_out_dt > maximum(0.1 * norm_a_outx, pow(10.0, -8.0)));
 
-        //////////////////////////////////
+        dispose_vector(da_out_dt);
+        dispose_vector(a_outx);
 
-        dispose_vector(diff);
-        dispose_vector(step);
-        dispose_vector(delt);
-
-        return t;
+        return dt;
 }
 
 /**************************************************************************
