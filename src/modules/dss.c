@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "../act.h"
+#include "../main.h"
 #include "../math.h"
 
 /**************************************************************************
@@ -64,9 +65,9 @@ void dss_test(struct network *n)
 
 
                 if (tau > 0.0)
-                        printf("\x1b[32m%s: %f\x1b[0m\n", item->name, tau);
+                        pprintf("\x1b[32m%s: %f\x1b[0m\n", item->name, tau);
                 else
-                        printf("\x1b[31m%s: %f\x1b[0m\n", item->name, tau);
+                        pprintf("\x1b[31m%s: %f\x1b[0m\n", item->name, tau);
 
                 if (!isnan(tau)) {
                         acs += tau;
@@ -74,7 +75,8 @@ void dss_test(struct network *n)
                 }
         }
 
-        printf("Average comprehension score: (%f / %d =) %f\n", acs, ncs, acs / ncs);
+        pprintf("\nAverage comprehension score: (%f / %d =) %f\n",
+                        acs, ncs, acs / ncs);
 }
 
 /**************************************************************************
@@ -122,8 +124,8 @@ void dss_beliefs(struct network *n, struct set *set, struct item *item)
 
         double cs = dss_comprehension_score(item->targets[item->num_events - 1],
                         n->output->vector);
-        printf("\nsemantics: %s\n", item->meta);
-        printf("comprehension score: %f\n\n", cs);
+        pprintf("\nsemantics: %s\n", item->meta);
+        pprintf("comprehension score: %f\n\n", cs);
 
         for (uint32_t i = 0; i < set->items->num_elements; i++) {
                 struct item *probe = set->items->elements[i];
@@ -133,9 +135,9 @@ void dss_beliefs(struct network *n, struct set *set, struct item *item)
                                 n->output->vector);
 
                 if (tau > 0.0)
-                        printf("\x1b[32m%s: %f\x1b[0m\n", probe->name, tau);
+                        pprintf("\x1b[32m%s: %f\x1b[0m\n", probe->name, tau);
                 else
-                        printf("\x1b[31m%s: %f\x1b[0m\n", probe->name, tau);
+                        pprintf("\x1b[31m%s: %f\x1b[0m\n", probe->name, tau);
         }
         printf("\n");
 }
@@ -221,7 +223,7 @@ double dss_tau_conjunction(struct vector *a, struct vector *b)
 }
 
 /**************************************************************************
- * Conditional belief in a given b
+ * Conditional belief in a given b:
  *
  *     tau(a|b) = tau(a^b) / tau(b)
  *
@@ -232,91 +234,89 @@ double dss_tau_conditional(struct vector *a, struct vector *b)
 }
 
 /**************************************************************************
+ * Word information metrics
  *************************************************************************/
-void dss_surprisal(struct network *n, struct item *item)
+void dss_word_information(struct network *n, struct item *item)
 {
+        char prefix1[strlen(item->name) + 1];
+        char prefix2[strlen(item->name) + 1];
+
+        strncpy(prefix1, item->name, strlen(item->name));
+        strncpy(prefix2, item->name, strlen(item->name));
+
         struct vector *pv = create_vector(n->output->vector->size);
+
+        pprintf("Word    \tSsyn    \tDHsyn   \tSsem    \tDHsem   \n");
+        pprintf("========\t========\t========\t========\t========\n");
 
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
 
-        printf("Word\t\tSyntactic\t\tSemantic\n");
-        printf("====\t\t=========\t\t========\n");
-
         for (uint32_t i = 0; i < item->num_events; i++) {
-                printf("%d: %f\n", i, dss_syntactic_surprisal(n->asp, item, i + 1));
+                /* isolate prefixes */
+                uint32_t wp = 0, cp = 0;
+                uint32_t i1 = 0, i2 = strlen(item->name);
+                for (char *p = item->name; *p != '\0'; p++) {
+                        if (*p == ' ') {
+                                wp++;
+                                if (wp == i)
+                                        i1 = cp;
+                                if (wp == i + 1)
+                                        i2 = cp;
+                        }
+                        cp++;
+                }
+                char c1 = prefix1[i1];
+                char c2 = prefix2[i2];
+                prefix1[i1] = '\0';
+                prefix2[i2] = '\0';
+
+                /* compute prefix frequencies */
+                uint32_t freq_prefix1 = 0.0;
+                uint32_t freq_prefix2 = 0.0;
+                for (uint32_t j = 0; j < n->asp->items->num_elements; j++) {
+                        struct item *titem = n->asp->items->elements[j];
+                        if (strncmp(titem->name, prefix1, strlen(prefix1)) == 0) freq_prefix1++;
+                        if (strncmp(titem->name, prefix2, strlen(prefix2)) == 0) freq_prefix2++;
+                }
 
 
+                /* 
+                 * XXX: this assumes single occurrence of each sentence
+                 * (which is wrong in certain cases).
+                 */
+                double hsyn1 = 0.0;
+                double hsyn2 = 0.0;
+                for (uint32_t j = 0; j < freq_prefix1; j++)
+                        hsyn1 += (1.0 / freq_prefix1) * log(1.0 / freq_prefix1);
+                for (uint32_t j = 0; j < freq_prefix2; j++)
+                        hsyn2 += (1.0 / freq_prefix2) * log(1.0 / freq_prefix2);
 
-                /*
-                for (uint32_t j = 0; j < i; j++)
-                        word = index(item->name, ' ');
-                        */
+                /* restore prefixes */
+                prefix1[i1] = c1;
+                prefix2[i2] = c2;
 
                 /*
                  * Shift context group chain, in case of 
                  * "Elman-towers".
                  */
-                /*
                 if (i > 0 && n->type == TYPE_SRN)
                         shift_context_groups(n);
 
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 
-                double ssyn = 0.0;
-                double ssem = 0.0;
-                printf("%s\t\t%f\t\t%f\n", word, ssyn, ssem);
+                /* compute metrics */
+                double ssyn = log(freq_prefix1) - log(freq_prefix2);
+                double ssem = -log(dss_tau_conditional(n->output->vector, pv));
+                double delta_hsyn = -hsyn1 - -hsyn2;
+
+                pprintf("(null)\t%f\t%f\t%f\n", ssyn, delta_hsyn, ssem);
 
                 copy_vector(pv, n->output->vector);
-                */
         }
 
         dispose_vector(pv);
 
         return;
-}
-
-double dss_syntactic_surprisal(struct set *s, struct item *item,
-                uint32_t word)
-{
-        char pfx1[strlen(item->name) + 1];
-        strncpy(pfx1, item->name, strlen(item->name));
-        char pfx2[strlen(item->name) + 1];
-        strncpy(pfx2, item->name, strlen(item->name));
-
-        uint32_t word_pos = 0;
-        uint32_t char_pos = 0; 
-
-        uint32_t i1 = 0;
-        uint32_t i2 = strlen(item->name);
-
-        for (char *p = item->name; *p != '\0'; p++) {
-                if (*p == ' ') {
-                        word_pos++;
-                        if (word_pos == word - 1)
-                                i1 = char_pos;
-                        if (word_pos == word)
-                                i2 = char_pos;
-                }
-                char_pos++;
-        }
-
-        pfx1[i1] = '\0';
-        pfx2[i2] = '\0';
-
-        double n_pfx1 = 0;
-        double n_pfx2 = 0;
-
-        for (uint32_t i = 0; i < s->items->num_elements; i++) {
-                struct item *target = s->items->elements[i];
-
-                if (strncmp(target->name, pfx1, strlen(pfx1)) == 0) n_pfx1++;
-                if (strncmp(target->name, pfx2, strlen(pfx2)) == 0) n_pfx2++;
-        }
-
-        double surprisal = -log((n_pfx2 / s->items->num_elements)
-                        / (n_pfx1 / s->items->num_elements));
-
-        return surprisal;
 }

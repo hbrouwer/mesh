@@ -175,7 +175,7 @@ const static struct command cmds[] = {
         {"dssTestItem",             "\"%[^\"]\"",    &cmd_dss_test_item},    /* swapped */
         {"dssTest",                 NULL,            &cmd_dss_test},
         {"dssBeliefs",              "%s \"%[^\"]\"", &cmd_dss_beliefs},
-        {"dssSurprisal",            "\"%[^\"]\"",    &cmd_dss_surprisal},
+        {"dssWordInformation",      "\"%[^\"]\"",    &cmd_dss_word_information},
 
         /* dynamic systems module ****************************************/
         {"dynsysTestItem",          "%s \"%[^\"]\"", &cmd_dynsys_test_item},
@@ -1854,7 +1854,7 @@ bool cmd_dss_beliefs(char *cmd, char *fmt, struct session *s)
 
 /**************************************************************************
  *************************************************************************/
-bool cmd_dss_surprisal(char *cmd, char *fmt, struct session *s)
+bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp) != 1)
@@ -1869,7 +1869,7 @@ bool cmd_dss_surprisal(char *cmd, char *fmt, struct session *s)
         mprintf("Testing network '%s' with item '%s':", s->anp->name, tmp);
         mprintf(" ");
 
-        dss_surprisal(s->anp, item);
+        dss_word_information(s->anp, item);
 
         mprintf(" ");
 

@@ -138,7 +138,7 @@ bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_test(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_test_item(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_beliefs(char *cmd, char *fmt, struct session *s);
-bool cmd_dss_surprisal(char *cmd, char *fmt, struct session *s);
+bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
