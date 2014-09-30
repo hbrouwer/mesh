@@ -191,8 +191,7 @@ double dss_comprehension_score(struct vector *a, struct vector *z)
 /**************************************************************************
  * Prior belief in a:
  *
- *     tau(a) = 1/n sum_i u_i(a)
- *
+ * tau(a) = 1/n sum_i u_i(a)
  *************************************************************************/
 double dss_tau_prior(struct vector *a)
 {
@@ -207,8 +206,7 @@ double dss_tau_prior(struct vector *a)
 /**************************************************************************
  * Belief the conjunction of a and b:
  *
- *     tau(a^b) = 1/n sum_i u_i(a) * u_i(b)
- *
+ * tau(a^b) = 1/n sum_i u_i(a) * u_i(b)
  *************************************************************************/
 double dss_tau_conjunction(struct vector *a, struct vector *b)
 {
@@ -225,8 +223,7 @@ double dss_tau_conjunction(struct vector *a, struct vector *b)
 /**************************************************************************
  * Conditional belief in a given b:
  *
- *     tau(a|b) = tau(a^b) / tau(b)
- *
+ * tau(a|b) = tau(a^b) / tau(b)
  *************************************************************************/
 double dss_tau_conditional(struct vector *a, struct vector *b)
 {
@@ -234,19 +231,38 @@ double dss_tau_conditional(struct vector *a, struct vector *b)
 }
 
 /**************************************************************************
- * Word information metrics
+ * Word information metrics, as described in:
+ *
+ * Frank, S. L. and Vigliocco, G. (2011). Sentence comprehension as mental
+ *     simulation: an information-theoretic perspective. Information, 2,
+ *     672-696.
  *************************************************************************/
 void dss_word_information(struct network *n, struct item *item)
 {
         char prefix1[strlen(item->name) + 1];
-        char prefix2[strlen(item->name) + 1];
-
         strncpy(prefix1, item->name, strlen(item->name));
+        char prefix2[strlen(item->name) + 1];
         strncpy(prefix2, item->name, strlen(item->name));
 
-        struct vector *pv = create_vector(n->output->vector->size);
+        /* frequency table */
+        int32_t freq_table[n->asp->items->num_elements];
+        memset(&freq_table, 0, n->asp->items->num_elements * sizeof(int32_t));
+        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                /* skip seen items */
+                if (freq_table[i] == -1) 
+                        continue;
+                struct item *item1 = n->asp->items->elements[i];
+                for (uint32_t j = 0; j < n->asp->items->num_elements; j++) {
+                        struct item *item2 = n->asp->items->elements[j];
+                        if (strcmp(item1->name, item2->name) == 0) {
+                                freq_table[i]++;
+                                if (i != j)
+                                        freq_table[j] = -1; /* mark as seen */
+                        }
+                }
+        }
 
-        pprintf("Word    \tSsyn    \tDHsyn   \tSsem    \tDHsem   \n");
+        pprintf("Word    \tSsyn    \tD_Hsyn  \tSsem    \tD_Hsem  \n");
         pprintf("========\t========\t========\t========\t========\n");
 
         if (n->type == TYPE_SRN)
@@ -272,25 +288,29 @@ void dss_word_information(struct network *n, struct item *item)
                 prefix2[i2] = '\0';
 
                 /* compute prefix frequencies */
-                uint32_t freq_prefix1 = 0.0;
-                uint32_t freq_prefix2 = 0.0;
+                uint32_t freq_prefix1 = 0.0, freq_prefix2 = 0.0;
                 for (uint32_t j = 0; j < n->asp->items->num_elements; j++) {
                         struct item *titem = n->asp->items->elements[j];
-                        if (strncmp(titem->name, prefix1, strlen(prefix1)) == 0) freq_prefix1++;
-                        if (strncmp(titem->name, prefix2, strlen(prefix2)) == 0) freq_prefix2++;
+                        if (strncmp(titem->name, prefix1, strlen(prefix1)) == 0)
+                                freq_prefix1++;
+                        if (strncmp(titem->name, prefix2, strlen(prefix2)) == 0)
+                                freq_prefix2++;
                 }
 
-
-                /* 
-                 * XXX: this assumes single occurrence of each sentence
-                 * (which is wrong in certain cases).
-                 */
-                double hsyn1 = 0.0;
-                double hsyn2 = 0.0;
-                for (uint32_t j = 0; j < freq_prefix1; j++)
-                        hsyn1 += (1.0 / freq_prefix1) * log(1.0 / freq_prefix1);
-                for (uint32_t j = 0; j < freq_prefix2; j++)
-                        hsyn2 += (1.0 / freq_prefix2) * log(1.0 / freq_prefix2);
+                /* compute syntactic entropies */
+                double hsyn1 = 0.0, hsyn2 = 0.0;
+                for (uint32_t j = 0; j < n->asp->items->num_elements; j++) {
+                        double freq = freq_table[j];
+                        if (freq < 0.0)
+                                continue; /* skip doubles */
+                        struct item *titem = n->asp->items->elements[j];
+                        if (strncmp(titem->name, prefix1, strlen(prefix1)) == 0)
+                                hsyn1 += (freq / freq_prefix1) * log(freq / freq_prefix1);
+                        if (strncmp(titem->name, prefix2, strlen(prefix2)) == 0)
+                                hsyn2 += (freq / freq_prefix2) * log(freq / freq_prefix2);
+                }
+                hsyn1 = -hsyn1;
+                hsyn2 = -hsyn2;
 
                 /* restore prefixes */
                 prefix1[i1] = c1;
@@ -308,15 +328,18 @@ void dss_word_information(struct network *n, struct item *item)
 
                 /* compute metrics */
                 double ssyn = log(freq_prefix1) - log(freq_prefix2);
-                double ssem = -log(dss_tau_conditional(n->output->vector, pv));
-                double delta_hsyn = -hsyn1 - -hsyn2;
+                double ssem = 0.0; // -log(dss_tau_conditional(n->output->vector, pv));
+//                double ssem2 = log(dss_tau_prior(pv)) - log(dss_tau_prior(n->output->vector));
+                double delta_hsyn = hsyn1 - hsyn2;
 
-                pprintf("(null)\t%f\t%f\t%f\n", ssyn, delta_hsyn, ssem);
-
-                copy_vector(pv, n->output->vector);
+                pprintf("");
+                if (i1 > 0) i1++;
+                for (uint32_t j = i1; j < i2; j++) {
+                        putchar(item->name[j]);
+                }
+                if (i2 - i1 < 3) printf("\t");
+                printf("\t%f\t%f\t%f\n", ssyn, delta_hsyn, ssem);
         }
-
-        dispose_vector(pv);
 
         return;
 }
