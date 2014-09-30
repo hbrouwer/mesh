@@ -212,7 +212,7 @@ double dss_tau_conjunction(struct vector *a, struct vector *b)
 {
         double tau = 0.0;
 
-        if (a == b)
+        if (dss_same_vector(a, b))
                 tau = dss_tau_prior(a);
         else
                 tau = inner_product(a, b) / a->size;
@@ -228,6 +228,17 @@ double dss_tau_conjunction(struct vector *a, struct vector *b)
 double dss_tau_conditional(struct vector *a, struct vector *b)
 {
         return dss_tau_conjunction(a, b) / dss_tau_prior(b);
+}
+
+/**************************************************************************
+ *************************************************************************/
+bool dss_same_vector(struct vector *a, struct vector *b)
+{
+        for (uint32_t i = 0; i < a->size; i++)
+                if (a->elements[i] != b->elements[i])
+                        return false;
+
+        return true;
 }
 
 /**************************************************************************
@@ -265,6 +276,9 @@ void dss_word_information(struct network *n, struct item *item)
         pprintf("Word    \tSsyn    \tD_Hsyn  \tSsem    \tD_Hsem  \n");
         pprintf("========\t========\t========\t========\t========\n");
 
+        struct vector *sit1 = create_vector(n->output->vector->size);
+        struct vector *sit2 = create_vector(n->output->vector->size);
+
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
 
@@ -287,14 +301,30 @@ void dss_word_information(struct network *n, struct item *item)
                 prefix1[i1] = '\0';
                 prefix2[i2] = '\0';
 
+                zero_out_vector(sit1);
+                zero_out_vector(sit2);
+
                 /* compute prefix frequencies */
                 uint32_t freq_prefix1 = 0.0, freq_prefix2 = 0.0;
                 for (uint32_t j = 0; j < n->asp->items->num_elements; j++) {
                         struct item *titem = n->asp->items->elements[j];
-                        if (strncmp(titem->name, prefix1, strlen(prefix1)) == 0)
+                        struct vector *target = titem->targets[titem->num_events - 1];
+                        if (strncmp(titem->name, prefix1, strlen(prefix1)) == 0) {
                                 freq_prefix1++;
-                        if (strncmp(titem->name, prefix2, strlen(prefix2)) == 0)
+                                if (j == 0) {
+                                        copy_vector(sit1, target);
+                                } else {
+                                        dss_fuzzy_or(sit1, target);
+                                }
+                        }
+                        if (strncmp(titem->name, prefix2, strlen(prefix2)) == 0) {
                                 freq_prefix2++;
+                                if (j == 0) {
+                                        copy_vector(sit2, target);
+                                } else {
+                                        dss_fuzzy_or(sit2, target);
+                                }
+                        }
                 }
 
                 /* compute syntactic entropies */
@@ -312,6 +342,41 @@ void dss_word_information(struct network *n, struct item *item)
                 hsyn1 = -hsyn1;
                 hsyn2 = -hsyn2;
 
+                /* compute semantic entropies */
+                double sum1 = 0.0, sum2 = 0.0;
+                for (uint32_t j = 0; j < n->output->vector->size; j++) {
+                        sum1 += sit1->elements[j];
+                        sum2 += sit2->elements[j];
+                }
+                double hsem1 = 0.0, hsem2 = 0.0;
+                for (uint32_t j = 0; j < n->output->vector->size; j++) {
+                        double tau1 = sit1->elements[j] / sum1;
+                        double tau2 = sit2->elements[j] / sum2;
+                        if (tau1 > 0.0)
+                                hsem1 += tau1 * log(tau1);
+                        if (tau2 > 0.0)
+                                hsem2 += tau2 * log(tau2);
+                }
+                hsem1 = -hsem1;
+                hsem2 = -hsem2;
+
+                /*
+                double hsem1 = 0.0, hsem2 = 0.0;
+                for (uint32_t j = 0; j <- n->output->vector->size; j++) {
+                        double sum1 = 0.0, sum2 = 0.0;
+                        for (uint32_t x = 0; x < n->output->vector->size; x++) {
+                                sum1 += sit1->elements[x];
+                                sum2 += sit2->elements[x];
+                        }
+                        double tau1 = (sit1->elements[j] / sum1);
+                        double tau2 = (sit2->elements[j] / sum2);
+                        hsem1 += tau1 * log(tau1);
+                        hsem2 += tau2 * log(tau2);
+                }
+                hsem1 = -hsem1;
+                hsem2 = -hsem2;
+                */
+
                 /* restore prefixes */
                 prefix1[i1] = c1;
                 prefix2[i2] = c2;
@@ -328,9 +393,9 @@ void dss_word_information(struct network *n, struct item *item)
 
                 /* compute metrics */
                 double ssyn = log(freq_prefix1) - log(freq_prefix2);
-                double ssem = 0.0; // -log(dss_tau_conditional(n->output->vector, pv));
-//                double ssem2 = log(dss_tau_prior(pv)) - log(dss_tau_prior(n->output->vector));
+                double ssem = log(dss_tau_prior(sit1)) - log(dss_tau_prior(sit2));
                 double delta_hsyn = hsyn1 - hsyn2;
+                double delta_hsem = hsem1 - hsem2;
 
                 pprintf("");
                 if (i1 > 0) i1++;
@@ -338,8 +403,22 @@ void dss_word_information(struct network *n, struct item *item)
                         putchar(item->name[j]);
                 }
                 if (i2 - i1 < 3) printf("\t");
-                printf("\t%f\t%f\t%f\n", ssyn, delta_hsyn, ssem);
+                printf("\t%f\t%f\t%f\t%f\n", ssyn, delta_hsyn, ssem, delta_hsem);
         }
+
+        dispose_vector(sit1);
+        dispose_vector(sit2);
+
+        return;
+}
+
+/**************************************************************************
+ *************************************************************************/
+void dss_fuzzy_or(struct vector *a, struct vector *b)
+{
+        for (uint32_t i = 0; i < a->size; i++)
+                a->elements[i] = a->elements[i] + b->elements[i]
+                        - a->elements[i] * b->elements[i];
 
         return;
 }
