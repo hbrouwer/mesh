@@ -42,7 +42,7 @@
  * to its gradient:
  *
  *    Dw_ij = -epsilon dE/dw_ij
- * 
+ *
  * where epsilon is the network's learning rate. The gradient of a weight
  * w_ij, in turn, is defined as:
  *

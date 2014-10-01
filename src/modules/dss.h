@@ -35,11 +35,15 @@ double dss_tau_conditional(struct vector *a, struct vector *z);
 
 /**************************************************************************
  *************************************************************************/
-bool dss_same_vector(struct vector *a, struct vector *b);
+bool is_same_vector(struct vector *a, struct vector *b);
 
 /**************************************************************************
  *************************************************************************/
 void dss_word_information(struct network *n, struct item *item);
-void dss_fuzzy_or(struct vector *a, struct vector *b);
+
+/**************************************************************************
+ *************************************************************************/
+int32_t *frequency_table(struct set *s);
+void fuzzy_or(struct vector *a, struct vector *b);
 
 #endif /* DSS_H */

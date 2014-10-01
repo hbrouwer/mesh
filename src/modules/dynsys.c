@@ -64,13 +64,9 @@ void dynsys_test_item(struct network *n, struct group *g, struct item *item)
         // fill_vector_with_value(pv, 0.0);
 
         for (uint32_t i = 0; i < item->num_events; i++) {
-                /*
-                 * Shift context group chain, in case of 
-                 * "Elman-towers".
-                 */
+                /* feed activation forward */
                 if (i > 0 && n->type == TYPE_SRN)
                         shift_context_groups(n);
-
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 

@@ -72,14 +72,9 @@ void ffn_network_sm(struct network *n, bool print, bool pprint,
                         reset_context_groups(n);
 
                 for (uint32_t j = 0; j < item->num_events; j++) {
-                        /* 
-                         * Shift context group chain, in case of 
-                         * "Elman-towers".
-                         */
+                        /* feed activation forward */
                         if (j > 0 && n->type == TYPE_SRN)
                                 shift_context_groups(n);
-
-                        /* feed activation forward */
                         copy_vector(n->input->vector, item->inputs[j]);
                         feed_forward(n, n->input);
                         

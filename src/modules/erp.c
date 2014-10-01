@@ -76,13 +76,9 @@ struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
                 reset_context_groups(n);
 
         for (uint32_t i = 0; i < item->num_events; i++) {
-                /*
-                 * Shift context group chain, in case of 
-                 * "Elman-towers".
-                 */
+                /* feed activation forward */
                 if (i > 0 && n->type == TYPE_SRN)
                         shift_context_groups(n);
-
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 

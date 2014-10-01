@@ -48,20 +48,15 @@ void dss_test(struct network *n)
                         reset_context_groups(n);
 
                 for (uint32_t j = 0; j < item->num_events; j++) {
-                        /*
-                         * Shift context group chain, in case of 
-                         * "Elman-towers".
-                         */
+                        /* feed activation forward */
                         if (j > 0 && n->type == TYPE_SRN)
                                 shift_context_groups(n);
-
                         copy_vector(n->input->vector, item->inputs[j]);
                         feed_forward(n, n->input);
                 }
 
-                double tau = dss_comprehension_score(
-                                item->targets[item->num_events - 1],
-                                n->output->vector);
+                struct vector *target = item->targets[item->num_events - 1];
+                double tau = dss_comprehension_score(target, n->output->vector);
 
 
                 if (tau > 0.0)
@@ -87,13 +82,9 @@ void dss_test_item(struct network *n, struct item *item)
                 reset_context_groups(n);
 
         for (uint32_t i = 0; i < item->num_events; i++) {
-                /*
-                 * Shift context group chain, in case of 
-                 * "Elman-towers".
-                 */
+                /* feed activation forward */
                 if (i > 0 && n->type == TYPE_SRN)
                         shift_context_groups(n);
-
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 
@@ -111,13 +102,9 @@ void dss_beliefs(struct network *n, struct set *set, struct item *item)
                 reset_context_groups(n);
 
         for (uint32_t i = 0; i < item->num_events; i++) {
-                /*
-                 * Shift context group chain, in case of 
-                 * "Elman-towers".
-                 */
+                /* feed activation forward */
                 if (i > 0 && n->type == TYPE_SRN)
                         shift_context_groups(n);
-
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
         }
@@ -212,7 +199,7 @@ double dss_tau_conjunction(struct vector *a, struct vector *b)
 {
         double tau = 0.0;
 
-        if (dss_same_vector(a, b))
+        if (is_same_vector(a, b))
                 tau = dss_tau_prior(a);
         else
                 tau = inner_product(a, b) / a->size;
@@ -232,7 +219,7 @@ double dss_tau_conditional(struct vector *a, struct vector *b)
 
 /**************************************************************************
  *************************************************************************/
-bool dss_same_vector(struct vector *a, struct vector *b)
+bool is_same_vector(struct vector *a, struct vector *b)
 {
         for (uint32_t i = 0; i < a->size; i++)
                 if (a->elements[i] != b->elements[i])
@@ -242,7 +229,21 @@ bool dss_same_vector(struct vector *a, struct vector *b)
 }
 
 /**************************************************************************
- * Word information metrics, as described in:
+ * This implements four measures that quantify how much information a word
+ * conveys (cf. Frank & Vigliocco, 2011):
+ *
+ * (1) Syntactic surprisal (Ssyn)
+ *
+ * (2) Syntactic entropy reduction (DHsyn)
+ *
+ * (3) Semantic surprisal (SSem)
+ *
+ * (4) Semantic entropy reduction (DHsem)
+ *
+ * syntactic entropy reduction, semantic surprisal, and semantic entropy
+ * reduction.
+ * 
+ * References
  *
  * Frank, S. L. and Vigliocco, G. (2011). Sentence comprehension as mental
  *     simulation: an information-theoretic perspective. Information, 2,
@@ -255,32 +256,16 @@ void dss_word_information(struct network *n, struct item *item)
         char prefix2[strlen(item->name) + 1];
         strncpy(prefix2, item->name, strlen(item->name));
 
-        /* frequency table */
-        int32_t freq_table[n->asp->items->num_elements];
-        memset(&freq_table, 0, n->asp->items->num_elements * sizeof(int32_t));
-        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                /* skip seen items */
-                if (freq_table[i] == -1) 
-                        continue;
-                struct item *item1 = n->asp->items->elements[i];
-                for (uint32_t j = 0; j < n->asp->items->num_elements; j++) {
-                        struct item *item2 = n->asp->items->elements[j];
-                        if (strcmp(item1->name, item2->name) == 0) {
-                                freq_table[i]++;
-                                if (i != j)
-                                        freq_table[j] = -1; /* mark as seen */
-                        }
-                }
-        }
-
-        pprintf("Word    \tSsyn    \tD_Hsyn  \tSsem    \tD_Hsem  \n");
-        pprintf("========\t========\t========\t========\t========\n");
+        int32_t *freq_table = frequency_table(n->asp);
 
         struct vector *sit1 = create_vector(n->output->vector->size);
         struct vector *sit2 = create_vector(n->output->vector->size);
 
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
+
+        pprintf("Word    \tSsyn    \tDHsyn   \tSsem    \tDHsem   \n");
+        pprintf("========\t========\t========\t========\t========\n");
 
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* isolate prefixes */
@@ -314,7 +299,7 @@ void dss_word_information(struct network *n, struct item *item)
                                 if (j == 0) {
                                         copy_vector(sit1, target);
                                 } else {
-                                        dss_fuzzy_or(sit1, target);
+                                        fuzzy_or(sit1, target);
                                 }
                         }
                         if (strncmp(titem->name, prefix2, strlen(prefix2)) == 0) {
@@ -322,7 +307,7 @@ void dss_word_information(struct network *n, struct item *item)
                                 if (j == 0) {
                                         copy_vector(sit2, target);
                                 } else {
-                                        dss_fuzzy_or(sit2, target);
+                                        fuzzy_or(sit2, target);
                                 }
                         }
                 }
@@ -342,6 +327,10 @@ void dss_word_information(struct network *n, struct item *item)
                 hsyn1 = -hsyn1;
                 hsyn2 = -hsyn2;
 
+                /* restore prefixes */
+                prefix1[i1] = c1;
+                prefix2[i2] = c2;
+
                 /* compute semantic entropies */
                 double sum1 = 0.0, sum2 = 0.0;
                 for (uint32_t j = 0; j < n->output->vector->size; j++) {
@@ -360,34 +349,9 @@ void dss_word_information(struct network *n, struct item *item)
                 hsem1 = -hsem1;
                 hsem2 = -hsem2;
 
-                /*
-                double hsem1 = 0.0, hsem2 = 0.0;
-                for (uint32_t j = 0; j <- n->output->vector->size; j++) {
-                        double sum1 = 0.0, sum2 = 0.0;
-                        for (uint32_t x = 0; x < n->output->vector->size; x++) {
-                                sum1 += sit1->elements[x];
-                                sum2 += sit2->elements[x];
-                        }
-                        double tau1 = (sit1->elements[j] / sum1);
-                        double tau2 = (sit2->elements[j] / sum2);
-                        hsem1 += tau1 * log(tau1);
-                        hsem2 += tau2 * log(tau2);
-                }
-                hsem1 = -hsem1;
-                hsem2 = -hsem2;
-                */
-
-                /* restore prefixes */
-                prefix1[i1] = c1;
-                prefix2[i2] = c2;
-
-                /*
-                 * Shift context group chain, in case of 
-                 * "Elman-towers".
-                 */
+                /* feed activation forward */
                 if (i > 0 && n->type == TYPE_SRN)
                         shift_context_groups(n);
-
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 
@@ -406,6 +370,8 @@ void dss_word_information(struct network *n, struct item *item)
                 printf("\t%f\t%f\t%f\t%f\n", ssyn, delta_hsyn, ssem, delta_hsem);
         }
 
+        free(freq_table);
+
         dispose_vector(sit1);
         dispose_vector(sit2);
 
@@ -414,7 +380,39 @@ void dss_word_information(struct network *n, struct item *item)
 
 /**************************************************************************
  *************************************************************************/
-void dss_fuzzy_or(struct vector *a, struct vector *b)
+int32_t *frequency_table(struct set *s)
+{
+        int32_t *freq_table;
+        uint32_t n = s->items->num_elements;
+        if (!(freq_table = malloc(n * sizeof(int32_t))))
+                goto error_out;
+        memset(freq_table, 0, n * sizeof(int32_t));
+
+        /* populate frequency table */
+        for (uint32_t i = 0; i < n; i++) {
+                /* skip seen items */
+                if (freq_table[i] == -1)
+                        continue;
+                struct item *item1 = s->items->elements[i];
+                for (uint32_t j = 0; j < n; j++) {
+                        struct item *item2 = s->items->elements[j];
+                        if (strcmp(item1->name, item2->name) == 0) {
+                                freq_table[i]++;
+                                if (i != j)
+                                        freq_table[j] = -1; /* mark as seen */
+                        }
+                }
+        }
+
+        return freq_table;
+
+error_out:
+        return NULL;
+}
+
+/**************************************************************************
+ *************************************************************************/
+void fuzzy_or(struct vector *a, struct vector *b)
 {
         for (uint32_t i = 0; i < a->size; i++)
                 a->elements[i] = a->elements[i] + b->elements[i]
