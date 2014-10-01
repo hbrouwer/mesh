@@ -74,7 +74,6 @@ struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
 
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
-
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* feed activation forward */
                 if (i > 0 && n->type == TYPE_SRN)

@@ -113,10 +113,8 @@ void train_network_with_bp(struct network *n)
  *************************************************************************/
 void train_ffn_network_with_item(struct network *n, struct item *item)
 {
-        /* reset context groups */
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
-
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* feed activation forward */
                 if (i > 0 && n->type == TYPE_SRN)
@@ -215,10 +213,8 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
         struct rnn_unfolded_network *un = n->unfolded_net;
         un->sp = 0;
 
-        /* reset recurrent groups, and error signals */
         reset_recurrent_groups(un->stack[un->sp]);
         reset_rnn_error_signals(n);
-
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* feed activation forward */
                 copy_vector(un->stack[un->sp]->input->vector, item->inputs[i]);
@@ -253,11 +249,8 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
                 }
 
 shift_stack:
-                if (un->sp == un->stack_size - 1) {
-                        rnn_shift_stack(un);
-                } else {
-                        un->sp++;
-                }
+                un->sp == un->stack_size - 1 ? rnn_shift_stack(un)
+                        : un->sp++;
         }
 }
 

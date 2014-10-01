@@ -46,7 +46,6 @@ void dss_test(struct network *n)
 
                 if (n->type == TYPE_SRN)
                         reset_context_groups(n);
-
                 for (uint32_t j = 0; j < item->num_events; j++) {
                         /* feed activation forward */
                         if (j > 0 && n->type == TYPE_SRN)
@@ -58,11 +57,11 @@ void dss_test(struct network *n)
                 struct vector *target = item->targets[item->num_events - 1];
                 double tau = dss_comprehension_score(target, n->output->vector);
 
-
-                if (tau > 0.0)
+                if (tau > 0.0) {
                         pprintf("\x1b[32m%s: %f\x1b[0m\n", item->name, tau);
-                else
+                } else {
                         pprintf("\x1b[31m%s: %f\x1b[0m\n", item->name, tau);
+                }
 
                 if (!isnan(tau)) {
                         acs += tau;
@@ -80,7 +79,6 @@ void dss_test_item(struct network *n, struct item *item)
 {
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
-
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* feed activation forward */
                 if (i > 0 && n->type == TYPE_SRN)
@@ -88,9 +86,10 @@ void dss_test_item(struct network *n, struct item *item)
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 
-                double cs = dss_comprehension_score(item->targets[i],
+                struct vector *target = item->targets[item->num_events - 1];
+                double cs = dss_comprehension_score(target,
                                 n->output->vector);
-                printf("event %d -- comprehension score: %f\n", i, cs);
+                pprintf("Event %d -- comprehension score: %f\n", i, cs);
         }
 }
 
@@ -100,7 +99,6 @@ void dss_beliefs(struct network *n, struct set *set, struct item *item)
 {
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
-
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* feed activation forward */
                 if (i > 0 && n->type == TYPE_SRN)
@@ -109,10 +107,10 @@ void dss_beliefs(struct network *n, struct set *set, struct item *item)
                 feed_forward(n, n->input);
         }
 
-        double cs = dss_comprehension_score(item->targets[item->num_events - 1],
-                        n->output->vector);
-        pprintf("\nsemantics: %s\n", item->meta);
-        pprintf("comprehension score: %f\n\n", cs);
+        struct vector *target = item->targets[item->num_events - 1];
+        double cs = dss_comprehension_score(target, n->output->vector);
+        pprintf("\nSemantics: %s\n", item->meta);
+        pprintf("Comprehension score: %f\n\n", cs);
 
         for (uint32_t i = 0; i < set->items->num_elements; i++) {
                 struct item *probe = set->items->elements[i];
@@ -121,10 +119,11 @@ void dss_beliefs(struct network *n, struct set *set, struct item *item)
                                 probe->targets[probe->num_events - 1],
                                 n->output->vector);
 
-                if (tau > 0.0)
+                if (tau > 0.0) {
                         pprintf("\x1b[32m%s: %f\x1b[0m\n", probe->name, tau);
-                else
+                } else {
                         pprintf("\x1b[31m%s: %f\x1b[0m\n", probe->name, tau);
+                }
         }
         printf("\n");
 }
@@ -261,12 +260,11 @@ void dss_word_information(struct network *n, struct item *item)
         struct vector *sit1 = create_vector(n->output->vector->size);
         struct vector *sit2 = create_vector(n->output->vector->size);
 
-        if (n->type == TYPE_SRN)
-                reset_context_groups(n);
-
         pprintf("Word    \tSsyn    \tDHsyn   \tSsem    \tDHsem   \n");
         pprintf("========\t========\t========\t========\t========\n");
 
+        if (n->type == TYPE_SRN)
+                reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* isolate prefixes */
                 uint32_t wp = 0, cp = 0;

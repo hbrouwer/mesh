@@ -67,10 +67,8 @@ void ffn_network_sm(struct network *n, bool print, bool pprint,
                 if (!keep_running)
                         return;
 
-                /* reset context groups */
                 if (n->type == TYPE_SRN)
                         reset_context_groups(n);
-
                 for (uint32_t j = 0; j < item->num_events; j++) {
                         /* feed activation forward */
                         if (j > 0 && n->type == TYPE_SRN)
@@ -117,9 +115,7 @@ void rnn_network_sm(struct network *n, bool print, bool pprint,
                 if (!keep_running)
                         return;
 
-                /* reset recurrent groups */
                 reset_recurrent_groups(un->stack[un->sp]);
-
                 for (uint32_t j = 0; j < item->num_events; j++) {
                         /* feed activation forward */
                         copy_vector(un->stack[un->sp]->input->vector, item->inputs[j]);
@@ -140,16 +136,13 @@ void rnn_network_sm(struct network *n, bool print, bool pprint,
                         }
 
 shift_stack:
-                        if (un->sp == un->stack_size - 1) {
-                                rnn_shift_stack(un);
-                        } else {
-                                un->sp++;
-                        }
+                        un->sp == un->stack_size - 1 ? rnn_shift_stack(un)
+                                : un->sp++;
                 }
         }
 
         print_sm_summary(n, sm, print, pprint, scheme);
-
+        
         dispose_matrix(sm);
 }
 
@@ -160,17 +153,13 @@ void print_sm_summary(struct network *n, struct matrix *sm, bool print,
 {
         if (print) {
                 pprintf("Output-target similarity matrix:\n\n");
-                if (pprint) {
-                        pprint_matrix(sm, scheme);
-                } else {
-                        print_matrix(sm);
-                }
+                pprint == true ? pprint_matrix(sm, scheme) : print_matrix(sm);
                 cprintf("\n");
         }
 
         /*
          * Compute mean similarity, and its standard deviation. Also,
-         * determine how may items reached threshold.
+         * determine how many items reached threshold.
          */
         uint32_t tr = n->asp->items->num_elements;
         double sim_mean = 0.0, sim_sd = 0.0;

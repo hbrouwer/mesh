@@ -65,10 +65,8 @@ void test_ffn_network(struct network *n)
                 if (!keep_running)
                         return;
 
-                /* reset context groups */
                 if (n->type == TYPE_SRN)
                         reset_context_groups(n);
-
                 for (uint32_t j = 0; j < item->num_events; j++) {
                         /* feed activation forward */
                         if (j > 0 && n->type == TYPE_SRN)
@@ -112,9 +110,7 @@ void test_rnn_network(struct network *n)
                 if (!keep_running)
                         return;
 
-                /* reset recurrent groups */
                 reset_recurrent_groups(un->stack[un->sp]);
-
                 for (uint32_t j = 0; j < item->num_events; j++) {
                         /* feed activation forward */
                         copy_vector(un->stack[un->sp]->input->vector, item->inputs[j]);
@@ -139,11 +135,8 @@ void test_rnn_network(struct network *n)
                                 threshold_reached++;
 
 shift_stack:
-                        if (un->sp == un->stack_size - 1) {
-                                rnn_shift_stack(un);
-                        } else {
-                                un->sp++;
-                        }
+                        un->sp == un->stack_size - 1 ? rnn_shift_stack(un)
+                                : un->sp++;
                 }
         }
 
@@ -170,21 +163,17 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
 {
         n->status->error = 0.0;
 
-        /* reset context groups */
+        pprintf("Item:\t\"%s\" -- \"%s\"\n", item->name, item->meta);
+        
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
-
-        pprintf("Item:\t\"%s\" -- \"%s\"\n", item->name, item->meta);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* print event number, and input vector */
                 cprintf("\n");
                 pprintf("Event:\t%d\n", i);
                 pprintf("Input:\n\n");
-                if (pprint) {
-                        pprint_vector(item->inputs[i], scheme);
-                } else {
-                        print_vector(item->inputs[i]);
-                }
+                pprint == true ? pprint_vector(item->inputs[i], scheme)
+                        : print_vector(item->inputs[i]);
 
                 /* feed activation forward */
                 if (i > 0 && n->type == TYPE_SRN)
@@ -199,21 +188,15 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
                 if (item->targets[i]) {
                         cprintf("\n");
                         pprintf("Target:\n\n");
-                        if (pprint) {
-                                pprint_vector(item->targets[i], scheme);
-                        } else  {
-                                print_vector(item->targets[i]);
-                        }
+                        pprint == true ? pprint_vector(item->targets[i], scheme)
+                                : print_vector(item->targets[i]);
                 }
 
                 /* print output vector */
                 cprintf("\n");
                 pprintf("Output:\n\n");
-                if (pprint) {
-                        pprint_vector(n->output->vector, scheme);
-                } else {
-                        print_vector(n->output->vector);
-                }
+                pprint == true ? pprint_vector(n->output->vector, scheme)
+                        : print_vector(n->output->vector);
 
                 /* only compute and print error for last event */
                 if (!(i == item->num_events - 1) || !item->targets[i])
@@ -240,20 +223,16 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
         un->sp = 0;
         n->status->error = 0.0;
         
-        /* reset recurrent groups */
-        reset_recurrent_groups(un->stack[un->sp]);
-
         pprintf("Item: \t\"%s\" -- \"%s\"\n", item->name, item->meta);
+        
+        reset_recurrent_groups(un->stack[un->sp]);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* print event number, and input vector */
                 cprintf("\n");
                 pprintf("Event:\t%d\n", i);
                 pprintf("Input:\n\n");
-                if (pprint) {
-                        pprint_vector(item->inputs[i], scheme);
-                } else {
-                        print_vector(item->inputs[i]);
-                }
+                pprint == true ? pprint_vector(item->inputs[i], scheme)
+                        : print_vector(item->inputs[i]);
 
                 /* feed activation vector */
                 copy_vector(un->stack[un->sp]->input->vector, item->inputs[i]);
@@ -266,21 +245,15 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                 if (item->targets[i]) {
                         cprintf("\n");
                         pprintf("Target:\n\n");
-                        if (pprint) {
-                                pprint_vector(item->targets[i], scheme);
-                        } else {
-                                print_vector(item->targets[i]);
-                        }
+                        pprint == true ? pprint_vector(item->targets[i], scheme)
+                                : print_vector(item->targets[i]);
                 }
 
                 /* print output vector */
                 cprintf("\n");
                 pprintf("Output:\n\n");
-                if (pprint) {
-                        pprint_vector(un->stack[un->sp]->output->vector, scheme);
-                } else {
-                        print_vector(un->stack[un->sp]->output->vector);
-                }
+                pprint == true ? pprint_vector(un->stack[un->sp]->output->vector, scheme)
+                        : print_vector(un->stack[un->sp]->output->vector);
 
                 /*
                  * Only compute and print error if there 
@@ -300,11 +273,8 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                 pprintf("Error:\t%lf\n", n->status->error);
 
 shift_stack:
-                if (un->sp == un->stack_size - 1) {
-                        rnn_shift_stack(un);
-                } else {
-                        un->sp++;
-                }
+                un->sp == un->stack_size - 1 ? rnn_shift_stack(un)
+                        : un->sp++;
         }
 }
 

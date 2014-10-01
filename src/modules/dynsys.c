@@ -54,15 +54,11 @@
  *************************************************************************/
 void dynsys_test_item(struct network *n, struct group *g, struct item *item)
 {
+        /* XXX: initial vector should be the unit vector */
+        struct vector *pv = create_vector(g->vector->size);
+
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
-
-        /* initial vector */
-        struct vector *pv = create_vector(g->vector->size);
-        // XXX: This should be set to the UNIT vector */
-        
-        // fill_vector_with_value(pv, 0.0);
-
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* feed activation forward */
                 if (i > 0 && n->type == TYPE_SRN)
@@ -99,16 +95,18 @@ double dynsys_processing_time(struct network *n, struct vector *a_out0,
         do {
                 /* update a_out */
                 for (uint32_t i = 0; i < a_out0->size; i++)
-                        a_outx->elements[i] = runge_kutta4(&dynsys_unit_act, h,
-                                        a_out1->elements[i], a_outx->elements[i]);
+                        a_outx->elements[i] = runge_kutta4(
+                                        &dynsys_unit_act, h,
+                                        a_out1->elements[i],
+                                        a_outx->elements[i]);
 
                 /* update dt */
                 dt += h;
 
                 /* compute da_out/dt */
                 for (uint32_t i = 0; i < a_out0->size; i++)
-                        da_out_dt->elements[i] = (a_outx->elements[i] -
-                                        a_out0->elements[i]) / dt;
+                        da_out_dt->elements[i] = (a_outx->elements[i]
+                                        - a_out0->elements[i]) / dt;
 
                 /* compute norm for a_out */
                 norm_a_outx = euclidean_norm(a_outx);

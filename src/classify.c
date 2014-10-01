@@ -67,10 +67,8 @@ void ffn_network_cm(struct network *n, bool print, bool pprint,
                 if (!keep_running)
                         return;
 
-                /* reset context groups */
                 if (n->type == TYPE_SRN)
                         reset_context_groups(n);
-
                 for (uint32_t j = 0; j < item->num_events; j++) {
                         /* feed activation forward */
                         if (j > 0 && n->type == TYPE_SRN)
@@ -88,10 +86,8 @@ void ffn_network_cm(struct network *n, bool print, bool pprint,
 
                         uint32_t t = 0, o = 0;
                         for (uint32_t x = 0; x < ov->size; x++) {
-                                if (tv->elements[x] > tv->elements[t])
-                                        t = x;
-                                if (ov->elements[x] > ov->elements[o])
-                                        o = x;
+                                if (tv->elements[x] > tv->elements[t]) t = x;
+                                if (ov->elements[x] > ov->elements[o]) o = x;
                         }
                         cm->elements[t][o]++;
 
@@ -121,9 +117,7 @@ void rnn_network_cm(struct network *n, bool print, bool pprint,
                 if (!keep_running)
                         return;
 
-                /* reset recurrent groups */
                 reset_recurrent_groups(un->stack[un->sp]);
-
                 for (uint32_t j = 0; j < item->num_events; j++) {
                         /* feed activation forward */
                         copy_vector(un->stack[un->sp]->input->vector, item->inputs[j]);
@@ -139,19 +133,14 @@ void rnn_network_cm(struct network *n, bool print, bool pprint,
 
                         uint32_t t = 0, o = 0;
                         for (uint32_t x = 0; x < ov->size; x++) {
-                                if (tv->elements[x] > tv->elements[t])
-                                        t = x;
-                                if (ov->elements[x] > ov->elements[o])
-                                        o = x;
+                                if (tv->elements[x] > tv->elements[t]) t = x;
+                                if (ov->elements[x] > ov->elements[o]) o = x;
                         }
                         cm->elements[t][o]++;
 
 shift_stack:
-                        if (un->sp == un->stack_size - 1) {
-                                rnn_shift_stack(un);
-                        } else {
-                                un->sp++;
-                        }
+                        un->sp == un->stack_size - 1 ? rnn_shift_stack(un)
+                                : un->sp++;
                 }
         }
 
@@ -167,14 +156,9 @@ void print_cm_summary(struct network *n, struct matrix *cm, bool print,
 {
         if (print) {
                 pprintf("Confusion matrix (actual x predicted):\n\n");
-                if (pprint) {
-                        pprint_matrix(cm, scheme);
-                } else {
-                        print_matrix(cm);
-                }
-                cprintf("\n");
+                pprint == true ? pprint_matrix(cm, scheme)
+                        : print_matrix(cm);
         }
-
         pprintf("Classification statistics:\n");
         pprintf("\n");
 
@@ -191,7 +175,6 @@ void print_cm_summary(struct network *n, struct matrix *cm, bool print,
 
         /* compute statistics */
         double cc = 0.0, ic = 0.0, pr = 0.0, rc = 0.0;
-        
         for (uint32_t r = 0; r < cm->rows; r++) {
                 for (uint32_t c = 0; c < cm->cols; c++) {
                         if (r == c) {
