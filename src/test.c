@@ -181,10 +181,7 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 
-                /* 
-                 * Print target vector, if the current 
-                 * event has one.
-                 */
+                /* print target vector (if available) */
                 if (item->targets[i]) {
                         cprintf("\n");
                         pprintf("Target:\n\n");
@@ -238,10 +235,7 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                 copy_vector(un->stack[un->sp]->input->vector, item->inputs[i]);
                 feed_forward(un->stack[un->sp], un->stack[un->sp]->input);
 
-                /* 
-                 * Print target vector, if the current 
-                 * event has one.
-                 */                
+                /* print target vector (if available) */
                 if (item->targets[i]) {
                         cprintf("\n");
                         pprintf("Target:\n\n");

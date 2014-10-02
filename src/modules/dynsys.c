@@ -95,9 +95,8 @@ double dynsys_processing_time(struct network *n, struct vector *a_out0,
         do {
                 /* update a_out */
                 for (uint32_t i = 0; i < a_out0->size; i++)
-                        a_outx->elements[i] = runge_kutta4(
-                                        &dynsys_unit_act, h,
-                                        a_out1->elements[i],
+                        a_outx->elements[i] = runge_kutta4(&dynsys_unit_act,
+                                        h, a_out1->elements[i],
                                         a_outx->elements[i]);
 
                 /* update dt */

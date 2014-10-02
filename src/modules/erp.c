@@ -45,9 +45,10 @@ void erp_generate_table(struct network *n, struct group *n400_gen,
                 /* ERP amplitudes */
                 struct vector *n4av = erp_amplitudes_for_item(n, n400_gen, item);
                 struct vector *p6av = erp_amplitudes_for_item(n, p600_gen, item);
-
+                
                 for (uint32_t j = 0; j < item->num_events; j++) 
-                        fprintf(fd,"%d,\"%s\",\"%s\",%d,%f,%f\n", i, item->name, item->meta, j,
+                        fprintf(fd,"%d,\"%s\",\"%s\",%d,%f,%f\n", i, 
+                                        item->name, item->meta, j,
                                         n4av->elements[j], p6av->elements[j]);
 
                 dispose_vector(n4av);
