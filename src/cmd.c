@@ -166,7 +166,7 @@ const static struct command cmds[] = {
 
         /* pretty printing and color schemes *****************************/
         {"togglePrettyPrinting",    NULL,            &cmd_toggle_pretty_printing},
-        {"setColorScheme",          "%s",            &cmd_set_color_scheme},
+        {"set ColorScheme",         "%s",            &cmd_set_color_scheme},
 
         /* event-related potentials module *******************************/
         {"erpGenerateTable",        "%s %s %s",      &cmd_erp_generate_table},
