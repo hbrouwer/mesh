@@ -16,9 +16,6 @@
  * limitations under the License.
  */
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif /* _OPENMP */
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>

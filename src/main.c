@@ -49,6 +49,7 @@ int main(int argc, char **argv)
                         print_help(argv[0]);
                         goto leave_session;
                 }
+                
                 else if (argv[i] != NULL) {
                         char *cmd;
                         if (asprintf(&cmd, "loadFile %s", argv[i]) < 0)
@@ -74,7 +75,9 @@ error_out:
 #ifdef _OPENMP
 void print_openmp_status()
 {
-        mprintf("[+openmp: %d processors available]", omp_get_num_procs());
+        mprintf("[+openmp: %d processor(s) available (%d thread(s) max)]",
+                        omp_get_num_procs(),
+                        omp_get_max_threads());
 
         omp_sched_t k;
         int m;

@@ -59,9 +59,6 @@ void copy_vector(struct vector *v1, struct vector *v2)
         if(v1->size != v2->size)
                 return;
 
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif /* _OPENMP */
         for (uint32_t i = 0; i < v1->size; i++)
                 v1->elements[i] = v2->elements[i];
 }
@@ -70,9 +67,6 @@ void copy_vector(struct vector *v1, struct vector *v2)
  *************************************************************************/
 void zero_out_vector(struct vector *v)
 {
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif /* _OPENMP */
         for (uint32_t i = 0; i < v->size; i++)
                 v->elements[i] = 0.0;
 }
@@ -81,9 +75,6 @@ void zero_out_vector(struct vector *v)
  *************************************************************************/
 void fill_vector_with_value(struct vector *v, double val)
 {
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif /* _OPENMP */
         for (uint32_t i = 0; i < v->size; i++)
                 v->elements[i] = val;
 }
