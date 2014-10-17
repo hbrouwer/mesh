@@ -17,7 +17,7 @@
  */
 
 #ifndef DYNSYS_H
-#define DYNAMIC_H
+#define DYNSYS_H
 
 #include "../network.h"
 #include "../set.h"
@@ -30,4 +30,4 @@ double dynsys_processing_time(struct network *n, struct vector *a_out0,
                 struct vector *a_out1);
 double dynsys_unit_act(double x, double y);
 
-#endif /* DYNAMIC_H */
+#endif /* DYNSYS_H */

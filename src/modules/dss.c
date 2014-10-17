@@ -106,7 +106,7 @@ void dss_beliefs(struct network *n, struct set *set, struct item *item)
 
         struct vector *target = item->targets[item->num_events - 1];
         double cs = dss_comprehension_score(target, n->output->vector);
-        pprintf("\nSemantics: %s\n", item->meta);
+        pprintf("Semantics: %s\n", item->meta);
         pprintf("Comprehension score: %f\n\n", cs);
 
         for (uint32_t i = 0; i < set->items->num_elements; i++) {
