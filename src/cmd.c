@@ -166,6 +166,8 @@ const static struct command cmds[] = {
         {"set ColorScheme",         "%s",            &cmd_set_color_scheme},
 
         /* event-related potentials module *******************************/
+        {"erpContrast",             "%s \"%[^\"]\" \"%[^\"]\"",
+                                                     &cmd_erp_contrast},
         {"erpGenerateTable",        "%s %s %s",      &cmd_erp_generate_table},
 
         /* distributed situation space module ****************************/
@@ -1753,6 +1755,41 @@ bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s)
 /**************************************************************************
  * Event-related potentials (ERP) module.
  *************************************************************************/
+
+/**************************************************************************
+ *************************************************************************/
+bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
+{
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE], tmp3[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp1, tmp2, tmp3) != 3)
+                return false;
+
+        struct group *gen = find_array_element_by_name(s->anp->groups, tmp1);
+        if (gen == NULL) {
+                eprintf("Cannot compute ERP correlates--no such group '%s'", tmp1);
+                return true;
+        }
+
+        struct item *item1 = find_array_element_by_name(s->anp->asp->items, tmp2);
+        struct item *item2 = find_array_element_by_name(s->anp->asp->items, tmp3);
+
+        if (!item1) {
+                eprintf("Cannot compute ERP correlates--no such item '%s'", tmp2);
+                return true;
+        }
+        if (!item2) {
+                eprintf("Cannot compute ERP correlates--no such item '%s'", tmp3);
+                return true;
+        }
+
+        mprintf(" ");
+
+        erp_contrast(s->anp, gen, item1, item2);
+
+        mprintf(" ");
+
+        return true;
+}
 
 /**************************************************************************
  *************************************************************************/

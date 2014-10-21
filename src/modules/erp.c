@@ -18,8 +18,12 @@
 
 #include "erp.h"
 
+#include <string.h>
+
 #include "../act.h"
+#include "../main.h"
 #include "../math.h"
+#include "../matrix.h"
 #include "../vector.h"
 
 /**************************************************************************
@@ -28,6 +32,39 @@
  * Brouwer, H. (2014). The Electrophysiology of Language Comprehension: A
  *     Neurocomputational Model. PhD thesis, University of Groningen.
  *************************************************************************/
+
+/**************************************************************************
+ *************************************************************************/
+void erp_contrast(struct network *n, struct group *gen,
+                struct item *control, struct item *target)
+{
+        struct vector *ctlav = erp_amplitudes_for_item(n, gen, control);
+        struct vector *tgtav = erp_amplitudes_for_item(n, gen, target);
+
+        struct matrix *effects = create_matrix(ctlav->size, tgtav->size);
+        for (uint32_t r = 0; r < effects->rows; r++)
+                for (uint32_t c = 0; c < effects->cols; c++)
+                        effects->elements[r][c] = tgtav->elements[c] - ctlav->elements[r];
+
+        pprintf("Control: %s\n\n", control->name);
+        print_vector(ctlav);
+
+        mprintf(" ");
+
+        pprintf("Target: %s\n\n", target->name);
+        print_vector(tgtav);
+
+        mprintf(" ");
+
+        pprintf("Effect matrix (control x target)\n");
+        pprintf("(positives indicate: target > control)\n\n");
+        print_matrix(effects);
+
+        dispose_matrix(effects);
+
+        dispose_vector(ctlav);
+        dispose_vector(tgtav);
+}
 
 /**************************************************************************
  *************************************************************************/
