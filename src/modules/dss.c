@@ -92,7 +92,7 @@ void dss_test_item(struct network *n, struct item *item)
 
 /**************************************************************************
  *************************************************************************/
-void dss_beliefs(struct network *n, struct set *set, struct item *item)
+void dss_beliefs2(struct network *n, struct set *set, struct item *item)
 {
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
@@ -120,6 +120,105 @@ void dss_beliefs(struct network *n, struct set *set, struct item *item)
                         : pprintf("\x1b[31m%s: %f\x1b[0m\n", probe->name, tau);
         }
         printf("\n");
+}
+
+/**************************************************************************
+ *************************************************************************/
+void dss_beliefs(struct network *n, struct set *set, struct item *item)
+{
+        struct matrix *taus = create_matrix(set->items->num_elements,
+                        item->num_events);
+
+        /* compute belief values */
+        if (n->type == TYPE_SRN)
+                reset_context_groups(n);
+        for (uint32_t i = 0; i < item->num_events; i++) {
+                /* feed activation forward */
+                if (i > 0 && n->type == TYPE_SRN)
+                        shift_context_groups(n);
+                copy_vector(n->input->vector, item->inputs[i]);
+                feed_forward(n, n->input);
+
+                for (uint32_t j = 0; j < set->items->num_elements; j++) {
+                        struct item *probe = set->items->elements[j];
+                        taus->elements[j][i] = dss_comprehension_score(
+                                        probe->targets[probe->num_events - 1],
+                                        n->output->vector);
+                }
+        }
+
+        /* compute comprehension score */
+        struct vector *target = item->targets[item->num_events - 1];
+        double cs = dss_comprehension_score(target, n->output->vector);
+        pprintf("Sentence: %s\n", item->name);
+        pprintf("Semantics: %s\n", item->meta);
+        pprintf("Comprehension score: %f\n", cs);
+        pprintf("\n");
+
+        /* determine longest basic event name */
+        uint32_t max_len = 0;
+        for (uint32_t i = 0; i < set->items->num_elements; i++) {
+                struct item *probe = set->items->elements[i];
+                uint32_t len = strlen(probe->name);
+                if (len > max_len)
+                        max_len = len;
+        }
+        max_len++;
+
+        uint32_t col_len = 20;
+
+        char sentence[strlen(item->name) + 1];
+        memset(&sentence, 0, strlen(item->name) + 1);
+        strncpy(sentence, item->name, strlen(item->name));
+        pprintf("");
+        for (uint32_t i = 0; i < max_len; i++)
+                printf(" ");
+        char *token = strtok(sentence, " ");
+        do {
+                printf("%s", token);
+                uint32_t whitespace = col_len - strlen(token);
+                for (uint32_t j = 0; j < whitespace; j++)
+                        printf(" ");
+                token = strtok(NULL, " ");
+        } while (token);
+        printf("\n");
+        pprintf("\n");
+
+        for (uint32_t i = 0; i < set->items->num_elements; i++) {
+                struct item *probe = set->items->elements[i];
+                pprintf("%s", probe->name);
+
+                uint32_t whitespace = max_len - strlen(probe->name);
+                for (uint32_t x = 0; x < whitespace; x++)
+                        printf(" ");
+
+                for (uint32_t j = 0; j < item->num_events; j++) {
+                        double tau = taus->elements[i][j];
+                       
+                        if (j > 0) {
+                                printf("  ");
+                                double delta_tau = taus->elements[i][j]
+                                        - taus->elements[i][j - 1];
+                                delta_tau > 0.0 ? printf("\x1b[32m+%.5f\x1b[0m", delta_tau)
+                                        :  printf("\x1b[31m%.5f\x1b[0m", delta_tau);
+                                printf("  ");
+                        }
+
+                        tau > 0.0 ? printf("\x1b[42m\x1b[30m+%.5f\x1b[0m", tau)
+                                : printf("\x1b[41m\x1b[30m%.5f\x1b[0m", tau);
+
+
+                        if(j == item->num_events - 1) {
+                                printf("  ");
+                                tau > 0.0 ? printf("\x1b[32m%s\x1b[0m", probe->name)
+                                        : printf("\x1b[31m%s\x1b[0m", probe->name);
+                        }
+
+                }
+                printf("\n");
+        }
+
+        dispose_matrix(taus);
 }
 
 /**************************************************************************

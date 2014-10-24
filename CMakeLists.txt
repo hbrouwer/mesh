@@ -6,7 +6,7 @@ include(CheckIncludeFile)
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         # Use GCC for OpenMP
-        set(CMAKE_C_COMPILER "/opt/local/bin/gcc-mp-4.8")
+        set(CMAKE_C_COMPILER "/opt/local/bin/gcc-mp-4.9")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -march=core2")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 

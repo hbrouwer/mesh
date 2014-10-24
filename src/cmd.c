@@ -1881,7 +1881,11 @@ bool cmd_dss_beliefs(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
+        mprintf(" ");
+
         dss_beliefs(s->anp, set, item);
+
+        mprintf(" ");
 
         return true;
 }
