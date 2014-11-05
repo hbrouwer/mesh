@@ -998,6 +998,27 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
 }
 
 /**************************************************************************
+ * This implements machinery for the "tunneling" of a subset of units of
+ * a layer, allowing for the segmentation of a single input vector into
+ * multiple ones:
+ *
+ * +---------+    +---------+    +---------+
+ * | output1 |    | output2 |    | output3 |
+ * +---------+    +---------+    +---------+
+ *          \          |           /
+ *      +---------+---------+---------+
+ *      |         : input0  :         |
+ *      +---------+---------+---------+
+ *
+ * and for the merging of several output vectors into a single vector:
+ *
+ *      +---------+---------+---------+
+ *      |         : output0 :         |
+ *      +---------+---------+---------+
+ *          /          |           \
+ * +---------+    +---------+    +---------+
+ * | output1 |    | output2 |    | output3 |
+ * +---------+    +---------+    +---------+
  *************************************************************************/
 bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
 {
@@ -1022,9 +1043,7 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        /*
-         * XXX: This precludes multiple tunnels to the same layer.
-         */
+        // XXX: This precludes multiple tunnels to the same layer.
         bool exists = false;
         if (fg->recurrent)
                 exists = true;

@@ -417,6 +417,7 @@ struct projection *rnn_duplicate_projection(
         dp->prev_gradients = prev_gradients;
         dp->prev_deltas = p->prev_deltas;     /* <-- shared */
         dp->dynamic_pars = p->dynamic_pars;   /* <-- shared */
+        // XXX: What about frozen projections?
 
         return dp;
 
