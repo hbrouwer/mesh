@@ -173,7 +173,6 @@ const static struct command cmds[] = {
         {"erpGenerateTable",        "%s %s %s",      &cmd_erp_generate_table},
 
         /* distributed situation space module ****************************/
-        {"dssTestItem",             "\"%[^\"]\"",    &cmd_dss_test_item},    /* swapped */
         {"dssTest",                 NULL,            &cmd_dss_test},
         {"dssBeliefs",              "%s \"%[^\"]\"", &cmd_dss_beliefs},
         {"dssWordInformation",      "\"%[^\"]\"",    &cmd_dss_word_information},
@@ -1967,30 +1966,6 @@ bool cmd_dss_test(char *cmd, char *fmt, struct session *s)
         mprintf(" ");
 
         dss_test(s->anp);
-
-        mprintf(" ");
-
-        return true;
-}
-
-/**************************************************************************
- *************************************************************************/
-bool cmd_dss_test_item(char *cmd, char *fmt, struct session *s)
-{
-        char tmp[MAX_ARG_SIZE];
-        if (sscanf(cmd, fmt, tmp) != 1)
-                return false;
-
-        struct item *item = find_array_element_by_name(s->anp->asp->items, tmp);
-        if (!item) {
-                eprintf("Cannot test network--no such item '%s'", tmp);
-                return true;
-        }
-        
-        mprintf("Testing network '%s' with item '%s':", s->anp->name, tmp);
-        mprintf(" ");
-
-        dss_test_item(s->anp, item);
 
         mprintf(" ");
 

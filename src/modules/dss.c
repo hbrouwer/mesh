@@ -72,58 +72,6 @@ void dss_test(struct network *n)
 
 /**************************************************************************
  *************************************************************************/
-void dss_test_item(struct network *n, struct item *item)
-{
-        if (n->type == TYPE_SRN)
-                reset_context_groups(n);
-        for (uint32_t i = 0; i < item->num_events; i++) {
-                /* feed activation forward */
-                if (i > 0 && n->type == TYPE_SRN)
-                        shift_context_groups(n);
-                copy_vector(n->input->vector, item->inputs[i]);
-                feed_forward(n, n->input);
-
-                struct vector *target = item->targets[item->num_events - 1];
-                double cs = dss_comprehension_score(target,
-                                n->output->vector);
-                pprintf("Event %d -- comprehension score: %f\n", i, cs);
-        }
-}
-
-/**************************************************************************
- *************************************************************************/
-void dss_beliefs2(struct network *n, struct set *set, struct item *item)
-{
-        if (n->type == TYPE_SRN)
-                reset_context_groups(n);
-        for (uint32_t i = 0; i < item->num_events; i++) {
-                /* feed activation forward */
-                if (i > 0 && n->type == TYPE_SRN)
-                        shift_context_groups(n);
-                copy_vector(n->input->vector, item->inputs[i]);
-                feed_forward(n, n->input);
-        }
-
-        struct vector *target = item->targets[item->num_events - 1];
-        double cs = dss_comprehension_score(target, n->output->vector);
-        pprintf("Semantics: %s\n", item->meta);
-        pprintf("Comprehension score: %f\n\n", cs);
-
-        for (uint32_t i = 0; i < set->items->num_elements; i++) {
-                struct item *probe = set->items->elements[i];
-
-                double tau = dss_comprehension_score(
-                                probe->targets[probe->num_events - 1],
-                                n->output->vector);
-
-                tau > 0.0 ? pprintf("\x1b[32m%s: %f\x1b[0m\n", probe->name, tau)
-                        : pprintf("\x1b[31m%s: %f\x1b[0m\n", probe->name, tau);
-        }
-        printf("\n");
-}
-
-/**************************************************************************
- *************************************************************************/
 void dss_beliefs(struct network *n, struct set *set, struct item *item)
 {
         struct matrix *taus = create_matrix(set->items->num_elements,
