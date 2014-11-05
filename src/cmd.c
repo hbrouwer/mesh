@@ -89,6 +89,8 @@ const static struct command cmds[] = {
         {"disposeElmanProjection",  "%s %s",         &cmd_dispose_elman_projection},
         {"listProjections",         NULL,            &cmd_list_projections},
         {"freezeProjection",        "%s %s",         &cmd_freeze_projection},
+        {"createTunnelProjection",  "%s %d %d %s %d %d",
+                                                     &cmd_create_tunnel_projection},
 
         /* integer parameters ********************************************/
         {"set BatchSize",           "%d",            &cmd_set_int_parameter},
@@ -392,13 +394,17 @@ bool cmd_change_network(char *cmd, char *fmt, struct session *s)
 bool cmd_create_group(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
-        uint32_t tmp_int;
+        int32_t tmp_int;
         if (sscanf(cmd, fmt, tmp, &tmp_int) != 2)
                 return false;
 
         if (find_array_element_by_name(s->anp->groups, tmp)) {
                 eprintf("Cannot create group--group '%s' already exists in network '%s'",
                                 tmp, s->anp->name);
+                return true;
+        }
+        if (!(tmp_int > 0)) {
+                eprintf("Cannot create group--group size should be positive");
                 return true;
         }
 
@@ -731,16 +737,13 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
                                 tg->vector->size);
 
                 /* add projections */
-                struct projection *op;
-                op = create_projection(tg, weights, gradients, prev_gradients,
-                                prev_deltas, dynamic_pars, false);
+                struct projection *op = create_projection(tg, weights, gradients,
+                                prev_gradients, prev_deltas, dynamic_pars);
+                struct projection *ip = create_projection(fg, weights, gradients,
+                                prev_gradients, prev_deltas, dynamic_pars);
+
                 add_to_array(fg->out_projs, op);
-
-                struct projection *ip;
-                ip = create_projection(fg, weights, gradients, prev_gradients,
-                                prev_deltas, dynamic_pars, false);
                 add_to_array(tg->inc_projs, ip);
-
         }
 
         mprintf("Created projection ... \t\t ( %s -> %s )", tmp1, tmp2);
@@ -790,7 +793,7 @@ bool cmd_dispose_projection(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("Disposed projection ... \t\t ( %s -> %s )", tmp1, tmp2);
+        mprintf("Disposed projection ... \t ( %s -> %s )", tmp1, tmp2);
 
         return true;
 }
@@ -875,7 +878,7 @@ bool cmd_dispose_elman_projection(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("Disposed Elman projection ... \t\t ( %s -> %s )", tmp1, tmp2);
+        mprintf("Disposed Elman projection ... \t ( %s -> %s )", tmp1, tmp2);
         
         return true;
 
@@ -990,6 +993,120 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
         }
 
         mprintf("Froze projection ... \t\t ( %s -> %s )", tmp1, tmp2);
+
+        return true;
+}
+
+/**************************************************************************
+ *************************************************************************/
+bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
+{
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
+        int32_t tmp_int1, tmp_int2, tmp_int3, tmp_int4;
+        if (sscanf(cmd, fmt, tmp1, &tmp_int1, &tmp_int2, tmp2, &tmp_int3, &tmp_int4) != 6)
+                return false;
+
+        struct group *fg = find_array_element_by_name(s->anp->groups, tmp1);
+        struct group *tg = find_array_element_by_name(s->anp->groups, tmp2);
+
+        if (fg == NULL) {
+                eprintf("Cannot set tunnel projection--no such group '%s'", tmp1);
+                return true;
+        }
+        if (tg == NULL) {
+                eprintf("Cannot set tunnel projection--no such group '%s'", tmp2);
+                return true;
+        }
+        if (fg == tg) {
+                eprintf("Cannot set recurrent tunnel projection");
+                return true;
+        }
+
+        /*
+         * XXX: This precludes multiple tunnels to the same layer.
+         */
+        bool exists = false;
+        if (fg->recurrent)
+                exists = true;
+        for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
+                if (((struct projection *)fg->out_projs->elements[i])->to == tg)
+                        exists = true;
+        if (exists) {
+                eprintf("Cannot set tunnel projection--projection '%s -> %s' already exists",
+                                tmp1, tmp2);
+                return true;
+        }
+
+        /* check ranges */
+        if (tmp_int2 - tmp_int1 != tmp_int4 - tmp_int3) {
+                eprintf("Cannot set tunnel projection--indices [%d:%d] and [%d:%d] cover differ ranges",
+                                tmp_int1, tmp_int2, tmp_int3, tmp_int4);
+                return true;
+        }
+
+        /* check from group bounds */
+        if (tmp_int1 < 0 
+                        || tmp_int1 > fg->vector->size
+                        || tmp_int2 < 0
+                        || tmp_int2 > fg->vector->size
+                        || tmp_int2 < tmp_int1)
+        {
+                eprintf("Cannot set tunnel projection--indices [%d:%d] out of bounds",
+                                tmp_int1, tmp_int2);
+                return true;
+        }
+
+        /* check to group bounds */
+        if (tmp_int3 < 0 
+                        || tmp_int3 > tg->vector->size
+                        || tmp_int4 < 0
+                        || tmp_int4 > tg->vector->size
+                        || tmp_int4 < tmp_int3)
+        {
+                eprintf("Cannot set tunnel projection--indices [%d:%d] out of bounds",
+                                tmp_int3, tmp_int4);
+                return true;
+        }
+
+        /* weight matrix */
+        struct matrix *weights = create_matrix(
+                        fg->vector->size,
+                        tg->vector->size);
+        /* gradients matrix */
+        struct matrix *gradients = create_matrix(
+                        fg->vector->size,
+                        tg->vector->size);
+        /* previous gradients matrix */
+        struct matrix *prev_gradients = create_matrix(
+                        fg->vector->size,
+                        tg->vector->size);
+        /* previous weight deltas matrix */
+        struct matrix *prev_deltas = create_matrix(
+                        fg->vector->size,
+                        tg->vector->size);
+        /* dynamic learning parameters matrix */
+        struct matrix *dynamic_pars = create_matrix(
+                        fg->vector->size,
+                        tg->vector->size);
+
+        /* add projections */
+        struct projection *op = create_projection(tg, weights, gradients,
+                        prev_gradients, prev_deltas, dynamic_pars);
+        struct projection *ip = create_projection(fg, weights, gradients,
+                        prev_gradients, prev_deltas, dynamic_pars);
+
+        op->frozen = true;
+        ip->frozen = true;
+
+        add_to_array(fg->out_projs, op);
+        add_to_array(tg->inc_projs, ip);
+
+        /* setup the weights for tunneling */
+        for (uint32_t r = tmp_int1 - 1, c = tmp_int3 - 1; r < tmp_int2 && c < tmp_int4; r++, c++) 
+                weights->elements[r][c] = 1.0;
+
+        mprintf("Created tunnel projection ... \t ( %s [%d:%d] -> %s [%d:%d] )",
+                        tmp1, tmp_int1, tmp_int2, tmp2, tmp_int3, tmp_int4);
 
         return true;
 }

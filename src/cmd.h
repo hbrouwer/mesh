@@ -72,6 +72,7 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s);
 bool cmd_dispose_elman_projection(char *cmd, char *fmt, struct session *s);
 bool cmd_list_projections(char *cmd, char *fmt, struct session *s);
 bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s);
+bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/

@@ -227,8 +227,7 @@ struct projection *create_projection(
                 struct matrix *gradients,
                 struct matrix *prev_gradients,
                 struct matrix *prev_deltas,
-                struct matrix *dynamic_pars,
-                bool recurrent);
+                struct matrix *dynamic_pars);
 void dispose_projection(struct projection *p);
 
 /**************************************************************************

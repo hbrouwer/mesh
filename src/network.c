@@ -262,14 +262,15 @@ struct group *attach_bias_group(struct network *n, struct group *g)
                         g->vector->size);
 
         /* add projections */
-        struct projection *op;
-        op = create_projection(g, weights, gradients, prev_gradients,
-                                prev_deltas, dynamic_pars, false);
+        struct projection *op = create_projection(g, weights, gradients,
+                        prev_gradients, prev_deltas, dynamic_pars);
+        struct projection *ip = create_projection(bg, weights, gradients,
+                        prev_gradients, prev_deltas, dynamic_pars);
+
+        op->recurrent = false;
+        ip->recurrent = false;
+
         add_to_array(bg->out_projs, op);
-        
-        struct projection *ip;
-        ip = create_projection(bg, weights, gradients, prev_gradients,
-                                prev_deltas, dynamic_pars, false);
         add_to_array(g->inc_projs, ip);
 
         return bg;
@@ -428,8 +429,7 @@ struct projection *create_projection(
                 struct matrix *gradients,
                 struct matrix *prev_gradients,
                 struct matrix *prev_deltas,
-                struct matrix *dynamic_pars,
-                bool recurrent)
+                struct matrix *dynamic_pars)
 {
         struct projection *p;
 
@@ -443,7 +443,6 @@ struct projection *create_projection(
         p->prev_gradients = prev_gradients;
         p->prev_deltas = prev_deltas;
         p->dynamic_pars = dynamic_pars;
-        p->recurrent = recurrent;
 
         return p;
 
@@ -479,7 +478,8 @@ void randomize_weight_matrices(struct group *g, struct network *n)
 {
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
-                n->random_algorithm(ip->weights, n);
+                if (!ip->frozen)
+                        n->random_algorithm(ip->weights, n);
         }
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
