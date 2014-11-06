@@ -174,7 +174,7 @@ const static struct command cmds[] = {
 
         /* distributed situation space module ****************************/
         {"dssTest",                 NULL,            &cmd_dss_test},
-        {"dssBeliefs",              "%s \"%[^\"]\"", &cmd_dss_beliefs},
+        {"dssScores",               "%s \"%[^\"]\"", &cmd_dss_scores},
         {"dssWordInformation",      "\"%[^\"]\"",    &cmd_dss_word_information},
 
         /* dynamic systems module ****************************************/
@@ -1974,7 +1974,7 @@ bool cmd_dss_test(char *cmd, char *fmt, struct session *s)
 
 /**************************************************************************
  *************************************************************************/
-bool cmd_dss_beliefs(char *cmd, char *fmt, struct session *s)
+bool cmd_dss_scores(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
@@ -1982,19 +1982,19 @@ bool cmd_dss_beliefs(char *cmd, char *fmt, struct session *s)
 
         struct set *set = find_array_element_by_name(s->anp->sets, tmp1);
         if (!set) {
-                eprintf("Cannot test beliefs--no such set '%s'", tmp1);
+                eprintf("Cannot compute scores--no such set '%s'", tmp1);
                 return true;
         }
 
         struct item *item = find_array_element_by_name(s->anp->asp->items, tmp2);
         if (!item) {
-                eprintf("Cannot test beliefs--no such item '%s'", tmp2);
+                eprintf("Cannot compute scores--no such item '%s'", tmp2);
                 return true;
         }
 
         mprintf(" ");
 
-        dss_beliefs(s->anp, set, item);
+        dss_scores(s->anp, set, item);
 
         mprintf(" ");
 

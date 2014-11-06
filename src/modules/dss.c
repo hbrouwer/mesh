@@ -66,18 +66,126 @@ void dss_test(struct network *n)
                 }
         }
 
-        pprintf("\nAverage comprehension score: (%f / %d =) %f\n",
+        pprintf("\n");
+        pprintf("Average comprehension score: (%f / %d =) %f\n",
                         acs, ncs, acs / ncs);
+
+        return;
 }
 
 /**************************************************************************
  *************************************************************************/
-void dss_beliefs(struct network *n, struct set *set, struct item *item)
+void dss_scores(struct network *n, struct set *set, struct item *item)
 {
-        struct matrix *taus = create_matrix(set->items->num_elements,
-                        item->num_events);
+        struct matrix *sm = dss_score_matrix(n, set, item);
 
-        /* compute belief values */
+        pprintf("Sentence:  %s\n", item->name);
+        pprintf("Semantics: %s\n", item->meta);
+        pprintf("\n");
+
+        uint32_t word_col_len = 20; /* word column length */
+        uint32_t init_col_len = 0;  /* initial column length */
+
+        /* determine initial column length */
+        for (uint32_t i = 0; i < set->items->num_elements; i++) {
+                struct item *probe = set->items->elements[i];
+                uint32_t len = strlen(probe->name);
+                if (len > init_col_len)
+                        init_col_len = len;
+        }
+        init_col_len++;
+
+        size_t block_size = strlen(item->name) + 1;
+        char sentence[block_size];
+        memset(&sentence, 0, block_size);
+        strncpy(sentence, item->name, block_size - 1);
+
+        /* print the words of the sentence */
+        pprintf("");
+        for (uint32_t i = 0; i < init_col_len; i++)
+                printf(" ");
+        char *token = strtok(sentence, " ");
+        do {
+                printf("\x1b[35m%s\x1b[0m", token);
+                for (uint32_t i = 0; i < word_col_len - strlen(token); i++)
+                        printf(" ");
+                token = strtok(NULL, " ");
+        } while (token);
+        printf("\n");
+
+        /* print the overall comprehension scores */
+        pprintf("\n");
+        pprintf("");
+        for (uint32_t i = 0; i < init_col_len; i++)
+                printf(" ");
+        for (uint32_t c = 0; c < sm->cols; c++) {
+                double score = sm->elements[0][c];
+                if (c > 0) {
+                        printf("  ");
+                        double delta = score - sm->elements[0][c - 1];
+                        delta > 0.0 ? printf("\x1b[32m+%.5f\x1b[0m", delta)
+                                :  printf("\x1b[31m%.5f\x1b[0m", delta);
+                        printf("  ");
+                }
+                score > 0.0 ? printf("\x1b[42m\x1b[30m+%.5f\x1b[0m", score)
+                        : printf("\x1b[41m\x1b[30m%.5f\x1b[0m", score);
+        }
+        printf("\n");
+
+        /* print scores per probe event */
+        pprintf("\n");
+        for (uint32_t r = 0; r < set->items->num_elements; r++) {
+                struct item *probe = set->items->elements[r];
+                pprintf("%s", probe->name);
+                uint32_t whitespace = init_col_len - strlen(probe->name);
+                for (uint32_t i = 0; i < whitespace; i++)
+                        printf(" ");
+                for (uint32_t c = 0; c < item->num_events; c++) {
+                        double score = sm->elements[r + 1][c];
+                        if (c > 0) {
+                                printf("  ");
+                                double delta = score - sm->elements[r + 1][c - 1];
+                                delta > 0.0 ? printf("\x1b[32m+%.5f\x1b[0m", delta)
+                                        :  printf("\x1b[31m%.5f\x1b[0m", delta);
+                                printf("  ");
+                        }
+                        score > 0.0 ? printf("\x1b[42m\x1b[30m+%.5f\x1b[0m", score)
+                                : printf("\x1b[41m\x1b[30m%.5f\x1b[0m", score);
+                        if(c == item->num_events - 1) {
+                                printf("  ");
+                                score > 0.0 ? printf("\x1b[32m%s\x1b[0m", probe->name)
+                                        : printf("\x1b[31m%s\x1b[0m", probe->name);
+                        }
+                }
+                printf("\n");
+        }
+
+        dispose_matrix(sm);
+
+        return;
+}
+
+/**************************************************************************
+ * This construsts a (1+m) x n comprehension score matrix, where m is the
+ * number of events for which a score is computed after processing each of
+ * n words of a sentence. The first row of the matrix contains the scores
+ * for the target event of the current sentence.
+ *
+ *            n
+ *     [ . . . . . . ] <-- overall comprehension scores
+ *     [ . . . . . . ] <-- score for event 1
+ * 1+m [ . . . . . . ] <-- score for event 2
+ *     [ . . . . . . ] ...
+ *     [ . . . . . . ] <-- score for event n
+ *
+ *************************************************************************/
+struct matrix *dss_score_matrix(struct network *n, struct set *set,
+                struct item *item)
+{
+        uint32_t rows = set->items->num_elements + 1;
+        uint32_t cols = item->num_events;
+        struct matrix *sm = create_matrix(rows, cols);
+
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
@@ -87,86 +195,21 @@ void dss_beliefs(struct network *n, struct set *set, struct item *item)
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 
+                struct vector *ov = n->output->vector;
+                struct vector *tv = item->targets[item->num_events - 1];
+
+                /* compute overall comprehension score */
+                sm->elements[0][i] = dss_comprehension_score(tv, ov);
+
+                /* compute comprehension score per probe event */
                 for (uint32_t j = 0; j < set->items->num_elements; j++) {
                         struct item *probe = set->items->elements[j];
-                        taus->elements[j][i] = dss_comprehension_score(
-                                        probe->targets[probe->num_events - 1],
-                                        n->output->vector);
+                        struct vector *pv = probe->targets[0];
+                        sm->elements[j + 1][i] = dss_comprehension_score(pv, ov);
                 }
         }
 
-        /* compute comprehension score */
-        struct vector *target = item->targets[item->num_events - 1];
-        double cs = dss_comprehension_score(target, n->output->vector);
-        pprintf("Sentence: %s\n", item->name);
-        pprintf("Semantics: %s\n", item->meta);
-        pprintf("Comprehension score: %f\n", cs);
-        pprintf("\n");
-
-        /* determine longest basic event name */
-        uint32_t max_len = 0;
-        for (uint32_t i = 0; i < set->items->num_elements; i++) {
-                struct item *probe = set->items->elements[i];
-                uint32_t len = strlen(probe->name);
-                if (len > max_len)
-                        max_len = len;
-        }
-        max_len++;
-
-        uint32_t col_len = 20;
-
-        char sentence[strlen(item->name) + 1];
-        memset(&sentence, 0, strlen(item->name) + 1);
-        strncpy(sentence, item->name, strlen(item->name));
-        pprintf("");
-        for (uint32_t i = 0; i < max_len; i++)
-                printf(" ");
-        char *token = strtok(sentence, " ");
-        do {
-                printf("%s", token);
-                uint32_t whitespace = col_len - strlen(token);
-                for (uint32_t j = 0; j < whitespace; j++)
-                        printf(" ");
-                token = strtok(NULL, " ");
-        } while (token);
-        printf("\n");
-        pprintf("\n");
-
-        for (uint32_t i = 0; i < set->items->num_elements; i++) {
-                struct item *probe = set->items->elements[i];
-                pprintf("%s", probe->name);
-
-                uint32_t whitespace = max_len - strlen(probe->name);
-                for (uint32_t x = 0; x < whitespace; x++)
-                        printf(" ");
-
-                for (uint32_t j = 0; j < item->num_events; j++) {
-                        double tau = taus->elements[i][j];
-                       
-                        if (j > 0) {
-                                printf("  ");
-                                double delta_tau = taus->elements[i][j]
-                                        - taus->elements[i][j - 1];
-                                delta_tau > 0.0 ? printf("\x1b[32m+%.5f\x1b[0m", delta_tau)
-                                        :  printf("\x1b[31m%.5f\x1b[0m", delta_tau);
-                                printf("  ");
-                        }
-
-                        tau > 0.0 ? printf("\x1b[42m\x1b[30m+%.5f\x1b[0m", tau)
-                                : printf("\x1b[41m\x1b[30m%.5f\x1b[0m", tau);
-
-
-                        if(j == item->num_events - 1) {
-                                printf("  ");
-                                tau > 0.0 ? printf("\x1b[32m%s\x1b[0m", probe->name)
-                                        : printf("\x1b[31m%s\x1b[0m", probe->name);
-                        }
-
-                }
-                printf("\n");
-        }
-
-        dispose_matrix(taus);
+        return sm;
 }
 
 /**************************************************************************
@@ -179,7 +222,7 @@ void dss_beliefs(struct network *n, struct set *set, struct item *item)
  *     comprehension = |
  *                     | tau(a|z) - tau(a)
  *                     | ----------------- , otherwise
- *                             tau(a)
+ *                     |      tau(a)
  *
  * where tau(a|z) is the conditional belief of a given z, and tau(a) is the
  * prior belief in a.
@@ -269,6 +312,53 @@ bool is_same_vector(struct vector *a, struct vector *b)
 }
 
 /**************************************************************************
+ *************************************************************************/
+void dss_word_information(struct network *n, struct item *item)
+{
+        struct matrix *im = dss_word_information_matrix(n, item);
+        
+        size_t block_size = strlen(item->name) + 1;
+        char sentence[block_size];
+        memset(&sentence, 0, block_size);
+        strncpy(sentence, item->name, block_size - 1);
+
+        uint32_t col_len = 10;
+
+        /* print the words of the sentence */
+        pprintf("");
+        for (uint32_t i = 0; i < col_len; i++)
+                printf(" ");
+        char *token = strtok(sentence, " ");
+        do {
+                printf("\x1b[35m%s\x1b[0m", token);
+                for (uint32_t i = 0; i < col_len - strlen(token); i++)
+                        printf(" ");
+                token = strtok(NULL, " ");
+        } while (token);
+        printf("\n");
+
+        /* print word information metrics */
+        pprintf("\n");
+        for (uint32_t c = 0; c < 4; c++) {
+                if (c == 0) pprintf("Ssyn ");
+                if (c == 1) pprintf("DHsyn");
+                if (c == 2) pprintf("SSem ");
+                if (c == 3) pprintf("DHsem");
+                for (uint32_t i = 0; i < col_len - 5; i++)
+                        printf(" ");
+                for (uint32_t r = 0; r < item->num_events; r++) {
+                        printf("%.5f", im->elements[r][c]);
+                        for (uint32_t i = 0; i < col_len - 7; i++)
+                                printf(" ");
+                }
+                printf("\n");
+        }
+        dispose_matrix(im);
+
+        return;
+}
+
+/**************************************************************************
  * This implements four measures that quantify how much information a word
  * conveys (cf. Frank & Vigliocco, 2011):
  *
@@ -320,14 +410,22 @@ bool is_same_vector(struct vector *a, struct vector *b)
  *
  *     and hence tau(p_x|sit(w_1...i)) forms a proper probability over p_x.
  *
+ * These metrics are returned in an m x 4 matrix. The m rows of this matrix
+ * represent the words of the current sentence, and the 4 columns contain
+ * respectively the Ssyn, DHsyn, SSem, and DHsem value for each of these
+ * words.
+ *
  * References
  *
  * Frank, S. L. and Vigliocco, G. (2011). Sentence comprehension as mental
  *     simulation: an information-theoretic perspective. Information, 2,
  *     672-696.
  *************************************************************************/
-void dss_word_information(struct network *n, struct item *item)
+struct matrix *dss_word_information_matrix(struct network *n,
+                struct item *item)
 {
+        struct matrix *im = create_matrix(item->num_events, 4);
+
         size_t block_size = strlen(item->name) + 1;
         char prefix1[block_size];
         memset(&prefix1, 0, block_size);
@@ -339,9 +437,6 @@ void dss_word_information(struct network *n, struct item *item)
 
         int32_t *freq_table = frequency_table(n->asp);
         struct set *s = n->asp;
-
-        pprintf("Word    \tSsyn    \tDHsyn   \tSsem    \tDHsem   \n");
-        pprintf("========\t========\t========\t========\t========\n");
 
         /* compute measures for each word in the sentence */
         for (uint32_t i = 0; i < item->num_events; i++) {
@@ -355,16 +450,13 @@ void dss_word_information(struct network *n, struct item *item)
 
                 /* isolate current word, and sentence prefixes */
                 uint32_t wp = 0, cp = 0;
-                char *word = &prefix2[0];
                 for (char *p = item->name; *p != '\0'; p++) {
                         if (i == 0 && cp == 0)
                                 prefix1[cp] = '\0';
                         if (*p == ' ') {
                                 wp++;
-                                if (wp == i) {
+                                if (wp == i)
                                         prefix1[cp] = '\0';
-                                        word = &prefix2[cp + 1];
-                                }
                                 if (wp == i + 1)
                                         prefix2[cp] = '\0';
                         }
@@ -478,8 +570,11 @@ void dss_word_information(struct network *n, struct item *item)
                  */
                 double delta_hsem = hsem1 - hsem2;
 
-                /* print measures */
-                pprintf("%s\t%f\t%f\t%f\t%f\n", word, ssyn, delta_hsyn, ssem, delta_hsem);
+                /* add scores to matrix */
+                im->elements[i][0] = ssyn;
+                im->elements[i][1] = delta_hsyn;
+                im->elements[i][2] = ssem;
+                im->elements[i][3] = delta_hsem;
         }
 
         free(freq_table);
@@ -487,7 +582,7 @@ void dss_word_information(struct network *n, struct item *item)
         dispose_vector(sit1);
         dispose_vector(sit2);
 
-        return;
+        return im;
 }
 
 /**************************************************************************
