@@ -107,6 +107,9 @@ void dispose_array(struct array *a)
  *************************************************************************/
 void *find_array_element_by_name(struct array *a, char *name)
 {
+        if (a == NULL)
+                return NULL;
+
         for (uint32_t i = 0; i < a->num_elements; i++) {
                 void *e = a->elements[i];
 

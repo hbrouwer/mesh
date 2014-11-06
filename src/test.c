@@ -170,7 +170,7 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* print event number, and input vector */
                 cprintf("\n");
-                pprintf("Event:\t%d\n", i);
+                pprintf("Event:\t%d\n", i + 1);
                 pprintf("Input:\n\n");
                 pprint == true ? pprint_vector(item->inputs[i], scheme)
                         : print_vector(item->inputs[i]);
@@ -226,7 +226,7 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* print event number, and input vector */
                 cprintf("\n");
-                pprintf("Event:\t%d\n", i);
+                pprintf("Event:\t%d\n", i + 1);
                 pprintf("Input:\n\n");
                 pprint == true ? pprint_vector(item->inputs[i], scheme)
                         : print_vector(item->inputs[i]);

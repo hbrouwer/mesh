@@ -86,6 +86,7 @@ bool cmd_dispose_set(char *cmd, char *fmt, struct session *s);
 bool cmd_list_sets(char *cmd, char *fmt, struct session *s);
 bool cmd_change_set(char *cmd, char *fmt, struct session *s);
 bool cmd_list_items(char *cmd, char *fmt, struct session *s);
+bool cmd_show_item(char *cmd, char *fmt, struct session *s);
 bool cmd_set_training_order(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************

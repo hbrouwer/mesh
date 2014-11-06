@@ -128,6 +128,7 @@ const static struct command cmds[] = {
         {"listSets",                NULL,            &cmd_list_sets},
         {"changeSet",               "%s",            &cmd_change_set},
         {"listItems",               NULL,            &cmd_list_items},
+        {"showItem",                "\"%[^\"]\"",    &cmd_show_item},
         {"set TrainingOrder",       "%s",            &cmd_set_training_order},
 
         /* ranzomization, learning, and updating algorithms **************/
@@ -1347,6 +1348,49 @@ bool cmd_list_items(char *cmd, char *fmt, struct session *s)
                 struct item *item = s->anp->asp->items->elements[i];
                 cprintf("* \"%s\" %d \"%s\"\n", item->name, item->num_events, item->meta);
         }
+
+        return true;
+}
+
+/**************************************************************************
+ *************************************************************************/
+bool cmd_show_item(char *cmd, char *fmt, struct session *s)
+{
+        char tmp[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp) != 1)
+                return false;
+
+        struct item *item = find_array_element_by_name(s->anp->asp->items, tmp);
+        if (!item) {
+                eprintf("Cannot show item--no such item '%s'", tmp);
+                return true;
+        }
+
+        mprintf("");
+
+        pprintf("Name: \"%s\"\n", item->name);
+        pprintf("Meta: \"%s\"\n", item->meta);
+        pprintf("\n");
+        pprintf("Events: %d\n", item->num_events);
+
+        for (uint32_t i = 0; i < item->num_events; i++) {
+                /* print event number, and input vector */
+                cprintf("\n");
+                pprintf("Event:\t%d\n", i + 1);
+                pprintf("Input:\n\n");
+                s->pprint == true ? pprint_vector(item->inputs[i], s->pprint_scheme)
+                        : print_vector(item->inputs[i]);
+
+                /* print target vector (if available) */
+                if (item->targets[i]) {
+                        cprintf("\n");
+                        pprintf("Target:\n\n");
+                        s->pprint == true ? pprint_vector(item->targets[i], s->pprint_scheme)
+                                : print_vector(item->targets[i]);
+                }
+        }
+
+        mprintf("");
 
         return true;
 }

@@ -19,7 +19,7 @@
 #include "main.h"
 #include "pprint.h"
 
-#define VALUE_SYMBOL "  "
+#define VALUE_SYMBOL " "
 
 uint32_t PALETTE_BLUE_RED[10]    = {196, 160, 124, 88,  52,  17,  18,  19,  20,  21};
 uint32_t PALETTE_BLUE_YELLOW[10] = {226, 220, 214, 208, 202, 27,  33,  39,  45,  51};
