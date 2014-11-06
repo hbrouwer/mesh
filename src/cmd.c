@@ -1376,7 +1376,7 @@ bool cmd_show_item(char *cmd, char *fmt, struct session *s)
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* print event number, and input vector */
                 cprintf("\n");
-                pprintf("Event:\t%d\n", i + 1);
+                pprintf("Event: %d\n", i + 1);
                 pprintf("Input:\n\n");
                 s->pprint == true ? pprint_vector(item->inputs[i], s->pprint_scheme)
                         : print_vector(item->inputs[i]);

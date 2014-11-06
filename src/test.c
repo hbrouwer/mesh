@@ -163,14 +163,17 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
 {
         n->status->error = 0.0;
 
-        pprintf("Item:\t\"%s\" -- \"%s\"\n", item->name, item->meta);
-        
+        pprintf("Name: \"%s\"\n", item->name);
+        pprintf("Meta: \"%s\"\n", item->meta);
+        pprintf("\n");
+        pprintf("Events: %d\n", item->num_events);
+
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* print event number, and input vector */
                 cprintf("\n");
-                pprintf("Event:\t%d\n", i + 1);
+                pprintf("Event: %d\n", i + 1);
                 pprintf("Input:\n\n");
                 pprint == true ? pprint_vector(item->inputs[i], scheme)
                         : print_vector(item->inputs[i]);
@@ -220,13 +223,16 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
         un->sp = 0;
         n->status->error = 0.0;
         
-        pprintf("Item: \t\"%s\" -- \"%s\"\n", item->name, item->meta);
-        
+        pprintf("Name: \"%s\"\n", item->name);
+        pprintf("Meta: \"%s\"\n", item->meta);
+        pprintf("\n");
+        pprintf("Events: %d\n", item->num_events);
+
         reset_recurrent_groups(un->stack[un->sp]);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* print event number, and input vector */
                 cprintf("\n");
-                pprintf("Event:\t%d\n", i + 1);
+                pprintf("Event: %d\n", i + 1);
                 pprintf("Input:\n\n");
                 pprint == true ? pprint_vector(item->inputs[i], scheme)
                         : print_vector(item->inputs[i]);
