@@ -24,8 +24,8 @@
 /**************************************************************************
  *************************************************************************/
 void dss_test(struct network *n);
-void dss_beliefs(struct network *n, struct set *set, struct item *item);
 void dss_scores(struct network *n, struct set *set, struct item *item);
+void dss_write_scores(struct network *n, struct set *set, char *filename);
 
 /**************************************************************************
  *************************************************************************/
@@ -45,9 +45,12 @@ bool is_same_vector(struct vector *a, struct vector *b);
 /**************************************************************************
  *************************************************************************/
 void dss_word_information(struct network *n, struct item *item);
+void dss_write_word_information(struct network *n, char *filename);
 
 /**************************************************************************
  *************************************************************************/
+struct matrix *dss_word_information_matrix_(struct network *n,
+                struct item *item, int32_t *freq_table);
 struct matrix *dss_word_information_matrix(struct network *n,
                 struct item *item);
 

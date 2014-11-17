@@ -140,7 +140,10 @@ bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s);
  *************************************************************************/
 bool cmd_dss_test(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_scores(char *cmd, char *fmt, struct session *s);
+bool cmd_dss_write_scores(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s);
+bool cmd_dss_write_word_information(char *cmd, char *fmt,
+                struct session *s);
 
 /**************************************************************************
  *************************************************************************/

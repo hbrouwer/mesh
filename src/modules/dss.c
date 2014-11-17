@@ -166,6 +166,42 @@ void dss_scores(struct network *n, struct set *set, struct item *item)
 }
 
 /**************************************************************************
+ *************************************************************************/
+void dss_write_scores(struct network *n, struct set *set, char *filename)
+{
+        FILE *fd;
+        if (!(fd = fopen(filename, "w")))
+                goto error_out;
+
+        fprintf(fd, "\"ItemId\",\"ItemName\",\"WordPos\",\"Target\"");
+        for (uint32_t i = 0; i < set->items->num_elements; i++) {
+                struct item *item = set->items->elements[i];
+                fprintf(fd, ",\"Event:%s\"", item->name);
+        }
+        fprintf(fd, "\n");
+        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                struct item *item = n->asp->items->elements[i];
+                struct matrix *sm = dss_score_matrix(n, set, item);
+                for (uint32_t j = 0; j < item->num_events; j++) {
+                        fprintf(fd, "%d,\"%s\",%d", i + 1, item->name, j + 1);
+                        for (uint32_t x = 0; x < sm->rows; x++)
+                                fprintf(fd, ",%f", sm->elements[x][j]);
+                        fprintf(fd, "\n");
+                }
+                pprintf("%d: %s\n", i + 1, item->name);
+                dispose_matrix(sm);
+        }
+        
+        fclose(fd);
+
+        return;
+
+error_out:
+        perror("[dss_write_scores()]");
+        return;
+}
+
+/**************************************************************************
  * This construsts a (1+m) x n comprehension score matrix, where m is the
  * number of events for which a score is computed after processing each of
  * n words of a sentence. The first row of the matrix contains the scores
@@ -359,6 +395,41 @@ void dss_word_information(struct network *n, struct item *item)
 }
 
 /**************************************************************************
+ *************************************************************************/
+void dss_write_word_information(struct network *n, char *filename)
+{
+        FILE *fd;
+        if (!(fd = fopen(filename, "w")))
+                goto error_out;
+
+        int32_t *freq_table = frequency_table(n->asp);
+        
+        fprintf(fd, "\"ItemId\",\"ItemName\",\"WordPos\",\"Ssyn\",\"DHsyn\",\"Ssem\",\"DHsem\"\n");
+        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                struct item *item = n->asp->items->elements[i];
+                struct matrix *im = dss_word_information_matrix_(n, item, freq_table);
+                for (uint32_t j = 0; j < item->num_events; j++) {
+                        fprintf(fd, "%d,\"%s\",%d", i + 1, item->name, j + 1);
+                        for (uint32_t x = 0; x < im->cols; x++)
+                                fprintf(fd, ",%f", im->elements[j][x]);
+                        fprintf(fd, "\n");
+                }
+                pprintf("%d: %s\n", i + 1, item->name);
+                dispose_matrix(im);
+        }
+
+        free(freq_table);
+
+        fclose(fd);
+
+        return;
+
+error_out:
+        perror("[dss_write_word_information]");
+        return;
+}
+
+/**************************************************************************
  * This implements four measures that quantify how much information a word
  * conveys (cf. Frank & Vigliocco, 2011):
  *
@@ -421,8 +492,8 @@ void dss_word_information(struct network *n, struct item *item)
  *     simulation: an information-theoretic perspective. Information, 2,
  *     672-696.
  *************************************************************************/
-struct matrix *dss_word_information_matrix(struct network *n,
-                struct item *item)
+struct matrix *dss_word_information_matrix_(struct network *n,
+                struct item *item, int32_t *freq_table)
 {
         struct matrix *im = create_matrix(item->num_events, 4);
 
@@ -435,7 +506,6 @@ struct matrix *dss_word_information_matrix(struct network *n,
         struct vector *sit1 = create_vector(n->output->vector->size);
         struct vector *sit2 = create_vector(n->output->vector->size);
 
-        int32_t *freq_table = frequency_table(n->asp);
         struct set *s = n->asp;
 
         /* compute measures for each word in the sentence */
@@ -577,10 +647,22 @@ struct matrix *dss_word_information_matrix(struct network *n,
                 im->elements[i][3] = delta_hsem;
         }
 
-        free(freq_table);
-
         dispose_vector(sit1);
         dispose_vector(sit2);
+
+        return im;
+}
+
+/**************************************************************************
+ *************************************************************************/
+struct matrix *dss_word_information_matrix(struct network *n,
+                struct item *item)
+{
+        int32_t *freq_table = frequency_table(n->asp);
+
+        struct matrix *im = dss_word_information_matrix_(n, item, freq_table);
+
+        free(freq_table);
 
         return im;
 }
