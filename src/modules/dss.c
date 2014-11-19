@@ -118,17 +118,21 @@ void dss_scores(struct network *n, struct set *set, struct item *item)
         pprintf("");
         for (uint32_t i = 0; i < init_col_len; i++)
                 printf(" ");
-        for (uint32_t c = 0; c < sm->cols; c++) {
-                double score = sm->elements[0][c];
-                if (c > 0) {
-                        printf("  ");
-                        double delta = score - sm->elements[0][c - 1];
-                        delta > 0.0 ? printf("\x1b[32m+%.5f\x1b[0m", delta)
-                                :  printf("\x1b[31m%.5f\x1b[0m", delta);
-                        printf("  ");
+        if (isnan(sm->elements[0][0])) {
+                printf("\x1b[41m\x1b[30mcomprehension score undefined\x1b[0m");
+        } else {
+                for (uint32_t c = 0; c < sm->cols; c++) {
+                        double score = sm->elements[0][c];
+                        if (c > 0) {
+                                printf("  ");
+                                double delta = score - sm->elements[0][c - 1];
+                                delta > 0.0 ? printf("\x1b[32m+%.5f\x1b[0m", delta)
+                                        :  printf("\x1b[31m%.5f\x1b[0m", delta);
+                                printf("  ");
+                        }
+                        score > 0.0 ? printf("\x1b[42m\x1b[30m+%.5f\x1b[0m", score)
+                                : printf("\x1b[41m\x1b[30m%.5f\x1b[0m", score);
                 }
-                score > 0.0 ? printf("\x1b[42m\x1b[30m+%.5f\x1b[0m", score)
-                        : printf("\x1b[41m\x1b[30m%.5f\x1b[0m", score);
         }
         printf("\n");
 
