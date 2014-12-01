@@ -119,7 +119,7 @@ void dss_scores(struct network *n, struct set *set, struct item *item)
         for (uint32_t i = 0; i < init_col_len; i++)
                 printf(" ");
         if (isnan(sm->elements[0][0])) {
-                printf("\x1b[41m\x1b[30mcomprehension score undefined\x1b[0m");
+                printf("\x1b[41m\x1b[30mcomprehension score undefined: unlawful situation\x1b[0m");
         } else {
                 for (uint32_t c = 0; c < sm->cols; c++) {
                         double score = sm->elements[0][c];
@@ -379,11 +379,13 @@ void dss_word_information(struct network *n, struct item *item)
 
         /* print word information metrics */
         pprintf("\n");
-        for (uint32_t c = 0; c < 4; c++) {
+        for (uint32_t c = 0; c < im->cols; c++) {
                 if (c == 0) pprintf("Ssyn ");
                 if (c == 1) pprintf("DHsyn");
-                if (c == 2) pprintf("SSem ");
+                if (c == 2) pprintf("Ssem ");
                 if (c == 3) pprintf("DHsem");
+                if (c == 4) { pprintf("\n"); pprintf("Sonl "); }
+                if (c == 5) pprintf("DHonl");
                 for (uint32_t i = 0; i < col_len - 5; i++)
                         printf(" ");
                 for (uint32_t r = 0; r < item->num_events; r++) {
@@ -408,7 +410,8 @@ void dss_write_word_information(struct network *n, char *filename)
 
         int32_t *freq_table = frequency_table(n->asp);
         
-        fprintf(fd, "\"ItemId\",\"ItemName\",\"WordPos\",\"Ssyn\",\"DHsyn\",\"Ssem\",\"DHsem\"\n");
+        // fprintf(fd, "\"ItemId\",\"ItemName\",\"WordPos\",\"Ssyn\",\"DHsyn\",\"Ssem\",\"DHsem\"\n");
+        fprintf(fd, "\"ItemId\",\"ItemName\",\"WordPos\",\"Ssyn\",\"DHsyn\",\"Ssem\",\"DHsem\",\"Sonl\",\"DHonl\"\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
                 struct matrix *im = dss_word_information_matrix_(n, item, freq_table);
@@ -499,7 +502,8 @@ error_out:
 struct matrix *dss_word_information_matrix_(struct network *n,
                 struct item *item, int32_t *freq_table)
 {
-        struct matrix *im = create_matrix(item->num_events, 4);
+        // struct matrix *im = create_matrix(item->num_events, 4);
+        struct matrix *im = create_matrix(item->num_events, 6);
 
         size_t block_size = strlen(item->name) + 1;
         char prefix1[block_size];
@@ -653,6 +657,55 @@ struct matrix *dss_word_information_matrix_(struct network *n,
 
         dispose_vector(sit1);
         dispose_vector(sit2);
+
+        /******************************************************************
+         * Online measures
+         *****************************************************************/
+
+        struct vector *pv = create_vector(n->output->vector->size);
+        fill_vector_with_value(pv, 1.0); // XXX: is this correct?
+//        fill_vector_with_value(pv, 1.0 / euclidean_norm(pv));
+//        printf("Norm: %f\n", euclidean_norm(pv));
+
+        struct vector *ov = n->output->vector;
+
+        if (n->type == TYPE_SRN)
+                reset_context_groups(n);
+        for (uint32_t i = 0; i < item->num_events; i++) {
+                /* feed activation forward */
+                if (i > 0 && n->type == TYPE_SRN)
+                        shift_context_groups(n);
+                copy_vector(n->input->vector, item->inputs[i]);
+                feed_forward(n, n->input);
+
+                double ssum1 = 0.0, ssum2 = 0.0;
+                for (uint32_t j = 0 ; j < ov->size; j++) {
+                        ssum1 += pv->elements[j];
+                        ssum2 += ov->elements[j];
+                }
+                double hsem1 = 0.0, hsem2 = 0.0;
+                for (uint32_t j = 0 ; j < ov->size; j++) {
+                        double tau1 = pv->elements[j] / ssum1;
+                        double tau2 = ov->elements[j] / ssum2;
+                        if (tau1 > 0.0) hsem1 -= tau1 * log(tau1);
+                        if (tau2 > 0.0) hsem2 -= tau2 * log(tau2);
+                }
+
+                double ssem = -log(dss_tau_conditional(ov, pv));
+                double delta_hsem = hsem1 - hsem2;
+
+                // printf("%f -- %f\n", dss_tau_prior(ov), dss_tau_prior(pv));
+
+                im->elements[i][4] = ssem;
+                im->elements[i][5] = delta_hsem;
+
+                copy_vector(pv, n->output->vector);
+        }
+
+        dispose_vector(pv);
+
+        /******************************************************************
+         *****************************************************************/
 
         return im;
 }
