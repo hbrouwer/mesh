@@ -1,7 +1,7 @@
 /*
  * dynsys.c
  *
- * Copyright 2012-2014 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2015 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,8 @@ void dynsys_test_item(struct network *n, struct group *g, struct item *item)
 {
         /* XXX: initial vector should be the unit vector */
         struct vector *pv = create_vector(g->vector->size);
+        fill_vector_with_value(pv, 1.0); // XXX: from dss.c
+        fill_vector_with_value(pv, 1.0 / euclidean_norm(pv)); // XXX: ??
 
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);
