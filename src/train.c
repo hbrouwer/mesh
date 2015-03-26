@@ -283,7 +283,7 @@ void scale_learning_rate(struct network *n)
         if (sa > 0 && n->status->epoch % sa == 0) {
                 double lr = n->learning_rate;
                 n->learning_rate *= n->lr_scale_factor;
-                mprintf("Scaled learning rate ... \t  ( %lf => %lf )",
+                mprintf("Scaled learning rate ... \t ( %lf => %lf )",
                                 lr, n->learning_rate);
         }
 }
