@@ -34,7 +34,8 @@
  *     Technical Report CMU-CS-99-164 (Pittsburgh, PA: Carnegie Mellon
  *     University, Department of Computer Science).
  *************************************************************************/
-double adjust_target(double y, double d, double tr, double zr) {
+double adjust_target(double y, double d, double tr, double zr)
+{
         /* 
          * Unit's activation is within zero error radius
          * of the target, so set its target to equal this
