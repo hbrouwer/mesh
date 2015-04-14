@@ -1581,7 +1581,7 @@ bool cmd_init(char *cmd, char *fmt, struct session *s)
         init_network(s->anp);
 
         if (s->anp->initialized)
-                mprintf("Initialized network '%s'", s->anp->name);
+                mprintf("Initialized network ... \t ( %s )", s->anp->name);
 
         return true;
 }
