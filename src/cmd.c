@@ -192,7 +192,11 @@ const static struct command cmds[] = {
 void process_command(char *cmd, struct session *s)
 {
         /* comment or blank line */
-        if (cmd[0] == '#' || cmd[0] == '\0')
+        if (cmd[0] == '#') {
+                mprintf("\x1b[36m%s\x1b[0m", cmd);
+                return;
+        }
+        if (cmd[0] == '\0')
                 return;
 
         bool req_network = false;
