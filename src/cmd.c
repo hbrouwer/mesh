@@ -193,7 +193,7 @@ void process_command(char *cmd, struct session *s)
 {
         /* comment or blank line */
         if (cmd[0] == '%') {
-                mprintf("\x1b[36m%s\x1b[0m", cmd);
+                mprintf("\x1b[1m\x1b[36m%s\x1b[0m", cmd);
                 return;
         }
         if (cmd[0] == '\0' || cmd[0] == '#')
