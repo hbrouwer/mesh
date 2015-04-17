@@ -26,6 +26,8 @@
 void dss_test(struct network *n);
 void dss_scores(struct network *n, struct set *set, struct item *item);
 void dss_write_scores(struct network *n, struct set *set, char *filename);
+void dss_inferences(struct network *n, struct set *set, struct item *item,
+                float threshold);
 
 /**************************************************************************
  *************************************************************************/

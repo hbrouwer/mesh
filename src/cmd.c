@@ -177,6 +177,8 @@ const static struct command cmds[] = {
         {"dssTest",                 NULL,            &cmd_dss_test},
         {"dssScores",               "%s \"%[^\"]\"", &cmd_dss_scores},
         {"dssWriteScores",          "%s %s",         &cmd_dss_write_scores},
+        {"dssInferences",           "%s \"%[^\"]\" %lf",
+                                                     &cmd_dss_inferences},
         {"dssWordInformation",      "\"%[^\"]\"",    &cmd_dss_word_information},
         {"dssWriteWordInformation", "%s",            &cmd_dss_write_word_information},
 
@@ -2074,6 +2076,43 @@ bool cmd_dss_write_scores(char *cmd, char *fmt, struct session *s)
         mprintf(" ");
 
         return true;
+}
+
+/**************************************************************************
+ *************************************************************************/
+bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
+{
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
+        double tmp3;
+        if (sscanf(cmd, fmt, tmp1, tmp2, &tmp3) != 3)
+                return false;
+
+        struct set *set = find_array_element_by_name(s->anp->sets, tmp1);
+        if (!set) {
+                eprintf("Cannot compute inferences--no such set '%s'", tmp1);
+                return true;
+        }
+
+        struct item *item = find_array_element_by_name(s->anp->asp->items, tmp2);
+        if (!item) {
+                eprintf("Cannot compute inferences--no such item '%s'", tmp2);
+                return true;
+        }
+
+        if (tmp3 < -1.0 || tmp3 > 1.0) {
+                eprintf("Cannot compute inferences--invalid score threshold '%lf'", tmp3);
+                return true;
+
+        }
+
+        mprintf(" ");
+
+        dss_inferences(s->anp, set, item, tmp3);
+
+        mprintf(" ");
+
+        return true;
+
 }
 
 /**************************************************************************

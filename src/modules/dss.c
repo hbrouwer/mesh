@@ -206,6 +206,44 @@ error_out:
 }
 
 /**************************************************************************
+ *************************************************************************/
+void dss_inferences(struct network *n, struct set *set, struct item *item,
+                float threshold)
+{
+        struct matrix *sm = dss_score_matrix(n, set, item);
+
+        pprintf("Sentence:\t\t%s\n", item->name);
+        pprintf("Semantics:\t\t%s\n", item->meta);
+        pprintf("\n");
+
+        uint32_t c = sm->cols - 1;
+        
+        /* print overall comprehension score */
+        pprintf("Overall score:\t");
+        double score = sm->elements[0][c];
+        if (isnan(score)) {
+                printf("\x1b[41m\x1b[30mcomprehension score undefined: unlawful situation\x1b[0m\n");
+        } else {
+                score > 0.0 ? printf("\x1b[42m\x1b[30m+%.5f\x1b[0m\n", score)
+                        : printf("\x1b[41m\x1b[30m%.5f\x1b[0m\n", score);
+        }
+        pprintf("\n");
+
+        /* print inferences */
+        for (uint32_t r = 1; r < sm->rows; r++) {
+                struct item *probe = set->items->elements[r - 1];
+                score = sm->elements[r][c];
+                if (fabs(score) >= fabs(threshold))
+                        score > 0.0 ? pprintf("\x1b[32m%s\x1b[0m\t\x1b[42m\x1b[30m+%.5f\x1b[0m\n",
+                                        probe->name, score)
+                                :  pprintf("\x1b[31m%s\x1b[0m\t\x1b[41m\x1b[30m%.5f\x1b[0m\n",
+                                                probe->name, score);
+        }
+
+        dispose_matrix(sm);
+}
+
+/**************************************************************************
  * This construsts a (1+m) x n comprehension score matrix, where m is the
  * number of events for which a score is computed after processing each of
  * n words of a sentence. The first row of the matrix contains the scores
