@@ -172,6 +172,7 @@ const static struct command cmds[] = {
         {"erpContrast",             "%s \"%[^\"]\" \"%[^\"]\"",
                                                      &cmd_erp_contrast},
         {"erpGenerateTable",        "%s %s %s",      &cmd_erp_generate_table},
+        {"erpAmplitudes",           "%s %s",         &cmd_erp_amplitudes},   /* XXX: deprecated */
 
         /* distributed situation space module ****************************/
         {"dssTest",                 NULL,            &cmd_dss_test},
@@ -2001,6 +2002,32 @@ bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s)
         }
 
         erp_generate_table(s->anp, n400_gen, p600_gen, tmp3);
+
+        return true;
+}
+
+/**************************************************************************
+ * XXX: deprecated (for legacy purposes only)
+ *************************************************************************/
+bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s)
+{
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
+                return false;
+
+        struct group *n400_gen = find_array_element_by_name(s->anp->groups, tmp1);
+        struct group *p600_gen = find_array_element_by_name(s->anp->groups, tmp2);
+
+        if (n400_gen == NULL) {
+                eprintf("Cannot compute ERP correlates--no such group '%s'", tmp1);
+                return true;
+        }
+        if (p600_gen == NULL) {
+                eprintf("Cannot compute ERP correlates--no such group '%s'", tmp2);
+                return true;
+        }
+
+        erp_amplitudes(s->anp, n400_gen, p600_gen);
 
         return true;
 }
