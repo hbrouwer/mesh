@@ -171,8 +171,8 @@ const static struct command cmds[] = {
         /* event-related potentials module *******************************/
         {"erpContrast",             "%s \"%[^\"]\" \"%[^\"]\"",
                                                      &cmd_erp_contrast},
-        {"erpGenerateTable",        "%s %s %s",      &cmd_erp_generate_table},
-        {"erpAmplitudes",           "%s %s",         &cmd_erp_amplitudes},   /* XXX: deprecated */
+        {"erpGenerateTable",        "%s %s %s",      &cmd_erp_generate_table}, /* XXX: deprecated */
+        {"erpAmplitudes",           "%s %s",         &cmd_erp_amplitudes},
 
         /* distributed situation space module ****************************/
         {"dssTest",                 NULL,            &cmd_dss_test},
@@ -1982,6 +1982,7 @@ bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
 }
 
 /**************************************************************************
+ * XXX: deprecated (for legacy purposes only)
  *************************************************************************/
 bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s)
 {
@@ -2007,7 +2008,6 @@ bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s)
 }
 
 /**************************************************************************
- * XXX: deprecated (for legacy purposes only)
  *************************************************************************/
 bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s)
 {
@@ -2027,7 +2027,11 @@ bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
+        mprintf("Computing ERP amplitudes ... \t ( N400 :: %s | P600 :: %s )", tmp1, tmp2);
+
         erp_amplitudes(s->anp, n400_gen, p600_gen);
+
+        mprintf("Written ERP amplitudes ... \t ( %s.ERPs.csv )", s->anp->asp->name);
 
         return true;
 }
