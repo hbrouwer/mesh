@@ -138,7 +138,7 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
                 reset_ffn_error_signals(n);
                 bp_output_error(g, tv, tr, zr);
                 bp_backpropagate_error(n, g);
-                
+
                 /* 
                  * Update network error if all of the
                  * item's events have been processed.
@@ -147,6 +147,16 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
                         double error = n->output->err_fun->fun(g, tv, tr, zr);
                         error /= n->batch_size;
                         n->status->error += error;
+                }
+
+                /* 
+                 * In case of multi-stage training, clamp
+                 * the target to the output layer, and feed
+                 * forward activation.
+                 */
+                if (n->multi_stage) {
+                        copy_vector(n->output->vector, item->targets[i]);
+                        feed_forward(n, n->output);
                 }
         }
 }

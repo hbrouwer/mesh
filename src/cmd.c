@@ -146,6 +146,9 @@ const static struct command cmds[] = {
         {"testItem",                "\"%[^\"]\"",    &cmd_test_item},        /* swapped */
         {"test",                    NULL,            &cmd_test},
 
+        /* multi-stage training ******************************************/
+        {"toggleMultiStage",        NULL,            &cmd_toggle_multi_stage},
+
         /* similarity and confusion matrices *****************************/
         {"similarityMatrix",        NULL,            &cmd_similarity_matrix},
         {"confusionMatrix",         NULL,            &cmd_confusion_matrix},
@@ -1661,6 +1664,24 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s)
         test_network_with_item(s->anp, item, s->pprint, s->pprint_scheme);
 
         mprintf(" ");
+
+        return true;
+}
+
+/**************************************************************************
+ *************************************************************************/
+bool cmd_toggle_multi_stage(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        s->anp->multi_stage = !s->anp->multi_stage;
+
+        if (s->anp->multi_stage) {
+                mprintf("Toggled multi-stage training ... \t ( on )");
+        } else {
+                mprintf("Toggled multi-stage training ... \t ( off )");
+        }
 
         return true;
 }
