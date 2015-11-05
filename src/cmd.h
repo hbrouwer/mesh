@@ -109,7 +109,8 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/
-bool cmd_toggle_multi_stage(char *cmd, char *fmt, struct session *s);
+// bool cmd_toggle_multi_stage(char *cmd, char *fmt, struct session *s);
+bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s);
 
 /**************************************************************************
  *************************************************************************/

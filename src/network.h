@@ -95,7 +95,8 @@ struct network
         uint32_t training_order;    /* order in which training items are
                                        presented */        
 
-        bool multi_stage;           /* flags multi-stage training */
+        struct group *ms_input;     /* multi-stage input group */
+        struct set *ms_set;         /* multi-stage set */
 
         uint32_t sd_type;           /* type of steepest descent */
         double sd_scale_factor;     /* scaling factor */

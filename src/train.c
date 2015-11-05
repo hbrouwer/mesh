@@ -149,15 +149,27 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
                         n->status->error += error;
                 }
 
+                //// DEBUG //// DEBUG //// DEBUG ////
+
                 /* 
                  * In case of multi-stage training, clamp
                  * the target to the output layer, and feed
                  * forward activation.
                  */
+                /*
                 if (n->multi_stage) {
                         copy_vector(n->output->vector, item->targets[i]);
                         feed_forward(n, n->output);
                 }
+                */
+                if (n->ms_input) {
+                        struct item *ms_item = find_array_element_by_name(n->ms_set->items,
+                                        item->name);
+                        copy_vector(n->ms_input->vector, ms_item->targets[i]);
+                        feed_forward(n, n->ms_input);
+                }
+
+                //// DEBUG //// DEBUG //// DEBUG ////
         }
 }
 
