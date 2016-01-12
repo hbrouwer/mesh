@@ -54,10 +54,9 @@
  *************************************************************************/
 void dynsys_test_item(struct network *n, struct group *g, struct item *item)
 {
-        /* XXX: initial vector should be the unit vector */
         struct vector *pv = create_vector(g->vector->size);
-        fill_vector_with_value(pv, 1.0); // XXX: from dss.c
-        fill_vector_with_value(pv, 1.0 / euclidean_norm(pv)); // XXX: ??
+        fill_vector_with_value(pv, 1.0);
+        fill_vector_with_value(pv, 1.0 / euclidean_norm(pv));
 
         if (n->type == TYPE_SRN)
                 reset_context_groups(n);

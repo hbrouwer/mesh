@@ -704,11 +704,9 @@ struct matrix *dss_word_information_matrix(struct network *n,
         /******************************************************************
          * Online measures
          *****************************************************************/
-
         struct vector *pv = create_vector(n->output->vector->size);
-        fill_vector_with_value(pv, 1.0); // XXX: is this correct?
-//        fill_vector_with_value(pv, 1.0 / euclidean_norm(pv));
-//        printf("Norm: %f\n", euclidean_norm(pv));
+        fill_vector_with_value(pv, 1.0);
+        fill_vector_with_value(pv, 1.0 / euclidean_norm(pv));
 
         struct vector *ov = n->output->vector;
 
@@ -736,8 +734,6 @@ struct matrix *dss_word_information_matrix(struct network *n,
 
                 double ssem = -log(dss_tau_conditional(ov, pv));
                 double delta_hsem = hsem1 - hsem2;
-
-                // printf("%f -- %f\n", dss_tau_prior(ov), dss_tau_prior(pv));
 
                 im->elements[i][4] = ssem;
                 im->elements[i][5] = delta_hsem;
