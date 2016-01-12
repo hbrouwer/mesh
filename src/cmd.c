@@ -184,7 +184,7 @@ const static struct command cmds[] = {
         {"dssWriteScores",          "%s %s",         &cmd_dss_write_scores},
         {"dssInferences",           "%s \"%[^\"]\" %lf",
                                                      &cmd_dss_inferences},
-        {"dssWordInformation",      "\"%[^\"]\"",    &cmd_dss_word_information},
+        {"dssWordInformation",      "%s \"%[^\"]\"", &cmd_dss_word_information},
         {"dssWriteWordInformation", "%s",            &cmd_dss_write_word_information},
 
         /* dynamic systems module ****************************************/
@@ -2221,20 +2221,25 @@ bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
  *************************************************************************/
 bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s)
 {
-        char tmp[MAX_ARG_SIZE];
-        if (sscanf(cmd, fmt, tmp) != 1)
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
                 return false;
 
-        struct item *item = find_array_element_by_name(s->anp->asp->items, tmp);
+        struct set *set = find_array_element_by_name(s->anp->sets, tmp1);
+        if (!set) {
+                eprintf("Cannot compute informativity metrics--no such set '%s'", tmp1);
+                return true;
+        }
+        struct item *item = find_array_element_by_name(s->anp->asp->items, tmp2);
         if (!item) {
-                eprintf("Cannot compute word information--no such item '%s'", tmp);
+                eprintf("Cannot compute informativity metrics--no such item '%s'", tmp2);
                 return true;
         }
         
-        mprintf("Testing network '%s' with item '%s':", s->anp->name, tmp);
+        mprintf("Testing network '%s' with item '%s':", s->anp->name, tmp2);
         mprintf(" ");
 
-        dss_word_information(s->anp, item);
+        dss_word_information(s->anp, set, item);
 
         mprintf(" ");
 
@@ -2250,11 +2255,18 @@ bool cmd_dss_write_word_information(char *cmd, char *fmt,
         if (sscanf(cmd, fmt, tmp) != 1)
                 return false;
 
-        mprintf(" ");
+        struct set *set = find_array_element_by_name(s->anp->sets, tmp);
+        if (!set) {
+                eprintf("Cannot compute informativity metrics--no such set '%s'", tmp);
+                return true;
+        }
 
-        dss_write_word_information(s->anp, tmp);
+        mprintf("Computing word informatity metrics ... \t ( %s :: %s )", s->anp->asp->name, tmp);
 
-        mprintf(" ");
+
+        dss_write_word_information(s->anp, set);
+
+        mprintf("Written word informativity metrics ... \t ( %s.WIMs.csv )", s->anp->asp->name);
 
         return true;
 }

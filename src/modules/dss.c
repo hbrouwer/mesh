@@ -389,9 +389,11 @@ bool is_same_vector(struct vector *a, struct vector *b)
 
 /**************************************************************************
  *************************************************************************/
-void dss_word_information(struct network *n, struct item *item)
+void dss_word_information(struct network *n, struct set *s,
+                struct item *item)
 {
-        struct matrix *im = dss_word_information_matrix(n, item);
+        int32_t *freq_table = frequency_table(s);
+        struct matrix *im = dss_word_information_matrix(n, s, item, freq_table);
         
         size_t block_size = strlen(item->name) + 1;
         char sentence[block_size];
@@ -432,25 +434,30 @@ void dss_word_information(struct network *n, struct item *item)
                 printf("\n");
         }
         dispose_matrix(im);
+        
+        free(freq_table);
 
         return;
 }
 
 /**************************************************************************
  *************************************************************************/
-void dss_write_word_information(struct network *n, char *filename)
+void dss_write_word_information(struct network *n, struct set *s)
 {
+        char *filename;
+        if (asprintf(&filename, "%s.WIMs.csv", n->asp->name) < 0)
+                goto error_out;
+
         FILE *fd;
         if (!(fd = fopen(filename, "w")))
                 goto error_out;
 
-        int32_t *freq_table = frequency_table(n->asp);
+        int32_t *freq_table = frequency_table(s);
         
-        // fprintf(fd, "\"ItemId\",\"ItemName\",\"WordPos\",\"Ssyn\",\"DHsyn\",\"Ssem\",\"DHsem\"\n");
         fprintf(fd, "\"ItemId\",\"ItemName\",\"WordPos\",\"Ssyn\",\"DHsyn\",\"Ssem\",\"DHsem\",\"Sonl\",\"DHonl\"\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
-                struct matrix *im = dss_word_information_matrix_(n, item, freq_table);
+                struct matrix *im = dss_word_information_matrix(n, s, item, freq_table);
                 for (uint32_t j = 0; j < item->num_events; j++) {
                         fprintf(fd, "%d,\"%s\",%d", i + 1, item->name, j + 1);
                         for (uint32_t x = 0; x < im->cols; x++)
@@ -535,8 +542,8 @@ error_out:
  *     simulation: an information-theoretic perspective. Information, 2,
  *     672-696.
  *************************************************************************/
-struct matrix *dss_word_information_matrix_(struct network *n,
-                struct item *item, int32_t *freq_table)
+struct matrix *dss_word_information_matrix(struct network *n,
+                struct set *s, struct item *item, int32_t *freq_table)
 {
         // struct matrix *im = create_matrix(item->num_events, 4);
         struct matrix *im = create_matrix(item->num_events, 6);
@@ -550,7 +557,7 @@ struct matrix *dss_word_information_matrix_(struct network *n,
         struct vector *sit1 = create_vector(n->output->vector->size);
         struct vector *sit2 = create_vector(n->output->vector->size);
 
-        struct set *s = n->asp;
+        // struct set *s = n->asp;
 
         /* compute measures for each word in the sentence */
         for (uint32_t i = 0; i < item->num_events; i++) {
@@ -742,20 +749,6 @@ struct matrix *dss_word_information_matrix_(struct network *n,
 
         /******************************************************************
          *****************************************************************/
-
-        return im;
-}
-
-/**************************************************************************
- *************************************************************************/
-struct matrix *dss_word_information_matrix(struct network *n,
-                struct item *item)
-{
-        int32_t *freq_table = frequency_table(n->asp);
-
-        struct matrix *im = dss_word_information_matrix_(n, item, freq_table);
-
-        free(freq_table);
 
         return im;
 }

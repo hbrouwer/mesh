@@ -46,15 +46,14 @@ bool is_same_vector(struct vector *a, struct vector *b);
 
 /**************************************************************************
  *************************************************************************/
-void dss_word_information(struct network *n, struct item *item);
-void dss_write_word_information(struct network *n, char *filename);
+void dss_word_information(struct network *n, struct set *s, 
+                struct item *item);
+void dss_write_word_information(struct network *n, struct set *s);
 
 /**************************************************************************
  *************************************************************************/
-struct matrix *dss_word_information_matrix_(struct network *n,
-                struct item *item, int32_t *freq_table);
 struct matrix *dss_word_information_matrix(struct network *n,
-                struct item *item);
+                struct set *s, struct item *item, int32_t *freq_table);
 
 /**************************************************************************
  *************************************************************************/
