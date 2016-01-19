@@ -454,17 +454,17 @@ void dss_write_word_information(struct network *n, struct set *s)
 
         int32_t *freq_table = frequency_table(s);
         
-        fprintf(fd, "\"ItemId\",\"ItemName\",\"WordPos\",\"Ssyn\",\"DHsyn\",\"Ssem\",\"DHsem\",\"Sonl\",\"DHonl\"\n");
+        fprintf(fd, "\"ItemId\",\"ItemName\",\"ItemMeta\",\"WordPos\",\"Ssyn\",\"DHsyn\",\"Ssem\",\"DHsem\",\"Sonl\",\"DHonl\"\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
                 struct matrix *im = dss_word_information_matrix(n, s, item, freq_table);
                 for (uint32_t j = 0; j < item->num_events; j++) {
-                        fprintf(fd, "%d,\"%s\",%d", i + 1, item->name, j + 1);
+                        fprintf(fd, "%d,\"%s\",\"%s\",%d", i, item->name, item->meta, j);
                         for (uint32_t x = 0; x < im->cols; x++)
                                 fprintf(fd, ",%f", im->elements[j][x]);
                         fprintf(fd, "\n");
                 }
-                pprintf("%d: %s\n", i + 1, item->name);
+                pprintf("%d: %s\n", i, item->name);
                 dispose_matrix(im);
         }
 
