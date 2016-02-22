@@ -146,10 +146,6 @@ const static struct command cmds[] = {
         {"testItem",                "\"%[^\"]\"",    &cmd_test_item},        /* swapped */
         {"test",                    NULL,            &cmd_test},
 
-        /* multi-stage training ******************************************/
-        // {"toggleMultiStage",        NULL,            &cmd_toggle_multi_stage},
-        {"set MultiStage",          "%s %s",         &cmd_set_multi_stage},
-
         /* similarity and confusion matrices *****************************/
         {"similarityMatrix",        NULL,            &cmd_similarity_matrix},
         {"confusionMatrix",         NULL,            &cmd_confusion_matrix},
@@ -1668,73 +1664,6 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s)
 
         return true;
 }
-
-/**************************************************************************
- *************************************************************************/
-
-//// DEBUG //// DEBUG //// DEBUG ////
-
-/*
-bool cmd_toggle_multi_stage(char *cmd, char *fmt, struct session *s)
-{
-        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
-                return false;
-
-        s->anp->multi_stage = !s->anp->multi_stage;
-
-        if (s->anp->multi_stage) {
-                mprintf("Toggled multi-stage training ... \t ( on )");
-        } else {
-                mprintf("Toggled multi-stage training ... \t ( off )");
-        }
-
-        return true;
-}
-*/
-bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s)
-{
-        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
-        if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
-                return false;
-
-        struct group *g = find_array_element_by_name(s->anp->groups, tmp1);
-        if (g == NULL) {
-                eprintf("Cannot set input group--no such group '%s'", tmp1);
-                return true;
-        }
-
-        /*
-        struct set *set = find_array_element_by_name(s->anp->sets, tmp2);
-        if (!set) {
-                eprintf("Cannot change to set--no such set '%s'", tmp2);
-                return true;
-        }
-        */
-
-        if (find_array_element_by_name(s->anp->sets, tmp2)) {
-                eprintf("Cannot load set--set '%s' already exists", tmp2);
-                return true;
-        }
-
-        struct set *set = load_set("__MULTI_STAGE", tmp2, s->anp->input->vector->size, g->vector->size);
-        if (!set) {
-                eprintf("Cannot load set--no such file '%s'", tmp2);
-                return true;
-        }
-                
-        add_to_array(s->anp->sets, set);
-
-        mprintf("Loaded set ... \t\t\t ( %s => %s :: %d )", tmp2, set->name, set->items->num_elements);
-
-        s->anp->ms_input = g;
-        s->anp->ms_set = set;
-
-        mprintf("Set multi-stage model ... \t ( %s :: %s )", tmp1, set->name);
-
-        return true;
-}
-
-//// DEBUG //// DEBUG //// DEBUG ////
 
 /**************************************************************************
  *************************************************************************/
