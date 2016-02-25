@@ -107,7 +107,7 @@ void print_welcome()
                         "         ______                                                              \n"
                         "    __---   )  --_       MESH, version %s: http://hbrouwer.github.io/mesh/   \n"
                         "  --       /      -_                                                         \n"
-                        " /        (         )    (c) 2012-2015 Harm Brouwer <me@hbrouwer.eu>         \n"
+                        " /        (         )    (c) 2012-2016 Harm Brouwer <me@hbrouwer.eu>         \n"
                         "(         ____       )                                                       \n"
                         "(      _--            )  Saarland University, Department of Computational    \n"
                         " (____/         _____)   Linguistics and Phonetics (Psycholinguistics)       \n"
