@@ -148,6 +148,22 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
                         error /= n->batch_size;
                         n->status->error += error;
                 }
+
+                /*
+                 * In case of multi-stage training, clamp the desired target
+                 * vector for the current stage, to the input group of the
+                 * previous stage, and feed forward activation.
+                 */
+                if (n->ms_input) {
+                        struct item *ms_item = find_array_element_by_name(
+                                        n->ms_set->items, item->name);
+                        if (!ms_item) {
+                                eprintf("No matching item in multi-stage training");
+                                continue;
+                        }
+                        copy_vector(n->ms_input->vector, ms_item->inputs[i]);
+                        feed_forward(n, n->ms_input);
+                }
         }
 }
 
@@ -247,6 +263,8 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
                         rnn_sum_gradients(un);
                         n->update_algorithm(un->stack[0]);
                 }
+
+                // XXX: What about multi-stage training?
 
 shift_stack:
                 un->sp == un->stack_size - 1 ? rnn_shift_stack(un)

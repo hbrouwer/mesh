@@ -146,6 +146,10 @@ const static struct command cmds[] = {
         {"testItem",                "\"%[^\"]\"",    &cmd_test_item},        /* swapped */
         {"test",                    NULL,            &cmd_test},
 
+        /* single-stage and multi-stage training *************************/
+        {"set SingleStage",         NULL,            &cmd_set_single_stage},
+        {"set MultiStage",          "%s %s",         &cmd_set_multi_stage},
+
         /* similarity and confusion matrices *****************************/
         {"similarityMatrix",        NULL,            &cmd_similarity_matrix},
         {"confusionMatrix",         NULL,            &cmd_confusion_matrix},
@@ -1637,6 +1641,52 @@ bool cmd_test(char *cmd, char *fmt, struct session *s)
         test_network(s->anp);
 
         mprintf(" ");
+
+        return true;
+}
+
+/**************************************************************************
+ *************************************************************************/
+bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s)
+{
+        s->anp->ms_input = NULL;
+        s->anp->ms_set = NULL;
+
+        mprintf("Set single-stage training ... \t ( %s --> %s )", 
+                        s->anp->input->name,
+                        s->anp->output->name);
+        
+        return true;
+}
+
+/**************************************************************************
+ *************************************************************************/
+bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s)
+{
+        char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, tmp1, tmp2) != 2)
+                return false;
+
+        struct group *g = find_array_element_by_name(s->anp->groups, tmp1);
+        if (g == NULL) {
+                eprintf("Cannot set multi-stage training-no such group '%s'", tmp1);
+                return true;
+        }
+
+        struct set *set = find_array_element_by_name(s->anp->sets, tmp2);
+        if (!set) {
+                eprintf("Cannot set multi-stage training--no such set '%s'", tmp2);
+                return true;
+        }
+
+        s->anp->ms_input = g;
+        s->anp->ms_set = set;
+
+        mprintf("Set multi-stage training ... \t ( %s --> %s :: %s ==> %s )", 
+                        s->anp->input->name,
+                        s->anp->ms_input->name,
+                        s->anp->ms_set->name,
+                        s->anp->output->name);
 
         return true;
 }
