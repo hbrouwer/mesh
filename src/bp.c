@@ -808,7 +808,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
  *
  * Fahlman, S. E. (1988). An empirical study of learning speed in back-
  *     propagation networks. Technical report CMU-CS-88-162. School of
- *     Computer Science, Caernie Mellon University, Pittsburgh, PA 15213.
+ *     Computer Science, Carnegie Mellon University, Pittsburgh, PA 15213.
  *************************************************************************/
 #define QP_MAX_STEP_SIZE 1.75
 
