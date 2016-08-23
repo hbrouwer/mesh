@@ -22,6 +22,19 @@
 #include "math.h"
 
 /**************************************************************************
+ * Schraudolph's approximation of the exponentional function. See:
+ *
+ * Schraudolph, N. N. (1999). A fast, compact approximation of the 
+ *     exponentional function. Neural Computation, 11, 854-862.
+ *************************************************************************/
+#ifdef FAST_EXP
+double fast_exp(double x)
+{
+        return EXP_APPROX(x);
+}
+#endif /* FAST_EXP */
+
+/**************************************************************************
  *************************************************************************/
 double minimum(double x, double y)
 {

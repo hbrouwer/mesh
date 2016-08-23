@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 
+#include <math.h>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif /* OPENMP */
@@ -27,6 +29,7 @@
 #include "cli.h"
 #include "cmd.h"
 #include "main.h"
+#include "math.h"
 #include "session.h"
 
 #define VERSION "0.99a"
@@ -38,6 +41,9 @@ int main(int argc, char **argv)
         struct session *s;
 
         print_welcome();
+#ifdef FAST_EXP
+        print_fast_exp_status();
+#endif /* FAST_EXP */
 #ifdef _OPENMP
         print_openmp_status();
 #endif /* _OPENMP */
@@ -69,6 +75,15 @@ error_out:
         perror("[main()]");
         exit(EXIT_FAILURE);
 }
+
+/**************************************************************************
+ *************************************************************************/
+#ifdef FAST_EXP
+void print_fast_exp_status()
+{
+        mprintf("[+fast_exp: using Schraudolph's exp() approximation (c: %d)]", EXP_C);
+}
+#endif /* FAST_EXP */
 
 /**************************************************************************
  *************************************************************************/

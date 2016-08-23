@@ -21,8 +21,16 @@
 
 #include <stdint.h>
 
+#include "math.h"
 #include "network.h"
 #include "vector.h"
+
+/* use fast_exp() or exp() */
+#ifdef FAST_EXP
+#define EXP(x) fast_exp(x)
+#else
+#define EXP(x) exp(x)
+#endif /* FAST_EXP */
 
 /**************************************************************************
  *************************************************************************/

@@ -22,6 +22,35 @@
 #include "vector.h"
 
 /**************************************************************************
+ * Schraudolph's approximation of the exponentional function. See:
+ *
+ * Schraudolph, N. N. (1999). A fast, compact approximation of the 
+ *     exponentional function. Neural Computation, 11, 854-862.
+ *************************************************************************/
+#ifdef FAST_EXP
+__attribute__((unused))
+static union
+{
+        double d;
+        struct
+        {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+                int j, i;
+#else
+                int i, j;
+#endif
+        } n;
+} _eco;
+
+#define EXP_A (1048576 / M_LN2)
+#define EXP_C 60801
+
+#define EXP_APPROX(x) (_eco.n.i = EXP_A * (x) + (1072693248 - EXP_C),_eco.d)
+
+double fast_exp(double x);
+#endif /* FAST_EXP */
+
+/**************************************************************************
  *************************************************************************/
 double minimum(double x, double y);
 double maximum(double x, double y);

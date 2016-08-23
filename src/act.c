@@ -184,7 +184,7 @@ double act_fun_binary_sigmoid(struct vector *v, uint32_t i)
 {
         double x = v->elements[i];
 
-        return 1.0 / (1.0 + exp(-x));
+        return 1.0 / (1.0 + EXP(-x));
 }
 
 /**************************************************************************
@@ -208,7 +208,7 @@ double act_fun_bipolar_sigmoid(struct vector *v, uint32_t i)
 {
         double x = v->elements[i];
 
-        return (-1.0) + 2.0 / (1.0 + exp(-x));
+        return (-1.0) + 2.0 / (1.0 + EXP(-x));
 }
 
 /**************************************************************************
@@ -234,10 +234,10 @@ double act_fun_softmax(struct vector *v, uint32_t i)
         if (i == 0) {
                 sum = 0.0;
                 for (uint32_t j = 0; j < v->size; j++)
-                        sum += exp(v->elements[j]);
+                        sum += EXP(v->elements[j]);
         }
 
-        double x = exp(v->elements[i]);
+        double x = EXP(v->elements[i]);
 
         return x / sum;
 }
