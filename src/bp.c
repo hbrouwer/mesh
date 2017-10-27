@@ -1122,6 +1122,7 @@ References
 Jacobs, R. A. (1988). Increased Rates of Convergence Through Learning Rate
         Adapation. Neural Networks, 1, pp. 295-307.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 #define DBD_BASE 0.7
 
 void bp_update_dbd(struct network *n)
@@ -1205,9 +1206,9 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
         for (uint32_t  i = 0; i < p->to->vector->size; i++) {
                 for (uint32_t  j = 0; j < g->vector->size; j++) {
 
-                        /******************************
-                         * Update weight
-                         **/
+                        /***********************
+                         **** update weight ****
+                         ***********************/
 
                         double weight_delta = 0.0;
 
@@ -1283,8 +1284,8 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                         p->prev_deltas->elements[i][j] = weight_delta;
 
                         /******************************
-                         * Update learning rate
-                         **/
+                         **** update learning rate ****
+                         ******************************/
 
                         double lr_delta = 0.0;
 
