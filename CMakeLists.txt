@@ -46,6 +46,6 @@ add_executable(mesh ${SOURCE_FILES})
 target_link_libraries(mesh m)
 
 # mesh + openmp
-add_executable(mesh-mp ${SOURCE_FILES})
-target_link_libraries(mesh-mp m)
-set_target_properties(mesh-mp PROPERTIES COMPILE_FLAGS -fopenmp LINK_FLAGS -fopenmp)
+#add_executable(mesh-mp ${SOURCE_FILES})
+#target_link_libraries(mesh-mp m)
+#set_target_properties(mesh-mp PROPERTIES COMPILE_FLAGS -fopenmp LINK_FLAGS -fopenmp)
