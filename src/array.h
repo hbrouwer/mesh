@@ -1,7 +1,5 @@
 /*
- * array.h
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +27,6 @@
 #define TYPE_SETS       3
 #define TYPE_ITEMS      4
 
-/**************************************************************************
- *************************************************************************/
 struct array
 {
         uint32_t type;              /* array type */
@@ -39,8 +35,6 @@ struct array
         void **elements;            /* elements */
 };
 
-/**************************************************************************
- *************************************************************************/
 struct array *create_array(uint32_t type);
 void add_to_array(struct array *a, void *e);
 void remove_from_array(struct array *a, void *e);

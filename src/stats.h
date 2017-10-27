@@ -1,7 +1,5 @@
 /*
- * stats.h
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +21,6 @@
 
 #include "network.h"
 
-/**************************************************************************
- *************************************************************************/
 struct weight_stats
 {
         uint32_t num_weights;       /* number of weights */
@@ -37,13 +33,9 @@ struct weight_stats
         double maximum;             /* maximum */
 };
 
-/**************************************************************************
- *************************************************************************/
 struct weight_stats *create_weight_statistics(struct network *n);
 void dispose_weight_statistics(struct weight_stats *ws);
 
-/**************************************************************************
- *************************************************************************/
 void collect_weight_statistics(struct weight_stats *ws, struct group *g);
 void collect_mean_dependent_ws(struct weight_stats *ws, struct group *g);
 

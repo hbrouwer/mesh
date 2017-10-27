@@ -1,7 +1,5 @@
 /*
- * dss.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,16 +24,14 @@
 #include "../main.h"
 #include "../math.h"
 
-/**************************************************************************
- * This implements a variety of functions for dealing with Distributed
- * Situation Space vectors, see:
- *
- * Frank, S. L., Haselager, W. F. G, & van Rooij, I. (2009). Connectionist
- *     semantic systematicity. Cognition, 110, 358-379.
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+This implements a variety of functions for dealing with Distributed
+Situation Space vectors, see:
+ 
+Frank, S. L., Haselager, W. F. G, & van Rooij, I. (2009). Connectionist
+        semantic systematicity. Cognition, 110, 358-379.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
 
-/**************************************************************************
- *************************************************************************/
 void dss_test(struct network *n)
 {
         double acs = 0.0;
@@ -73,8 +69,6 @@ void dss_test(struct network *n)
         return;
 }
 
-/**************************************************************************
- *************************************************************************/
 void dss_scores(struct network *n, struct set *set, struct item *item)
 {
         struct matrix *sm = dss_score_matrix(n, set, item);
@@ -169,8 +163,6 @@ void dss_scores(struct network *n, struct set *set, struct item *item)
         return;
 }
 
-/**************************************************************************
- *************************************************************************/
 void dss_write_scores(struct network *n, struct set *set, char *filename)
 {
         FILE *fd;
@@ -205,8 +197,6 @@ error_out:
         return;
 }
 
-/**************************************************************************
- *************************************************************************/
 void dss_inferences(struct network *n, struct set *set, struct item *item,
                 float threshold)
 {
@@ -241,20 +231,20 @@ void dss_inferences(struct network *n, struct set *set, struct item *item,
         dispose_matrix(sm);
 }
 
-/**************************************************************************
- * This construsts a (1+m) x n comprehension score matrix, where m is the
- * number of events for which a score is computed after processing each of
- * n words of a sentence. The first row of the matrix contains the scores
- * for the target event of the current sentence.
- *
- *            n
- *     [ . . . . . . ] <-- overall comprehension scores
- *     [ . . . . . . ] <-- score for event 1
- * 1+m [ . . . . . . ] <-- score for event 2
- *     [ . . . . . . ] ...
- *     [ . . . . . . ] <-- score for event n
- *
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+This construsts a (1+m) x n comprehension score matrix, where m is the
+number of events for which a score is computed after processing each of
+n words of a sentence. The first row of the matrix contains the scores
+for the target event of the current sentence.
+
+           n
+    [ . . . . . . ] <-- overall comprehension scores
+    [ . . . . . . ] <-- score for event 1
+1+m [ . . . . . . ] <-- score for event 2
+    [ . . . . . . ] ...
+    [ . . . . . . ] <-- score for event n
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 struct matrix *dss_score_matrix(struct network *n, struct set *set,
                 struct item *item)
 {
@@ -288,33 +278,33 @@ struct matrix *dss_score_matrix(struct network *n, struct set *set,
         return sm;
 }
 
-/**************************************************************************
- * This computes the comprehension score (Frank et al., 2009), which is 
- * defined as:
- *
- *                     | tau(a|z) - tau(a)
- *                     | ----------------- , if tau(a|z) > tau(a)
- *                     |    1 - tau(a)
- *     comprehension = |
- *                     | tau(a|z) - tau(a)
- *                     | ----------------- , otherwise
- *                     |      tau(a)
- *
- * where tau(a|z) is the conditional belief of a given z, and tau(a) is the
- * prior belief in a.
- *
- * If tau(a|z) = 1, the comprehension score is maximal: +1. On the other
- * hand, if tau(a|z) = 0, the comprehension score is minimal: -1.
- * Intuitively, a positive comprehension score is a measure of how much
- * uncertainty in event a is taken away by z, whereas a negative
- * comprehension score measures how much certainty in event a is taken away
- * by z.
- *
- * References
- *
- * Frank, S. L., Haselager, W. F. G, & van Rooij, I. (2009). Connectionist
- *     semantic systematicity. Cognition, 110, 358-379.
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+This computes the comprehension score (Frank et al., 2009), which is defined
+as:
+
+                        | tau(a|z) - tau(a)
+                        | ----------------- , if tau(a|z) > tau(a)
+                        |    1 - tau(a)
+        comprehension = |
+                        | tau(a|z) - tau(a)
+                        | ----------------- , otherwise
+                        |      tau(a)
+
+where tau(a|z) is the conditional belief of a given z, and tau(a) is the
+prior belief in a.
+
+If tau(a|z) = 1, the comprehension score is maximal: +1. On the other hand,
+if tau(a|z) = 0, the comprehension score is minimal: -1. Intuitively, a
+positive comprehension score is a measure of how much uncertainty in event a
+is taken away by z, whereas a negative comprehension score measures how much
+certainty in event a is taken away by z.
+
+References
+
+Frank, S. L., Haselager, W. F. G, & van Rooij, I. (2009). Connectionist
+        semantic systematicity. Cognition, 110, 358-379.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double dss_comprehension_score(struct vector *a, struct vector *z)
 {
         double cs = 0.0;
@@ -334,11 +324,12 @@ double dss_comprehension_score(struct vector *a, struct vector *z)
         return cs;
 }
 
-/**************************************************************************
- * Prior belief in a:
- *
- * tau(a) = 1/n sum_i u_i(a)
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Prior belief in a:
+
+        tau(a) = 1/n sum_i u_i(a)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double dss_tau_prior(struct vector *a)
 {
         double tau = 0.0;
@@ -349,11 +340,12 @@ double dss_tau_prior(struct vector *a)
         return tau / a->size;
 }
 
-/**************************************************************************
- * Belief the conjunction of a and b:
- *
- * tau(a^b) = 1/n sum_i u_i(a) * u_i(b)
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Belief the conjunction of a and b:
+
+        tau(a^b) = 1/n sum_i u_i(a) * u_i(b)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double dss_tau_conjunction(struct vector *a, struct vector *b)
 {
         double tau = 0.0;
@@ -366,18 +358,17 @@ double dss_tau_conjunction(struct vector *a, struct vector *b)
         return tau;
 }
 
-/**************************************************************************
- * Conditional belief in a given b:
- *
- * tau(a|b) = tau(a^b) / tau(b)
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Conditional belief in a given b:
+ 
+        tau(a|b) = tau(a^b) / tau(b)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double dss_tau_conditional(struct vector *a, struct vector *b)
 {
         return dss_tau_conjunction(a, b) / dss_tau_prior(b);
 }
 
-/**************************************************************************
- *************************************************************************/
 bool is_same_vector(struct vector *a, struct vector *b)
 {
         for (uint32_t i = 0; i < a->size; i++)
@@ -387,8 +378,6 @@ bool is_same_vector(struct vector *a, struct vector *b)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 void dss_word_information(struct network *n, struct set *s,
                 struct item *item)
 {
@@ -440,8 +429,6 @@ void dss_word_information(struct network *n, struct set *s,
         return;
 }
 
-/**************************************************************************
- *************************************************************************/
 void dss_write_word_information(struct network *n, struct set *s)
 {
         char *filename;
@@ -479,74 +466,74 @@ error_out:
         return;
 }
 
-/**************************************************************************
- * This implements four measures that quantify how much information a word
- * conveys (cf. Frank & Vigliocco, 2011):
- *
- * (1) Syntactic surprisal (Ssyn):
- *
- *     Ssyn(w_i+1) = -log(P(w_i+1|w_1...i))
- *
- * (2) Syntactic entropy reduction (DHsyn):
- *
- *     DHsyn(w_i+1) = Hsyn(i) - Hsyn(i+1)
- *
- *     where 
- *
- *     Hsyn(i) = -sum_(w_1...i,w_i+1...n) P(w_1...i,w_i+1...n|w_1...i)
- *         log(P(w_1...i,w_i+1...n|w_1...i))
- *
- * (3) Semantic surprisal (SSem):
- *
- *     Ssem(w_i+1) = -log((P(sit(w_1...i+1)|w_1...i))
- *
- *     where 
- *
- *     sit(w_1...i) is the disjunction of all situations described by the
- *     first i words (w_1...i) of a sentence
- *
- * (4) Semantic entropy reduction (DHsem):
- *
- *     DHsem(w_i+1) = Hsem(i) - Hsem(i+1)
- *
- *     where
- *
- *     Hsem(i) = -sum_(foreach p_x in S') tau(p_x|sit(w_1...i)) *
- *         log(tau(p_x|sit(w_1...i)))
- *
- *     where S' = {p_x} and mu(p_x) is a situation vector, such that:
- *
- *                 | 0 if x != j
- *     mu_j(p_x) = |
- *                 | 1 if x = j
- *
- *     and where 
- *                             sum_j (mu_j(p_x) * mu_j(sit(w_1...i)))
- *     tau(p_x|sit(w_1...i)) = --------------------------------------
- *                                   sum_j (mu_j(sit(w_1...i)))
- *
- *     such that:
- *
- *     sum(p_x) tau(p_x|sit(w_1...i)) = 1
- *
- *     and hence tau(p_x|sit(w_1...i)) forms a proper probability over p_x.
- *
- * These metrics are returned in an m x 4 matrix. The m rows of this matrix
- * represent the words of the current sentence, and the 4 columns contain
- * respectively the Ssyn, DHsyn, SSem, and DHsem value for each of these
- * words.
- *
- * References
- *
- * Frank, S. L. and Vigliocco, G. (2011). Sentence comprehension as mental
- *     simulation: an information-theoretic perspective. Information, 2,
- *     672-696.
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+This implements four measures that quantify how much information a word
+conveys (cf. Frank & Vigliocco, 2011):
+
+(1) Syntactic surprisal (Ssyn):
+
+        Ssyn(w_i+1) = -log(P(w_i+1|w_1...i))
+
+(2) Syntactic entropy reduction (DHsyn):
+
+        DHsyn(w_i+1) = Hsyn(i) - Hsyn(i+1)
+
+        where 
+
+        Hsyn(i) = -sum_(w_1...i,w_i+1...n) P(w_1...i,w_i+1...n|w_1...i)
+                * log(P(w_1...i,w_i+1...n|w_1...i))
+ 
+(3) Semantic surprisal (SSem):
+
+        Ssem(w_i+1) = -log((P(sit(w_1...i+1)|w_1...i))
+
+        where 
+
+        sit(w_1...i) is the disjunction of all situations described by the
+        first i words (w_1...i) of a sentence
+ 
+(4) Semantic entropy reduction (DHsem):
+
+        DHsem(w_i+1) = Hsem(i) - Hsem(i+1)
+
+        where
+ 
+        Hsem(i) = -sum_(foreach p_x in S') tau(p_x|sit(w_1...i))
+                * log(tau(p_x|sit(w_1...i)))
+ 
+        where S' = {p_x} and mu(p_x) is a situation vector, such that:
+
+                    | 0 if x != j
+        mu_j(p_x) = |
+                    | 1 if x = j
+                     
+        and where 
+                                sum_j (mu_j(p_x) * mu_j(sit(w_1...i)))
+        tau(p_x|sit(w_1...i)) = --------------------------------------
+                                      sum_j (mu_j(sit(w_1...i)))
+ 
+        such that:
+
+        sum(p_x) tau(p_x|sit(w_1...i)) = 1
+
+        and hence tau(p_x|sit(w_1...i)) forms a proper probability over p_x.
+ 
+These metrics are returned in an m x 4 matrix. The m rows of this matrix
+represent the words of the current sentence, and the 4 columns contain
+respectively the Ssyn, DHsyn, SSem, and DHsem value for each of these words.
+
+References
+
+Frank, S. L. and Vigliocco, G. (2011). Sentence comprehension as mental
+        simulation: an information-theoretic perspective. Information, 2,
+        672-696.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 struct matrix *dss_word_information_matrix(struct network *n,
                 struct set *s, struct item *item, int32_t *freq_table)
 {
         // struct matrix *im = create_matrix(item->num_events, 4);
-        struct matrix *im = create_matrix(item->num_events, 6);
+        struct matrix *im = create_matrix(item->num_events, 6); /* for online measures */
 
         size_t block_size = strlen(item->name) + 1;
         char prefix1[block_size];
@@ -701,9 +688,10 @@ struct matrix *dss_word_information_matrix(struct network *n,
         dispose_vector(sit1);
         dispose_vector(sit2);
 
-        /******************************************************************
-         * Online measures
-         *****************************************************************/
+                /*************************
+                 **** online measures ****
+                 *************************/
+        
         struct vector *pv = create_vector(n->output->vector->size);
         fill_vector_with_value(pv, 1.0);
         fill_vector_with_value(pv, 1.0 / euclidean_norm(pv));
@@ -743,14 +731,9 @@ struct matrix *dss_word_information_matrix(struct network *n,
 
         dispose_vector(pv);
 
-        /******************************************************************
-         *****************************************************************/
-
         return im;
 }
 
-/**************************************************************************
- *************************************************************************/
 int32_t *frequency_table(struct set *s)
 {
         int32_t *freq_table;
@@ -781,8 +764,6 @@ error_out:
         return NULL;
 }
 
-/**************************************************************************
- *************************************************************************/
 void fuzzy_or(struct vector *a, struct vector *b)
 {
         for (uint32_t i = 0; i < a->size; i++)

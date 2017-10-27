@@ -1,7 +1,5 @@
 /*
- * test.h
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +23,10 @@
 #include "session.h"
 #include "set.h"
 
-/**************************************************************************
- *************************************************************************/
 void test_network(struct network *n);
 void test_ffn_network(struct network *n);
 void test_rnn_network(struct network *n);
 
-/**************************************************************************
- *************************************************************************/
 void test_network_with_item(struct network *n, struct item *item,
                 bool pprint, uint32_t scheme);
 void test_ffn_network_with_item(struct network *n, struct item *item,
@@ -40,12 +34,8 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
 void test_rnn_network_with_item(struct network *n, struct item *item,
                 bool pprint, uint32_t scheme);
 
-/**************************************************************************
- *************************************************************************/
 void print_testing_summary(struct network *n, uint32_t tr);
 
-/**************************************************************************
- *************************************************************************/
 void testing_signal_handler(int32_t signal);
 
 #endif /* TEST_H */

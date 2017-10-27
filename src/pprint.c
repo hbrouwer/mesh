@@ -1,7 +1,5 @@
 /*
- * pprint.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +27,6 @@ uint32_t PALETTE_MOODY_BLUES[10] = {129, 128, 127, 91,  90,  55,  54,  19,  20, 
 uint32_t PALETTE_FOR_JOHN[10]    = {46,  40,  34,  28,  64,  100, 136, 166, 202, 196};
 uint32_t PALETTE_GRAY_ORANGE[10] = {220, 221, 222, 223, 224, 255, 253, 251, 249, 247};
 
-/**************************************************************************
- *************************************************************************/
 void pprint_vector(struct vector *v, uint32_t scheme)
 {
         double min = vector_minimum(v);
@@ -43,8 +39,6 @@ void pprint_vector(struct vector *v, uint32_t scheme)
         cprintf("\n");
 }
 
-/**************************************************************************
- *************************************************************************/
 void pprint_matrix(struct matrix *m, uint32_t scheme)
 {
         double min = matrix_minimum(m);
@@ -59,8 +53,6 @@ void pprint_matrix(struct matrix *m, uint32_t scheme)
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 double scale_value(double v, double min, double max)
 {
         double sv = 0.0;
@@ -91,8 +83,6 @@ double scale_value(double v, double min, double max)
         return sv;
 }
 
-/**************************************************************************
- *************************************************************************/
 void value_as_color(double v, uint32_t scheme)
 {
         uint32_t *palette;

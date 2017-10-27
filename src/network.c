@@ -1,7 +1,5 @@
 /*
- * network.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +29,6 @@
 #include "sanity.h"
 #include "train.h"
 
-/**************************************************************************
- *************************************************************************/
 struct network *create_network(char *name, uint32_t type)
 {
         struct network *n;
@@ -65,8 +61,6 @@ error_out:
         return NULL;
 }
 
-/**************************************************************************
- *************************************************************************/
 void set_network_defaults(struct network *n)
 {
         n->random_algorithm   = DFLT_RANDOM_ALGORITHM;
@@ -104,8 +98,6 @@ void set_network_defaults(struct network *n)
         n->similarity_metric  = DFLT_SIMILARITY_METRIC;
 }
 
-/**************************************************************************
- *************************************************************************/
 void init_network(struct network *n)
 {
         n->initialized = false;
@@ -141,16 +133,12 @@ void init_network(struct network *n)
         n->initialized = true;
 }
 
-/**************************************************************************
- *************************************************************************/
 void reset_network(struct network *n)
 {
         randomize_weight_matrices(n->input, n);
         initialize_dynamic_pars(n->input, n);
 }
 
-/**************************************************************************
- *************************************************************************/
 void dispose_network(struct network *n)
 {
         free(n->name);
@@ -168,8 +156,6 @@ void dispose_network(struct network *n)
         free(n);
 }
 
-/**************************************************************************
- *************************************************************************/
 struct group *create_group(char *name, uint32_t size, bool bias,
                 bool recurrent)
 {
@@ -215,8 +201,6 @@ error_out:
         return NULL;
 }
 
-/**************************************************************************
- *************************************************************************/
 struct group *attach_bias_group(struct network *n, struct group *g)
 {
         /* create a new "bias" group */
@@ -280,8 +264,6 @@ error_out:
         return NULL;
 }
 
-/**************************************************************************
- *************************************************************************/
 void dispose_group(struct group *g)
 {
         free(g->name);
@@ -306,16 +288,12 @@ void dispose_group(struct group *g)
         free(g);
 }
 
-/**************************************************************************
- *************************************************************************/
 void dispose_groups(struct array *gs)
 {
         for (uint32_t i = 0; i < gs->num_elements; i++)
                 dispose_group(gs->elements[i]);
 }
 
-/**************************************************************************
- *************************************************************************/
 void shift_context_groups(struct network *n)
 {
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
@@ -327,12 +305,12 @@ void shift_context_groups(struct network *n)
         }
 }
 
-/**************************************************************************
+/*
  * Shifts a context group chain. If group g has a context group c, then the
  * activity vector of g is copied into that of c. However, if c has itself
  * a context group c', then the activity pattern of c is first copied into
  * c', and so forth.
- *************************************************************************/
+ */
 void shift_context_group_chain(struct group *g,
                 struct vector *v)
 {
@@ -344,8 +322,6 @@ void shift_context_group_chain(struct group *g,
         copy_vector(g->vector, v);
 }
 
-/**************************************************************************
- *************************************************************************/
 void reset_context_groups(struct network *n)
 {
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
@@ -357,8 +333,6 @@ void reset_context_groups(struct network *n)
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 void reset_context_group_chain(struct group *g)
 {
         for (uint32_t i = 0; i < g->ctx_groups->num_elements; i++)
@@ -366,8 +340,6 @@ void reset_context_group_chain(struct group *g)
         fill_vector_with_value(g->vector, 0.5);
 }
 
-/**************************************************************************
- *************************************************************************/
 void reset_recurrent_groups(struct network *n)
 {
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
@@ -382,8 +354,6 @@ void reset_recurrent_groups(struct network *n)
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 void reset_ffn_error_signals(struct network *n)
 {
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
@@ -392,8 +362,6 @@ void reset_ffn_error_signals(struct network *n)
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 void reset_rnn_error_signals(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
@@ -421,8 +389,6 @@ void reset_rnn_error_signals(struct network *n)
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 struct projection *create_projection(
                 struct group *to,
                 struct matrix *weights,
@@ -451,8 +417,6 @@ error_out:
         return NULL;
 }
 
-/**************************************************************************
- *************************************************************************/
 void dispose_projection(struct projection *p)
 {
         dispose_matrix(p->weights);
@@ -464,16 +428,12 @@ void dispose_projection(struct projection *p)
         free(p);
 }
 
-/**************************************************************************
- *************************************************************************/
 void dispose_sets(struct array *ss)
 {
         for (uint32_t i = 0; i < ss->num_elements; i++)
                 dispose_set(ss->elements[i]);
 }
 
-/**************************************************************************
- *************************************************************************/
 void randomize_weight_matrices(struct group *g, struct network *n)
 {
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
@@ -487,8 +447,6 @@ void randomize_weight_matrices(struct group *g, struct network *n)
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 void initialize_dynamic_pars(struct group *g, struct network *n)
 {
         double v = 0.0;
@@ -509,8 +467,6 @@ void initialize_dynamic_pars(struct group *g, struct network *n)
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 void initialize_act_lookup_vectors(struct network *n)
 {
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
@@ -523,8 +479,6 @@ void initialize_act_lookup_vectors(struct network *n)
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 bool save_weight_matrices(struct network *n, char *fn)
 {
         FILE *fd;
@@ -547,8 +501,6 @@ error_out:
         return false;
 }
 
-/**************************************************************************
- *************************************************************************/
 void save_weight_matrix(struct group *g, FILE *fd)
 {
         /* write all incoming projections */
@@ -580,8 +532,6 @@ void save_weight_matrix(struct group *g, FILE *fd)
         return;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool load_weight_matrices(struct network *n, char *fn)
 {
         FILE *fd;

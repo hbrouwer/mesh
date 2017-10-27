@@ -1,7 +1,5 @@
 /*
- * act.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,24 +19,27 @@
 #include "act.h"
 #include "main.h"
 
-/**************************************************************************
- * Feed forward
- *
- * This function propagates activation forward from a group g. Let j be
- * a unit in one of the network's groups, and i a unit in a group projecting
- * to it. The net input x_j to unit j is defined as:
- *
- *     x_j = sum_i (y_i * w_ij)
- *
- * where y_i is the activation level of unit i in the projecting group, and
- * w_ij the weight of the "synaptic" connection between unit j and unit i.
- * Provided the net input x_j, the activation level y_j of unit j is then
- * defined as:
- *
- *    y_j = f(x_j)
- *
- * where f is typically a non-linear activation function.
- *************************************************************************/
+                /**********************************
+                 **** feed forward propagation ****
+                 **********************************/
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+This function propagates activation forward from a group g. Let j be a unit
+in one of the network's groups, and i a unit in a group projecting to it.
+The net input x_j to unit j is defined as:
+
+        x_j = sum_i (y_i * w_ij)
+ 
+where y_i is the activation level of unit i in the projecting group, and
+w_ij the weight of the "synaptic" connection between unit j and unit i.
+Provided the net input x_j, the activation level y_j of unit j is then
+defined as:
+
+        y_j = f(x_j)
+
+where f is typically a non-linear activation function. 
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 void feed_forward(struct network *n, struct group *g)
 {
         /*
@@ -127,9 +128,10 @@ void feed_forward(struct network *n, struct group *g)
         }
 }
 
-/**************************************************************************
- * Activation lookup
- *************************************************************************/
+                /****************************************
+                 **** activation value lookup tables ****
+                 ****************************************/
+
 #define ACT_LOOKUP_MINIMUM -16
 #define ACT_LOOKUP_MAXIMUM 16
 #define ACT_LOOKUP_GRANULARITY 1024
@@ -137,9 +139,6 @@ void feed_forward(struct network *n, struct group *g)
 double ACT_LOOKUP_STEP_SIZE = ((double)ACT_LOOKUP_MAXIMUM 
                 - ACT_LOOKUP_MINIMUM) / ACT_LOOKUP_GRANULARITY;
 
-/**************************************************************************
- * Creates a lookup vector for the specified activation function.
- *************************************************************************/
 struct vector *create_act_lookup_vector(double (*fun)(struct vector *,
                         uint32_t))
 {
@@ -157,9 +156,6 @@ struct vector *create_act_lookup_vector(double (*fun)(struct vector *,
         return lv;
 }
 
-/**************************************************************************
- * Lookup the activation value for net input x in lookup vector lv.
- *************************************************************************/
 double act_lookup(double x, struct vector *lv)
 {
         uint32_t i;
@@ -175,11 +171,20 @@ double act_lookup(double x, struct vector *lv)
         return lv->elements[i];
 }
 
-/**************************************************************************
- * Binary sigmoid function:
- *
- * f(x) = 1 / (1 + e ^ (-x))
- *************************************************************************/
+                /******************************
+                 **** activation functions ****
+                 ******************************/
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Binary sigmoid function:
+
+        f(x) = 1 / (1 + e ^ (-x)) 
+
+and its derivative:
+
+        f'(x) = y * (1 - y)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double act_fun_binary_sigmoid(struct vector *v, uint32_t i)
 {
         double x = v->elements[i];
@@ -187,11 +192,6 @@ double act_fun_binary_sigmoid(struct vector *v, uint32_t i)
         return 1.0 / (1.0 + EXP(-x));
 }
 
-/**************************************************************************
- * Derivative of the binary sigmoid function:
- *
- * f'(x) = y * (1 - y)
- *************************************************************************/
 double act_fun_binary_sigmoid_deriv(struct vector *v, uint32_t i)
 {
         double y = v->elements[i];
@@ -199,11 +199,16 @@ double act_fun_binary_sigmoid_deriv(struct vector *v, uint32_t i)
         return y * (1.0 - y);
 }
 
-/**************************************************************************
- * Bipolar sigmoid function:
- *
- * f(x) = (-1) + 2 / (1 / e ^ (-x))
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Bipolar sigmoid function:
+
+        f(x) = (-1) + 2 / (1 / e ^ (-x))
+
+and its derivative:
+
+        f'(x) = 0.5 * (1 + y) * (1 - y)
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double act_fun_bipolar_sigmoid(struct vector *v, uint32_t i)
 {
         double x = v->elements[i];
@@ -211,11 +216,6 @@ double act_fun_bipolar_sigmoid(struct vector *v, uint32_t i)
         return (-1.0) + 2.0 / (1.0 + EXP(-x));
 }
 
-/**************************************************************************
- * Derivative of the bipolar sigmoid function:
- *
- * f'(x) = 0.5 * (1 + y) * (1 - y)
- *************************************************************************/
 double act_fun_bipolar_sigmoid_deriv(struct vector *v, uint32_t i)
 {
         double y = v->elements[i];
@@ -223,11 +223,16 @@ double act_fun_bipolar_sigmoid_deriv(struct vector *v, uint32_t i)
         return 0.5 * (1.0 + y) * (1.0 - y);
 }
 
-/**************************************************************************
- * Softmax function:
- *
- * f(x) = (e ^ x) / sum_j (e ^ x_j)
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Softmax function:
+
+        f(x) = (e ^ x) / sum_j (e ^ x_j)
+ 
+and its derivative:
+
+        f'(x) = 1
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double act_fun_softmax(struct vector *v, uint32_t i)
 {
         static double sum;
@@ -242,21 +247,21 @@ double act_fun_softmax(struct vector *v, uint32_t i)
         return x / sum;
 }
 
-/**************************************************************************
- * Derivative of the softmax function:
- *
- * f'(x) = 1
- *************************************************************************/
 double act_fun_softmax_deriv(struct vector *v, uint32_t i)
 {
         return 1.0;
 }
 
-/**************************************************************************
- * Hyperbolic tangent function:
- *
- * f(x) = (e ^ (2 * x) - 1) / (e ^ (2 * x) + 1)
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Hyperbolic tangent function:
+
+        f(x) = (e ^ (2 * x) - 1) / (e ^ (2 * x) + 1)
+ 
+and its derivative:
+
+        f'(x) = 1 - y ^ 2
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double act_fun_tanh(struct vector *v, uint32_t i)
 {
         double x = v->elements[i];
@@ -264,11 +269,6 @@ double act_fun_tanh(struct vector *v, uint32_t i)
         return tanh(x);
 }
 
-/**************************************************************************
- * Derivative of the hyperbolic tangent function:
- *
- * f'(x) = 1 - y ^ 2;
- *************************************************************************/
 double act_fun_tanh_deriv(struct vector *v, uint32_t i)
 {
         double y = v->elements[i];
@@ -276,11 +276,16 @@ double act_fun_tanh_deriv(struct vector *v, uint32_t i)
         return 1.0 - pow(y, 2.0);
 }
 
-/**************************************************************************
- * Linear function:
- *
- * f(x) = x
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Linear function:
+
+        f(x) = x
+ 
+and its derivative:
+ 
+        f'(x) = 1
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double act_fun_linear(struct vector *v, uint32_t i)
 {
         double x = v->elements[i];
@@ -288,23 +293,23 @@ double act_fun_linear(struct vector *v, uint32_t i)
         return x;
 }
 
-/**************************************************************************
- * Derivative of the linear function:
- *
- * f'(x) = 1
- *************************************************************************/
 double act_fun_linear_deriv(struct vector *v, uint32_t i)
 {
         return 1.0;
 }
 
-/**************************************************************************
- * Step function:
- *        
- *        | 1 , if x >= 0
- * f(x) = |
- *        | 0 , otherwise
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Step function:
+        
+               | 1 , if x >= 0
+        f(x) = |
+               | 0 , otherwise
+ 
+and its derivative:
+ 
+        f'(x) = 1
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double act_fun_step(struct vector *v, uint32_t i)
 {
         double x = v->elements[i];
@@ -315,11 +320,6 @@ double act_fun_step(struct vector *v, uint32_t i)
                 return 0.0;
 }
 
-/**************************************************************************
- * Derivative of the step function:
- *
- * f'(x) = 1
- *************************************************************************/
 double act_fun_step_deriv(struct vector *v, uint32_t i)
 {
         return 1.0;

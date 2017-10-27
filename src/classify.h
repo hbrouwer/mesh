@@ -1,7 +1,5 @@
 /*
- * classify.h
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +22,6 @@
 #include "network.h"
 #include "matrix.h"
 
-/**************************************************************************
- *************************************************************************/
 void confusion_matrix(struct network *n, bool print, bool pprint,
                 uint32_t scheme);
 void ffn_network_cm(struct network *n, bool print, bool pprint,
@@ -33,13 +29,9 @@ void ffn_network_cm(struct network *n, bool print, bool pprint,
 void rnn_network_cm(struct network *n, bool print, bool pprint,
                 uint32_t scheme);
 
-/**************************************************************************
- *************************************************************************/
 void print_cm_summary(struct network *n, struct matrix *cm, bool print,
                 bool pprint, uint32_t scheme);
 
-/**************************************************************************
- *************************************************************************/
 void cm_signal_handler(int32_t signal);
 
 #endif /* CLASSIFY_H */

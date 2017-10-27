@@ -1,7 +1,5 @@
 /*
- * network.h
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +37,10 @@
 #define TRAIN_PERMUTED   1
 #define TRAIN_RANDOMIZED 2
 
-/**************************************************************************
- *************************************************************************/
+                /*****************
+                 **** network ****
+                 *****************/
+
 struct network
 {
         char *name;                 /* network name */
@@ -119,8 +119,10 @@ struct network
                 *unfolded_net;
 };
 
-/**************************************************************************
- *************************************************************************/
+                /***************
+                 **** group ****
+                 ***************/
+
 struct group
 {
         char *name;                 /* name of the group */
@@ -140,8 +142,10 @@ struct group
         bool recurrent;             /* flags recurrent groups */
 };
 
-/**************************************************************************
- *************************************************************************/
+                /********************
+                 **** projection ****
+                 ********************/
+
 struct projection
 {
         struct group *to;           /* group projected to */
@@ -159,8 +163,11 @@ struct projection
         bool recurrent;             /* flags recurrent projections (BPTT) */
 };
 
-/**************************************************************************
- *************************************************************************/
+
+                /*****************************
+                 **** activation function ****
+                 *****************************/
+
 struct act_fun 
 {
         double (*fun)               /* activation function  */
@@ -170,8 +177,10 @@ struct act_fun
         struct vector *lookup;      /* activation lookup vector */
 };
 
-/**************************************************************************
- *************************************************************************/
+                /************************
+                 **** error function ****
+                 ************************/
+
 struct err_fun
 {
         double (*fun)               /* error function */
@@ -180,8 +189,10 @@ struct err_fun
                 (struct group *g, struct vector *t, double tr, double zr);
 };
 
-/**************************************************************************
- *************************************************************************/
+                /************************
+                 **** network status ****
+                 ************************/
+
 struct status
 {
         uint32_t epoch;             /* current training epoch */
@@ -193,37 +204,27 @@ struct status
         double gradients_length;    /* length of weight gradients vector */
 };
 
-/**************************************************************************
- *************************************************************************/
 struct network *create_network(char *name, uint32_t type);
 void set_network_defaults(struct network *n);
 void init_network(struct network *n);
 void reset_network(struct network *n);
 void dispose_network(struct network *n);
 
-/**************************************************************************
- *************************************************************************/
 struct group *create_group(char *name, uint32_t size, bool bias,
                 bool recurrent);
 struct group *attach_bias_group(struct network *n, struct group *g);
 void dispose_group(struct group *g);
 void dispose_groups(struct array *gs);
 
-/**************************************************************************
- *************************************************************************/
 void shift_context_groups(struct network *n);
 void shift_context_group_chain(struct group *g, struct vector *v);
 
-/**************************************************************************
- *************************************************************************/
 void reset_context_groups(struct network *n);
 void reset_context_group_chain(struct group *g);
 void reset_recurrent_groups(struct network *n);
 void reset_ffn_error_signals(struct network *n);
 void reset_rnn_error_signals(struct network *n);
 
-/**************************************************************************
- *************************************************************************/
 struct projection *create_projection(
                 struct group *to,
                 struct matrix *weights,
@@ -233,18 +234,12 @@ struct projection *create_projection(
                 struct matrix *dynamic_pars);
 void dispose_projection(struct projection *p);
 
-/**************************************************************************
- *************************************************************************/
 void dispose_sets(struct array *ss);
 
-/**************************************************************************
- *************************************************************************/
 void randomize_weight_matrices(struct group *g, struct network *n);
 void initialize_dynamic_pars(struct group *g, struct network *n);
 void initialize_act_lookup_vectors(struct network *n);
 
-/**************************************************************************
- *************************************************************************/
 bool save_weight_matrices(struct network *n, char *fn);
 void save_weight_matrix(struct group *g, FILE *fd);
 bool load_weight_matrices(struct network *n, char *fn);

@@ -1,7 +1,5 @@
 /*
- * set.h
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +22,6 @@
 #include "array.h"
 #include "vector.h"
 
-/**************************************************************************
- *************************************************************************/
 struct set
 {
         char *name;                 /* name of this set */
@@ -33,8 +29,6 @@ struct set
         uint32_t *order;            /* order in which to present items */
 };
 
-/**************************************************************************
- *************************************************************************/
 struct item
 {
         char *name;                 /* name of this item */
@@ -44,24 +38,16 @@ struct item
         struct vector **targets;    /* target vectors */
 };
 
-/**************************************************************************
- *************************************************************************/
 struct set *create_set(char *name);
 void dispose_set(struct set *s);
 
-/**************************************************************************
- *************************************************************************/
 struct item *create_item(char *name, uint32_t num_events, char *meta,
                 struct vector **inputs, struct vector **targets);
 void dispose_item(struct item *item);
 
-/**************************************************************************
- *************************************************************************/
 struct set *load_set(char *name, char *filename, uint32_t input_size,
                 uint32_t output_size);
 
-/**************************************************************************
- *************************************************************************/
 void order_set(struct set *s);
 void permute_set(struct set *s);
 void randomize_set(struct set *s);

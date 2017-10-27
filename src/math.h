@@ -1,7 +1,5 @@
 /*
- * math.h
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +19,13 @@
 
 #include "vector.h"
 
-/**************************************************************************
- * Schraudolph's approximation of the exponentional function. See:
- *
- * Schraudolph, N. N. (1999). A fast, compact approximation of the 
- *     exponentional function. Neural Computation, 11, 854-862.
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Schraudolph's approximation of the exponentional function. See:
+
+Schraudolph, N. N. (1999). A fast, compact approximation of the
+        exponentional function. Neural Computation, 11, 854-862.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 #ifdef FAST_EXP
 __attribute__((unused))
 static union
@@ -50,27 +49,17 @@ static union
 double fast_exp(double x);
 #endif /* FAST_EXP */
 
-/**************************************************************************
- *************************************************************************/
 double minimum(double x, double y);
 double maximum(double x, double y);
 double sign(double x);
 
-/**************************************************************************
- *************************************************************************/
 double normrand(double mu, double sigma);
 
-/**************************************************************************
- *************************************************************************/
 double runge_kutta4(double (*f)(double, double), double h, double xn,
        double yn);
 
-/**************************************************************************
- *************************************************************************/
 double euclidean_norm(struct vector *v);
 
-/**************************************************************************
- *************************************************************************/
 double inner_product(struct vector *v1, struct vector *v2);
 double harmonic_mean(struct vector *v1, struct vector *v2);
 double cosine(struct vector *v1, struct vector *v2);

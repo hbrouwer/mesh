@@ -1,7 +1,5 @@
 /*
- * test.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +25,6 @@
 
 static bool keep_running = true;
 
-/**************************************************************************
- *************************************************************************/
 void test_network(struct network *n)
 {
         struct sigaction sa;
@@ -50,8 +46,6 @@ void test_network(struct network *n)
         sigaction(SIGINT, &sa, NULL);
 }
 
-/**************************************************************************
- *************************************************************************/
 void test_ffn_network(struct network *n)
 {
         n->status->error = 0.0;
@@ -94,8 +88,6 @@ void test_ffn_network(struct network *n)
         print_testing_summary(n, threshold_reached);
 }
 
-/**************************************************************************
- *************************************************************************/
 void test_rnn_network(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
@@ -143,8 +135,6 @@ shift_stack:
         print_testing_summary(n, threshold_reached);
 }
 
-/**************************************************************************
- *************************************************************************/
 void test_network_with_item(struct network *n, struct item *item,
                 bool pprint, uint32_t scheme)
 {
@@ -156,8 +146,6 @@ void test_network_with_item(struct network *n, struct item *item,
                 test_rnn_network_with_item(n, item, pprint, scheme);
 }
 
-/**************************************************************************
- *************************************************************************/
 void test_ffn_network_with_item(struct network *n, struct item *item,
                 bool pprint, uint32_t scheme)
 {
@@ -214,8 +202,6 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 void test_rnn_network_with_item(struct network *n, struct item *item,
                 bool pprint, uint32_t scheme)
 {
@@ -278,8 +264,6 @@ shift_stack:
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 void print_testing_summary(struct network *n, uint32_t tr)
 {
         pprintf("Number of items: \t\t %d\n",
@@ -292,8 +276,6 @@ void print_testing_summary(struct network *n, uint32_t tr)
                         tr, ((double)tr / n->asp->items->num_elements) * 100.0);
 }
 
-/**************************************************************************
- *************************************************************************/
 void testing_signal_handler(int32_t signal)
 {
         cprintf("Testing interrupted. Abort [y/n]");

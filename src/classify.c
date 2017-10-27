@@ -1,7 +1,5 @@
 /*
- * classify.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +26,6 @@
 
 static bool keep_running = true;
 
-/**************************************************************************
- *************************************************************************/
 void confusion_matrix(struct network *n, bool print, bool pprint,
                 uint32_t scheme)
 {
@@ -52,8 +48,6 @@ void confusion_matrix(struct network *n, bool print, bool pprint,
         sigaction(SIGINT, &sa, NULL);
 }
 
-/**************************************************************************
- *************************************************************************/
 void ffn_network_cm(struct network *n, bool print, bool pprint,
                 uint32_t scheme)
 {
@@ -99,8 +93,6 @@ void ffn_network_cm(struct network *n, bool print, bool pprint,
         dispose_matrix(cm);
 }
 
-/**************************************************************************
- *************************************************************************/
 void rnn_network_cm(struct network *n, bool print, bool pprint,
                 uint32_t scheme)
 {
@@ -149,8 +141,6 @@ shift_stack:
         dispose_matrix(cm);
 }
 
-/**************************************************************************
- *************************************************************************/
 void print_cm_summary(struct network *n, struct matrix *cm, bool print,
                 bool pprint, uint32_t scheme)
 {
@@ -206,8 +196,6 @@ void print_cm_summary(struct network *n, struct matrix *cm, bool print,
         dispose_vector(cols);
 }
 
-/**************************************************************************
- *************************************************************************/
 void cm_signal_handler(int32_t signal)
 {
         cprintf("Confusion matrix computation interrupted. Abort [y/n]");

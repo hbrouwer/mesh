@@ -1,7 +1,5 @@
 /*
- * array.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +23,6 @@
 #include "network.h"
 #include "set.h"
 
-/**************************************************************************
- *************************************************************************/
 struct array *create_array(uint32_t type)
 {
         struct array *a;
@@ -49,8 +45,6 @@ error_out:
         return NULL;
 }
 
-/**************************************************************************
- *************************************************************************/
 void add_to_array(struct array *a, void *e)
 {
         a->elements[a->num_elements++] = e;
@@ -58,8 +52,6 @@ void add_to_array(struct array *a, void *e)
                 increase_array_size(a);
 }
 
-/**************************************************************************
- *************************************************************************/
 void remove_from_array(struct array *a, void *e)
 {
         uint32_t i;
@@ -72,8 +64,6 @@ void remove_from_array(struct array *a, void *e)
         a->num_elements--;
 }
 
-/**************************************************************************
- *************************************************************************/
 void increase_array_size(struct array *a)
 {
         a->max_elements = a->max_elements + MAX_ARRAY_ELEMENTS;
@@ -94,17 +84,15 @@ error_out:
         return;
 }
 
-/**************************************************************************
- *************************************************************************/
 void dispose_array(struct array *a)
 {
         free(a->elements);
         free(a);
 }
 
-/**************************************************************************
+/*
  * Note: Projections are not addressable by name.
- *************************************************************************/
+ */
 void *find_array_element_by_name(struct array *a, char *name)
 {
         if (a == NULL)

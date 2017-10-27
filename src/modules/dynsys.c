@@ -1,7 +1,5 @@
 /*
- * dynsys.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,35 +21,33 @@
 #include "../act.h"
 #include "../math.h"
 
-/**************************************************************************
- * This implements machinery to transform a connectionist model into a 
- * dynamic system by turning the activation function of a specified group:
- *
- *     a_out(i+1) = f(W_out a_rec(i+1) + b_out)
- *
- * into a simple differential equation:
- *
- *     da_out
- *     ------ = f(W_out a_rec(i+1) + b_out) - a_out
- *       dt
- *
- * such that a_out changes from a_out(i) into a_out(i+1) over processing
- * time (cf. Frank & Viliocco, 2011). Ideally, this process converges when
- * da_out/dt = 0, meaning that a_out(i) = aout(i+1) = f(W_out a_rec(i+1)
- * + b_out). However, as convergence is aymptotic, this will never happen,
- * and as such the process is stopped when:
- *
- *     |da_out/dt| < max{1.0 * |a_out|, 10^-8}
- *
- * References
- *
- * Frank, S. L. and Vigliocco, G. (2011). Sentence comprehension as mental
- *     simulation: an information-theoretic perspective. Information, 2,
- *     672-696.
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+This implements machinery to transform a connectionist model into a dynamic
+system by turning the activation function of a specified group:
 
-/**************************************************************************
- *************************************************************************/
+        a_out(i+1) = f(W_out a_rec(i+1) + b_out)
+
+into a simple differential equation:
+
+        da_out
+        ------ = f(W_out a_rec(i+1) + b_out) - a_out
+          dt
+
+such that a_out changes from a_out(i) into a_out(i+1) over processing time
+(cf. Frank & Viliocco, 2011). Ideally, this process converges when da_out/dt
+= 0, meaning that a_out(i) = aout(i+1) = f(W_out a_rec(i+1) + b_out). However, 
+as convergence is aymptotic, this will never happen, and as such the process
+is stopped when:
+
+        |da_out/dt| < max{1.0 * |a_out|, 10^-8}
+
+References
+
+Frank, S. L. and Vigliocco, G. (2011). Sentence comprehension as mental
+        simulation: an information-theoretic perspective. Information, 2,
+        672-696.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 void dynsys_test_item(struct network *n, struct group *g, struct item *item)
 {
         struct vector *pv = create_vector(g->vector->size);
@@ -78,8 +74,6 @@ void dynsys_test_item(struct network *n, struct group *g, struct item *item)
         return;
 }
 
-/**************************************************************************
- *************************************************************************/
 double dynsys_processing_time(struct network *n, struct vector *a_out0,
                 struct vector *a_out1)
 {
@@ -122,8 +116,6 @@ double dynsys_processing_time(struct network *n, struct vector *a_out0,
         return dt;
 }
 
-/**************************************************************************
- *************************************************************************/
 double dynsys_unit_act(double yn1, double yn0)
 {
         return yn1 - yn0;

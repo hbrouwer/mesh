@@ -1,7 +1,5 @@
 /*
- * set.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +22,6 @@
 #include "main.h"
 #include "set.h"
 
-/**************************************************************************
- *************************************************************************/
 struct set *create_set(char *name)
 {
         struct set *s;
@@ -48,8 +44,6 @@ error_out:
         return NULL;
 }
 
-/**************************************************************************
- *************************************************************************/
 void dispose_set(struct set *s)
 {
         free(s->name);
@@ -60,8 +54,6 @@ void dispose_set(struct set *s)
         free(s);
 }
 
-/**************************************************************************
- *************************************************************************/
 struct item *create_item(char *name, uint32_t num_events, char *meta,
                 struct vector **inputs, struct vector **targets)
 {
@@ -84,8 +76,6 @@ error_out:
         return NULL;
 }
 
-/**************************************************************************
- *************************************************************************/
 void dispose_item(struct item *item)
 {
         free(item->name);
@@ -104,8 +94,6 @@ void dispose_item(struct item *item)
         free(item);
 }
 
-/**************************************************************************
- *************************************************************************/
 struct set *load_set(char *name, char *filename, uint32_t input_size,
                 uint32_t output_size)
 {
@@ -202,16 +190,12 @@ error_out:
         return NULL;
 }
 
-/**************************************************************************
- *************************************************************************/
 void order_set(struct set *s)
 {
         for (uint32_t i = 0; i < s->items->num_elements; i++)
                 s->order[i] = i;
 }
 
-/**************************************************************************
- *************************************************************************/
 void permute_set(struct set *s)
 {
         for (uint32_t i = 0; i < s->items->num_elements; i++) {
@@ -230,8 +214,6 @@ void permute_set(struct set *s)
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 void randomize_set(struct set *s)
 {
         for (uint32_t i = 0; i < s->items->num_elements; i++) {

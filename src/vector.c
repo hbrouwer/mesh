@@ -1,7 +1,5 @@
 /*
- * vector.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +21,6 @@
 #include "main.h"
 #include "vector.h"
 
-/**************************************************************************
- *************************************************************************/
 struct vector *create_vector(uint32_t size)
 {
         struct vector *v;
@@ -44,16 +40,12 @@ error_out:
         return NULL;
 }
 
-/**************************************************************************
- *************************************************************************/
 void dispose_vector(struct vector *v)
 {
         free(v->elements);
         free(v);
 }
 
-/**************************************************************************
- *************************************************************************/
 void copy_vector(struct vector *v1, struct vector *v2)
 {
         if(v1->size != v2->size)
@@ -63,24 +55,18 @@ void copy_vector(struct vector *v1, struct vector *v2)
                 v1->elements[i] = v2->elements[i];
 }
 
-/**************************************************************************
- *************************************************************************/
 void zero_out_vector(struct vector *v)
 {
         for (uint32_t i = 0; i < v->size; i++)
                 v->elements[i] = 0.0;
 }
 
-/**************************************************************************
- *************************************************************************/
 void fill_vector_with_value(struct vector *v, double val)
 {
         for (uint32_t i = 0; i < v->size; i++)
                 v->elements[i] = val;
 }
 
-/**************************************************************************
- *************************************************************************/
 double vector_minimum(struct vector *v)
 {
         double min = v->elements[0];
@@ -92,8 +78,6 @@ double vector_minimum(struct vector *v)
         return min;
 }
 
-/**************************************************************************
- *************************************************************************/
 double vector_maximum(struct vector *v)
 {
         double max = v->elements[0];
@@ -105,8 +89,6 @@ double vector_maximum(struct vector *v)
         return max;
 }
 
-/**************************************************************************
- *************************************************************************/
 void print_vector(struct vector *v)
 {
         cprintf("[\t");

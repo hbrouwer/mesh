@@ -1,7 +1,5 @@
 /*
- * cmd.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,20 +56,20 @@
 
 /* commands */
 const static struct command cmds[] = {
-        /* quit or exit **************************************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"quit",                    NULL,            &cmd_quit},
         {"exit",                    NULL,            &cmd_quit},
 
-        /* file loading **************************************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"loadFile",                "%s",            &cmd_load_file},
 
-        /* network commands **********************************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"createNetwork",           "%s %s",         &cmd_create_network},
         {"disposeNetwork",          "%s",            &cmd_dispose_network},
         {"listNetworks",            NULL,            &cmd_list_networks},
         {"changeNetwork",           "%s",            &cmd_change_network},
 
-        /* group commands ************************************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"createGroup",             "%s %d",         &cmd_create_group},
         {"disposeGroup",            "%s",            &cmd_dispose_group},
         {"listGroups",              NULL,            &cmd_list_groups},
@@ -82,7 +80,7 @@ const static struct command cmds[] = {
         {"set ErrFunc",             "%s %s",         &cmd_set_err_func},
         {"toggleActLookup",         NULL,            &cmd_toggle_act_lookup},
 
-        /* projection commands *******************************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"createProjection",        "%s %s",         &cmd_create_projection},
         {"disposeProjection",       "%s %s",         &cmd_dispose_projection},
         {"createElmanProjection",   "%s %s",         &cmd_create_elman_projection},
@@ -92,14 +90,14 @@ const static struct command cmds[] = {
         {"createTunnelProjection",  "%s %d %d %s %d %d",
                                                      &cmd_create_tunnel_projection},
 
-        /* integer parameters ********************************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"set BatchSize",           "%d",            &cmd_set_int_parameter},
         {"set MaxEpochs",           "%d",            &cmd_set_int_parameter},
         {"set ReportAfter",         "%d",            &cmd_set_int_parameter},
         {"set RandomSeed",          "%d",            &cmd_set_int_parameter},
         {"set BackTicks",           "%d",            &cmd_set_int_parameter},
 
-        /* double parameters *********************************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"set RandomMu",            "%lf",           &cmd_set_double_parameter},
         {"set RandomSigma",         "%lf",           &cmd_set_double_parameter},
         {"set RandomMax",           "%lf",           &cmd_set_double_parameter},
@@ -122,7 +120,7 @@ const static struct command cmds[] = {
         {"set DBDRateIncrement",    "%lf",           &cmd_set_double_parameter},
         {"set DBDRateDecrement",    "%lf",           &cmd_set_double_parameter},
         
-        /* training and test sets ****************************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"loadSet",                 "%s %s",         &cmd_load_set},
         {"disposeSet",              "%s",            &cmd_dispose_set},
         {"listSets",                NULL,            &cmd_list_sets},
@@ -131,54 +129,54 @@ const static struct command cmds[] = {
         {"showItem",                "\"%[^\"]\"",    &cmd_show_item},
         {"set TrainingOrder",       "%s",            &cmd_set_training_order},
 
-        /* ranzomization, learning, and updating algorithms **************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"set RandomAlgorithm",     "%s"  ,          &cmd_set_random_algorithm},
         {"set LearningAlgorithm",   "%s",            &cmd_set_learning_algorithm},
         {"set UpdateAlgorithm",     "%s",            &cmd_set_update_algorithm},
 
-        /* similarity metric */
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"set SimilarityMetric",    "%s",            &cmd_set_similarity_metric},
 
-        /* initialization, resetting, training, and testing **************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"init",                    NULL,            &cmd_init},
         {"reset",                   NULL,            &cmd_reset},
         {"train",                   NULL,            &cmd_train},
         {"testItem",                "\"%[^\"]\"",    &cmd_test_item},        /* swapped */
         {"test",                    NULL,            &cmd_test},
 
-        /* single-stage and multi-stage training *************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"set SingleStage",         NULL,            &cmd_set_single_stage},
         {"set MultiStage",          "%s %s",         &cmd_set_multi_stage},
 
-        /* similarity and confusion matrices *****************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"similarityMatrix",        NULL,            &cmd_similarity_matrix},
         {"confusionMatrix",         NULL,            &cmd_confusion_matrix},
 
         /* weight statistics */
         {"weightStats",             NULL,            &cmd_weight_stats},
 
-        /* show vectors and matrices *************************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"showUnits",               "%s",            &cmd_show_vector},
         {"showError",               "%s",            &cmd_show_vector},
         {"showWeights",             "%s",            &cmd_show_matrix},
         {"showGradients",           "%s",            &cmd_show_matrix},
         {"showDynPars",             "%s",            &cmd_show_matrix},
 
-        /* weight matrix saving and loading ******************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"loadWeights",             "%s",            &cmd_load_weights},
         {"saveWeights",             "%s",            &cmd_save_weights},
 
-        /* pretty printing and color schemes *****************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"togglePrettyPrinting",    NULL,            &cmd_toggle_pretty_printing},
         {"set ColorScheme",         "%s",            &cmd_set_color_scheme},
 
-        /* event-related potentials module *******************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"erpContrast",             "%s \"%[^\"]\" \"%[^\"]\"",
                                                      &cmd_erp_contrast},
         {"erpGenerateTable",        "%s %s %s",      &cmd_erp_generate_table}, /* XXX: deprecated */
         {"erpAmplitudes",           "%s %s",         &cmd_erp_amplitudes},
 
-        /* distributed situation space module ****************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"dssTest",                 NULL,            &cmd_dss_test},
         {"dssScores",               "%s \"%[^\"]\"", &cmd_dss_scores},
         {"dssWriteScores",          "%s %s",         &cmd_dss_write_scores},
@@ -187,15 +185,17 @@ const static struct command cmds[] = {
         {"dssWordInformation",      "%s \"%[^\"]\"", &cmd_dss_word_information},
         {"dssWriteWordInformation", "%s",            &cmd_dss_write_word_information},
 
-        /* dynamic systems module ****************************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"dynsysTestItem",          "%s \"%[^\"]\"", &cmd_dynsys_test_item},
 
-        /*****************************************************************/
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {NULL,                      NULL,            NULL}                   /* tail */
 };
 
-/**************************************************************************
- *************************************************************************/
+
+/*
+ * Process a command.
+ */
 void process_command(char *cmd, struct session *s)
 {
         /* comment or blank line */
@@ -254,8 +254,6 @@ error_out:
         return;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_quit(char *cmd, char *fmt, struct session *s)
 {
         if (strcmp(cmd, fmt) != 0)
@@ -269,8 +267,6 @@ bool cmd_quit(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_load_file(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -296,8 +292,6 @@ bool cmd_load_file(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_create_network(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -333,8 +327,6 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_dispose_network(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -357,8 +349,6 @@ bool cmd_dispose_network(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_list_networks(char *cmd, char *fmt, struct session *s)
 {
         if (strcmp(cmd, fmt) != 0)
@@ -382,8 +372,6 @@ bool cmd_list_networks(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_change_network(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -402,8 +390,6 @@ bool cmd_change_network(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_create_group(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -429,8 +415,6 @@ bool cmd_create_group(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_dispose_group(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -488,8 +472,6 @@ bool cmd_dispose_group(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_list_groups(char *cmd, char *fmt, struct session *s)
 {
         if (strcmp(cmd, fmt) != 0)
@@ -515,8 +497,6 @@ bool cmd_list_groups(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_attach_bias(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -550,8 +530,6 @@ error_out:
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_set_io_group(char *cmd, char *fmt, struct session *s)
 {
         uint32_t type;
@@ -583,8 +561,6 @@ bool cmd_set_io_group(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -636,8 +612,6 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_set_err_func(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -674,8 +648,6 @@ bool cmd_set_err_func(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_toggle_act_lookup(char *cmd, char *fmt, struct session *s)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
@@ -693,8 +665,6 @@ bool cmd_toggle_act_lookup(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -764,8 +734,6 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_dispose_projection(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -811,9 +779,6 @@ bool cmd_dispose_projection(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-
-/**************************************************************************
- *************************************************************************/
 bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -857,8 +822,6 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_dispose_elman_projection(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -897,8 +860,6 @@ bool cmd_dispose_elman_projection(char *cmd, char *fmt, struct session *s)
 
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_list_projections(char *cmd, char *fmt, struct session *s)
 {
         if (strcmp(cmd, fmt) != 0)
@@ -966,8 +927,6 @@ bool cmd_list_projections(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -1010,29 +969,30 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- * This implements machinery for the "tunneling" of a subset of units of
- * a layer, allowing for the segmentation of a single input vector into
- * multiple ones:
- *
- * +---------+    +---------+    +---------+
- * | output1 |    | output2 |    | output3 |
- * +---------+    +---------+    +---------+
- *          \          |           /
- *      +---------+---------+---------+
- *      |         : input0  :         |
- *      +---------+---------+---------+
- *
- * and for the merging of several output vectors into a single vector:
- *
- *      +---------+---------+---------+
- *      |         : output0 :         |
- *      +---------+---------+---------+
- *          /          |           \
- * +---------+    +---------+    +---------+
- * | output1 |    | output2 |    | output3 |
- * +---------+    +---------+    +---------+
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+This implements machinery for the "tunneling" of a subset of units of a
+layer, allowing for the segmentation of a single input vector into multiple
+ones:
+
+        +---------+    +---------+    +---------+
+        | output1 |    | output2 |    | output3 |
+        +---------+    +---------+    +---------+
+                 \          |           /
+             +---------+---------+---------+
+             |         : input0  :         |
+             +---------+---------+---------+
+
+and for the merging of several output vectors into a single vector:
+
+             +---------+---------+---------+
+             |         : output0 :         |
+             +---------+---------+---------+
+                 /          |           \
+        +---------+    +---------+    +---------+
+        | output1 |    | output2 |    | output3 |
+        +---------+    +---------+    +---------+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -1143,8 +1103,6 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s)
 {
         /* batch size */
@@ -1166,8 +1124,6 @@ bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s)
 {
         /* random mu */
@@ -1237,8 +1193,6 @@ bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_load_set(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -1273,8 +1227,6 @@ bool cmd_load_set(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_dispose_set(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -1297,8 +1249,6 @@ bool cmd_dispose_set(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_list_sets(char *cmd, char *fmt, struct session *s) 
 {
         if (strcmp(cmd, fmt) != 0)
@@ -1323,8 +1273,6 @@ bool cmd_list_sets(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_change_set(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -1344,8 +1292,6 @@ bool cmd_change_set(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_list_items(char *cmd, char *fmt, struct session *s)
 {
         if (strcmp(cmd, fmt) != 0)
@@ -1365,8 +1311,6 @@ bool cmd_list_items(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_show_item(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -1408,8 +1352,6 @@ bool cmd_show_item(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_set_training_order(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -1435,8 +1377,6 @@ bool cmd_set_training_order(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_set_random_algorithm(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -1468,8 +1408,6 @@ bool cmd_set_random_algorithm(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_set_learning_algorithm(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -1492,8 +1430,6 @@ bool cmd_set_learning_algorithm(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_set_update_algorithm(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -1546,8 +1482,6 @@ bool cmd_set_update_algorithm(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_set_similarity_metric(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -1582,8 +1516,6 @@ bool cmd_set_similarity_metric(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_init(char *cmd, char *fmt, struct session *s)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
@@ -1597,8 +1529,6 @@ bool cmd_init(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_reset(char *cmd, char *fmt, struct session *s)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
@@ -1611,8 +1541,6 @@ bool cmd_reset(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_train(char *cmd, char *fmt, struct session *s)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
@@ -1628,8 +1556,6 @@ bool cmd_train(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_test(char *cmd, char *fmt, struct session *s)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
@@ -1645,8 +1571,6 @@ bool cmd_test(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s)
 {
         s->anp->ms_input = NULL;
@@ -1659,8 +1583,6 @@ bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -1691,8 +1613,6 @@ bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_test_item(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -1715,8 +1635,6 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_similarity_matrix(char *cmd, char *fmt, struct session *s)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
@@ -1733,8 +1651,6 @@ bool cmd_similarity_matrix(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_confusion_matrix(char *cmd, char *fmt, struct session *s)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
@@ -1751,8 +1667,6 @@ bool cmd_confusion_matrix(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_weight_stats(char *cmd, char *fmt, struct session *s)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
@@ -1779,8 +1693,6 @@ bool cmd_weight_stats(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
 {
         uint32_t type;
@@ -1823,8 +1735,6 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
 {
         uint32_t type;
@@ -1901,8 +1811,6 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_save_weights(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -1918,8 +1826,6 @@ bool cmd_save_weights(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_load_weights(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -1935,8 +1841,6 @@ bool cmd_load_weights(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
@@ -1953,8 +1857,6 @@ bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s)
 {
         char tmp[MAX_ARG_SIZE];
@@ -1992,12 +1894,10 @@ bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- * Event-related potentials (ERP) module.
- *************************************************************************/
+                /********************
+                 **** ERP module ****
+                 ********************/
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE], tmp3[MAX_ARG_SIZE];
@@ -2031,9 +1931,9 @@ bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
+/*
  * XXX: deprecated (for legacy purposes only)
- *************************************************************************/
+ */
 bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE], tmp3[MAX_ARG_SIZE];
@@ -2057,8 +1957,6 @@ bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -2086,12 +1984,10 @@ bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- * Distributed situation space (DSS) module.
- *************************************************************************/
+                /********************
+                 **** DSS module ****
+                 ********************/
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_dss_test(char *cmd, char *fmt, struct session *s)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
@@ -2107,8 +2003,6 @@ bool cmd_dss_test(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_dss_scores(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -2136,8 +2030,6 @@ bool cmd_dss_scores(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_dss_write_scores(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -2159,8 +2051,6 @@ bool cmd_dss_write_scores(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -2196,8 +2086,6 @@ bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
 
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
@@ -2225,8 +2113,6 @@ bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_dss_write_word_information(char *cmd, char *fmt,
                 struct session *s)
 {
@@ -2250,12 +2136,10 @@ bool cmd_dss_write_word_information(char *cmd, char *fmt,
         return true;
 }
 
-/**************************************************************************
- * Dynamic systems module.
- *************************************************************************/
+                /***********************
+                 **** DynSys module ****
+                 ***********************/
 
-/**************************************************************************
- *************************************************************************/
 bool cmd_dynsys_test_item(char *cmd, char *fmt, struct session *s)
 {
         char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];

@@ -1,7 +1,5 @@
 /*
- * train.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +25,6 @@
 
 static bool keep_running = true;
 
-/**************************************************************************
- *************************************************************************/
 void train_network(struct network *n)
 {
         pprintf("Epoch \t Error \t\t Weight Cost \t Gradient Lin.\n");
@@ -48,9 +44,10 @@ void train_network(struct network *n)
         sigaction(SIGINT, &sa, NULL);
 }
 
-/**************************************************************************
- * Backpropagation training
- *************************************************************************/
+                /*************************
+                 **** backpropagation ****
+                 *************************/
+
 void train_network_with_bp(struct network *n)
 {
         /* make sure training set is order, if required */
@@ -109,8 +106,6 @@ void train_network_with_bp(struct network *n)
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 void train_ffn_network_with_item(struct network *n, struct item *item)
 {
         if (n->type == TYPE_SRN)
@@ -167,9 +162,10 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
         }
 }
 
-/**************************************************************************
- * Backpropagation Through Time (BPTT) training
- *************************************************************************/
+                /**************************************
+                 **** backpropagation through time ****
+                 **************************************/
+
 void train_network_with_bptt(struct network *n)
 {
         /* make sure training set is order, if required */
@@ -222,8 +218,6 @@ void train_network_with_bptt(struct network *n)
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 void train_rnn_network_with_item(struct network *n, struct item *item)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
@@ -272,8 +266,6 @@ shift_stack:
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 void print_training_progress(struct network *n)
 {
         if (n->status->epoch == 1 || n->status->epoch % n->report_after == 0)
@@ -284,8 +276,6 @@ void print_training_progress(struct network *n)
                                 n->status->gradient_linearity);
 }
 
-/**************************************************************************
- *************************************************************************/
 void print_training_summary(struct network *n)
 {
         pprintf("\n");
@@ -293,8 +283,6 @@ void print_training_summary(struct network *n)
                         n->status->epoch, n->status->error);
 }
 
-/**************************************************************************
- *************************************************************************/
 void scale_learning_rate(struct network *n)
 {
         uint32_t sa = n->lr_scale_after * n->max_epochs;
@@ -306,8 +294,6 @@ void scale_learning_rate(struct network *n)
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 void scale_momentum(struct network *n)
 {
         uint32_t sa = n->mn_scale_after * n->max_epochs;
@@ -319,8 +305,6 @@ void scale_momentum(struct network *n)
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 void scale_weight_decay(struct network *n)
 {
         uint32_t sa = n->wd_scale_after * n->max_epochs;
@@ -332,8 +316,6 @@ void scale_weight_decay(struct network *n)
         }
 }
 
-/**************************************************************************
- *************************************************************************/
 void training_signal_handler(int32_t signal)
 {
         cprintf("Training interrupted. Abort [y/n]");

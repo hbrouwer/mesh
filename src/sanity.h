@@ -1,7 +1,5 @@
 /*
- * sanity.h
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +21,6 @@
 
 #include "network.h"
 
-/**************************************************************************
- *************************************************************************/
 bool verify_network_sanity(struct network *n);
 bool verify_input_to_output(struct network *n, struct group *g);
 

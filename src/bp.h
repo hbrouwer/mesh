@@ -1,7 +1,5 @@
 /*
- * bp.h
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,38 +27,33 @@
 
 #include "network.h"
 
-/**************************************************************************
- *************************************************************************/
 void bp_output_error(struct group *g, struct vector *t, double tr,
                 double zr);
 void bp_backpropagate_error(struct network *n, struct group *g);
 
-/**************************************************************************
- *************************************************************************/
+/* steepest descent */
 void bp_update_sd(struct network *n);
 void bp_recursively_update_sd(struct network *n, struct group *g);
 void bp_update_projection_sd(struct network *n, struct group *g,
                 struct projection *p);
 
+/* bounded steepest descent */                
 void bp_determine_sd_sf(struct network *n);
 void bp_recursively_determine_sd_sf(struct network *n, struct group *g);
 
-/**************************************************************************
- *************************************************************************/
+/* resilient backpropogation */
 void bp_update_rprop(struct network *n);
 void bp_recursively_update_rprop(struct network *n, struct group *g);
 void bp_update_projection_rprop(struct network *n, struct group *g,
                 struct projection *p);
 
-/**************************************************************************
- *************************************************************************/
+/* quickprop backpropagation */
 void bp_update_qprop(struct network *n);
 void bp_recursively_update_qprop(struct network *n, struct group *g);
 void bp_update_projection_qprop(struct network *n, struct group *g,
                 struct projection *p);
 
-/**************************************************************************
- *************************************************************************/
+/* delta-bar-delta */
 void bp_update_dbd(struct network *n);
 void bp_recursively_update_dbd(struct network *n, struct group *g);
 void bp_update_projection_dbd(struct network *n, struct group *g,

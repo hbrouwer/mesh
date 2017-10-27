@@ -1,7 +1,5 @@
 /*
- * matrix.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +21,6 @@
 #include "main.h"
 #include "matrix.h"
 
-/**************************************************************************
- *************************************************************************/
 struct matrix *create_matrix(uint32_t rows, uint32_t cols)
 {
         struct matrix *m;
@@ -55,8 +51,6 @@ error_out:
         return NULL;
 }
 
-/**************************************************************************
- *************************************************************************/
 void dispose_matrix(struct matrix *m)
 {
         for (uint32_t i = 0; i < m->rows; i++)
@@ -65,8 +59,6 @@ void dispose_matrix(struct matrix *m)
         free(m);
 }
 
-/**************************************************************************
- *************************************************************************/
 void copy_matrix(struct matrix *m1, struct matrix *m2)
 {
         if(m1->rows != m2->rows || m1->cols != m2->cols)
@@ -77,8 +69,6 @@ void copy_matrix(struct matrix *m1, struct matrix *m2)
                         m1->elements[i][j] = m2->elements[i][j];
 }
 
-/**************************************************************************
- *************************************************************************/
 struct vector *row_to_vector(struct matrix *m, uint32_t row)
 {
         struct vector *v = create_vector(m->cols);
@@ -89,8 +79,6 @@ struct vector *row_to_vector(struct matrix *m, uint32_t row)
         return v;
 }
 
-/**************************************************************************
- *************************************************************************/
 struct vector *column_to_vector(struct matrix *m, uint32_t col)
 {
         struct vector *v = create_vector(m->rows);
@@ -101,8 +89,6 @@ struct vector *column_to_vector(struct matrix *m, uint32_t col)
         return v;
 }
 
-/**************************************************************************
- *************************************************************************/
 void zero_out_matrix(struct matrix *m)
 {
         for (uint32_t i = 0; i < m->rows; i++)
@@ -110,8 +96,6 @@ void zero_out_matrix(struct matrix *m)
                         m->elements[i][j] = 0.0;
 }
 
-/**************************************************************************
- *************************************************************************/
 void fill_matrix_with_value(struct matrix *m, double val)
 {
         for (uint32_t i = 0; i < m->rows; i++)
@@ -119,8 +103,6 @@ void fill_matrix_with_value(struct matrix *m, double val)
                         m->elements[i][j] = val;
 }
 
-/**************************************************************************
- *************************************************************************/
 double matrix_minimum(struct matrix *m)
 {
         double min = m->elements[0][0];
@@ -133,8 +115,6 @@ double matrix_minimum(struct matrix *m)
         return min;
 }
 
-/**************************************************************************
- *************************************************************************/
 double matrix_maximum(struct matrix *m)
 {
         double max = m->elements[0][0];
@@ -147,8 +127,6 @@ double matrix_maximum(struct matrix *m)
         return max;
 }
 
-/**************************************************************************
- *************************************************************************/
 void print_matrix(struct matrix *m)
 {
         for (uint32_t i = 0; i < m->rows; i++) {

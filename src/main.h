@@ -1,7 +1,5 @@
 /*
- * main.h
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,25 +20,17 @@
 #define MAX_ARG_SIZE 128
 #define MAX_BUF_SIZE 32768
 
-/**************************************************************************
- *************************************************************************/
 #ifdef FAST_EXP
 void print_fast_exp_status();
 #endif /* FAST_EXP */
 
-/**************************************************************************
- *************************************************************************/
 #ifdef _OPENMP
 void print_openmp_status();
 #endif /* _OPENMP */
 
-/**************************************************************************
- *************************************************************************/
 void print_welcome();
 void print_help(char *exec_name);
 
-/**************************************************************************
- *************************************************************************/
 void cprintf(const char *fmt, ...);
 void mprintf(const char *fmt, ...);
 void eprintf(const char *fmt, ...);

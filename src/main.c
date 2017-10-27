@@ -1,7 +1,5 @@
 /*
- * main.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +32,6 @@
 
 #define VERSION "0.99a"
 
-/**************************************************************************
- *************************************************************************/
 int main(int argc, char **argv)
 {
         struct session *s;
@@ -76,8 +72,6 @@ error_out:
         exit(EXIT_FAILURE);
 }
 
-/**************************************************************************
- *************************************************************************/
 #ifdef FAST_EXP
 void print_fast_exp_status()
 {
@@ -85,8 +79,6 @@ void print_fast_exp_status()
 }
 #endif /* FAST_EXP */
 
-/**************************************************************************
- *************************************************************************/
 #ifdef _OPENMP
 void print_openmp_status()
 {
@@ -114,8 +106,6 @@ void print_openmp_status()
 }
 #endif /* _OPENMP */
 
-/**************************************************************************
- *************************************************************************/
 void print_welcome()
 {
         mprintf(
@@ -132,8 +122,6 @@ void print_welcome()
                         VERSION);
 }
 
-/**************************************************************************
- *************************************************************************/
 void print_help(char *exec_name)
 {
         mprintf(
@@ -145,9 +133,9 @@ void print_help(char *exec_name)
                         exec_name);
 }
 
-/**************************************************************************
+/*
  * Print console message
- *************************************************************************/
+ */
 void cprintf(const char *fmt, ...)
 {
         va_list args;
@@ -156,9 +144,9 @@ void cprintf(const char *fmt, ...)
         va_end(args);
 }
 
-/**************************************************************************
+/*
  * Print program message
- *************************************************************************/
+ */
 void mprintf(const char *fmt, ...)
 {
         va_list args;
@@ -169,9 +157,9 @@ void mprintf(const char *fmt, ...)
         fprintf(stderr, "\n");
 }
 
-/**************************************************************************
+/*
  * Print error message
- *************************************************************************/
+ */
 void eprintf(const char *fmt, ...)
 {
         va_list args;
@@ -185,9 +173,9 @@ void eprintf(const char *fmt, ...)
         fprintf(stderr, "\x1b[0m");
 }
 
-/**************************************************************************
+/*
  * Print progress/report message
- *************************************************************************/
+ */
 void pprintf(const char *fmt, ...)
 {
         va_list args;

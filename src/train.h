@@ -1,7 +1,5 @@
 /*
- * train.h
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,33 +22,21 @@
 #include "network.h"
 #include "set.h"
 
-/**************************************************************************
- *************************************************************************/
 void train_network(struct network *n);
 
-/**************************************************************************
- *************************************************************************/
 void train_network_with_bp(struct network *n);
 void train_ffn_network_with_item(struct network *n, struct item *item);
 
-/**************************************************************************
- *************************************************************************/
 void train_network_with_bptt(struct network *n);
 void train_rnn_network_with_item(struct network *n, struct item *item);
 
-/**************************************************************************
- *************************************************************************/
 void print_training_progress(struct network *n);
 void print_training_summary(struct network *n);
 
-/**************************************************************************
- *************************************************************************/
 void scale_learning_rate(struct network *n);
 void scale_momentum(struct network *n);
 void scale_weight_decay(struct network *n);
 
-/**************************************************************************
- *************************************************************************/
 void training_signal_handler(int32_t signal);
 
 #endif /* TRAIN_H */

@@ -1,7 +1,5 @@
 /*
- * erp.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,15 +25,13 @@
 #include "../matrix.h"
 #include "../vector.h"
 
-/**************************************************************************
- * This implements the estimation of ERP correlates, as described in:
- * 
- * Brouwer, H. (2014). The Electrophysiology of Language Comprehension: A
- *     Neurocomputational Model. PhD thesis, University of Groningen.
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+This implements the estimation of ERP correlates, as described in:
+ 
+Brouwer, H. (2014). The Electrophysiology of Language Comprehension: A
+        Neurocomputational Model. PhD thesis, University of Groningen.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/**************************************************************************
- *************************************************************************/
 void erp_contrast(struct network *n, struct group *gen,
                 struct item *control, struct item *target)
 {
@@ -67,9 +63,9 @@ void erp_contrast(struct network *n, struct group *gen,
         dispose_vector(tgtav);
 }
 
-/**************************************************************************
+/*
  * XXX: deprecated (for legacy purposes only)
- *************************************************************************/
+ */
 void erp_generate_table(struct network *n, struct group *n400_gen,
                 struct group *p600_gen, char *filename)
 {
@@ -103,8 +99,6 @@ error_out:
         return;
 }
 
-/**************************************************************************
- *************************************************************************/
 void erp_amplitudes(struct network *n, struct group *n400_gen,
                 struct group *p600_gen)
 {
@@ -143,8 +137,6 @@ error_out:
         return;
 }
 
-/**************************************************************************
- *************************************************************************/
 struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
                 struct item *item)
 {

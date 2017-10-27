@@ -1,7 +1,5 @@
 /*
- * cli.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +22,9 @@
 #include "cmd.h"
 #include "main.h"
 
-/**************************************************************************
+/*
  * Command line interface loop
- *************************************************************************/
+ */
 void cli_loop(struct session *s)
 {
         char *line = NULL;

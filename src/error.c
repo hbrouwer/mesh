@@ -1,7 +1,5 @@
 /*
- * error.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +19,20 @@
 #include "error.h"
 #include "main.h"
 
-/**************************************************************************
- * Adjust a unit's target based on the target radius and zero-error radius.
- * If a unit's activation is within the target or zero-error radius of the
- * target, set its target to equal this activation, such that the error for
- * this unit will be zero. Otherwise, adjust the target in the direction of
- * the unit's activation by the target radius.
- *
- * Formulas adapted from LENS (Rohde, 1999) source code.
- *
- * Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
- *     Technical Report CMU-CS-99-164 (Pittsburgh, PA: Carnegie Mellon
- *     University, Department of Computer Science).
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Adjust a unit's target based on the target radius and zero-error radius. If
+a unit's activation is within the target or zero-error radius of the target,
+set its target to equal this activation, such that the error for this unit
+will be zero. Otherwise, adjust the target in the direction of the unit's
+activation by the target radius.
+
+Formulas adapted from LENS (Rohde, 1999) source code.
+
+Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
+        Technical Report CMU-CS-99-164 (Pittsburgh, PA: Carnegie Mellon
+        University, Department of Computer Science).
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double adjust_target(double y, double d, double tr, double zr)
 {
         /* 
@@ -70,11 +69,20 @@ double adjust_target(double y, double d, double tr, double zr)
         return y;
 }
 
-/**************************************************************************
- * Sum squared error:
- *
- * se = 1/2 sum_i (y_i - d_i) ^ 2
- *************************************************************************/
+                /************************
+                 **** sum of squares ****
+                 ************************/
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Sum squared error:
+
+        se = 1/2 sum_i (y_i - d_i) ^ 2
+
+and its derivative:
+
+        se' = y_i - d_i
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double error_sum_of_squares(struct group *g, struct vector *t, double tr,
                 double zr)
 {
@@ -93,11 +101,6 @@ double error_sum_of_squares(struct group *g, struct vector *t, double tr,
         return 0.5 * se;
 }
 
-/**************************************************************************
- * Derivative of sum squared error:
- *
- * se' = y_i - d_i
- *************************************************************************/
 void error_sum_of_squares_deriv(struct group *g, struct vector *t, double tr,
                 double zr)
 {
@@ -112,23 +115,30 @@ void error_sum_of_squares_deriv(struct group *g, struct vector *t, double tr,
         }
 }
 
-/**************************************************************************
- * Cross entropy error
- *
- * Formulas and limit handling adapted from LENS (Rohde, 1999) source code.
- *
- * Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
- *     Technical Report CMU-CS-99-164 (Pittsburgh, PA: Carnegie Mellon
- *     University, Department of Computer Science).
- *************************************************************************/
+                /***********************
+                 **** cross entropy ****
+                 ***********************/
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Cross entropy error:
+
+        ce = sum_i log(d_i / y_i) * d_i + log((1 - d_i)
+                / (1 - y_i)) * (1 - d_i)
+
+and its derivative:
+ 
+        ce' = (y_i - d_i) / (y_i * (1 - y_i))
+
+Formulas and limit handling adapted from LENS (Rohde, 1999) source code.
+
+Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
+     Technical Report CMU-CS-99-164 (Pittsburgh, PA: Carnegie Mellon
+     University, Department of Computer Science).
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 #define LARGE_VALUE 1e10
 #define SMALL_VALUE 1e-10
 
-/**************************************************************************
- * Cross entropy error:
- *
- * ce = sum_i log(d_i / y_i) * d_i + log((1 - d_i) / (1 - y_i)) * (1 - d_i)
- *************************************************************************/
 double error_cross_entropy(struct group *g, struct vector *t, double tr,
                 double zr)
 {
@@ -225,11 +235,6 @@ double error_cross_entropy(struct group *g, struct vector *t, double tr,
         return ce;
 }
 
-/**************************************************************************
- * Derivative of cross entropy error:
- *
- * ce' = (y_i - d_i) / (y_i * (1 - y_i))
- *************************************************************************/
 void error_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
                 double zr)
 {
@@ -303,21 +308,26 @@ void error_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
         }
 }
 
-/**************************************************************************
- * Divergence error
- *
- * Formulas and limit handling adapted from LENS (Rohde, 1999) source code.
- *
- * Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
- *     Technical Report CMU-CS-99-164 (Pittsburgh, PA: Carnegie Mellon
- *     University, Department of Computer Science).
- *************************************************************************/
+                /********************
+                 **** divergence ****
+                 ********************/
 
-/**************************************************************************
- * Divergence error:
- *
- * de = sum_i log(d_i / y_i) * d_i
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Divergence error:
+
+        de = sum_i log(d_i / y_i) * d_i
+
+and its derivative:
+
+        de' = -d_i / y_i
+
+Formulas and limit handling adapted from LENS (Rohde, 1999) source code.
+
+Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
+     Technical Report CMU-CS-99-164 (Pittsburgh, PA: Carnegie Mellon
+     University, Department of Computer Science).
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double error_divergence(struct group *g, struct vector *t, double tr,
                 double zr)
 {
@@ -361,11 +371,6 @@ double error_divergence(struct group *g, struct vector *t, double tr,
         return de;
 }
 
-/**************************************************************************
- * Derivative of divergence error:
- *
- * de' = -d_i / y_i
- *************************************************************************/
 void error_divergence_deriv(struct group *g, struct vector *t, double tr,
                 double zr)
 {

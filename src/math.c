@@ -1,7 +1,5 @@
 /*
- * math.c
- *
- * Copyright 2012-2016 Harm Brouwer <me@hbrouwer.eu>
+ * Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +19,13 @@
 
 #include "math.h"
 
-/**************************************************************************
- * Schraudolph's approximation of the exponentional function. See:
- *
- * Schraudolph, N. N. (1999). A fast, compact approximation of the 
- *     exponentional function. Neural Computation, 11, 854-862.
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Schraudolph's approximation of the exponentional function. See:
+
+Schraudolph, N. N. (1999). A fast, compact approximation of the
+        exponentional function. Neural Computation, 11, 854-862.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 #ifdef FAST_EXP
 double fast_exp(double x)
 {
@@ -34,8 +33,6 @@ double fast_exp(double x)
 }
 #endif /* FAST_EXP */
 
-/**************************************************************************
- *************************************************************************/
 double minimum(double x, double y)
 {
         if (x <= y)
@@ -44,8 +41,6 @@ double minimum(double x, double y)
                 return y;
 }
 
-/**************************************************************************
- *************************************************************************/
 double maximum(double x, double y)
 {
         if (x >= y)
@@ -54,8 +49,6 @@ double maximum(double x, double y)
                 return y;
 }
 
-/**************************************************************************
- *************************************************************************/
 double sign(double x)
 {
         if (x == 0.0)
@@ -66,14 +59,15 @@ double sign(double x)
                 return -1.0;
 }
 
-/**************************************************************************
- * Box-Muller transform for the generation of pairs of normally distributed
- * random numbers. See:
- *
- * Box, G. E. P. and Muller, M. E. (1958). A note on the generation of
- *     random normal deviates. The Annals of Mathematical Statistics, 29 
- *     (2), 610-611.
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Box-Muller transform for the generation of pairs of normally distributed
+random numbers. See:
+
+Box, G. E. P. and Muller, M. E. (1958). A note on the generation of random
+        normal deviates. The Annals of Mathematical Statistics, 29 (2),
+        610-611.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double normrand(double mu, double sigma)
 {
         double rs1;
@@ -96,10 +90,11 @@ double normrand(double mu, double sigma)
         return rs1 * sigma + mu;
 }
 
-/**************************************************************************
- * Fourth-order Runge-Kutta method for solving Ordinary Differential
- * Equations (ODEs).
- *************************************************************************/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Fourth-order Runge-Kutta method for solving Ordinary Differential Equations
+(ODEs).
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double runge_kutta4(double (*f)(double, double), double h, double xn,
                 double yn)
 {
@@ -136,11 +131,11 @@ double runge_kutta4(double (*f)(double, double), double h, double xn,
         return yn + (k1 + 2 * k2 + 2 * k3 + k4) / 6.0;
 }
 
-/**************************************************************************
+/*
  * Euclidean norm:
  *
- * en = sqrt(sum_i (x_i ^ 2))
- *************************************************************************/
+ *      en = sqrt(sum_i (x_i ^ 2))
+ */
 double euclidean_norm(struct vector *v)
 {
         double ss = 0.0;
@@ -151,11 +146,11 @@ double euclidean_norm(struct vector *v)
         return sqrt(ss);
 }
 
-/**************************************************************************
+/*
  * Inner product:
  *
- * ip = sum_i (x_i * y_i)
- *************************************************************************/
+ *      ip = sum_i (x_i * y_i)
+ */
 double inner_product(struct vector *v1, struct vector *v2)
 {
         double ip = 0.0;
@@ -166,13 +161,13 @@ double inner_product(struct vector *v1, struct vector *v2)
         return ip;
 }
 
-/**************************************************************************
+/*
  * Harmonic mean:
  *
- *                x_i * y_i
- * hm = 2 * sum_i ---------
- *                x_i + y_i
- *************************************************************************/
+ *                     x_i * y_i
+ *      hm = 2 * sum_i ---------
+ *                     x_i + y_i
+ */
 double harmonic_mean(struct vector *v1, struct vector *v2)
 {
         double nom = 0.0, denom = 0.0;
@@ -185,13 +180,13 @@ double harmonic_mean(struct vector *v1, struct vector *v2)
         return 2.0 * nom / denom;
 }
 
-/**************************************************************************
+/*
  * Cosine:
  *
- *                  sum_i (x_i * y_i)
- * cs = ---------------------------------------------
- *      sqrt(sum_i (x_i ^ 2)) * sqrt(sum_i (y_i ^ 2))
- *************************************************************************/
+ *                       sum_i (x_i * y_i)
+ *      cs = ---------------------------------------------
+ *           sqrt(sum_i (x_i ^ 2)) * sqrt(sum_i (y_i ^ 2))
+ */
 double cosine(struct vector *v1, struct vector *v2)
 {
         double nom = 0.0, xsq = 0.0, ysq = 0.0;
@@ -214,13 +209,13 @@ double cosine(struct vector *v1, struct vector *v2)
                 return 0.0;
 }
 
-/**************************************************************************
+/*
  * Tanimoto:
  *
- *                        sum_i (x_i * y_i)
- * jc = -----------------------------------------------------
- *      sum_i (x_i ^ 2) + sum_i (y_i ^ 2) - sum_i (x_i * y_i)
- *************************************************************************/
+ *                           sum_i (x_i * y_i)
+ *      jc = -----------------------------------------------------
+ *           sum_i (x_i ^ 2) + sum_i (y_i ^ 2) - sum_i (x_i * y_i)
+ */
 double tanimoto(struct vector *v1, struct vector *v2)
 {
         double nom = 0.0, xsq = 0.0, ysq = 0.0;;
@@ -234,13 +229,13 @@ double tanimoto(struct vector *v1, struct vector *v2)
         return nom / (xsq + ysq - nom);
 }
 
-/**************************************************************************
+/*
  * Dice:
  *
- *            2 * sum_i (x_i * y_i)
- * dc = ---------------------------------
- *      sum_i (x_i ^ 2) * sum_i (y_i ^ 2)
- *************************************************************************/
+ *                2 * sum_i (x_i * y_i)
+ *      dc = ---------------------------------
+ *           sum_i (x_i ^ 2) * sum_i (y_i ^ 2)
+ */
 double dice(struct vector *v1, struct vector *v2)
 {
         double nom = 0.0, xsq = 0.0, ysq = 0.0;
@@ -255,15 +250,15 @@ double dice(struct vector *v1, struct vector *v2)
 }
 
 
-/**************************************************************************
+/*
  * Pearson's correlation:
  *
- *                   sum_i ((x_i - x) * (y_i - y))
- * pc = -----------------------------------------------------
- *      sqrt(sum_i (x_i - x) ^ 2) * sqrt(sum_i (y_i - y) ^ 2)
+ *                     sum_i ((x_i - x) * (y_i - y))
+ *      pc = -----------------------------------------------------
+ *          sqrt(sum_i (x_i - x) ^ 2) * sqrt(sum_i (y_i - y) ^ 2)
  *
- * where x is the average of vector x, and y the average of vector y.
- *************************************************************************/
+ *      where x is the average of vector x, and y the average of vector y.
+ */
 double pearson_correlation(struct vector *v1, struct vector *v2)
 {
         double xmn = 0.0, ymn = 0.0;
