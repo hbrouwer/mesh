@@ -485,7 +485,7 @@ computed:
                   |
         u_ij(t) = | eta_minus * u_ij(t-1), if dE/dw_ij(t-1) * dE/dw_ij(t) < 0
                   |
-                  | u_ij(t-1)              , otherwise
+                  | u_ij(t-1)            , otherwise
 
 where eta_plus and eta_minus are defined as:
 
