@@ -109,8 +109,8 @@ void test_rnn_network(struct network *n)
                         feed_forward(un->stack[un->sp], un->stack[un->sp]->input);
 
                         /*
-                         * Only compute error if there is a target
-                         * for the current event.
+                         * Only compute error if there is a target for the
+                         * current event.
                          */
                         if (!item->targets[j])
                                 goto shift_stack;
@@ -242,8 +242,8 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                         : print_vector(un->stack[un->sp]->output->vector);
 
                 /*
-                 * Only compute and print error if there 
-                 * is a target for the current event.
+                 * Only compute and print error if there is a target for the
+                 * current event.
                  */
                 if (!item->targets[i])
                         goto shift_stack;

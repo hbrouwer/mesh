@@ -53,8 +53,8 @@ void dispose_weight_statistics(struct weight_stats *ws)
 void collect_weight_statistics(struct weight_stats *ws, struct group *g)
 {
         /*
-         * Recursively collect weight statistics for all groups that
-         * project to the current group.
+         * Recursively collect weight statistics for all groups that project
+         * to the current group.
          */ 
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];

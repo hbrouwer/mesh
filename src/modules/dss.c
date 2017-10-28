@@ -233,9 +233,9 @@ void dss_inferences(struct network *n, struct set *set, struct item *item,
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 This construsts a (1+m) x n comprehension score matrix, where m is the
-number of events for which a score is computed after processing each of
-n words of a sentence. The first row of the matrix contains the scores
-for the target event of the current sentence.
+number of events for which a score is computed after processing each of n
+words of a sentence. The first row of the matrix contains the scores for the
+target event of the current sentence.
 
            n
     [ . . . . . . ] <-- overall comprehension scores

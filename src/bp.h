@@ -41,7 +41,7 @@ void bp_update_projection_sd(struct network *n, struct group *g,
 void bp_determine_sd_sf(struct network *n);
 void bp_recursively_determine_sd_sf(struct network *n, struct group *g);
 
-/* resilient backpropogation */
+/* resilient backpropagation */
 void bp_update_rprop(struct network *n);
 void bp_recursively_update_rprop(struct network *n, struct group *g);
 void bp_update_projection_rprop(struct network *n, struct group *g,

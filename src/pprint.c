@@ -63,19 +63,18 @@ double scale_value(double v, double min, double max)
         if (max > min)
                 sv = (v - min) / (max - min);
         /*
-         * If we are dealing with a one-unit vector, or with a
-         * vector of which all units have the same value, we
-         * somehow have to determine whether this value is high
-         * or low.
+         * If we are dealing with a one-unit vector, or with a vector of
+         * which all units have the same value, we somehow have to determine
+         * whether this value is high or low.
          *
-         * If value is in the interval [0,1], the scaled value
-         * is simply the original value:
+         * If value is in the interval [0,1], the scaled value is simply the
+         * original value:
          */
         else if (v >= 0.0 && v <= 1.0)
                 sv = v;
         /*
-         * If value is in the interval [-1,1], we scale the value
-         * into the [0,1] interval.
+         * If value is in the interval [-1,1], we scale the value into the
+         * [0,1] interval.
          */
         else if (v >= -1.0 && v <= 1.0)
                 sv = (v + 1.0) / 2.0;

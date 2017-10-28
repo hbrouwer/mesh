@@ -110,8 +110,8 @@ struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
         memset(un->rcr_dynamic_pars, 0, block_size);
 
         /*
-         * Fill the constructed arrays with the required matrices,
-         * and initialize these appropriately.
+         * Fill the constructed arrays with the required matrices, and
+         * initialize these appropriately.
          */
         for (uint32_t i = 0; i < un->rcr_groups->num_elements; i++) {
                 struct group *g = un->rcr_groups->elements[i];
@@ -325,8 +325,8 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
                 struct group *rg = rnn_duplicate_groups(n, dn, g2);
 
                 /*
-                 * Duplicate the projection between the current group
-                 * and the group to which it projects.
+                 * Duplicate the projection between the current group and
+                 * the group to which it projects.
                  * 
                  * Note: We only need a unique gradient and previous
                  *   gradient matrix for this projection.
@@ -455,8 +455,8 @@ void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
                 g2->err_fun->deriv = g1->err_fun->deriv;
 
                 /*
-                 * Create a projection between the recurrent group,
-                 * and the "terminal" recurrent group.
+                 * Create a projection between the recurrent group, and the
+                 * "terminal" recurrent group.
                  *
                  * Note: We only need a unique gradient and previous
                  *   gradient matrix for this projection.
@@ -629,7 +629,7 @@ void rnn_shift_stack(struct rnn_unfolded_network *un)
                 struct group *g0 = p1->to;
 
                 /*
-                 * Disconnect the current recurrent group in stack/0 from 
+                 * Disconnect the current recurrent group in stack/0 from
                  * its copy in stack/1, and dispose the projection gradient.
                  */
                 rnn_dispose_duplicate_projection(p1);
@@ -637,8 +637,8 @@ void rnn_shift_stack(struct rnn_unfolded_network *un)
                 g1->inc_projs->num_elements--;
 
                 /*
-                 * Disconnect the recurrent group in stack/0 from its
-                 * copy in stack/1, preserving the projection gradient.
+                 * Disconnect the recurrent group in stack/0 from its copy
+                 * in stack/1, preserving the projection gradient.
                  */
                 j = g1->out_projs->num_elements - 1;
                 free(g1->out_projs->elements[j]);
@@ -672,12 +672,11 @@ void rnn_shift_stack(struct rnn_unfolded_network *un)
         }
 
         /*
-         * Now all recurrent groups have been rewired, and the
-         * actual stack shifting can be done. We store a reference
-         * to the network state in stack/0, and shift stack/1 into
-         * stack/0, stack/2 into stack/1, until stack/n has been
-         * shifted into stack/(n-1), upon which we place stack/0
-         * in stack/n
+         * Now all recurrent groups have been rewired, and the actual stack
+         * shifting can be done. We store a reference to the network state
+         * in stack/0, and shift stack/1 into stack/0, stack/2 into stack/1,
+         * until stack/n has been shifted into stack/(n-1), upon which we
+         * place stack/0 in stack/n
          */
         struct network *n = un->stack[0];
         for (uint32_t i = 0; i < un->stack_size - 1; i++)

@@ -76,8 +76,8 @@ void train_network_with_bp(struct network *n)
 
                         /* 
                          * Select training item, and set training item
-                         * iterator to the beginning of the training set
-                         * if necessary.
+                         * iterator to the beginning of the training set if
+                         * necessary.
                          */
                         uint32_t item_idx = n->asp->order[item_itr++];
                         struct item *item = n->asp->items->elements[item_idx];
@@ -118,8 +118,8 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
                 feed_forward(n, n->input);
 
                 /* 
-                 * Skip error backpropagation, if there is no 
-                 * target for the current event.
+                 * Skip error backpropagation, if there is no target for the
+                 * current event.
                  */
                 if (!item->targets[i])
                         continue;
@@ -135,8 +135,8 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
                 bp_backpropagate_error(n, g);
 
                 /* 
-                 * Update network error if all of the
-                 * item's events have been processed.
+                 * Update network error if all of the item's events have
+                 * been processed.
                  */
                 if (i == item->num_events - 1) {
                         double error = n->output->err_fun->fun(g, tv, tr, zr);
@@ -191,9 +191,8 @@ void train_network_with_bptt(struct network *n)
                 }
 
                 /* 
-                 * Select training item, and set training item
-                 * iterator to the beginning of the training set
-                 * if necessary.
+                 * Select training item, and set training item iterator to
+                 * the beginning of the training set if necessary.
                  */
                 uint32_t item_idx = n->asp->order[item_itr++];
                 struct item *item = n->asp->items->elements[item_idx];
@@ -231,8 +230,8 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
                 feed_forward(un->stack[un->sp], un->stack[un->sp]->input);
 
                 /* 
-                 * Skip error backpropagation, if there is no 
-                 * target for the current event.
+                 * Skip error backpropagation, if there is no target for the
+                 * current event.
                  */                
                 if (!item->targets[i])
                         goto shift_stack;

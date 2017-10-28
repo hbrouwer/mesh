@@ -36,17 +36,16 @@ Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
 double adjust_target(double y, double d, double tr, double zr)
 {
         /* 
-         * Unit's activation is within zero error radius
-         * of the target, so set its target to equal this
-         * activation.
+         * Unit's activation is within zero error radius of the target, so
+         * set its target to equal this activation.
          */
         if ((y - d < zr) && (y - d > -zr))
                 return y;
 
         /*
-         * Unit's activation is not within target radius
-         * of the target, so adjust the unit's target towards the
-         * unit's activation by the target radius.
+         * Unit's activation is not within target radius of the target, so
+         * adjust the unit's target towards the unit's activation by the
+         * target radius.
          */
 
         /* adjust upward */
@@ -58,13 +57,13 @@ double adjust_target(double y, double d, double tr, double zr)
                 return d - tr;
 
         /*
-         * Unit's activation is not within zero-error radius,
-         * but it is within the target radius, so set the unit's
-         * target to equal this activation.
+         * Unit's activation is not within zero-error radius, but it is
+         * within the target radius, so set the unit's target to equal this
+         * activation.
          *
-         * Note: This should only happen if the the zero-error
-         * radius is zero, as a zero-error radius becomes
-         * meaningless if it is smaller than the target radius.
+         * Note: This should only happen if the the zero-error radius is
+         * zero, as a zero-error radius becomes meaningless if it is smaller
+         * than the target radius.
          */
         return y;
 }

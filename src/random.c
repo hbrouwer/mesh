@@ -132,8 +132,7 @@ void randomize_fan_in(struct matrix *m, struct network *n)
          *
          * w_ij = (min / h) + w_ij * ((max - min) / h)
          *
-         * where h is the number of units in the group
-         * that is projected to.
+         * where h is the number of units in the group that is projected to.
          */
         for (uint32_t i = 0; i < m->rows; i++)
                 for (uint32_t j = 0; j < m->cols; j++)

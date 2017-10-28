@@ -43,17 +43,17 @@ where f is typically a non-linear activation function.
 void feed_forward(struct network *n, struct group *g)
 {
         /*
-         * Under the assumption that activation levels for the units
-         * in the current group have already been determined, determine
-         * the activation levels of all the groups towards which the
-         * current group maintains a projection.
+         * Under the assumption that activation levels for the units in the
+         * current group have already been determined, determine the
+         * activation levels of all the groups towards which the current
+         * group maintains a projection.
          */
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
 
                 /*
-                 * During BPTT, we want activation to propagate only 
-                 * through the network of the current timestep.
+                 * During BPTT, we want activation to propagate only through
+                 * the network of the current timestep.
                  */
                 if (op->recurrent)
                         continue;
@@ -77,8 +77,8 @@ void feed_forward(struct network *n, struct group *g)
                          *
                          * x_j = sum_i (y_i * w_ij)
                          *
-                         * Note: A unit can receive activation from units
-                         * in different projecting groups.
+                         * Note: A unit can receive activation from units in
+                         * different projecting groups.
                          */
                         for (uint32_t x = 0; x < rg->inc_projs->num_elements; x++) {
                                 struct projection *ip = rg->inc_projs->elements[x];
@@ -115,11 +115,10 @@ void feed_forward(struct network *n, struct group *g)
         }
 
         /* 
-         * Recursively repeat the above for all of the groups towards
-         * which the current group maintains a projection. Again, we
-         * skip recurrent projections, as we want activation to only
-         * propagate through the network of the current timestep during
-         * BPTT.
+         * Recursively repeat the above for all of the groups towards which
+         * the current group maintains a projection. Again, we skip
+         * recurrent projections, as we want activation to only propagate
+         * through the network of the current timestep during BPTT.
          */
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];

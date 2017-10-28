@@ -54,6 +54,10 @@
 #define MTYPE_GRADIENTS 1
 #define MTYPE_DYN_PARS  2
 
+                /******************
+                 **** commands ****
+                 ******************/
+
 /* commands */
 const static struct command cmds[] = {
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -192,10 +196,10 @@ const static struct command cmds[] = {
         {NULL,                      NULL,            NULL}                   /* tail */
 };
 
+                /**************************
+                 **** process commands ****
+                 **************************/
 
-/*
- * Process a command.
- */
 void process_command(char *cmd, struct session *s)
 {
         /* comment or blank line */

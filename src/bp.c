@@ -121,8 +121,8 @@ void bp_backpropagate_error(struct network *n, struct group *g)
         /*
          * Note: Each group g' that projects to g can receive error signals
          * from more than one later groups (for instance in backpropagation
-         * through time). If this is the case the error derivative of dE/dy_j
-         * of a unit j, is then defined as:
+         * through time). If this is the case the error derivative of
+         * dE/dy_j of a unit j, is then defined as:
          *
          *     dE/dy_j = sum_g'' sum_k delta_k w_jk
          *
@@ -189,7 +189,7 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                 }
 
                 /*
-                 * Multiply each error derivative with its relevant 
+                 * Multiply each error derivative with its relevant
                  * activation derivative to get the error signal:
                  *
                  * delta_j = f'(x_j) dE/dy_j
@@ -276,8 +276,8 @@ void bp_recursively_update_sd(struct network *n, struct group *g)
                 zero_out_matrix(p->gradients);
 
                 /*
-                 * During BPTT, we want to only adjust weights
-                 * in the network of the current timestep.
+                 * During BPTT, we want to only adjust weights in the
+                 * network of the current timestep.
                  */
                 if (p->recurrent)
                         continue;
@@ -299,8 +299,8 @@ void bp_update_projection_sd(struct network *n, struct group *g,
         double gradients_length = 0.0;
 
         /*
-         * Adjust the weight between unit i in group g'
-         * and unit j in group g.
+         * Adjust the weight between unit i in group g' and unit j in group
+         * g.
          */
 #ifdef _OPENMP
 #pragma omp parallel for reduction(+:weight_cost, gradient_linearity, last_deltas_length, gradients_length)
@@ -314,9 +314,9 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                          *
                          * Dw_ij = -epsilon * dE/dw_ij
                          *
-                         * Note: If bounded steepest descent is
-                         * used, the gradient term is scaled
-                         * by the length of the gradient.
+                         * Note: If bounded steepest descent is used, the
+                         * gradient term is scaled by the length of the
+                         * gradient.
                          */
                         weight_delta += -n->learning_rate
                                 * n->sd_scale_factor
@@ -353,8 +353,7 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                         weight_cost += pow(p->weights->elements[i][j], 2.0);
                         
                         /*
-                         * Compute the numerator of the
-                         * gradient linearity:
+                         * Compute the numerator of the gradient linearity:
                          *
                          * sum_i sum_j (Dw_ij(t-1) * dE/dw_ij)
                          */
@@ -363,8 +362,8 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                                 * p->gradients->elements[i][j];
                         
                         /*
-                         * Compute the sum of squares of the
-                         * previous weight delta vector:
+                         * Compute the sum of squares of the previous weight
+                         * delta vector:
                          *
                          * sum_i sum_j (Dw_ij(t-1) ^ 2
                          */
@@ -372,8 +371,7 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                                  pow(p->prev_deltas->elements[i][j], 2.0);
 
                         /*
-                         * Compute the sum of squares of the
-                         * gradients:
+                         * Compute the sum of squares of the gradients:
                          *
                          * sum_i sum_j (dE/dw_ij ^ 2)
                          */
@@ -388,8 +386,7 @@ void bp_update_projection_sd(struct network *n, struct group *g,
         }
 
         /*
-         * Add the local status statistics to the
-         * global status statistics.
+         * Add the local status statistics to the global status statistics.
          */
         n->status->weight_cost
                 += weight_cost;
@@ -425,8 +422,8 @@ void bp_determine_sd_sf(struct network *n)
         n->sd_scale_factor = 0.0;
 
         /* 
-         * Resursively compute the sum of squares of the
-         * individual weight gradients.
+         * Resursively compute the sum of squares of the individual weight
+         * gradients.
          */
         bp_recursively_determine_sd_sf(n, n->output);
 
@@ -464,8 +461,7 @@ void bp_recursively_determine_sd_sf(struct network *n, struct group *g)
         }
 
         /*
-         * Add local scale factor to global
-         * scale factor.
+         * Add local scale factor to global scale factor.
          */
         n->sd_scale_factor += sd_scale_factor;
 }
@@ -595,8 +591,8 @@ void bp_recursively_update_rprop(struct network *n, struct group *g)
                 zero_out_matrix(p->gradients);
 
                 /*
-                 * During BPTT, we want to only adjust weights
-                 * in the network of the current timestep.
+                 * During BPTT, we want to only adjust weights in the
+                 * network of the current timestep.
                  */
                 if (p->recurrent)
                         continue;
@@ -618,8 +614,8 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
         double gradients_length = 0.0;
 
         /*
-         * Adjust the weight between unit i in group g'
-         * and unit j in group g.
+         * Adjust the weight between unit i in group g' and unit j in group
+         * g.
          */
 #ifdef _OPENMP
 #pragma omp parallel for reduction(+:weight_cost, gradient_linearity, last_deltas_length, gradients_length)
@@ -775,8 +771,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
         }
         
         /*
-         * Add the local status statistics to the
-         * global status statistics.
+         * Add the local status statistics to the global status statistics.
          */
         n->status->weight_cost
                 += weight_cost;
@@ -872,8 +867,8 @@ void bp_recursively_update_qprop(struct network *n, struct group *g)
                 zero_out_matrix(p->gradients);
 
                 /*
-                 * During BPTT, we want to only adjust weights
-                 * in the network of the current timestep.
+                 * During BPTT, we want to only adjust weights in the
+                 * network of the current timestep.
                  */
                 if (p->recurrent)
                         continue;
@@ -897,8 +892,8 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
         double gradients_length = 0.0;
 
         /*
-         * Adjust the weight between unit i in group g'
-         * and unit j in group g.
+         * Adjust the weight between unit i in group g' and unit j in group
+         * g.
          */
 #ifdef _OPENMP
 #pragma omp parallel for reduction(+:weight_cost, gradient_linearity, last_deltas_length, gradients_length)
@@ -1041,8 +1036,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                         weight_cost += pow(p->weights->elements[i][j], 2.0);
                         
                         /*
-                         * Compute the numerator of the
-                         * gradient linearity:
+                         * Compute the numerator of the gradient linearity:
                          *
                          * sum_i sum_j (Dw_ij(t-1) * dE/dw_ij)
                          */
@@ -1051,8 +1045,8 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                 * p->gradients->elements[i][j];
                         
                         /*
-                         * Compute the sum of squares of the
-                         * previous weight delta vector:
+                         * Compute the sum of squares of the previous weight
+                         * delta vector:
                          *
                          * sum_i sum_j (Dw_ij(t-1) ^ 2
                          */
@@ -1060,8 +1054,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                  pow(p->prev_deltas->elements[i][j], 2.0);
 
                         /*
-                         * Compute the sum of squares of the
-                         * gradients:
+                         * Compute the sum of squares of the gradients:
                          *
                          * sum_i sum_j (dE/dw_ij ^ 2)
                          */
@@ -1076,8 +1069,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
         }
 
         /*
-         * Add the local status statistics to the
-         * global status statistics.
+         * Add the local status statistics to the global status statistics.
          */
         n->status->weight_cost
                 += weight_cost;
@@ -1173,8 +1165,8 @@ void bp_recursively_update_dbd(struct network *n, struct group *g)
                 zero_out_matrix(p->gradients);
 
                 /*
-                 * During BPTT, we want to only adjust weights
-                 * in the network of the current timestep.
+                 * During BPTT, we want to only adjust weights in the
+                 * network of the current timestep.
                  */
                 if (p->recurrent)
                         continue;
@@ -1184,7 +1176,7 @@ void bp_recursively_update_dbd(struct network *n, struct group *g)
 }
 
 /*
- * This adjusts the weights and their learning rates of a projection p 
+ * This adjusts the weights and their learning rates of a projection p
  * between a group g' and g.
  */
 void bp_update_projection_dbd(struct network *n, struct group *g,
@@ -1197,8 +1189,8 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
         double gradients_length = 0.0;
 
         /*
-         * Adjust the weight and its learning rate between unit i in group g'
-         * and unit j in group g.
+         * Adjust the weight and its learning rate between unit i in group
+         * g' and unit j in group g.
          */
 #ifdef _OPENMP
 #pragma omp parallel for reduction(+:weight_cost, gradient_linearity, last_deltas_length, gradients_length)
@@ -1251,8 +1243,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                         weight_cost += pow(p->weights->elements[i][j], 2.0);
                         
                         /*
-                         * Compute the numerator of the
-                         * gradient linearity:
+                         * Compute the numerator of the gradient linearity:
                          *
                          * sum_i sum_j (Dw_ij(t-1) * dE/dw_ij)
                          */
@@ -1261,8 +1252,8 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                                 * p->gradients->elements[i][j];
                         
                         /*
-                         * Compute the sum of squares of the
-                         * previous weight delta vector:
+                         * Compute the sum of squares of the previous weight
+                         * delta vector:
                          *
                          * sum_i sum_j (Dw_ij(t-1) ^ 2
                          */
@@ -1270,8 +1261,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                                  pow(p->prev_deltas->elements[i][j], 2.0);
 
                         /*
-                         * Compute the sum of squares of the
-                         * gradients:
+                         * Compute the sum of squares of the gradients:
                          *
                          * sum_i sum_j (dE/dw_ij ^ 2)
                          */
@@ -1331,15 +1321,15 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                          * Determine the exponential average of the current
                          * and past gradients:
                          * 
-                         * dE/dw_ij_bar(t) = (1 - theta) * dE/dw_ij
-                         *     + theta * dE/dw_ij_bar(t-1)
+                         * dE/dw_ij_bar(t) = (1 - theta) * dE/dw_ij + theta
+                         *     * dE/dw_ij_bar(t-1)
                          */
                         double exp_average = (1.0 - DBD_BASE)
                                 * p->gradients->elements[i][j]
                                 + DBD_BASE * p->prev_gradients->elements[i][i];
 
                         /*
-                         * Store a copy of the current exponentional 
+                         * Store a copy of the current exponentional
                          * average.
                          */
                         p->prev_gradients->elements[i][j] = exp_average;
@@ -1347,8 +1337,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
         }
 
         /*
-         * Add the local status statistics to the
-         * global status statistics.
+         * Add the local status statistics to the global status statistics.
          */
         n->status->weight_cost
                 += weight_cost;
