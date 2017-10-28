@@ -112,10 +112,10 @@ void print_welcome()
                         "         ______                                                              \n"
                         "    __---   )  --_       MESH, version %s: http://hbrouwer.github.io/mesh/   \n"
                         "  --       /      -_                                                         \n"
-                        " /        (         )    (c) 2012-2016 Harm Brouwer <me@hbrouwer.eu>         \n"
+                        " /        (         )    (c) 2012-2017 Harm Brouwer <me@hbrouwer.eu>         \n"
                         "(         ____       )                                                       \n"
-                        "(      _--            )  Saarland University, Department of Computational    \n"
-                        " (____/         _____)   Linguistics and Phonetics (Psycholinguistics)       \n"
+                        "(      _--            )  Saarland University, Department of Language Science \n"
+                        " (____/         _____)   and Technology (Psycholinguistics)                  \n"
                         "      (____  ---  )                                                          \n"
                         "           \\ \\-__/       Licensed under the Apache License, Version 2.0      \n",
 
