@@ -64,6 +64,10 @@ const static struct command cmds[] = {
         {"exit",                    NULL,            &cmd_quit},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"help",                    NULL,            &cmd_help},
+        {"help",                    "%s",            &cmd_help},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"loadFile",                "%s",            &cmd_load_file},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -271,6 +275,24 @@ bool cmd_quit(char *cmd, char *fmt, struct session *s)
         dispose_session(s);
         exit(EXIT_SUCCESS);
 
+        return true;
+}
+
+bool cmd_help(char *cmd, char *fmt, struct session *s)
+{
+        char arg[MAX_ARG_SIZE];
+        bool help_on_topic = false;
+
+        if (strcmp(cmd, fmt) != 0) {
+                if (sscanf(cmd, fmt, arg) != 1) {
+                        return false;
+                } else {
+                        help_on_topic = true;
+                }
+        }
+
+        printf("Help: %i\n", help_on_topic);
+        
         return true;
 }
 
