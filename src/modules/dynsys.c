@@ -64,7 +64,7 @@ void dynsys_test_item(struct network *n, struct group *g, struct item *item)
                 feed_forward(n, n->input);
 
                 double t = dynsys_processing_time(n, pv, g->vector);
-                printf("Processing time for event %d: %f\n", i, t);
+                printf("processing time for event %d: %f\n", i, t);
 
                 copy_vector(pv, g->vector);
         }
