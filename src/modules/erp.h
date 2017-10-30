@@ -22,8 +22,8 @@
 
 void erp_contrast(struct network *n, struct group *gen,
                 struct item *control, struct item *target);
-/* void erp_generate_table(struct network *n, struct group *n400_gen, XXX: deprecated
-                struct group *p600_gen, char *filename); */
+/* void erp_generate_table(struct network *n, struct group *n400_gen,
+                struct group *p600_gen, char *filename); XXX: deprecated */
 void erp_amplitudes(struct network *n, struct group *n400_gen,
                 struct group *p600_gen);
 struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
