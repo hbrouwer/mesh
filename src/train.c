@@ -50,7 +50,7 @@ void train_network(struct network *n)
 
 void train_network_with_bp(struct network *n)
 {
-        /* make sure training set is order, if required */
+        /* make sure training set is ordered, if required */
         if (n->training_order == TRAIN_ORDERED)
                 order_set(n->asp);
 
@@ -168,7 +168,7 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
 
 void train_network_with_bptt(struct network *n)
 {
-        /* make sure training set is order, if required */
+        /* make sure training set is ordered, if required */
         if (n->training_order == TRAIN_ORDERED)
                 order_set(n->asp);
 
@@ -260,8 +260,7 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
                 // XXX: What about multi-stage training?
 
 shift_stack:
-                un->sp == un->stack_size - 1 ? rnn_shift_stack(un)
-                        : un->sp++;
+                un->sp == un->stack_size - 1 ? rnn_shift_stack(un) : un->sp++;
         }
 }
 

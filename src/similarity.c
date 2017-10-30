@@ -128,8 +128,7 @@ void rnn_network_sm(struct network *n, bool print, bool pprint,
                         }
 
 shift_stack:
-                        un->sp == un->stack_size - 1 ? rnn_shift_stack(un)
-                                : un->sp++;
+                        un->sp == un->stack_size - 1 ? rnn_shift_stack(un) : un->sp++;
                 }
         }
 

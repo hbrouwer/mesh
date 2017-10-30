@@ -53,7 +53,7 @@ void bp_recursively_update_qprop(struct network *n, struct group *g);
 void bp_update_projection_qprop(struct network *n, struct group *g,
                 struct projection *p);
 
-/* delta-bar-delta */
+/* delta-bar-delta backpropagation */
 void bp_update_dbd(struct network *n);
 void bp_recursively_update_dbd(struct network *n, struct group *g);
 void bp_update_projection_dbd(struct network *n, struct group *g,

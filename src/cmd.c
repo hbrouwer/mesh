@@ -263,7 +263,7 @@ bool cmd_quit(char *cmd, char *fmt, struct session *s)
         if (strcmp(cmd, fmt) != 0)
                 return false;
 
-        mprintf("Leaving MESH.");
+        mprintf("Goodbye.");
         
         dispose_session(s);
         exit(EXIT_SUCCESS);

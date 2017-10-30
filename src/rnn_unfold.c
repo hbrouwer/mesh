@@ -157,10 +157,11 @@ struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
          */
         for (uint32_t i = 0; i < un->stack_size; i++) {
                 un->stack[i] = rnn_duplicate_network(n);
-                if (i == 0)
+                if (i == 0) {
                         rnn_attach_recurrent_groups(un, un->stack[i]);
-                else
+                } else {
                         rnn_connect_duplicate_networks(un, un->stack[i - 1], un->stack[i]);
+                }
         }
         
         return un;
@@ -402,6 +403,7 @@ struct projection *rnn_duplicate_projection(
         dp->prev_gradients = prev_gradients;
         dp->prev_deltas = p->prev_deltas;     /* <-- shared */
         dp->dynamic_pars = p->dynamic_pars;   /* <-- shared */
+        
         // XXX: What about frozen projections?
 
         return dp;

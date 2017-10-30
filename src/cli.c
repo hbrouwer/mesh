@@ -23,7 +23,7 @@
 #include "main.h"
 
 /*
- * Command line interface loop
+ * Command line interface loop.
  */
 void cli_loop(struct session *s)
 {
@@ -37,7 +37,7 @@ void cli_loop(struct session *s)
                         if (s->anp->asp)
                                 cprintf(":%s", s->anp->asp->name);
                 } else {
-                        cprintf("mesh");
+                        cprintf("?");
                 }
                 cprintf("> ");
                 

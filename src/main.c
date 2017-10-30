@@ -30,7 +30,7 @@
 #include "math.h"
 #include "session.h"
 
-#define VERSION "0.99a"
+#define VERSION "0.1"
 
 int main(int argc, char **argv)
 {
@@ -108,29 +108,19 @@ void print_openmp_status()
 
 void print_welcome()
 {
-        mprintf(
-                        "         ______                                                              \n"
-                        "    __---   )  --_       MESH, version %s: http://hbrouwer.github.io/mesh/   \n"
-                        "  --       /      -_                                                         \n"
-                        " /        (         )    (c) 2012-2017 Harm Brouwer <me@hbrouwer.eu>         \n"
-                        "(         ____       )                                                       \n"
-                        "(      _--            )  Saarland University, Department of Language Science \n"
-                        " (____/         _____)   and Technology (Psycholinguistics)                  \n"
-                        "      (____  ---  )                                                          \n"
-                        "           \\ \\-__/       Licensed under the Apache License, Version 2.0      \n",
-
-                        VERSION);
+        mprintf("mesh, version %s: http://hbrouwer.github.io/mesh/", VERSION);
 }
 
 void print_help(char *exec_name)
 {
         mprintf(
-                        "Usage: %s [options-and-file]\n\n"
+                "Usage: %s [options-and-file]\n\n"
 
-                        "  Basic information for users:\n"
-                        "    --help\t\t\tShows this help message\n",
-
-                        exec_name);
+                "  Basic information for users:\n"
+                "    --help\t\t\tShows this help message\n",
+                
+                exec_name
+        );
 }
 
 /*
