@@ -2118,7 +2118,6 @@ bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
         mprintf(" ");
 
         return true;
-
 }
 
 bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s)
