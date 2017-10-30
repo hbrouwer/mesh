@@ -163,7 +163,6 @@ struct projection
         bool recurrent;             /* flags recurrent projections (BPTT) */
 };
 
-
                 /*****************************
                  **** activation function ****
                  *****************************/

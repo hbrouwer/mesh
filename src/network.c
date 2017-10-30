@@ -213,10 +213,10 @@ struct group *attach_bias_group(struct network *n, struct group *g)
         sprintf(tmp, "%s_bias", g->name);
         struct group *bg = create_group(tmp, 1, true, false);
 
-        bg->act_fun->fun = g->act_fun->fun;
+        bg->act_fun->fun   = g->act_fun->fun;
         bg->act_fun->deriv = g->act_fun->deriv;
         
-        bg->err_fun->fun = g->err_fun->fun;
+        bg->err_fun->fun   = g->err_fun->fun;
         bg->err_fun->deriv = g->err_fun->deriv;
 
         free(tmp);

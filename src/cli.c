@@ -52,7 +52,6 @@ void cli_loop(struct session *s)
                 process_command(line, s);
                 
                 memset(line, 0, num_chars);
-
         } while (!feof(stdin));
 
 error_out:

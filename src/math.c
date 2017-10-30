@@ -20,10 +20,10 @@
 #include "math.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Schraudolph's approximation of the exponentional function. See:
+Schraudolph's approximation of the exponential function. See:
 
-Schraudolph, N. N. (1999). A fast, compact approximation of the
-        exponentional function. Neural Computation, 11, 854-862.
+Schraudolph, N. N. (1999). A fast, compact approximation of the exponential
+        function. Neural Computation, 11, 854-862.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #ifdef FAST_EXP

@@ -155,22 +155,20 @@ double error_cross_entropy(struct group *g, struct vector *t, double tr,
                          * If d = 0 and y = 1, we obtain:
                          *
                          * log(0 / 1) * 0 + log((1 - 0) / (1 - 1)) * (1 - 0)
-                         *     = -Inf * 0 + Inf * 1
-                         *     = Inf
+                         *      = -Inf * 0 + Inf * 1
+                         *      = Inf
                          *
-                         * We handle this by incrementing ce with
-                         * LARGE_VALUE.
+                         * We handle this by incrementing ce with LARGE_VALUE.
                          */
                         if (y == 1.0)
                                 ce += LARGE_VALUE;
 
                         /*
-                         * If, by contrast, d = 0 and y != 1,
-                         * we obtain:
+                         * If, by contrast, d = 0 and y != 1, we obtain:
                          *
                          * log(0 / y) * 0 + log((1 - 0) / (1 - y)) * (1 - 0)
-                         *     = 0 + log(1 / (1 - y)) * 1
-                         *     = -log(1 - y)
+                         *      = 0 + log(1 / (1 - y)) * 1
+                         *      = -log(1 - y)
                          */
                         else
                                 ce += -log(1.0 - y);
@@ -179,11 +177,10 @@ double error_cross_entropy(struct group *g, struct vector *t, double tr,
                          * If d = 1 and y = 0, we obtain:
                          *
                          * log(1 / 0) * 1 + log((1 - 1) / (1 - 0)) * (1 - 1)
-                         *     = Inf * 1 + -Inf * 0
-                         *     = Inf
+                         *      = Inf * 1 + -Inf * 0
+                         *      = Inf
                          *
-                         * We handle this by incrementing ce with
-                         * LARGE_VALUE.
+                         * We handle this by incrementing ce with LARGE_VALUE.
                          */
                         if (y == 0.0)
                                 ce += LARGE_VALUE;
@@ -192,29 +189,27 @@ double error_cross_entropy(struct group *g, struct vector *t, double tr,
                          * If d = 1 and y != 0, we obtain:
                          *
                          * log(1 / y) * 1 + log((1 - 1) / (1 - y)) * (1 - 1)
-                         *    = log(1 / y) * 1 + 0
-                         *    = log(1 / y)
-                         *    = -log(y)
+                         *      = log(1 / y) * 1 + 0
+                         *      = log(1 / y)
+                         *      = -log(y)
                          */
                         else
                                 ce += -log(y);
                 } else {
                         /*
-                         * if d != 0 and d != 1, and y <= 0 or y >= 1.0,
-                         * we obtain:
+                         * if d != 0 and d != 1, and y <= 0 or y >= 1.0, we obtain:
                          *
                          * log(d / 0) * d + log((1 - d) / (1 - 0)) * (1 - d)
-                         *     = Inf * d + log((1 - d) / (1 - 0)) * (1 - d)
-                         *     = Inf
+                         *      = Inf * d + log((1 - d) / (1 - 0)) * (1 - d)
+                         *      = Inf
                          *
                          * or
                          *
                          * log(d / 1) * d + log((1 - d) / (1 - 1)) * (1 - d)
-                         *     = log(d / 1) * d + Inf * (1 - d)
-                         *     = Inf
+                         *      = log(d / 1) * d + Inf * (1 - d)
+                         *      = Inf
                          *
-                         * We handle this by incrementing ce with
-                         * LARGE_VALUE.
+                         * We handle this by incrementing ce with LARGE_VALUE.
                          */
                         if (y <= 0.0 || y >= 1.0)
                                 ce += LARGE_VALUE;
@@ -249,8 +244,8 @@ void error_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
                          * If d = 0 and 1 - y <= SMALL_VALUE, we obtain:
                          *
                          * (y - 0) / (y * (1 - y))
-                         *     = y / (y * SMALL_VALUE)
-                         *     = LARGE_VALUE
+                         *      = y / (y * SMALL_VALUE)
+                         *      = LARGE_VALUE
                          */
                         if (1.0 - y <= SMALL_VALUE)
                                 g->error->elements[i] = LARGE_VALUE;
@@ -258,8 +253,8 @@ void error_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
                          * If d = 0 and 1 - y > SMALL_VALUE, we obtain:
                          *
                          * (y - 0) / (y * (1 - y))
-                         *     = (y * 1) / (y * (1 - y))
-                         *     = 1 / (1 - y)
+                         *      = (y * 1) / (y * (1 - y))
+                         *      = 1 / (1 - y)
                          */
                         else
                                 g->error->elements[i] = 1.0 / (1.0 - y);
@@ -268,12 +263,12 @@ void error_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
                          * If d = 1 and y <= SMALL_VALUE, we obtain:
                          *
                          * (y - 1) / (y * (1 - y))
-                         *     = (SMALL_VALUE - 1) /
-                         *       (SMALL_VALUE * (1 - SMALL_VALUE))
-                         *     = (-1 * (1 - SMALL_VALUE)) / 
-                         *       (SMALL_VALUE * (1 - SMALL_VALUE))
-                         *     = -1 / SMALL_VALUE
-                         *     = -LARGE_VALUE
+                         *      = (SMALL_VALUE - 1) /
+                         *        (SMALL_VALUE * (1 - SMALL_VALUE))
+                         *      = (-1 * (1 - SMALL_VALUE)) / 
+                         *        (SMALL_VALUE * (1 - SMALL_VALUE))
+                         *      = -1 / SMALL_VALUE
+                         *      = -LARGE_VALUE
                          */
                         if (y <= SMALL_VALUE)
                                 g->error->elements[i] = -LARGE_VALUE;
@@ -281,8 +276,8 @@ void error_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
                          * If d = 1 and y > SMALL_VALUE, we obtain:
                          *
                          * (y - 1) / (y * (1 - y))
-                         *     = (-1 * (1 - y)) / (y * (1 - y))
-                         *     = -1 / y
+                         *      = (-1 * (1 - y)) / (y * (1 - y))
+                         *      = -1 / y
                          */
                         else
                                 g->error->elements[i] = -1.0 / y;
@@ -292,7 +287,7 @@ void error_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
                          * SMALL_VALUE, we obtain:
                          *
                          * (y - d) / SMALL_VALUE
-                         *     = (y = d) * LARGE_VALUE
+                         *      = (y = d) * LARGE_VALUE
                          */
                         if (y * (1.0 - y) <= SMALL_VALUE)
                                 g->error->elements[i] = (y - d) * LARGE_VALUE;
@@ -352,7 +347,7 @@ double error_divergence(struct group *g, struct vector *t, double tr,
                  * If y <= SMALL_VALUE, we obtain:
                  *
                  * log(d / SMALL_VALUE) * d
-                 *     = log(d * LARGE_VALUE) * d
+                 *      = log(d * LARGE_VALUE) * d
                  */
                 } else if (y <= SMALL_VALUE) {
                         de += d * log(d * LARGE_VALUE);
@@ -394,8 +389,8 @@ void error_divergence_deriv(struct group *g, struct vector *t, double tr,
                  * If y <= SMALL_VALUE, we obtain:
                  *
                  * -d / y 
-                 *     = -d / SMALL_VALUE
-                 *     = -d * LARGE_VALUE
+                 *      = -d / SMALL_VALUE
+                 *      = -d * LARGE_VALUE
                  */
                 } else if (y <= SMALL_VALUE) {
                         g->error->elements[i] = -d * LARGE_VALUE;
