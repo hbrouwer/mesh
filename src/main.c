@@ -61,7 +61,7 @@ int main(int argc, char **argv)
                 }
         }
 
-        mprintf("type 'help' or '?' for help");
+        // mprintf("type 'help' or '?' for help");
         cli_loop(s);
 
 leave_session:
@@ -115,9 +115,9 @@ void print_welcome()
 void print_help(char *exec_name)
 {
         mprintf(
-                "Usage: %s [options-and-file]\n\n"
+                "usage: %s [options-and-file]\n\n"
 
-                "  Basic information for users:\n"
+                "  basic information for users:\n"
                 "    --help\t\t\tShows this help message\n",
                 
                 exec_name
@@ -157,7 +157,7 @@ void eprintf(const char *fmt, ...)
         va_list args;
 
         fprintf(stderr, "\x1b[31m");
-        fprintf(stderr, "ERROR: ");
+        fprintf(stderr, "error: ");
         va_start(args, fmt);
         vfprintf(stderr, fmt, args);
         va_end(args);
