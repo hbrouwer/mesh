@@ -204,14 +204,14 @@ error_out:
 struct group *attach_bias_group(struct network *n, struct group *g)
 {
         /* create a new "bias" group */
-        char *tmp;
+        char *bgn;
         size_t block_size = (strlen(g->name) + 6) * sizeof(char);
-        if (!(tmp = malloc(block_size)))
+        if (!(bgn = malloc(block_size)))
                 goto error_out;
-        memset(tmp, 0, sizeof(block_size));
+        memset(bgn, 0, sizeof(block_size));
 
-        sprintf(tmp, "%s_bias", g->name);
-        struct group *bg = create_group(tmp, 1, true, false);
+        sprintf(bgn, "%s_bias", g->name);
+        struct group *bg = create_group(bgn, 1, true, false);
 
         bg->act_fun->fun   = g->act_fun->fun;
         bg->act_fun->deriv = g->act_fun->deriv;
@@ -219,7 +219,7 @@ struct group *attach_bias_group(struct network *n, struct group *g)
         bg->err_fun->fun   = g->err_fun->fun;
         bg->err_fun->deriv = g->err_fun->deriv;
 
-        free(tmp);
+        free(bgn);
 
         /* add "bias" group to the network */
         add_to_array(n->groups, bg);
@@ -518,7 +518,7 @@ void save_weight_matrix(struct group *g, FILE *fd)
                         fprintf(fd, "\n");
                 }
 
-                mprintf("Wrote weights for projection '%s -> %s'",
+                mprintf("... wrote weights for projection '%s -> %s'",
                                 ip->to->name, g->name);
         }
 
@@ -548,19 +548,19 @@ bool load_weight_matrices(struct network *n, char *fn)
 
         char buf[MAX_BUF_SIZE];
         while (fgets(buf, sizeof(buf), fd)) {
-                char tmp1[MAX_ARG_SIZE], tmp2[MAX_ARG_SIZE];
+                char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
 
-                if (sscanf(buf, "%s -> %s", tmp1, tmp2) != 2)
+                if (sscanf(buf, "%s -> %s", arg1, arg2) != 2)
                         continue;
 
                 /* find the groups for the projection */
                 struct group *g1, *g2;
-                if ((g1 = find_array_element_by_name(np->groups, tmp1)) == NULL) {
-                        eprintf("No such group '%s'", tmp1);
+                if ((g1 = find_array_element_by_name(np->groups, arg1)) == NULL) {
+                        eprintf("no such group '%s'", arg1);
                         continue;
                 }
-                if ((g2 = find_array_element_by_name(np->groups, tmp2)) == NULL) {
-                        eprintf("No such group '%s'", tmp2);
+                if ((g2 = find_array_element_by_name(np->groups, arg2)) == NULL) {
+                        eprintf("no such group '%s'", arg2);
                         continue;
                 }
 
@@ -584,8 +584,8 @@ bool load_weight_matrices(struct network *n, char *fn)
                         }
                 }
 
-                mprintf("Read weights for projection '%s -> %s'",
-                                tmp1, tmp2);
+                mprintf("... read weights for projection '%s -> %s'",
+                                arg1, arg2);
         }
 
         fclose(fd);
