@@ -61,6 +61,7 @@ int main(int argc, char **argv)
                 }
         }
 
+        mprintf("type 'help' or '?' for help");
         cli_loop(s);
 
 leave_session:

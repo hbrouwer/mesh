@@ -33,11 +33,11 @@ void cli_loop(struct session *s)
         do {
                 /* prompt */
                 if (s->anp) {
-                        cprintf("%s", s->anp->name);
+                        cprintf("%s:", s->anp->name);
                         if (s->anp->asp)
-                                cprintf(":%s", s->anp->asp->name);
+                                cprintf("%s", s->anp->asp->name);
                 } else {
-                        cprintf("?");
+                        cprintf(":");
                 }
                 cprintf("> ");
                 

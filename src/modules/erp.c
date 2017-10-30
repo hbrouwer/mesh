@@ -66,6 +66,7 @@ void erp_contrast(struct network *n, struct group *gen,
 /*
  * XXX: deprecated (for legacy purposes only)
  */
+/*
 void erp_generate_table(struct network *n, struct group *n400_gen,
                 struct group *p600_gen, char *filename)
 {
@@ -77,7 +78,6 @@ void erp_generate_table(struct network *n, struct group *n400_gen,
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
 
-                /* ERP amplitudes */
                 struct vector *n4av = erp_amplitudes_for_item(n, n400_gen, item);
                 struct vector *p6av = erp_amplitudes_for_item(n, p600_gen, item);
                 
@@ -98,6 +98,7 @@ error_out:
         perror("[erp_generate_table()]");
         return;
 }
+*/
 
 void erp_amplitudes(struct network *n, struct group *n400_gen,
                 struct group *p600_gen)

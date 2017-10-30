@@ -65,7 +65,9 @@ const static struct command cmds[] = {
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"help",                    NULL,            &cmd_help},
+        {"?",                       NULL,            &cmd_help},
         {"help",                    "%s",            &cmd_help},
+        {"?",                       "%s",            &cmd_help},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"loadFile",                "%s",            &cmd_load_file},
@@ -180,7 +182,7 @@ const static struct command cmds[] = {
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"erpContrast",             "%s \"%[^\"]\" \"%[^\"]\"",
                                                      &cmd_erp_contrast},
-        {"erpGenerateTable",        "%s %s %s",      &cmd_erp_generate_table}, /* XXX: deprecated */
+        /* {"erpGenerateTable",        "%s %s %s",      &cmd_erp_generate_table}, XXX: deprecated */
         {"erpAmplitudes",           "%s %s",         &cmd_erp_amplitudes},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -292,6 +294,8 @@ bool cmd_help(char *cmd, char *fmt, struct session *s)
         }
 
         printf("Help: %i\n", help_on_topic);
+        if (help_on_topic)
+                cprintf("%s\n", arg);
         
         return true;
 }
@@ -1963,6 +1967,7 @@ bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
 /*
  * XXX: deprecated (for legacy purposes only)
  */
+/*
 bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE], arg3[MAX_ARG_SIZE];
@@ -1985,6 +1990,7 @@ bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s)
 
         return true;
 }
+*/
 
 bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s)
 {

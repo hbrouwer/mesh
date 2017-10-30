@@ -101,7 +101,7 @@ bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s);
 bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s);
 
 bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s);
-bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s); /* XXX: deprecated */
+/* bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s); XXX: deprecated */
 bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s);
 
 bool cmd_dss_test(char *cmd, char *fmt, struct session *s);
