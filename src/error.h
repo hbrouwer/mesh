@@ -20,6 +20,9 @@
 #include "network.h"
 #include "vector.h"
 
+#define LARGE_VALUE 1e10
+#define SMALL_VALUE 1e-10
+
 double adjust_target(double y, double d, double tr, double zr);
 
 /* sum of squares */
