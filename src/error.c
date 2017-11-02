@@ -135,9 +135,6 @@ Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
      University, Department of Computer Science).
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#define LARGE_VALUE 1e10
-#define SMALL_VALUE 1e-10
-
 double error_cross_entropy(struct group *g, struct vector *t, double tr,
                 double zr)
 {

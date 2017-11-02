@@ -268,10 +268,10 @@ void print_training_progress(struct network *n)
 {
         if (n->status->epoch == 1 || n->status->epoch % n->report_after == 0)
                 pprintf("%.4d \t %lf \t %lf \t %lf\n",
-                                n->status->epoch,
-                                n->status->error,
-                                n->status->weight_cost,
-                                n->status->gradient_linearity);
+                        n->status->epoch,
+                        n->status->error,
+                        n->status->weight_cost,
+                        n->status->gradient_linearity);
 }
 
 void print_training_summary(struct network *n)
