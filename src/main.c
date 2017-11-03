@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 {
         struct session *s;
 
-        cprintf("mesh, version %s: http://hbrouwer.github.io/mesh/\n", VERSION);
+        cprintf("Mesh, version %s: http://hbrouwer.github.io/mesh/\n", VERSION);
 #ifdef FAST_EXP
         print_fast_exp_status();
 #endif /* FAST_EXP */
@@ -152,7 +152,7 @@ void pprintf(const char *fmt, ...)
 {
         va_list args;
 
-        fprintf(stdout, "| ");
+        fprintf(stdout, "*** ");
         va_start(args, fmt);
         vfprintf(stdout, fmt, args);
         va_end(args);

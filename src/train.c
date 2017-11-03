@@ -287,7 +287,7 @@ void scale_learning_rate(struct network *n)
         if (sa > 0 && n->status->epoch % sa == 0) {
                 double lr = n->learning_rate;
                 n->learning_rate *= n->lr_scale_factor;
-                mprintf("Scaled learning rate ... \t ( %lf => %lf )\n",
+                mprintf("scaled learning rate ... \t ( %lf => %lf )\n",
                                 lr, n->learning_rate);
         }
 }
@@ -298,7 +298,7 @@ void scale_momentum(struct network *n)
         if (sa > 0 && n->status->epoch % sa == 0) {
                 double mn = n->momentum;
                 n->momentum *= n->mn_scale_factor;
-                mprintf("Scaled momentum ... \t ( %lf => %lf )\n",
+                mprintf("scaled momentum ... \t ( %lf => %lf )\n",
                                 mn, n->momentum);
         }
 }
@@ -309,7 +309,7 @@ void scale_weight_decay(struct network *n)
         if (sa > 0 && n->status->epoch % sa == 0) {
                 double wd = n->weight_decay;
                 n->weight_decay *= n->wd_scale_factor;
-                mprintf("Scaled weight decay ... \t ( %lf => %lf)\n",
+                mprintf("scaled weight decay ... \t ( %lf => %lf)\n",
                                 wd, n->weight_decay);
         }
 }
