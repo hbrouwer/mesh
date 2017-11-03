@@ -31,5 +31,6 @@ void help(char *help_topic)
                 }
         }
 
+        /* if no topic is found, show general help */
         help("general");
 }

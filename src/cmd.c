@@ -298,11 +298,6 @@ bool cmd_help(char *cmd, char *fmt, struct session *s)
                 help(arg);
         else
                 help("general");
-        /*
-        printf("Help: %i\n", help_on_topic);
-        if (help_on_topic)
-                cprintf("%s\n", arg);
-                */
         
         return true;
 }
