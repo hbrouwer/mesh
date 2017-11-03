@@ -223,12 +223,12 @@ void process_command(char *cmd, struct session *s)
         for (uint32_t i = 0; cmds[i].cmd_base != NULL; i++) {
                 if (req_network && !s->anp) {
                         eprintf("Cannot process command: %s\n", cmd);
-                        eprintf("No active network\n");
+                        eprintf("(no active network)\n");
                         return;
                 }
                 else if (req_init_network && !s->anp->initialized) {
                         eprintf("Cannot process command: %s\n", cmd);
-                        eprintf("Uninitialized network--use 'init' command to initialize\n");
+                        eprintf("(uninitialized network--use `init` command to initialize)\n");
                         return;
                 }
                 else if (strncmp(cmd, cmds[i].cmd_base, strlen(cmds[i].cmd_base)) == 0) {
