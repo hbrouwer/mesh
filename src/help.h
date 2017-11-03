@@ -18,13 +18,26 @@
 #define HELP_H
 
 #define TOPIC_GENERAL \
-"### Welcome to MESH"
-
+"# Welcome to Mesh                                                      \n" \
+"                                                                       \n" \
+"Mesh is an artificial neural network simulator, primarily designed as  \n" \
+"a fast, general-purpose backpropagation simulator with flexibility and \n" \
+"extensibility in mind.                                                 \n" \
+"                                                                       \n" \
+"## Quick-start                                                         \n" \
+"                                                                       \n" \
+"Mesh is command driven. Type `quit` or `exit` to leave this session.   \n" \
+"Type `help` to show this information, or type `help <topic>` to show   \n" \
+"help on a specific topic. Topics include:                              \n" \
+"                                                                       \n" \
+"* networks: creating different network architectures and topologies;   \n" \
+"* training: training networks;                                         \n"
+ 
 #define TOPIC_NETWORKS \
-"### Networks "
+"# Networks                                                             \n"
 
 #define TOPIC_TRAINING \
-"### Training"
+"# Training                                                             \n"
 
 struct help
 {

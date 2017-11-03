@@ -26,7 +26,7 @@ void help(char *help_topic)
         for (uint32_t i = 0; hts[i].help_topic != NULL; i++) {
                 if (strncmp(help_topic, hts[i].help_topic,
                         strlen(hts[i].help_topic)) == 0) {
-                                printf("%s\n", hts[i].help_text);
+                                printf("\n%s\n", hts[i].help_text);
                                 return;
                 }
         }
