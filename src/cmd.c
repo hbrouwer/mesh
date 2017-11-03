@@ -222,13 +222,13 @@ void process_command(char *cmd, struct session *s)
         /* command */
         for (uint32_t i = 0; cmds[i].cmd_base != NULL; i++) {
                 if (req_network && !s->anp) {
-                        eprintf("cannot process command: %s", cmd);
-                        eprintf("no active network");
+                        eprintf("cannot process command: %s\n", cmd);
+                        eprintf("no active network\n");
                         return;
                 }
                 else if (req_init_network && !s->anp->initialized) {
-                        eprintf("cannot process command: %s", cmd);
-                        eprintf("uninitialized network--use 'init' command to initialize");
+                        eprintf("cannot process command: %s\n", cmd);
+                        eprintf("uninitialized network--use 'init' command to initialize\n");
                         return;
                 }
                 else if (strncmp(cmd, cmds[i].cmd_base, strlen(cmds[i].cmd_base)) == 0) {
@@ -253,8 +253,8 @@ void process_command(char *cmd, struct session *s)
 
         /* invalid command */
         if (strlen(cmd) > 1) {
-                eprintf("invalid command: %s", cmd); 
-                eprintf("(type 'help' for a list of valid commands)");
+                eprintf("invalid command: %s\n", cmd); 
+                eprintf("(type 'help' for a list of valid commands)\n");
         }
 
         return;
@@ -273,7 +273,7 @@ bool cmd_quit(char *cmd, char *fmt, struct session *s)
         if (strcmp(cmd, fmt) != 0)
                 return false;
 
-        mprintf("Goodbye.");
+        cprintf("Goodbye.\n");
         
         dispose_session(s);
         exit(EXIT_SUCCESS);
@@ -310,7 +310,7 @@ bool cmd_load_file(char *cmd, char *fmt, struct session *s)
 
         FILE *fd;
         if (!(fd = fopen(arg, "r"))) {
-                eprintf("cannot open file '%s'", arg);
+                eprintf("cannot open file '%s'\n", arg);
                 return true;
         }
 
@@ -322,7 +322,7 @@ bool cmd_load_file(char *cmd, char *fmt, struct session *s)
 
         fclose(fd);
 
-        mprintf("loaded file \t\t\t [ %s ]", arg);
+        mprintf("loaded file \t\t\t [ %s ]\n", arg);
 
         return true;
 }
@@ -344,12 +344,12 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s)
         else if (strcmp(arg2, "rnn") == 0)
                 type = TYPE_RNN;
         else {
-                eprintf("cannot create network--invalid network type: '%s'", arg2);
+                eprintf("cannot create network--invalid network type: '%s'\n", arg2);
                 return true;
         }
 
         if (find_array_element_by_name(s->networks, arg1)) {
-                eprintf("cannot create network--network '%s' already exists", arg1);
+                eprintf("cannot create network--network '%s' already exists\n", arg1);
                 return true;
         }
         
@@ -357,7 +357,7 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s)
         add_to_array(s->networks, n);
         s->anp = n;
 
-        mprintf("created network \t\t [ %s :: %s ]", arg1, arg2);
+        mprintf("created network \t\t [ %s :: %s ]\n", arg1, arg2);
 
         return true;
 }
@@ -370,7 +370,7 @@ bool cmd_dispose_network(char *cmd, char *fmt, struct session *s)
 
         struct network *n = find_array_element_by_name(s->networks, arg);
         if (!n) {
-                eprintf("cannot dispose network--no such network '%s'", arg);
+                eprintf("cannot dispose network--no such network '%s'\n", arg);
                 return true;
         }
 
@@ -379,7 +379,7 @@ bool cmd_dispose_network(char *cmd, char *fmt, struct session *s)
         remove_from_array(s->networks, n);
         dispose_network(n);
 
-        mprintf("disposed network \t\t [ %s ]", arg);
+        mprintf("disposed network \t\t [ %s ]\n", arg);
 
         return true;
 }
@@ -415,12 +415,12 @@ bool cmd_change_network(char *cmd, char *fmt, struct session *s)
 
         struct network *n = find_array_element_by_name(s->networks, arg);
         if (!n) {
-                eprintf("cannot change to network--no such network '%s'", arg);
+                eprintf("cannot change to network--no such network '%s'\n", arg);
                 return true;
         }
         s->anp = n;
 
-        mprintf("changed to network \t [ %s ]", arg);
+        mprintf("changed to network \t [ %s ]\n", arg);
 
         return true;
 }
@@ -433,19 +433,19 @@ bool cmd_create_group(char *cmd, char *fmt, struct session *s)
                 return false;
 
         if (find_array_element_by_name(s->anp->groups, arg)) {
-                eprintf("cannot create group--group '%s' already exists in network '%s'",
+                eprintf("cannot create group--group '%s' already exists in network '%s'\n",
                                 arg, s->anp->name);
                 return true;
         }
         if (!(arg_int > 0)) {
-                eprintf("cannot create group--group size should be positive");
+                eprintf("cannot create group--group size should be positive\n");
                 return true;
         }
 
         struct group *g = create_group(arg, arg_int, false, false);
         add_to_array(s->anp->groups, g);
 
-        mprintf("created group \t\t [ %s :: %d ]", arg, arg_int);
+        mprintf("created group \t\t [ %s :: %d ]\n", arg, arg_int);
 
         return true;
 }
@@ -458,7 +458,7 @@ bool cmd_dispose_group(char *cmd, char *fmt, struct session *s)
 
         struct group *g = find_array_element_by_name(s->anp->groups, arg);
         if (g == NULL) {
-                eprintf("cannot dispose group--no such group '%s'", arg);
+                eprintf("cannot dispose group--no such group '%s'\n", arg);
                 return true;
         }
 
@@ -502,7 +502,7 @@ bool cmd_dispose_group(char *cmd, char *fmt, struct session *s)
         remove_from_array(s->anp->groups, g);
         dispose_group(g);
 
-        mprintf("disposed group \t\t [ %s ]", arg);
+        mprintf("disposed group \t\t [ %s ]\n", arg);
 
         return true;
 }
@@ -540,7 +540,7 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct session *s)
 
         struct group *g = find_array_element_by_name(s->anp->groups, arg);
         if (g == NULL) {
-                eprintf("cannot attach bias group--no such group '%s'", arg);
+                eprintf("cannot attach bias group--no such group '%s'\n", arg);
                 return true;
         }
 
@@ -548,7 +548,7 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct session *s)
         if (asprintf(&arg_bias, "%s_bias", arg) < 0)
                 goto error_out;
         if (find_array_element_by_name(s->anp->groups, arg_bias)) {
-                eprintf("cannot attach bias group--group '%s' already exists in network '%s'",
+                eprintf("cannot attach bias group--group '%s' already exists in network '%s'\n",
                                 arg_bias, s->anp->name);
                 return true;
         }
@@ -556,7 +556,7 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct session *s)
 
         struct group *bg = attach_bias_group(s->anp, g);
 
-        mprintf("attached bias to group \t [ %s -> %s ]", bg->name, g->name);
+        mprintf("attached bias to group \t [ %s -> %s ]\n", bg->name, g->name);
 
         return true;
 
@@ -581,16 +581,16 @@ bool cmd_set_io_group(char *cmd, char *fmt, struct session *s)
 
         struct group *g = find_array_element_by_name(s->anp->groups, arg);
         if (g == NULL) {
-                eprintf("cannot set input group--no such group '%s'", arg);
+                eprintf("cannot set input group--no such group '%s'\n", arg);
                 return true;
         }
 
         if (type == GTYPE_INPUT) {
                 s->anp->input = g;
-                mprintf("set input group \t\t [ %s ]", arg);
+                mprintf("set input group \t\t [ %s ]\n", arg);
         } else {
                 s->anp->output = g;
-                mprintf("set output group \t\t [ %s ]", arg);
+                mprintf("set output group \t\t [ %s ]\n", arg);
         }
 
         return true;
@@ -604,7 +604,7 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
 
         struct group *g = find_array_element_by_name(s->anp->groups, arg1);
         if (g == NULL) {
-                eprintf("cannot set activation function--no such group '%s'", arg1);
+                eprintf("cannot set activation function--no such group '%s'\n", arg1);
                 return true;
         }
 
@@ -638,11 +638,11 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
                 g->act_fun->fun   = act_fun_step;
                 g->act_fun->deriv = act_fun_step_deriv;
         } else {
-                eprintf("cannot set activation function--no such activation function '%s'", arg2);
+                eprintf("cannot set activation function--no such activation function '%s'\n", arg2);
                 return true;
         }
 
-        mprintf("set activation function \t [ %s :: %s ]", arg1, arg2);
+        mprintf("set activation function \t [ %s :: %s ]\n", arg1, arg2);
 
         return true;
 }
@@ -655,7 +655,7 @@ bool cmd_set_err_func(char *cmd, char *fmt, struct session *s)
 
         struct group *g = find_array_element_by_name(s->anp->groups, arg1);
         if (g == NULL) {
-                eprintf("cannot set error function--no such group '%s'", arg1);
+                eprintf("cannot set error function--no such group '%s'\n", arg1);
                 return true;
         }
 
@@ -674,11 +674,11 @@ bool cmd_set_err_func(char *cmd, char *fmt, struct session *s)
                 g->err_fun->fun   = error_divergence;
                 g->err_fun->deriv = error_divergence_deriv;
         } else {
-                eprintf("cannot set error function--no such error function '%s'", arg2);
+                eprintf("cannot set error function--no such error function '%s'\n", arg2);
                 return true;
         }
 
-        mprintf("set error function \t\t [ %s :: %s ]", arg1, arg2);
+        mprintf("set error function \t\t [ %s :: %s ]\n", arg1, arg2);
 
         return true;
 }
@@ -692,9 +692,9 @@ bool cmd_toggle_act_lookup(char *cmd, char *fmt, struct session *s)
         
         if (s->anp->act_lookup) {
                 initialize_act_lookup_vectors(s->anp);
-                mprintf("toggle activation lookup \t [ on ]");
+                mprintf("toggle activation lookup \t [ on ]\n");
         } else {
-                mprintf("toggle activation lookup \t [ off ]");
+                mprintf("toggle activation lookup \t [ off ]\n");
         }
 
         return true;
@@ -710,11 +710,11 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
         struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
 
         if (fg == NULL) {
-                eprintf("cannot set projection--no such group '%s'", arg1);
+                eprintf("cannot set projection--no such group '%s'\n", arg1);
                 return true;
         }
         if (tg == NULL) {
-                eprintf("cannot set projection--no such group '%s'", arg2);
+                eprintf("cannot set projection--no such group '%s'\n", arg2);
                 return true;
         }
 
@@ -725,7 +725,7 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
                 if (((struct projection *)fg->out_projs->elements[i])->to == tg)
                         exists = true;
         if (exists) {
-                eprintf("cannot set projection--projection '%s -> %s' already exists",
+                eprintf("cannot set projection--projection '%s -> %s' already exists\n",
                                 arg1, arg2);
                 return true;
         }
@@ -764,7 +764,7 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
                 add_to_array(tg->inc_projs, ip);
         }
 
-        mprintf("created projection \t\t [ %s -> %s ]", arg1, arg2);
+        mprintf("created projection \t\t [ %s -> %s ]\n", arg1, arg2);
 
         return true;
 }
@@ -779,11 +779,11 @@ bool cmd_dispose_projection(char *cmd, char *fmt, struct session *s)
         struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
 
         if (fg == NULL) {
-                eprintf("cannot dispose projection--no such group '%s'", arg1);
+                eprintf("cannot dispose projection--no such group '%s'\n", arg1);
                 return  true;
         }
         if (tg == NULL) {
-                eprintf("cannot dispose projection--no such group '%s'", arg2);
+                eprintf("cannot dispose projection--no such group '%s'\n", arg2);
                 return true;
         }
 
@@ -804,12 +804,12 @@ bool cmd_dispose_projection(char *cmd, char *fmt, struct session *s)
                 free(tg_to_fg);
                 s->anp->initialized = false;
         } else {
-                eprintf("cannot dispose projection--no projection between groups '%s' and '%s')",
+                eprintf("cannot dispose projection--no projection between groups '%s' and '%s')\n",
                                 arg1, arg2);
                 return true;
         }
 
-        mprintf("disposed projection \t [ %s -> %s ]", arg1, arg2);
+        mprintf("disposed projection \t [ %s -> %s ]\n", arg1, arg2);
 
         return true;
 }
@@ -824,26 +824,26 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s)
         struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
 
         if (fg == NULL) {
-                eprintf("cannot set Elman-projection--no such group '%s'", arg1);
+                eprintf("cannot set Elman-projection--no such group '%s'\n", arg1);
                 return true;
         }
         if (tg == NULL) {
-                eprintf("cannot set Elman-projection--no such group '%s'", arg2);
+                eprintf("cannot set Elman-projection--no such group '%s'\n", arg2);
                 return true;
         }
         if (fg == tg) {
-                eprintf("cannot set Elman-projection--projection is recurrent for group '%s'", fg->name);
+                eprintf("cannot set Elman-projection--projection is recurrent for group '%s'\n", fg->name);
                 return true;
         }
         if (fg->vector->size != tg->vector->size) {
-                eprintf("cannot set Elman-projection--groups '%s' and '%s' have unequal vector sizes (%d and %d)",
+                eprintf("cannot set Elman-projection--groups '%s' and '%s' have unequal vector sizes (%d and %d)\n",
                                 fg->name, tg->name, fg->vector->size, tg->vector->size);
                 return true;
         }
 
         for (uint32_t i = 0; i < fg->ctx_groups->num_elements; i++) {
                 if (fg->ctx_groups->elements[i] == tg) {
-                        eprintf("cannot set Elman-projection--Elman-projection '%s -> %s' already exists",
+                        eprintf("cannot set Elman-projection--Elman-projection '%s -> %s' already exists\n",
                                 arg1, arg2);
                         return true;
                 }
@@ -852,7 +852,7 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s)
         add_to_array(fg->ctx_groups, tg);
         reset_context_groups(s->anp);
 
-        mprintf("created Elman projection \t [ %s -> %s ]", arg1, arg2);
+        mprintf("created Elman projection \t [ %s -> %s ]\n", arg1, arg2);
 
         return true;
 }
@@ -867,11 +867,11 @@ bool cmd_dispose_elman_projection(char *cmd, char *fmt, struct session *s)
         struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
 
         if (fg == NULL) {
-                eprintf("cannot dispose Elman-projection--no such group '%s'", arg1);
+                eprintf("cannot dispose Elman-projection--no such group '%s'\n", arg1);
                 return true;
         }
         if (tg == NULL) {
-                eprintf("cannot dispose Elman-projection--no such group '%s'", arg2);
+                eprintf("cannot dispose Elman-projection--no such group '%s'\n", arg2);
                 return true;
         }
 
@@ -884,12 +884,12 @@ bool cmd_dispose_elman_projection(char *cmd, char *fmt, struct session *s)
                 }
         }
         if (!removed) {
-                eprintf("cannot dispose Elman-projection--no Elman projection from group '%s' to '%s'",
+                eprintf("cannot dispose Elman-projection--no Elman projection from group '%s' to '%s'\n",
                                 arg1, arg2);
                 return true;
         }
 
-        mprintf("disposed Elman projection \t [ %s -> %s ]", arg1, arg2);
+        mprintf("disposed Elman projection \t [ %s -> %s ]\n", arg1, arg2);
         
         return true;
 
@@ -972,11 +972,11 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
         struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
 
         if (fg == NULL) {
-                eprintf("cannot freeze projection--no such group '%s'", arg1);
+                eprintf("cannot freeze projection--no such group '%s'\n", arg1);
                 return true;
         }
         if (tg == NULL) {
-                eprintf("cannot freeze projection--no such group '%s'", arg2);
+                eprintf("cannot freeze projection--no such group '%s'\n", arg2);
                 return true;
         }
 
@@ -994,12 +994,12 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
                 fg_to_tg->frozen = true;
                 tg_to_fg->frozen = true;
         } else {
-                eprintf("cannot freeze projection--no projection between groups '%s' and '%s')",
+                eprintf("cannot freeze projection--no projection between groups '%s' and '%s')\n",
                                 arg1, arg2);
                 return true;
         }
 
-        mprintf("froze projection \t\t [ %s -> %s ]", arg1, arg2);
+        mprintf("froze projection \t\t [ %s -> %s ]\n", arg1, arg2);
 
         return true;
 }
@@ -1039,15 +1039,15 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
         struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
 
         if (fg == NULL) {
-                eprintf("cannot set tunnel projection--no such group '%s'", arg1);
+                eprintf("cannot set tunnel projection--no such group '%s'\n", arg1);
                 return true;
         }
         if (tg == NULL) {
-                eprintf("cannot set tunnel projection--no such group '%s'", arg2);
+                eprintf("cannot set tunnel projection--no such group '%s'\n", arg2);
                 return true;
         }
         if (fg == tg) {
-                eprintf("cannot set recurrent tunnel projection");
+                eprintf("cannot set recurrent tunnel projection\n");
                 return true;
         }
 
@@ -1059,14 +1059,14 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
                 if (((struct projection *)fg->out_projs->elements[i])->to == tg)
                         exists = true;
         if (exists) {
-                eprintf("cannot set tunnel projection--projection '%s -> %s' already exists",
+                eprintf("cannot set tunnel projection--projection '%s -> %s' already exists\n",
                                 arg1, arg2);
                 return true;
         }
 
         /* check ranges */
         if (arg_int2 - arg_int1 != arg_int4 - arg_int3) {
-                eprintf("cannot set tunnel projection--indices [%d:%d] and [%d:%d] cover differ ranges",
+                eprintf("cannot set tunnel projection--indices [%d:%d] and [%d:%d] cover differ ranges\n",
                                 arg_int1, arg_int2, arg_int3, arg_int4);
                 return true;
         }
@@ -1078,7 +1078,7 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
                         || arg_int2 > fg->vector->size
                         || arg_int2 < arg_int1)
         {
-                eprintf("cannot set tunnel projection--indices [%d:%d] out of bounds",
+                eprintf("cannot set tunnel projection--indices [%d:%d] out of bounds\n",
                                 arg_int1, arg_int2);
                 return true;
         }
@@ -1090,7 +1090,7 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
                         || arg_int4 > tg->vector->size
                         || arg_int4 < arg_int3)
         {
-                eprintf("cannot set tunnel projection--indices [%d:%d] out of bounds",
+                eprintf("cannot set tunnel projection--indices [%d:%d] out of bounds\n",
                                 arg_int3, arg_int4);
                 return true;
         }
@@ -1132,7 +1132,7 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
         for (uint32_t r = arg_int1 - 1, c = arg_int3 - 1; r < arg_int2 && c < arg_int4; r++, c++) 
                 weights->elements[r][c] = 1.0;
 
-        mprintf("created tunnel projection \t [ %s [%d:%d] -> %s [%d:%d] ]",
+        mprintf("created tunnel projection \t [ %s [%d:%d] -> %s [%d:%d] ]\n",
                         arg1, arg_int1, arg_int2, arg2, arg_int3, arg_int4);
 
         return true;
@@ -1142,19 +1142,19 @@ bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s)
 {
         /* batch size */
         if (sscanf(cmd, "set BatchSize %d", &s->anp->batch_size) == 1)
-                mprintf("set batch size \t\t [ %d ]", s->anp->batch_size);
+                mprintf("set batch size \t\t [ %d ]\n", s->anp->batch_size);
         /* max number of epochs */
         else if (sscanf(cmd, "set MaxEpochs %d", &s->anp->max_epochs) == 1)
-                mprintf("set maximum #epochs \t [ %d ]", s->anp->max_epochs);
+                mprintf("set maximum #epochs \t [ %d ]\n", s->anp->max_epochs);
         /* report after */
         else if (sscanf(cmd, "set ReportAfter %d", &s->anp->report_after) == 1)
-                mprintf("set report after (#epochs) \t [ %d ]", s->anp->report_after);
+                mprintf("set report after (#epochs) \t [ %d ]\n", s->anp->report_after);
         /* random seed */
         else if (sscanf(cmd, "set RandomSeed %d", &s->anp->random_seed) == 1)
-                mprintf("set random seed \t\t [ %d ]", s->anp->random_seed);
+                mprintf("set random seed \t\t [ %d ]\n", s->anp->random_seed);
         /* number of back ticks */
         else if (sscanf(cmd, "set BackTicks %d", &s->anp->back_ticks) == 1)
-                mprintf("set BPTT back ticks \t [ %d ]", s->anp->back_ticks);
+                mprintf("set BPTT back ticks \t [ %d ]\n", s->anp->back_ticks);
 
         return true;
 }
@@ -1163,67 +1163,67 @@ bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s)
 {
         /* random mu */
         if (sscanf(cmd, "set RandomMu %lf", &s->anp->random_mu) == 1)
-                mprintf("set random Mu \t\t [ %lf ]", s->anp->random_mu);
+                mprintf("set random Mu \t\t [ %lf ]\n", s->anp->random_mu);
         /* random sigma */
         else if (sscanf(cmd, "set RandomSigma %lf", &s->anp->random_sigma) == 1)
-                mprintf("set random Sigma \t\t [ %lf ]", s->anp->random_sigma);
+                mprintf("set random Sigma \t\t [ %lf ]\n", s->anp->random_sigma);
         /* random minimum */
         else if (sscanf(cmd, "set RandomMin %lf", &s->anp->random_min) == 1)
-                mprintf("set random minimum \t\t [ %lf ]", s->anp->random_min);
+                mprintf("set random minimum \t\t [ %lf ]\n", s->anp->random_min);
         /* random maximum */
         else if (sscanf(cmd, "set RandomMax %lf", &s->anp->random_max) == 1)
-                mprintf("set random maximum \t\t [ %lf ]", s->anp->random_max);
+                mprintf("set random maximum \t\t [ %lf ]\n", s->anp->random_max);
         /* learning rate */
         else if (sscanf(cmd, "set LearningRate %lf", &s->anp->learning_rate) == 1)
-                mprintf("set learning rate \t\t [ %lf ]", s->anp->learning_rate);
+                mprintf("set learning rate \t\t [ %lf ]\n", s->anp->learning_rate);
         /* learning rate scale factor */
         else if (sscanf(cmd, "set LRScaleFactor %lf", &s->anp->lr_scale_factor) == 1)
-                mprintf("set LR scale factor \t [ %lf ]", s->anp->lr_scale_factor);
+                mprintf("set LR scale factor \t [ %lf ]\n", s->anp->lr_scale_factor);
         /* learning rate scale after */
         else if (sscanf(cmd, "set LRScaleAfter %lf", &s->anp->lr_scale_after) == 1)
-                mprintf("set LR scale after (%%epochs) [ %lf ]", s->anp->lr_scale_after);
+                mprintf("set LR scale after (%%epochs) [ %lf ]\n", s->anp->lr_scale_after);
         /* momentum */
         else if (sscanf(cmd, "set Momentum %lf", &s->anp->momentum) == 1)
-                mprintf("set momentum \t\t [ %lf ]", s->anp->momentum);
+                mprintf("set momentum \t\t [ %lf ]\n", s->anp->momentum);
         /* momentum scale factor */
         else if (sscanf(cmd, "set MNScaleFactor %lf", &s->anp->mn_scale_factor) == 1)
-                mprintf("set MN scale factor \t [ %lf ]", s->anp->mn_scale_factor);
+                mprintf("set MN scale factor \t [ %lf ]\n", s->anp->mn_scale_factor);
         /* momentum scale after */
         else if (sscanf(cmd, "set MNScaleAfter %lf", &s->anp->mn_scale_after) == 1)
-                mprintf("set MN scale after (%%epochs) [ %lf ]", s->anp->mn_scale_after);
+                mprintf("set MN scale after (%%epochs) [ %lf ]\n", s->anp->mn_scale_after);
         /* weight decay */
         else if (sscanf(cmd, "set WeightDecay %lf", &s->anp->weight_decay) == 1)
-                mprintf("set weight decay \t\t [ %lf ]", s->anp->weight_decay);
+                mprintf("set weight decay \t\t [ %lf ]\n", s->anp->weight_decay);
         /* weight decay scale factor */
         else if (sscanf(cmd, "set WDScaleFactor %lf", &s->anp->wd_scale_factor) == 1)
-                mprintf("set WD scale factor \t [ %lf ]", s->anp->wd_scale_factor);
+                mprintf("set WD scale factor \t [ %lf ]\n", s->anp->wd_scale_factor);
         /* weight decay scale after */
         else if (sscanf(cmd, "set WDScaleAfter %lf", &s->anp->wd_scale_after) == 1)
-                mprintf("set WD scale after (%%epochs) [ %lf ]", s->anp->wd_scale_after);
+                mprintf("set WD scale after (%%epochs) [ %lf ]\n", s->anp->wd_scale_after);
         /* error threshold */
         else if (sscanf(cmd, "set ErrorThreshold %lf", &s->anp->error_threshold) == 1)
-                mprintf("set error threshold \t [ %lf ]", s->anp->error_threshold);
+                mprintf("set error threshold \t [ %lf ]\n", s->anp->error_threshold);
         /* target radius */
         else if (sscanf(cmd, "set TargetRadius %lf", &s->anp->target_radius) == 1)
-                mprintf("set target radius \t\t [ %lf ]", s->anp->target_radius);
+                mprintf("set target radius \t\t [ %lf ]\n", s->anp->target_radius);
         /* zero error radius */
         else if (sscanf(cmd, "set ZeroErrorRadius %lf", &s->anp->zero_error_radius) == 1)
-                mprintf("set zero-error radius \t [ %lf ]", s->anp->zero_error_radius);
+                mprintf("set zero-error radius \t [ %lf ]\n", s->anp->zero_error_radius);
         /* rprop initial update value */
         else if (sscanf(cmd, "set RpropInitUpdate %lf", &s->anp->rp_init_update) == 1)
-                mprintf("set init update (for Rprop)  [ %lf ]", s->anp->rp_init_update);
+                mprintf("set init update (for Rprop)  [ %lf ]\n", s->anp->rp_init_update);
         /* rprop eta plus */
         else if (sscanf(cmd, "set RpropEtaPlus %lf", &s->anp->rp_eta_plus) == 1)
-                mprintf("set Eta+ (for Rprop) \t [ %lf ]", s->anp->rp_eta_plus);
+                mprintf("set Eta+ (for Rprop) \t [ %lf ]\n", s->anp->rp_eta_plus);
         /* rprop eta minus */
         else if (sscanf(cmd, "set RpropEtaMinus %lf", &s->anp->rp_eta_minus) == 1)
-                mprintf("set Eta- (for Rprop) \t [ %lf ]", s->anp->rp_eta_minus);
+                mprintf("set Eta- (for Rprop) \t [ %lf ]\n", s->anp->rp_eta_minus);
         /* delta-bar-delta increment rate */
         else if (sscanf(cmd, "set DBDRateIncrement %lf", &s->anp->dbd_rate_increment) == 1)
-                mprintf("set increment rate (for DBD) \t [ %lf ]", s->anp->dbd_rate_increment);
+                mprintf("set increment rate (for DBD) \t [ %lf ]\n", s->anp->dbd_rate_increment);
         /* delta-bar-delta decrement rate */
         else if (sscanf(cmd, "set DBDRateDecrement %lf", &s->anp->dbd_rate_decrement) == 1)
-                mprintf("set decrement rate (for DBD) \t [ %lf ]", s->anp->dbd_rate_decrement);
+                mprintf("set decrement rate (for DBD) \t [ %lf ]\n", s->anp->dbd_rate_decrement);
 
         return true;
 }
@@ -1235,29 +1235,29 @@ bool cmd_load_set(char *cmd, char *fmt, struct session *s)
                 return false;
 
         if (!s->anp->input) {
-                eprintf("cannot load set--input group size unknown");
+                eprintf("cannot load set--input group size unknown\n");
                 return true;
         }
         if (!s->anp->output) {
-                eprintf("cannot load set--output group size unknown");
+                eprintf("cannot load set--output group size unknown\n");
                 return true;
         }
 
         if (find_array_element_by_name(s->anp->sets, arg1)) {
-                eprintf("cannot load set--set '%s' already exists", arg1);
+                eprintf("cannot load set--set '%s' already exists\n", arg1);
                 return true;
         }
 
         struct set *set = load_set(arg1, arg2, s->anp->input->vector->size, s->anp->output->vector->size);
         if (!set) {
-                eprintf("cannot load set--no such file '%s'", arg2);
+                eprintf("cannot load set--no such file '%s'\n", arg2);
                 return true;
         }
                 
         add_to_array(s->anp->sets, set);
         s->anp->asp = set;
 
-        mprintf("loaded set \t\t\t [ %s => %s :: %d ]", arg2, set->name, set->items->num_elements);
+        mprintf("loaded set \t\t\t [ %s => %s :: %d ]\n", arg2, set->name, set->items->num_elements);
 
         return true;
 }
@@ -1270,7 +1270,7 @@ bool cmd_dispose_set(char *cmd, char *fmt, struct session *s)
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg);
         if (!set) {
-                eprintf("cannot change to set--no such set '%s'", arg);
+                eprintf("cannot change to set--no such set '%s'\n", arg);
                 return true;
         }
 
@@ -1279,7 +1279,7 @@ bool cmd_dispose_set(char *cmd, char *fmt, struct session *s)
         remove_from_array(s->anp->sets, set);
         dispose_set(set);
 
-        mprintf("disposed set \t\t [ %s ]", arg);
+        mprintf("disposed set \t\t [ %s ]\n", arg);
 
         return true;
 }
@@ -1316,13 +1316,13 @@ bool cmd_change_set(char *cmd, char *fmt, struct session *s)
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg);
         if (!set) {
-                eprintf("cannot change to set--no such set '%s'", arg);
+                eprintf("cannot change to set--no such set '%s'\n", arg);
                 return true;
         }
         
         s->anp->asp = set;
 
-        mprintf("changed to set \t\t [ %s ]", arg);
+        mprintf("changed to set \t\t [ %s ]\n", arg);
 
         return true;
 }
@@ -1333,7 +1333,7 @@ bool cmd_list_items(char *cmd, char *fmt, struct session *s)
                 return false;
 
         if (!s->anp->asp) {
-                eprintf("cannot list items--no active set");
+                eprintf("cannot list items--no active set\n");
                 return true;
         }
 
@@ -1354,11 +1354,11 @@ bool cmd_show_item(char *cmd, char *fmt, struct session *s)
 
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg);
         if (!item) {
-                eprintf("cannot show item--no such item '%s'", arg);
+                eprintf("cannot show item--no such item '%s'\n", arg);
                 return true;
         }
 
-        mprintf("");
+        mprintf("\n");
 
         pprintf("Name: \"%s\"\n", item->name);
         pprintf("Meta: \"%s\"\n", item->meta);
@@ -1382,7 +1382,7 @@ bool cmd_show_item(char *cmd, char *fmt, struct session *s)
                 }
         }
 
-        mprintf("");
+        mprintf("\n");
 
         return true;
 }
@@ -1403,11 +1403,11 @@ bool cmd_set_training_order(char *cmd, char *fmt, struct session *s)
         else if (strcmp(arg, "randomized") == 0)
                 s->anp->training_order = TRAIN_RANDOMIZED;
         else {
-                eprintf("Invalid training order '%s'", arg);
+                eprintf("Invalid training order '%s'\n", arg);
                 return true;
         }
 
-        mprintf("set training order \t\t [ %s ]", arg);
+        mprintf("set training order \t\t [ %s ]\n", arg);
 
         return true;
 }
@@ -1434,11 +1434,11 @@ bool cmd_set_random_algorithm(char *cmd, char *fmt, struct session *s)
         else if (strcmp(arg, "binary") == 0)
                 s->anp->random_algorithm = randomize_binary;
         else {
-                eprintf("invalid randomization algorithm '%s'", arg);
+                eprintf("invalid randomization algorithm '%s'\n", arg);
                 return true;
         }
 
-        mprintf("set random algorithm \t\t [ %s ]", arg);
+        mprintf("set random algorithm \t\t [ %s ]\n", arg);
 
         return true;
 }
@@ -1456,11 +1456,11 @@ bool cmd_set_learning_algorithm(char *cmd, char *fmt, struct session *s)
         else if (strlen(arg) == 4 && strcmp(arg, "bptt") == 0)
                 s->anp->learning_algorithm = train_network_with_bptt;
         else {
-                eprintf("invalid learning algorithm '%s'", arg);
+                eprintf("invalid learning algorithm '%s'\n", arg);
                 return true;
         }
         
-        mprintf("set learning algorithm \t [ %s ]", arg);
+        mprintf("set learning algorithm \t [ %s ]\n", arg);
 
         return true;
 }
@@ -1508,11 +1508,11 @@ bool cmd_set_update_algorithm(char *cmd, char *fmt, struct session *s)
         else if (strcmp(arg, "dbd") == 0)
                 s->anp->update_algorithm = bp_update_dbd;
         else {
-                eprintf("invalid update algorithm '%s'", arg);
+                eprintf("invalid update algorithm '%s'\n", arg);
                 return true;
         }
 
-        mprintf("set update algorithm \t\t [ %s ]", arg);
+        mprintf("set update algorithm \t\t [ %s ]\n", arg);
 
         return true;
 }
@@ -1542,7 +1542,7 @@ bool cmd_set_similarity_metric(char *cmd, char *fmt, struct session *s)
         else if (strcmp(arg, "pearson_correlation") == 0)
                 s->anp->similarity_metric = pearson_correlation;
         else {
-                eprintf("invalid similarity metric '%s'", arg);
+                eprintf("invalid similarity metric '%s'\n", arg);
                 return true;
         }
 
@@ -1559,7 +1559,7 @@ bool cmd_init(char *cmd, char *fmt, struct session *s)
         init_network(s->anp);
 
         if (s->anp->initialized)
-                mprintf("initialized network \t\t [ %s ]", s->anp->name);
+                mprintf("initialized network \t\t [ %s ]\n", s->anp->name);
 
         return true;
 }
@@ -1571,7 +1571,7 @@ bool cmd_reset(char *cmd, char *fmt, struct session *s)
 
         reset_network(s->anp);
 
-        mprintf("reset network '%s'", s->anp->name);
+        mprintf("reset network '%s'\n", s->anp->name);
 
         return true;
 }
@@ -1581,12 +1581,12 @@ bool cmd_train(char *cmd, char *fmt, struct session *s)
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
-        mprintf("training network '%s'", s->anp->name);
-        mprintf(" ");
+        mprintf("training network '%s'\n", s->anp->name);
+        mprintf("\n");
 
         train_network(s->anp);
 
-        mprintf(" ");
+        mprintf("\n");
 
         return true;
 }
@@ -1596,12 +1596,12 @@ bool cmd_test(char *cmd, char *fmt, struct session *s)
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
-        mprintf("testing network '%s'", s->anp->name);
-        mprintf(" ");
+        mprintf("testing network '%s'\n", s->anp->name);
+        mprintf("\n");
 
         test_network(s->anp);
 
-        mprintf(" ");
+        mprintf("\n");
 
         return true;
 }
@@ -1611,7 +1611,7 @@ bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s)
         s->anp->ms_input = NULL;
         s->anp->ms_set = NULL;
 
-        mprintf("set single-stage training \t [ %s --> %s ]", 
+        mprintf("set single-stage training \t [ %s --> %s ]\n", 
                         s->anp->input->name,
                         s->anp->output->name);
         
@@ -1626,20 +1626,20 @@ bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s)
 
         struct group *g = find_array_element_by_name(s->anp->groups, arg1);
         if (g == NULL) {
-                eprintf("cannot set multi-stage training-no such group '%s'", arg1);
+                eprintf("cannot set multi-stage training-no such group '%s'\n", arg1);
                 return true;
         }
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg2);
         if (!set) {
-                eprintf("cannot set multi-stage training--no such set '%s'", arg2);
+                eprintf("cannot set multi-stage training--no such set '%s'\n", arg2);
                 return true;
         }
 
         s->anp->ms_input = g;
         s->anp->ms_set = set;
 
-        mprintf("set multi-stage training \t [ %s --> %s :: %s ==> %s ]", 
+        mprintf("set multi-stage training \t [ %s --> %s :: %s ==> %s ]\n", 
                         s->anp->input->name,
                         s->anp->ms_input->name,
                         s->anp->ms_set->name,
@@ -1656,11 +1656,11 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s)
 
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg);
         if (!item) {
-                eprintf("cannot test network--no such item '%s'", arg);
+                eprintf("cannot test network--no such item '%s'\n", arg);
                 return true;
         }
 
-        cprintf("testing network '%s' with item '%s'\n\n", s->anp->name, arg);
+        mprintf("testing network '%s' with item '%s'\n\n", s->anp->name, arg);
 
         test_network_with_item(s->anp, item, s->pprint, s->pprint_scheme);
 
@@ -1738,7 +1738,7 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
 
         struct group *g = find_array_element_by_name(s->anp->groups, arg);
         if (g == NULL) {
-                eprintf("cannot show vector--no such group '%s'", arg);
+                eprintf("cannot show vector--no such group '%s'\n", arg);
                 return true;
         }
 
@@ -1783,11 +1783,11 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
         struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
 
         if (fg == NULL) {
-                eprintf("cannot show matrix--no such group '%s'", arg1);
+                eprintf("cannot show matrix--no such group '%s'\n", arg1);
                 return true;
         }
         if (tg == NULL) {
-                eprintf("cannot show matrix--no such group '%s'", arg2);
+                eprintf("cannot show matrix--no such group '%s'\n", arg2);
                 return true;
         }
 
@@ -1827,7 +1827,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
 
                 cprintf("\n");
         } else {
-                eprintf("cannot show matrix--no projection between groups '%s' and '%s'",
+                eprintf("cannot show matrix--no projection between groups '%s' and '%s'\n",
                                 arg1, arg2);
                 return true;
         }
@@ -1842,9 +1842,9 @@ bool cmd_save_weights(char *cmd, char *fmt, struct session *s)
                 return false;
 
         if (save_weight_matrices(s->anp, arg)) {
-                mprintf("saved weights \t\t [ %s ]", arg);
+                mprintf("saved weights \t\t [ %s ]\n", arg);
         } else {
-                eprintf("cannot save weights to file '%s'", arg);
+                eprintf("cannot save weights to file '%s'\n", arg);
         }
 
         return true;
@@ -1857,9 +1857,9 @@ bool cmd_load_weights(char *cmd, char *fmt, struct session *s)
                 return false;
 
         if (load_weight_matrices(s->anp, arg)) {
-                mprintf("loaded weights \t\t [ %s ]", arg);
+                mprintf("loaded weights \t\t [ %s ]\n", arg);
         } else {
-                eprintf("cannot load weights from file '%s'", arg);
+                eprintf("cannot load weights from file '%s'\n", arg);
         }
 
         return true;
@@ -1873,9 +1873,9 @@ bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s)
         s->pprint = !s->pprint;
 
         if (s->pprint) {
-                mprintf("toggled pretty printing \t [ on ]");
+                mprintf("toggled pretty printing \t [ on ]\n");
         } else {
-                mprintf("toggled pretty printing \t [ off ]");
+                mprintf("toggled pretty printing \t [ off ]\n");
         }
 
         return true;
@@ -1909,11 +1909,11 @@ bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s)
         else if (strcmp(arg, "gray_orange") == 0)
                 s->pprint_scheme = SCHEME_GRAY_ORANGE;
         else {
-                eprintf("cannot set color scheme--no such scheme '%s'", arg);
+                eprintf("cannot set color scheme--no such scheme '%s'\n", arg);
                 return true;
         }
 
-        mprintf("set color scheme \t\t [ %s ]", arg);
+        mprintf("set color scheme \t\t [ %s ]\n", arg);
 
         return true;
 }
@@ -1930,7 +1930,7 @@ bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
 
         struct group *gen = find_array_element_by_name(s->anp->groups, arg1);
         if (gen == NULL) {
-                eprintf("cannot compute ERP correlates--no such group '%s'", arg1);
+                eprintf("cannot compute ERP correlates--no such group '%s'\n", arg1);
                 return true;
         }
 
@@ -1938,11 +1938,11 @@ bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
         struct item *item2 = find_array_element_by_name(s->anp->asp->items, arg3);
 
         if (!item1) {
-                eprintf("cannot compute ERP correlates--no such item '%s'", arg2);
+                eprintf("cannot compute ERP correlates--no such item '%s'\n", arg2);
                 return true;
         }
         if (!item2) {
-                eprintf("cannot compute ERP correlates--no such item '%s'", arg3);
+                eprintf("cannot compute ERP correlates--no such item '%s'\n", arg3);
                 return true;
         }
 
@@ -1969,11 +1969,11 @@ bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s)
         struct group *p600_gen = find_array_element_by_name(s->anp->groups, arg2);
 
         if (n400_gen == NULL) {
-                eprintf("Cannot compute ERP correlates--no such group '%s'", arg1);
+                eprintf("Cannot compute ERP correlates--no such group '%s'\n", arg1);
                 return true;
         }
         if (p600_gen == NULL) {
-                eprintf("Cannot compute ERP correlates--no such group '%s'", arg2);
+                eprintf("Cannot compute ERP correlates--no such group '%s'\n", arg2);
                 return true;
         }
 
@@ -1993,19 +1993,19 @@ bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s)
         struct group *p600_gen = find_array_element_by_name(s->anp->groups, arg2);
 
         if (n400_gen == NULL) {
-                eprintf("cannot compute ERP correlates--no such group '%s'", arg1);
+                eprintf("cannot compute ERP correlates--no such group '%s'\n", arg1);
                 return true;
         }
         if (p600_gen == NULL) {
-                eprintf("cannot compute ERP correlates--no such group '%s'", arg2);
+                eprintf("cannot compute ERP correlates--no such group '%s'\n", arg2);
                 return true;
         }
 
-        mprintf("computing ERP amplitudes \t [ N400 :: %s | P600 :: %s ]", arg1, arg2);
+        mprintf("computing ERP amplitudes \t [ N400 :: %s | P600 :: %s ]\n", arg1, arg2);
 
         erp_amplitudes(s->anp, n400_gen, p600_gen);
 
-        mprintf("written ERP amplitudes \t [ %s.ERPs.csv ]", s->anp->asp->name);
+        mprintf("written ERP amplitudes \t [ %s.ERPs.csv ]\n", s->anp->asp->name);
 
         return true;
 }
@@ -2036,13 +2036,13 @@ bool cmd_dss_scores(char *cmd, char *fmt, struct session *s)
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg1);
         if (!set) {
-                eprintf("cannot compute scores--no such set '%s'", arg1);
+                eprintf("cannot compute scores--no such set '%s'\n", arg1);
                 return true;
         }
 
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg2);
         if (!item) {
-                eprintf("cannot compute scores--no such item '%s'", arg2);
+                eprintf("cannot compute scores--no such item '%s'\n", arg2);
                 return true;
         }
 
@@ -2063,7 +2063,7 @@ bool cmd_dss_write_scores(char *cmd, char *fmt, struct session *s)
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg1);
         if (!set) {
-                eprintf("cannot compute scores--no such set '%s'", arg1);
+                eprintf("cannot compute scores--no such set '%s'\n", arg1);
                 return true;
         }
 
@@ -2085,18 +2085,18 @@ bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg1);
         if (!set) {
-                eprintf("cannot compute inferences--no such set '%s'", arg1);
+                eprintf("cannot compute inferences--no such set '%s'\n", arg1);
                 return true;
         }
 
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg2);
         if (!item) {
-                eprintf("cannot compute inferences--no such item '%s'", arg2);
+                eprintf("cannot compute inferences--no such item '%s'\n", arg2);
                 return true;
         }
 
         if (arg3 < -1.0 || arg3 > 1.0) {
-                eprintf("cannot compute inferences--invalid score threshold '%lf'", arg3);
+                eprintf("cannot compute inferences--invalid score threshold '%lf'\n", arg3);
                 return true;
 
         }
@@ -2118,12 +2118,12 @@ bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s)
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg1);
         if (!set) {
-                eprintf("cannot compute informativity metrics--no such set '%s'", arg1);
+                eprintf("cannot compute informativity metrics--no such set '%s'\n", arg1);
                 return true;
         }
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg2);
         if (!item) {
-                eprintf("cannot compute informativity metrics--no such item '%s'", arg2);
+                eprintf("cannot compute informativity metrics--no such item '%s'\n", arg2);
                 return true;
         }
         
@@ -2145,15 +2145,15 @@ bool cmd_dss_write_word_information(char *cmd, char *fmt,
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg);
         if (!set) {
-                eprintf("cannot compute informativity metrics--no such set '%s'", arg);
+                eprintf("cannot compute informativity metrics--no such set '%s'\n", arg);
                 return true;
         }
 
-        mprintf("computing word informativity metrics \t [ %s :: %s ]", s->anp->asp->name, arg);
+        mprintf("computing word informativity metrics \t [ %s :: %s ]\n", s->anp->asp->name, arg);
 
         dss_write_word_information(s->anp, set);
 
-        mprintf("written word informativity metrics \t [ %s.WIMs.csv ]", s->anp->asp->name);
+        mprintf("written word informativity metrics \t [ %s.WIMs.csv ]\n", s->anp->asp->name);
 
         return true;
 }
@@ -2170,13 +2170,13 @@ bool cmd_dynsys_test_item(char *cmd, char *fmt, struct session *s)
 
         struct group *group = find_array_element_by_name(s->anp->groups, arg1);
         if (group == NULL) {
-                eprintf("cannot test network--no such group '%s'", arg1);
+                eprintf("cannot test network--no such group '%s'\n", arg1);
                 return true;
         }
 
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg2);
         if (!item) {
-                eprintf("cannot test network--no such item '%s'", arg2);
+                eprintf("cannot test network--no such item '%s'\n", arg2);
                 return true;
         }
         

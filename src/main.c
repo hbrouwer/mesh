@@ -124,11 +124,10 @@ void mprintf(const char *fmt, ...)
 {
         va_list args;
 
-        fprintf(stderr,"| ");
+        fprintf(stderr,"> ");
         va_start(args, fmt);
-        vfprintf(stderr, fmt, args);
+        vfprintf(stdout, fmt, args);
         va_end(args);
-        fprintf(stderr, "\n");
 }
 
 /*
@@ -139,11 +138,10 @@ void eprintf(const char *fmt, ...)
         va_list args;
 
         fprintf(stderr, "\x1b[31m");
-        fprintf(stderr, "error: ");
+        fprintf(stderr, "! ");
         va_start(args, fmt);
         vfprintf(stderr, fmt, args);
         va_end(args);
-        fprintf(stderr, "\n");
         fprintf(stderr, "\x1b[0m");
 }
 
@@ -154,7 +152,7 @@ void pprintf(const char *fmt, ...)
 {
         va_list args;
 
-        fprintf(stdout, "**** ");
+        fprintf(stdout, "| ");
         va_start(args, fmt);
         vfprintf(stdout, fmt, args);
         va_end(args);

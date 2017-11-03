@@ -20,16 +20,16 @@
 bool verify_network_sanity(struct network *n)
 {
         if (!n->input) {
-                eprintf("Network has no input group");
+                eprintf("Network has no input group\n");
                 return false;
         }
         if (!n->output) {
-                eprintf("Network has no output group");
+                eprintf("Network has no output group\n");
                 return false;
         }
 
         if(!verify_input_to_output(n, n->input)) {
-                eprintf("No pathway from input group to output group");
+                eprintf("No pathway from input group to output group\n");
                 return false;
         }
 

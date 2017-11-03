@@ -103,7 +103,7 @@ void init_network(struct network *n)
         n->initialized = false;
 
         if (!verify_network_sanity(n)) {
-                eprintf("Cannot initialize network--network is not 'sane'");
+                eprintf("Cannot initialize network--network is not sane\n");
                 return;
         }
 
@@ -518,7 +518,7 @@ void save_weight_matrix(struct group *g, FILE *fd)
                         fprintf(fd, "\n");
                 }
 
-                mprintf("... wrote weights for projection '%s -> %s'",
+                mprintf("| wrote weights for projection '%s -> %s'\n",
                                 ip->to->name, g->name);
         }
 
@@ -556,11 +556,11 @@ bool load_weight_matrices(struct network *n, char *fn)
                 /* find the groups for the projection */
                 struct group *g1, *g2;
                 if ((g1 = find_array_element_by_name(np->groups, arg1)) == NULL) {
-                        eprintf("no such group '%s'", arg1);
+                        eprintf("no such group '%s'\n", arg1);
                         continue;
                 }
                 if ((g2 = find_array_element_by_name(np->groups, arg2)) == NULL) {
-                        eprintf("no such group '%s'", arg2);
+                        eprintf("no such group '%s'\n", arg2);
                         continue;
                 }
 
@@ -584,7 +584,7 @@ bool load_weight_matrices(struct network *n, char *fn)
                         }
                 }
 
-                mprintf("| read weights for projection '%s -> %s'",
+                mprintf("| read weights for projection '%s -> %s'\n",
                                 arg1, arg2);
         }
 

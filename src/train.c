@@ -153,7 +153,7 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
                         struct item *ms_item = find_array_element_by_name(
                                         n->ms_set->items, item->name);
                         if (!ms_item) {
-                                eprintf("No matching item in multi-stage training");
+                                eprintf("No matching item in multi-stage training\n");
                                 continue;
                         }
                         copy_vector(n->ms_input->vector, ms_item->inputs[i]);
@@ -287,7 +287,7 @@ void scale_learning_rate(struct network *n)
         if (sa > 0 && n->status->epoch % sa == 0) {
                 double lr = n->learning_rate;
                 n->learning_rate *= n->lr_scale_factor;
-                mprintf("Scaled learning rate ... \t ( %lf => %lf )",
+                mprintf("Scaled learning rate ... \t ( %lf => %lf )\n",
                                 lr, n->learning_rate);
         }
 }
@@ -298,7 +298,7 @@ void scale_momentum(struct network *n)
         if (sa > 0 && n->status->epoch % sa == 0) {
                 double mn = n->momentum;
                 n->momentum *= n->mn_scale_factor;
-                mprintf("Scaled momentum ... \t ( %lf => %lf )",
+                mprintf("Scaled momentum ... \t ( %lf => %lf )\n",
                                 mn, n->momentum);
         }
 }
@@ -309,7 +309,7 @@ void scale_weight_decay(struct network *n)
         if (sa > 0 && n->status->epoch % sa == 0) {
                 double wd = n->weight_decay;
                 n->weight_decay *= n->wd_scale_factor;
-                mprintf("Scaled weight decay ... \t ( %lf => %lf)",
+                mprintf("Scaled weight decay ... \t ( %lf => %lf)\n",
                                 wd, n->weight_decay);
         }
 }
