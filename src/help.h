@@ -17,6 +17,11 @@
 #ifndef HELP_H
 #define HELP_H
 
+#define TOPIC_USAGE \
+"Usage:                                                                 \n" \
+"                                                                       \n" \
+"       --help: show this help message;                                 \n" 
+
 #define TOPIC_GENERAL \
 "# Welcome to Mesh                                                      \n" \
 "                                                                       \n" \
@@ -46,8 +51,8 @@ struct help
 };
 
 const static struct help hts[] = {
-
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"usage",               TOPIC_USAGE},
         {"general",             TOPIC_GENERAL},
         {"networks",            TOPIC_NETWORKS},
         {"training",            TOPIC_TRAINING},

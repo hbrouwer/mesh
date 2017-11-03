@@ -28,9 +28,6 @@ void print_fast_exp_status();
 void print_openmp_status();
 #endif /* _OPENMP */
 
-void print_welcome();
-void print_help(char *exec_name);
-
 void cprintf(const char *fmt, ...);
 void mprintf(const char *fmt, ...);
 void eprintf(const char *fmt, ...);

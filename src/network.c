@@ -584,7 +584,7 @@ bool load_weight_matrices(struct network *n, char *fn)
                         }
                 }
 
-                mprintf("... read weights for projection '%s -> %s'",
+                mprintf("| read weights for projection '%s -> %s'",
                                 arg1, arg2);
         }
 

@@ -210,7 +210,7 @@ void process_command(char *cmd, struct session *s)
 {
         /* comment or blank line */
         if (cmd[0] == '%') {
-                mprintf("\x1b[1m\x1b[36m%s\x1b[0m", cmd);
+                cprintf("\x1b[1m\x1b[36m%s\x1b[0m\n", cmd);
                 return;
         }
         if (cmd[0] == '\0' || cmd[0] == '#')
@@ -322,7 +322,7 @@ bool cmd_load_file(char *cmd, char *fmt, struct session *s)
 
         fclose(fd);
 
-        mprintf("--> loaded file \t\t [ %s ]", arg);
+        mprintf("loaded file \t\t\t [ %s ]", arg);
 
         return true;
 }
@@ -357,7 +357,7 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s)
         add_to_array(s->networks, n);
         s->anp = n;
 
-        mprintf("--> created network \t\t [ %s :: %s ]", arg1, arg2);
+        mprintf("created network \t\t [ %s :: %s ]", arg1, arg2);
 
         return true;
 }
@@ -379,7 +379,7 @@ bool cmd_dispose_network(char *cmd, char *fmt, struct session *s)
         remove_from_array(s->networks, n);
         dispose_network(n);
 
-        mprintf("--> disposed network \t\t [ %s ]", arg);
+        mprintf("disposed network \t\t [ %s ]", arg);
 
         return true;
 }
@@ -389,7 +389,7 @@ bool cmd_list_networks(char *cmd, char *fmt, struct session *s)
         if (strcmp(cmd, fmt) != 0)
                 return false;
 
-        mprintf("available networks:");
+        cprintf("available networks:\n");
         if (s->networks->num_elements == 0) {
                 cprintf("(no networks)\n");
         } else {
@@ -420,7 +420,7 @@ bool cmd_change_network(char *cmd, char *fmt, struct session *s)
         }
         s->anp = n;
 
-        mprintf("--> changed to network \t [ %s ]", arg);
+        mprintf("changed to network \t [ %s ]", arg);
 
         return true;
 }
@@ -445,7 +445,7 @@ bool cmd_create_group(char *cmd, char *fmt, struct session *s)
         struct group *g = create_group(arg, arg_int, false, false);
         add_to_array(s->anp->groups, g);
 
-        mprintf("--> created group \t\t [ %s :: %d ]", arg, arg_int);
+        mprintf("created group \t\t [ %s :: %d ]", arg, arg_int);
 
         return true;
 }
@@ -502,7 +502,7 @@ bool cmd_dispose_group(char *cmd, char *fmt, struct session *s)
         remove_from_array(s->anp->groups, g);
         dispose_group(g);
 
-        mprintf("--> disposed group \t\t [ %s ]", arg);
+        mprintf("disposed group \t\t [ %s ]", arg);
 
         return true;
 }
@@ -512,7 +512,7 @@ bool cmd_list_groups(char *cmd, char *fmt, struct session *s)
         if (strcmp(cmd, fmt) != 0)
                 return false;
 
-        mprintf("available groups:");
+        cprintf("available groups:\n");
         if (s->anp->groups->num_elements == 0) {
                 cprintf("(no groups)\n");
         } else {
@@ -556,7 +556,7 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct session *s)
 
         struct group *bg = attach_bias_group(s->anp, g);
 
-        mprintf("--> attached bias to group \t [ %s -> %s ]", bg->name, g->name);
+        mprintf("attached bias to group \t [ %s -> %s ]", bg->name, g->name);
 
         return true;
 
@@ -587,10 +587,10 @@ bool cmd_set_io_group(char *cmd, char *fmt, struct session *s)
 
         if (type == GTYPE_INPUT) {
                 s->anp->input = g;
-                mprintf("--> set input group \t\t [ %s ]", arg);
+                mprintf("set input group \t\t [ %s ]", arg);
         } else {
                 s->anp->output = g;
-                mprintf("--> set output group \t\t [ %s ]", arg);
+                mprintf("set output group \t\t [ %s ]", arg);
         }
 
         return true;
@@ -642,7 +642,7 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("--> set activation function \t [ %s :: %s ]", arg1, arg2);
+        mprintf("set activation function \t [ %s :: %s ]", arg1, arg2);
 
         return true;
 }
@@ -678,7 +678,7 @@ bool cmd_set_err_func(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("--> set error function \t\t [ %s :: %s ]", arg1, arg2);
+        mprintf("set error function \t\t [ %s :: %s ]", arg1, arg2);
 
         return true;
 }
@@ -692,9 +692,9 @@ bool cmd_toggle_act_lookup(char *cmd, char *fmt, struct session *s)
         
         if (s->anp->act_lookup) {
                 initialize_act_lookup_vectors(s->anp);
-                mprintf("--> toggle activation lookup \t [ on ]");
+                mprintf("toggle activation lookup \t [ on ]");
         } else {
-                mprintf("--> toggle activation lookup \t [ off ]");
+                mprintf("toggle activation lookup \t [ off ]");
         }
 
         return true;
@@ -764,7 +764,7 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
                 add_to_array(tg->inc_projs, ip);
         }
 
-        mprintf("--> created projection \t\t [ %s -> %s ]", arg1, arg2);
+        mprintf("created projection \t\t [ %s -> %s ]", arg1, arg2);
 
         return true;
 }
@@ -809,7 +809,7 @@ bool cmd_dispose_projection(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("--> disposed projection \t [ %s -> %s ]", arg1, arg2);
+        mprintf("disposed projection \t [ %s -> %s ]", arg1, arg2);
 
         return true;
 }
@@ -852,7 +852,7 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s)
         add_to_array(fg->ctx_groups, tg);
         reset_context_groups(s->anp);
 
-        mprintf("--> created Elman projection \t [ %s -> %s ]", arg1, arg2);
+        mprintf("created Elman projection \t [ %s -> %s ]", arg1, arg2);
 
         return true;
 }
@@ -889,7 +889,7 @@ bool cmd_dispose_elman_projection(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("--> disposed Elman projection \t [ %s -> %s ]", arg1, arg2);
+        mprintf("disposed Elman projection \t [ %s -> %s ]", arg1, arg2);
         
         return true;
 
@@ -900,7 +900,7 @@ bool cmd_list_projections(char *cmd, char *fmt, struct session *s)
         if (strcmp(cmd, fmt) != 0)
                 return false;
 
-        mprintf("available projections:");
+        cprintf("available projections:\n");
         for (uint32_t i = 0; i < s->anp->groups->num_elements; i++) {
                 struct group *g = s->anp->groups->elements[i];
                 
@@ -999,7 +999,7 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("--> froze projection \t\t [ %s -> %s ]", arg1, arg2);
+        mprintf("froze projection \t\t [ %s -> %s ]", arg1, arg2);
 
         return true;
 }
@@ -1132,7 +1132,7 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
         for (uint32_t r = arg_int1 - 1, c = arg_int3 - 1; r < arg_int2 && c < arg_int4; r++, c++) 
                 weights->elements[r][c] = 1.0;
 
-        mprintf("--> created tunnel projection \t [ %s [%d:%d] -> %s [%d:%d] ]",
+        mprintf("created tunnel projection \t [ %s [%d:%d] -> %s [%d:%d] ]",
                         arg1, arg_int1, arg_int2, arg2, arg_int3, arg_int4);
 
         return true;
@@ -1142,19 +1142,19 @@ bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s)
 {
         /* batch size */
         if (sscanf(cmd, "set BatchSize %d", &s->anp->batch_size) == 1)
-                mprintf("--> set batch size \t\t [ %d ]", s->anp->batch_size);
+                mprintf("set batch size \t\t [ %d ]", s->anp->batch_size);
         /* max number of epochs */
         else if (sscanf(cmd, "set MaxEpochs %d", &s->anp->max_epochs) == 1)
-                mprintf("--> set maximum #epochs \t [ %d ]", s->anp->max_epochs);
+                mprintf("set maximum #epochs \t [ %d ]", s->anp->max_epochs);
         /* report after */
         else if (sscanf(cmd, "set ReportAfter %d", &s->anp->report_after) == 1)
-                mprintf("--> set report after (#epochs) \t [ %d ]", s->anp->report_after);
+                mprintf("set report after (#epochs) \t [ %d ]", s->anp->report_after);
         /* random seed */
         else if (sscanf(cmd, "set RandomSeed %d", &s->anp->random_seed) == 1)
-                mprintf("--> set random seed \t\t [ %d ]", s->anp->random_seed);
+                mprintf("set random seed \t\t [ %d ]", s->anp->random_seed);
         /* number of back ticks */
         else if (sscanf(cmd, "set BackTicks %d", &s->anp->back_ticks) == 1)
-                mprintf("--> set BPTT back ticks \t [ %d ]", s->anp->back_ticks);
+                mprintf("set BPTT back ticks \t [ %d ]", s->anp->back_ticks);
 
         return true;
 }
@@ -1163,67 +1163,67 @@ bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s)
 {
         /* random mu */
         if (sscanf(cmd, "set RandomMu %lf", &s->anp->random_mu) == 1)
-                mprintf("--> set random Mu \t\t [ %lf ]", s->anp->random_mu);
+                mprintf("set random Mu \t\t [ %lf ]", s->anp->random_mu);
         /* random sigma */
         else if (sscanf(cmd, "set RandomSigma %lf", &s->anp->random_sigma) == 1)
-                mprintf("--> set random Sigma \t\t [ %lf ]", s->anp->random_sigma);
+                mprintf("set random Sigma \t\t [ %lf ]", s->anp->random_sigma);
         /* random minimum */
         else if (sscanf(cmd, "set RandomMin %lf", &s->anp->random_min) == 1)
-                mprintf("--> set random minimum \t\t [ %lf ]", s->anp->random_min);
+                mprintf("set random minimum \t\t [ %lf ]", s->anp->random_min);
         /* random maximum */
         else if (sscanf(cmd, "set RandomMax %lf", &s->anp->random_max) == 1)
-                mprintf("--> set random maximum \t\t [ %lf ]", s->anp->random_max);
+                mprintf("set random maximum \t\t [ %lf ]", s->anp->random_max);
         /* learning rate */
         else if (sscanf(cmd, "set LearningRate %lf", &s->anp->learning_rate) == 1)
-                mprintf("--> set learning rate \t\t [ %lf ]", s->anp->learning_rate);
+                mprintf("set learning rate \t\t [ %lf ]", s->anp->learning_rate);
         /* learning rate scale factor */
         else if (sscanf(cmd, "set LRScaleFactor %lf", &s->anp->lr_scale_factor) == 1)
-                mprintf("--> set LR scale factor \t [ %lf ]", s->anp->lr_scale_factor);
+                mprintf("set LR scale factor \t [ %lf ]", s->anp->lr_scale_factor);
         /* learning rate scale after */
         else if (sscanf(cmd, "set LRScaleAfter %lf", &s->anp->lr_scale_after) == 1)
-                mprintf("--> set LR scale after (%%epochs) [ %lf ]", s->anp->lr_scale_after);
+                mprintf("set LR scale after (%%epochs) [ %lf ]", s->anp->lr_scale_after);
         /* momentum */
         else if (sscanf(cmd, "set Momentum %lf", &s->anp->momentum) == 1)
-                mprintf("--> set momentum \t\t [ %lf ]", s->anp->momentum);
+                mprintf("set momentum \t\t [ %lf ]", s->anp->momentum);
         /* momentum scale factor */
         else if (sscanf(cmd, "set MNScaleFactor %lf", &s->anp->mn_scale_factor) == 1)
-                mprintf("--> set MN scale factor \t [ %lf ]", s->anp->mn_scale_factor);
+                mprintf("set MN scale factor \t [ %lf ]", s->anp->mn_scale_factor);
         /* momentum scale after */
         else if (sscanf(cmd, "set MNScaleAfter %lf", &s->anp->mn_scale_after) == 1)
-                mprintf("--> set MN scale after (%%epochs) [ %lf ]", s->anp->mn_scale_after);
+                mprintf("set MN scale after (%%epochs) [ %lf ]", s->anp->mn_scale_after);
         /* weight decay */
         else if (sscanf(cmd, "set WeightDecay %lf", &s->anp->weight_decay) == 1)
-                mprintf("--> set weight decay \t\t [ %lf ]", s->anp->weight_decay);
+                mprintf("set weight decay \t\t [ %lf ]", s->anp->weight_decay);
         /* weight decay scale factor */
         else if (sscanf(cmd, "set WDScaleFactor %lf", &s->anp->wd_scale_factor) == 1)
-                mprintf("--> set WD scale factor \t [ %lf ]", s->anp->wd_scale_factor);
+                mprintf("set WD scale factor \t [ %lf ]", s->anp->wd_scale_factor);
         /* weight decay scale after */
         else if (sscanf(cmd, "set WDScaleAfter %lf", &s->anp->wd_scale_after) == 1)
-                mprintf("--> set WD scale after (%%epochs) [ %lf ]", s->anp->wd_scale_after);
+                mprintf("set WD scale after (%%epochs) [ %lf ]", s->anp->wd_scale_after);
         /* error threshold */
         else if (sscanf(cmd, "set ErrorThreshold %lf", &s->anp->error_threshold) == 1)
-                mprintf("--> set error threshold \t [ %lf ]", s->anp->error_threshold);
+                mprintf("set error threshold \t [ %lf ]", s->anp->error_threshold);
         /* target radius */
         else if (sscanf(cmd, "set TargetRadius %lf", &s->anp->target_radius) == 1)
-                mprintf("--> set target radius \t\t [ %lf ]", s->anp->target_radius);
+                mprintf("set target radius \t\t [ %lf ]", s->anp->target_radius);
         /* zero error radius */
         else if (sscanf(cmd, "set ZeroErrorRadius %lf", &s->anp->zero_error_radius) == 1)
-                mprintf("--> set zero-error radius \t [ %lf ]", s->anp->zero_error_radius);
+                mprintf("set zero-error radius \t [ %lf ]", s->anp->zero_error_radius);
         /* rprop initial update value */
         else if (sscanf(cmd, "set RpropInitUpdate %lf", &s->anp->rp_init_update) == 1)
-                mprintf("--> set init update (for Rprop)  [ %lf ]", s->anp->rp_init_update);
+                mprintf("set init update (for Rprop)  [ %lf ]", s->anp->rp_init_update);
         /* rprop eta plus */
         else if (sscanf(cmd, "set RpropEtaPlus %lf", &s->anp->rp_eta_plus) == 1)
-                mprintf("--> set Eta+ (for Rprop) \t [ %lf ]", s->anp->rp_eta_plus);
+                mprintf("set Eta+ (for Rprop) \t [ %lf ]", s->anp->rp_eta_plus);
         /* rprop eta minus */
         else if (sscanf(cmd, "set RpropEtaMinus %lf", &s->anp->rp_eta_minus) == 1)
-                mprintf("--> set Eta- (for Rprop) \t [ %lf ]", s->anp->rp_eta_minus);
+                mprintf("set Eta- (for Rprop) \t [ %lf ]", s->anp->rp_eta_minus);
         /* delta-bar-delta increment rate */
         else if (sscanf(cmd, "set DBDRateIncrement %lf", &s->anp->dbd_rate_increment) == 1)
-                mprintf("--> set increment rate (for DBD) \t [ %lf ]", s->anp->dbd_rate_increment);
+                mprintf("set increment rate (for DBD) \t [ %lf ]", s->anp->dbd_rate_increment);
         /* delta-bar-delta decrement rate */
         else if (sscanf(cmd, "set DBDRateDecrement %lf", &s->anp->dbd_rate_decrement) == 1)
-                mprintf("--> set decrement rate (for DBD) \t [ %lf ]", s->anp->dbd_rate_decrement);
+                mprintf("set decrement rate (for DBD) \t [ %lf ]", s->anp->dbd_rate_decrement);
 
         return true;
 }
@@ -1257,7 +1257,7 @@ bool cmd_load_set(char *cmd, char *fmt, struct session *s)
         add_to_array(s->anp->sets, set);
         s->anp->asp = set;
 
-        mprintf("--> loaded set \t\t\t [ %s => %s :: %d ]", arg2, set->name, set->items->num_elements);
+        mprintf("loaded set \t\t\t [ %s => %s :: %d ]", arg2, set->name, set->items->num_elements);
 
         return true;
 }
@@ -1279,7 +1279,7 @@ bool cmd_dispose_set(char *cmd, char *fmt, struct session *s)
         remove_from_array(s->anp->sets, set);
         dispose_set(set);
 
-        mprintf("--> disposed set \t\t [ %s ]", arg);
+        mprintf("disposed set \t\t [ %s ]", arg);
 
         return true;
 }
@@ -1289,7 +1289,7 @@ bool cmd_list_sets(char *cmd, char *fmt, struct session *s)
         if (strcmp(cmd, fmt) != 0)
                 return false;
 
-        mprintf("available sets:");
+        cprintf("available sets:\n");
 
         if (s->anp->sets->num_elements == 0) {
                 cprintf("(no sets)\n");
@@ -1322,7 +1322,7 @@ bool cmd_change_set(char *cmd, char *fmt, struct session *s)
         
         s->anp->asp = set;
 
-        mprintf("--> changed to set \t\t [ %s ]", arg);
+        mprintf("changed to set \t\t [ %s ]", arg);
 
         return true;
 }
@@ -1337,7 +1337,7 @@ bool cmd_list_items(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("available items in set '%s':", s->anp->asp->name);
+        cprintf("available items in set '%s':\n", s->anp->asp->name);
         for (uint32_t i = 0; i < s->anp->asp->items->num_elements; i++) {
                 struct item *item = s->anp->asp->items->elements[i];
                 cprintf("* \"%s\" %d \"%s\"\n", item->name, item->num_events, item->meta);
@@ -1407,7 +1407,7 @@ bool cmd_set_training_order(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("--> set training order \t\t [ %s ]", arg);
+        mprintf("set training order \t\t [ %s ]", arg);
 
         return true;
 }
@@ -1438,7 +1438,7 @@ bool cmd_set_random_algorithm(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("--> set random algorithm \t [ %s ]", arg);
+        mprintf("set random algorithm \t\t [ %s ]", arg);
 
         return true;
 }
@@ -1460,7 +1460,7 @@ bool cmd_set_learning_algorithm(char *cmd, char *fmt, struct session *s)
                 return true;
         }
         
-        mprintf("--> set learning algorithm \t [ %s ]", arg);
+        mprintf("set learning algorithm \t [ %s ]", arg);
 
         return true;
 }
@@ -1512,7 +1512,7 @@ bool cmd_set_update_algorithm(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("--> set update algorithm \t [ %s ]", arg);
+        mprintf("set update algorithm \t\t [ %s ]", arg);
 
         return true;
 }
@@ -1546,7 +1546,7 @@ bool cmd_set_similarity_metric(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("--> set similarity metric \t [ %s ]", arg);
+        mprintf("set similarity metric \t [ %s ]", arg);
 
         return true;
 }
@@ -1559,7 +1559,7 @@ bool cmd_init(char *cmd, char *fmt, struct session *s)
         init_network(s->anp);
 
         if (s->anp->initialized)
-                mprintf("--> initialized network \t [ %s ]", s->anp->name);
+                mprintf("initialized network \t\t [ %s ]", s->anp->name);
 
         return true;
 }
@@ -1611,7 +1611,7 @@ bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s)
         s->anp->ms_input = NULL;
         s->anp->ms_set = NULL;
 
-        mprintf("--> set single-stage training \t [ %s --> %s ]", 
+        mprintf("set single-stage training \t [ %s --> %s ]", 
                         s->anp->input->name,
                         s->anp->output->name);
         
@@ -1639,7 +1639,7 @@ bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s)
         s->anp->ms_input = g;
         s->anp->ms_set = set;
 
-        mprintf("--> set multi-stage training \t [ %s --> %s :: %s ==> %s ]", 
+        mprintf("set multi-stage training \t [ %s --> %s :: %s ==> %s ]", 
                         s->anp->input->name,
                         s->anp->ms_input->name,
                         s->anp->ms_set->name,
@@ -1660,12 +1660,11 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("testing network '%s' with item '%s'", s->anp->name, arg);
-        mprintf(" ");
+        cprintf("testing network '%s' with item '%s'\n\n", s->anp->name, arg);
 
         test_network_with_item(s->anp, item, s->pprint, s->pprint_scheme);
 
-        mprintf(" ");
+        cprintf("\n");
 
         return true;
 }
@@ -1675,13 +1674,12 @@ bool cmd_similarity_matrix(char *cmd, char *fmt, struct session *s)
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
-        mprintf("computing similarity matrix for network '%s' ...", s->anp->name);
-        mprintf(" ");
+        cprintf("computing similarity matrix for network '%s'\n\n", s->anp->name);
 
         // TODO: handle matrix printing
         similarity_matrix(s->anp, false, s->pprint, s->pprint_scheme);
 
-        mprintf(" ");
+        cprintf(" ");
 
         return true;
 }
@@ -1691,13 +1689,12 @@ bool cmd_confusion_matrix(char *cmd, char *fmt, struct session *s)
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
-        mprintf("computing confusion matrix for network '%s' ...", s->anp->name);
-        mprintf(" ");
+        cprintf("computing confusion matrix for network '%s'\n\n", s->anp->name);
 
         // TODO: handle matrix printing
         confusion_matrix(s->anp, false, s->pprint, s->pprint_scheme);
 
-        mprintf(" ");
+        cprintf("\n");
 
         return true;
 }
@@ -1707,8 +1704,7 @@ bool cmd_weight_stats(char *cmd, char *fmt, struct session *s)
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
-        mprintf("weight statistics for network '%s'", s->anp->name);
-        mprintf(" ");
+        cprintf("weight statistics for network '%s'\n\n", s->anp->name);
 
         struct weight_stats *ws = create_weight_statistics(s->anp);
      
@@ -1723,7 +1719,7 @@ bool cmd_weight_stats(char *cmd, char *fmt, struct session *s)
         
         dispose_weight_statistics(ws);
 
-        mprintf(" ");
+        cprintf("\n");
 
         return true;
 }
@@ -1747,8 +1743,7 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
         }
 
         if (type == VTYPE_UNITS) {
-                mprintf("unit vector for '%s'", arg);
-                mprintf(" ");
+                cprintf("unit vector for '%s'\n", arg);
                 if (s->pprint) {
                         pprint_vector(g->vector, s->pprint_scheme);
                 } else {
@@ -1756,16 +1751,13 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
                 }
         }
         if (type == VTYPE_ERROR) {
-                mprintf("error vector for '%s'", arg);
-                mprintf(" ");
+                cprintf("error vector for '%s'\n", arg);
                 if (s->pprint) {
                         pprint_vector(g->error, s->pprint_scheme);
                 } else {
                         print_vector(g->error);
                 }
         }
-
-        mprintf(" ");
 
         return true;
 }
@@ -1808,8 +1800,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
         }
         if (fg_to_tg) {
                 if (type == MTYPE_WEIGHTS) {
-                        mprintf("weight matrix for projection '%s -> %s'", arg1, arg2);
-                        mprintf(" ");
+                        cprintf("weight matrix for projection '%s -> %s'\n", arg1, arg2);
                         if (s->pprint) {
                                 pprint_matrix(fg_to_tg->weights, s->pprint_scheme);
                         } else {
@@ -1817,8 +1808,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                         }
                 }
                 if (type == MTYPE_GRADIENTS) {
-                        mprintf("gradient matrix for projection '%s -> %s'", arg1, arg2);
-                        mprintf(" ");                        
+                        mprintf("gradient matrix for projection '%s -> %s'\n", arg1, arg2);                  
                         if (s->pprint) {
                                 pprint_matrix(fg_to_tg->gradients, s->pprint_scheme);
                         } else {
@@ -1826,9 +1816,8 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                         }
                 }
                 if (type == MTYPE_DYN_PARS) {
-                        mprintf("dynamic learning parameters for projection '%s -> %s'",
-                                        arg1, arg2);
-                        mprintf(" ");                        
+                        mprintf("dynamic learning parameters for projection '%s -> %s'\n",
+                                        arg1, arg2);               
                         if (s->pprint) {
                                 pprint_matrix(fg_to_tg->dynamic_pars, s->pprint_scheme);
                         } else {
@@ -1836,7 +1825,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                         }
                 }
 
-                mprintf(" ");
+                cprintf("\n");
         } else {
                 eprintf("cannot show matrix--no projection between groups '%s' and '%s'",
                                 arg1, arg2);
@@ -1853,7 +1842,7 @@ bool cmd_save_weights(char *cmd, char *fmt, struct session *s)
                 return false;
 
         if (save_weight_matrices(s->anp, arg)) {
-                mprintf("--> saved weights \t\t [ %s ]", arg);
+                mprintf("saved weights \t\t [ %s ]", arg);
         } else {
                 eprintf("cannot save weights to file '%s'", arg);
         }
@@ -1868,7 +1857,7 @@ bool cmd_load_weights(char *cmd, char *fmt, struct session *s)
                 return false;
 
         if (load_weight_matrices(s->anp, arg)) {
-                mprintf("--> loaded weights \t\t [ %s ]", arg);
+                mprintf("loaded weights \t\t [ %s ]", arg);
         } else {
                 eprintf("cannot load weights from file '%s'", arg);
         }
@@ -1884,9 +1873,9 @@ bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s)
         s->pprint = !s->pprint;
 
         if (s->pprint) {
-                mprintf("--> toggled pretty printing \t [ on ]");
+                mprintf("toggled pretty printing \t [ on ]");
         } else {
-                mprintf("--> toggled pretty printing \t [ off ]");
+                mprintf("toggled pretty printing \t [ off ]");
         }
 
         return true;
@@ -1924,7 +1913,7 @@ bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("--> set color scheme \t\t [ %s ]", arg);
+        mprintf("set color scheme \t\t [ %s ]", arg);
 
         return true;
 }
@@ -1957,11 +1946,11 @@ bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf(" ");
+        cprintf("\n");
 
         erp_contrast(s->anp, gen, item1, item2);
 
-        mprintf(" ");
+        cprintf("\n");
 
         return true;
 }
@@ -2012,11 +2001,11 @@ bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("--> computing ERP amplitudes \t [ N400 :: %s | P600 :: %s ]", arg1, arg2);
+        mprintf("computing ERP amplitudes \t [ N400 :: %s | P600 :: %s ]", arg1, arg2);
 
         erp_amplitudes(s->anp, n400_gen, p600_gen);
 
-        mprintf("--> written ERP amplitudes \t [ %s.ERPs.csv ]", s->anp->asp->name);
+        mprintf("written ERP amplitudes \t [ %s.ERPs.csv ]", s->anp->asp->name);
 
         return true;
 }
@@ -2030,12 +2019,11 @@ bool cmd_dss_test(char *cmd, char *fmt, struct session *s)
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
-        mprintf("testing network '%s':", s->anp->name);
-        mprintf(" ");
+        cprintf("testing network '%s':\n\n", s->anp->name);
 
         dss_test(s->anp);
 
-        mprintf(" ");
+        cprintf("\n");
 
         return true;
 }
@@ -2058,11 +2046,11 @@ bool cmd_dss_scores(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf(" ");
+        cprintf("\n");
 
         dss_scores(s->anp, set, item);
 
-        mprintf(" ");
+        cprintf("\n");
 
         return true;
 }
@@ -2079,11 +2067,11 @@ bool cmd_dss_write_scores(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf(" ");
+        cprintf("\n");
 
         dss_write_scores(s->anp, set, arg2);
 
-        mprintf(" ");
+        cprintf("\n");
 
         return true;
 }
@@ -2113,11 +2101,11 @@ bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
 
         }
 
-        mprintf(" ");
+        cprintf("\n");
 
         dss_inferences(s->anp, set, item, arg3);
 
-        mprintf(" ");
+        cprintf("\n");
 
         return true;
 }
@@ -2139,12 +2127,11 @@ bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s)
                 return true;
         }
         
-        mprintf("testing network '%s' with item '%s':", s->anp->name, arg2);
-        mprintf(" ");
+        cprintf("testing network '%s' with item '%s':\n\n", s->anp->name, arg2);
 
         dss_word_information(s->anp, set, item);
 
-        mprintf(" ");
+        cprintf("\n");
 
         return true;
 }
@@ -2162,11 +2149,11 @@ bool cmd_dss_write_word_information(char *cmd, char *fmt,
                 return true;
         }
 
-        mprintf("--> computing word informativity metrics \t [ %s :: %s ]", s->anp->asp->name, arg);
+        mprintf("computing word informativity metrics \t [ %s :: %s ]", s->anp->asp->name, arg);
 
         dss_write_word_information(s->anp, set);
 
-        mprintf("--> written word informativity metrics \t [ %s.WIMs.csv ]", s->anp->asp->name);
+        mprintf("written word informativity metrics \t [ %s.WIMs.csv ]", s->anp->asp->name);
 
         return true;
 }
@@ -2193,12 +2180,11 @@ bool cmd_dynsys_test_item(char *cmd, char *fmt, struct session *s)
                 return true;
         }
         
-        mprintf("testing network '%s' with item '%s':", s->anp->name, arg2);
-        mprintf(" ");
+        cprintf("testing network '%s' with item '%s':\n\n", s->anp->name, arg2);
 
         dynsys_test_item(s->anp, group, item);
 
-        mprintf(" ");
+        cprintf("\n");
 
         return true;
 }

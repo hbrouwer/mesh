@@ -24,6 +24,7 @@
 
 #include "cli.h"
 #include "cmd.h"
+#include "help.h"
 #include "main.h"
 #include "math.h"
 #include "session.h"
@@ -34,7 +35,7 @@ int main(int argc, char **argv)
 {
         struct session *s;
 
-        print_welcome();
+        cprintf("mesh, version %s: http://hbrouwer.github.io/mesh/\n", VERSION);
 #ifdef FAST_EXP
         print_fast_exp_status();
 #endif /* FAST_EXP */
@@ -46,7 +47,7 @@ int main(int argc, char **argv)
 
         for (uint32_t i = 1; i < argc; i++) {
                 if (strcmp(argv[i],"--help") == 0) {
-                        print_help(argv[0]);
+                        help("usage");
                         goto leave_session;
                 }
                 
@@ -59,7 +60,6 @@ int main(int argc, char **argv)
                 }
         }
 
-        // mprintf("type 'help' or '?' for help");
         cli_loop(s);
 
 leave_session:
@@ -74,14 +74,14 @@ error_out:
 #ifdef FAST_EXP
 void print_fast_exp_status()
 {
-        mprintf("[+fast_exp: using Schraudolph's exp() approximation (c: %d)]", EXP_C);
+        cprintf("[+fast_exp: using Schraudolph's exp() approximation (c: %d)]\n", EXP_C);
 }
 #endif /* FAST_EXP */
 
 #ifdef _OPENMP
 void print_openmp_status()
 {
-        mprintf("[+openmp: %d processor(s) available (%d thread(s) max)]",
+        cprintf("[+openmp: %d processor(s) available (%d thread(s) max)]\n",
                         omp_get_num_procs(),
                         omp_get_max_threads());
 
@@ -90,37 +90,20 @@ void print_openmp_status()
         omp_get_schedule(&k, &m);
         switch(k) {
                 case 1:
-                        mprintf("[+openmp: static schedule (chunk size: %d)]", m);
+                        cprintf("[+openmp: static schedule (chunk size: %d)]\n", m);
                         break;
                 case 2:
-                        mprintf("[+openmp: dynamic schedule (chunk size: %d)]", m);
+                        cprintf("[+openmp: dynamic schedule (chunk size: %d)]\n", m);
                         break;
                 case 3:
-                        mprintf("[+openmp: guided schedule (chunk size: %d)]", m);
+                        cprintf("[+openmp: guided schedule (chunk size: %d)]\n", m);
                         break;
                 case 4:
-                        mprintf("[+openmp: auto schedule]");
+                        cprintf("[+openmp: auto schedule]\n");
                         break;
         }
 }
 #endif /* _OPENMP */
-
-void print_welcome()
-{
-        mprintf("mesh, version %s: http://hbrouwer.github.io/mesh/", VERSION);
-}
-
-void print_help(char *exec_name)
-{
-        mprintf(
-                "usage: %s [options-and-file]\n\n"
-
-                "  basic information for users:\n"
-                "    --help\t\t\tShows this help message\n",
-                
-                exec_name
-        );
-}
 
 /*
  * Print console message
@@ -141,6 +124,7 @@ void mprintf(const char *fmt, ...)
 {
         va_list args;
 
+        fprintf(stderr,"| ");
         va_start(args, fmt);
         vfprintf(stderr, fmt, args);
         va_end(args);
