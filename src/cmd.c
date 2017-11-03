@@ -24,6 +24,7 @@
 #include "classify.h"
 #include "cmd.h"
 #include "error.h"
+#include "help.h"
 #include "main.h"
 #include "math.h"
 #include "matrix.h"
@@ -293,9 +294,15 @@ bool cmd_help(char *cmd, char *fmt, struct session *s)
                 }
         }
 
+        if (help_on_topic)
+                help(arg);
+        else
+                help("general");
+        /*
         printf("Help: %i\n", help_on_topic);
         if (help_on_topic)
                 cprintf("%s\n", arg);
+                */
         
         return true;
 }

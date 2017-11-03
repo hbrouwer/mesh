@@ -22,6 +22,7 @@ set(SOURCE_FILES
         src/cli.c
         src/cmd.c
         src/error.c
+        src/help.c
         src/main.c
         src/math.c
         src/matrix.c
