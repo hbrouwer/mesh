@@ -127,7 +127,9 @@ void test_rnn_network(struct network *n)
                                 threshold_reached++;
 
 shift_stack:
-                        un->sp == un->stack_size - 1 ? rnn_shift_stack(un) : un->sp++;
+                        un->sp == un->stack_size - 1
+                                ? rnn_shift_stack(un)
+                                : un->sp++;
                 }
         }
 
@@ -265,7 +267,9 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                 cprintf("Error:\t%lf\n", n->status->error);
 
 shift_stack:
-                un->sp == un->stack_size - 1 ? rnn_shift_stack(un) : un->sp++;
+                un->sp == un->stack_size - 1
+                        ? rnn_shift_stack(un)
+                        : un->sp++;
         }
         
         cprintf("\n");

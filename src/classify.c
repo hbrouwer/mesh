@@ -131,7 +131,9 @@ void rnn_network_cm(struct network *n, bool print, bool pprint,
                         cm->elements[t][o]++;
 
 shift_stack:
-                        un->sp == un->stack_size - 1 ? rnn_shift_stack(un) : un->sp++;
+                        un->sp == un->stack_size - 1
+                                ? rnn_shift_stack(un)
+                                : un->sp++;
                 }
         }
 
@@ -145,7 +147,8 @@ void print_cm_summary(struct network *n, struct matrix *cm, bool print,
 {
         if (print) {
                 cprintf("Confusion matrix (actual x predicted):\n\n");
-                pprint == true ? pprint_matrix(cm, scheme)
+                pprint == true
+                        ? pprint_matrix(cm, scheme)
                         : print_matrix(cm);
                 cprintf("\n");
         }

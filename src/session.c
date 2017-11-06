@@ -30,6 +30,8 @@ struct session *create_session()
 
         s->networks = create_array(ATYPE_NETWORKS);
 
+        s->pprint = true;
+
         return s;
 
 error_out:

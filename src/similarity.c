@@ -128,7 +128,9 @@ void rnn_network_sm(struct network *n, bool print, bool pprint,
                         }
 
 shift_stack:
-                        un->sp == un->stack_size - 1 ? rnn_shift_stack(un) : un->sp++;
+                        un->sp == un->stack_size - 1
+                                ? rnn_shift_stack(un)
+                                : un->sp++;
                 }
         }
 
@@ -142,7 +144,9 @@ void print_sm_summary(struct network *n, struct matrix *sm, bool print,
 {
         if (print) {
                 cprintf("Output-target similarity matrix:\n\n");
-                pprint == true ? pprint_matrix(sm, scheme) : print_matrix(sm);
+                pprint == true
+                        ? pprint_matrix(sm, scheme)
+                        : print_matrix(sm);
                 cprintf("\n");
         }
 
