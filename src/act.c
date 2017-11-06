@@ -176,7 +176,7 @@ double act_lookup(double x, struct vector *lv)
                  ******************************/
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Binary sigmoid function:
+Binary sigmoid (logistic) function:
 
         f(x) = 1 / (1 + e ^ (-x)) 
 
@@ -323,4 +323,24 @@ double act_fun_step(struct vector *v, uint32_t i)
 double act_fun_step_deriv(struct vector *v, uint32_t i)
 {
         return 1.0;
+}
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Softplus function:
+
+        f(x) = ln(1 + e^x)
+
+and its derivative:
+
+        f'(x) = 1 / (1 + e ^ (-x))
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+double act_fun_softplus(struct vector *v, uint32_t i)
+{
+        return log(1.0 + EXP(x));
+}
+
+double act_fun_softplus_deriv(struct vector *v, uint32_t i)
+{
+        return 1.0 / (1.0 + EXP(-x));       
 }

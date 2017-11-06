@@ -54,4 +54,7 @@ double act_fun_linear_deriv(struct vector *v, uint32_t i);
 double act_fun_step(struct vector *v, uint32_t i);
 double act_fun_step_deriv(struct vector *v, uint32_t i);
 
+double act_fun_softplus(struct vector *v, uint32_t i);
+double act_fun_softplus_deriv(struct vector *v, uint32_t i);
+
 #endif /* ACT_H */
