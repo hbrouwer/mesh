@@ -28,7 +28,7 @@ struct session *create_session()
                 goto error_out;
         memset(s, 0, sizeof(struct session));
 
-        s->networks = create_array(TYPE_NETWORKS);
+        s->networks = create_array(ATYPE_NETWORKS);
 
         return s;
 

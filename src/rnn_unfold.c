@@ -211,7 +211,7 @@ struct network *rnn_duplicate_network(struct network *n)
         memcpy(dn, n, sizeof(struct network));
 
         /* duplicate the network's groups */
-        dn->groups = create_array(TYPE_GROUPS);
+        dn->groups = create_array(ATYPE_GROUPS);
         rnn_duplicate_groups(n, dn, n->input);
 
         return dn;
@@ -258,9 +258,9 @@ struct group *rnn_duplicate_group(struct group *g)
         dg->err_fun->fun = g->err_fun->fun;
         dg->err_fun->deriv = g->err_fun->deriv;
 
-        dg->inc_projs = create_array(TYPE_PROJS);
+        dg->inc_projs = create_array(ATYPE_PROJS);
         dg->inc_projs->num_elements = g->inc_projs->num_elements;
-        dg->out_projs = create_array(TYPE_PROJS);
+        dg->out_projs = create_array(ATYPE_PROJS);
         dg->out_projs->num_elements = g->out_projs->num_elements;
 
         dg->bias = g->bias;
@@ -424,7 +424,7 @@ void rnn_dispose_duplicate_projection(struct projection *dp)
 
 struct array *rnn_recurrent_groups(struct network *n)
 {
-        struct array *gs = create_array(TYPE_GROUPS);
+        struct array *gs = create_array(ATYPE_GROUPS);
         rnn_collect_recurrent_groups(n->input, gs);
 
         return gs;

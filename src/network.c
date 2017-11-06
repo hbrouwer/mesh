@@ -44,8 +44,8 @@ struct network *create_network(char *name, uint32_t type)
 
         n->type = type;
 
-        n->groups = create_array(TYPE_GROUPS);
-        n->sets = create_array(TYPE_SETS);
+        n->groups = create_array(ATYPE_GROUPS);
+        n->sets = create_array(ATYPE_SETS);
 
         block_size = sizeof(struct status);
         if (!(n->status = malloc(block_size)))
@@ -183,10 +183,10 @@ struct group *create_group(char *name, uint32_t size, bool bias,
                 goto error_out;
         memset(g->err_fun, 0, sizeof(struct err_fun));
 
-        g->inc_projs = create_array(TYPE_PROJS);
-        g->out_projs = create_array(TYPE_PROJS);
+        g->inc_projs = create_array(ATYPE_PROJS);
+        g->out_projs = create_array(ATYPE_PROJS);
 
-        g->ctx_groups = create_array(TYPE_GROUPS);
+        g->ctx_groups = create_array(ATYPE_GROUPS);
 
         g->bias = bias;
         g->recurrent = recurrent;
@@ -485,11 +485,11 @@ bool save_weight_matrices(struct network *n, char *fn)
         if (!(fd = fopen(fn, "w")))
                 goto error_out;
 
-        if (n->type == TYPE_FFN)
+        if (n->type == NTYPE_FFN)
                 save_weight_matrix(n->input, fd);
-        if (n->type == TYPE_SRN)
+        if (n->type == NTYPE_SRN)
                 save_weight_matrix(n->input, fd);
-        if (n->type == TYPE_RNN)
+        if (n->type == NTYPE_RNN)
                 save_weight_matrix(n->unfolded_net->stack[0]->input, fd);
 
         fclose(fd);
@@ -539,11 +539,11 @@ bool load_weight_matrices(struct network *n, char *fn)
                 goto error_out;
 
         struct network *np = NULL;
-        if (n->type == TYPE_FFN)
+        if (n->type == NTYPE_FFN)
                 np = n;
-        if (n->type == TYPE_SRN)
+        if (n->type == NTYPE_SRN)
                 np = n;
-        if (n->type == TYPE_RNN)
+        if (n->type == NTYPE_RNN)
                 np = n->unfolded_net->stack[0];
 
         char buf[MAX_BUF_SIZE];

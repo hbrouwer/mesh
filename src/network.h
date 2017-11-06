@@ -28,9 +28,9 @@
 #include "vector.h"
 
 /* network types */
-#define TYPE_FFN 0
-#define TYPE_SRN 1
-#define TYPE_RNN 2
+#define NTYPE_FFN 0
+#define NTYPE_SRN 1
+#define NTYPE_RNN 2
 
 /* training orders */
 #define TRAIN_ORDERED    0

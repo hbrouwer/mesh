@@ -35,11 +35,11 @@ void test_network(struct network *n)
 
         keep_running = true;
 
-        if (n->type == TYPE_FFN)
+        if (n->type == NTYPE_FFN)
                 test_ffn_network(n);
-        if (n->type == TYPE_SRN)
+        if (n->type == NTYPE_SRN)
                 test_ffn_network(n);
-        if (n->type == TYPE_RNN)
+        if (n->type == NTYPE_RNN)
                 test_rnn_network(n);
 
         sa.sa_handler = SIG_DFL;
@@ -59,11 +59,11 @@ void test_ffn_network(struct network *n)
                 if (!keep_running)
                         return;
 
-                if (n->type == TYPE_SRN)
+                if (n->type == NTYPE_SRN)
                         reset_context_groups(n);
                 for (uint32_t j = 0; j < item->num_events; j++) {
                         /* feed activation forward */
-                        if (j > 0 && n->type == TYPE_SRN)
+                        if (j > 0 && n->type == NTYPE_SRN)
                                 shift_context_groups(n);
                         copy_vector(n->input->vector, item->inputs[j]);
                         feed_forward(n, n->input);
@@ -137,11 +137,11 @@ shift_stack:
 void test_network_with_item(struct network *n, struct item *item,
         bool pprint, uint32_t scheme)
 {
-        if (n->type == TYPE_FFN)
+        if (n->type == NTYPE_FFN)
                 test_ffn_network_with_item(n, item, pprint, scheme);
-        if (n->type == TYPE_SRN)
+        if (n->type == NTYPE_SRN)
                 test_ffn_network_with_item(n, item, pprint, scheme);
-        if (n->type == TYPE_RNN)
+        if (n->type == NTYPE_RNN)
                 test_rnn_network_with_item(n, item, pprint, scheme);
 }
 
@@ -157,7 +157,7 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
         cprintf("\n");
         cprintf("(E: Event; I: Input; T: Target; O: Output)\n");
 
-        if (n->type == TYPE_SRN)
+        if (n->type == NTYPE_SRN)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* print event number, and input vector */
@@ -168,7 +168,7 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
                         : print_vector(item->inputs[i]);
 
                 /* feed activation forward */
-                if (i > 0 && n->type == TYPE_SRN)
+                if (i > 0 && n->type == NTYPE_SRN)
                         shift_context_groups(n);
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);

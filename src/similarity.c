@@ -37,11 +37,11 @@ void similarity_matrix(struct network *n, bool print, bool pprint,
 
         keep_running = true;
 
-        if (n->type == TYPE_FFN)
+        if (n->type == NTYPE_FFN)
                 ffn_network_sm(n, print, pprint, scheme);
-        if (n->type == TYPE_SRN)
+        if (n->type == NTYPE_SRN)
                 ffn_network_sm(n, print, pprint, scheme);
-        if (n->type == TYPE_RNN)
+        if (n->type == NTYPE_RNN)
                 rnn_network_sm(n, print, pprint, scheme);
 
         sa.sa_handler = SIG_DFL;
@@ -61,11 +61,11 @@ void ffn_network_sm(struct network *n, bool print, bool pprint,
                 if (!keep_running)
                         return;
 
-                if (n->type == TYPE_SRN)
+                if (n->type == NTYPE_SRN)
                         reset_context_groups(n);
                 for (uint32_t j = 0; j < item->num_events; j++) {
                         /* feed activation forward */
-                        if (j > 0 && n->type == TYPE_SRN)
+                        if (j > 0 && n->type == NTYPE_SRN)
                                 shift_context_groups(n);
                         copy_vector(n->input->vector, item->inputs[j]);
                         feed_forward(n, n->input);

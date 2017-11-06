@@ -336,13 +336,13 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s)
         uint32_t type = 0;
         /* feed forward network */
         if (strcmp(arg2, "ffn") == 0)
-                type = TYPE_FFN;
+                type = NTYPE_FFN;
          /* simple recurrent network */
         else if (strcmp(arg2, "srn") == 0)
-                type = TYPE_SRN;
+                type = NTYPE_SRN;
         /* recurrent network */
         else if (strcmp(arg2, "rnn") == 0)
-                type = TYPE_RNN;
+                type = NTYPE_RNN;
         else {
                 eprintf("Cannot create network--invalid network type: '%s'\n", arg2);
                 return true;

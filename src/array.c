@@ -101,22 +101,22 @@ void *find_array_element_by_name(struct array *a, char *name)
         for (uint32_t i = 0; i < a->num_elements; i++) {
                 void *e = a->elements[i];
 
-                if (a->type == TYPE_NETWORKS) {
+                if (a->type == ATYPE_NETWORKS) {
                         struct network *n = (struct network *)e;
                         if (strcmp(n->name, name) == 0)
                                 return e;
                 }
-                else if (a->type == TYPE_GROUPS) {
+                else if (a->type == ATYPE_GROUPS) {
                         struct group *g = (struct group *)e;
                         if (strcmp(g->name, name) == 0)
                                 return e;
                 }
-                else if (a->type == TYPE_SETS) {
+                else if (a->type == ATYPE_SETS) {
                         struct set *s = (struct set *)e;
                         if (strcmp(s->name, name) == 0)
                                 return e;
                 }
-                else if (a->type == TYPE_ITEMS) {
+                else if (a->type == ATYPE_ITEMS) {
                         struct item *item = (struct item *)e;
                         if (strcmp(item->name, name) == 0)
                                 return e;

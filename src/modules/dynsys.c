@@ -54,11 +54,11 @@ void dynsys_test_item(struct network *n, struct group *g, struct item *item)
         fill_vector_with_value(pv, 1.0);
         fill_vector_with_value(pv, 1.0 / euclidean_norm(pv));
 
-        if (n->type == TYPE_SRN)
+        if (n->type == NTYPE_SRN)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* feed activation forward */
-                if (i > 0 && n->type == TYPE_SRN)
+                if (i > 0 && n->type == NTYPE_SRN)
                         shift_context_groups(n);
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
