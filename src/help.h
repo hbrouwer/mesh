@@ -17,8 +17,20 @@
 #ifndef HELP_H
 #define HELP_H
 
+#define TOPIC_ABOUT \
+"         ______                                                        \n" \
+"    __---   )  --_  Mesh: http://hbrouwer.github.io/mesh/              \n" \
+"  --       /      -_  Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>\n" \
+" /     o  (         )                                                  \n" \
+"(     o   ____  o    )  Saarland University                            \n" \
+"(    o _--     o      )  Department of Language Science and Technology \n" \
+" (____/       o _____)  Psycholinguistics Group                        \n" \
+"      (____  ---  )                                                    \n" \
+"           \\ \\-__/  Licensed under the Apache License, Version 2.0   \n" \
+"                                                                       \n" \
+
 #define TOPIC_USAGE \
-"Usage:                                                                 \n" \
+"Usage: mesh <file> [options]                                           \n" \
 "                                                                       \n" \
 "       --help: show this help message;                                 \n" 
 
@@ -52,6 +64,7 @@ struct help
 
 const static struct help hts[] = {
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"about",               TOPIC_ABOUT},
         {"usage",               TOPIC_USAGE},
         {"general",             TOPIC_GENERAL},
         {"networks",            TOPIC_NETWORKS},

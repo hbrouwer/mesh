@@ -17,6 +17,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#define VERSION "0.1"
+
 #define MAX_ARG_SIZE 128
 #define MAX_BUF_SIZE 32768
 

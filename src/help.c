@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <strings.h>
 
+#include "main.h"
 #include "help.h"
 
 void help(char *help_topic)
@@ -26,7 +27,7 @@ void help(char *help_topic)
         for (uint32_t i = 0; hts[i].help_topic != NULL; i++) {
                 if (strncmp(help_topic, hts[i].help_topic,
                         strlen(hts[i].help_topic)) == 0) {
-                                printf("\n%s\n", hts[i].help_text);
+                                cprintf("\n%s\n", hts[i].help_text);
                                 return;
                 }
         }
