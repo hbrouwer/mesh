@@ -23,14 +23,14 @@
 #include "network.h"
 
 void similarity_matrix(struct network *n, bool print, bool pprint,
-                uint32_t scheme);
+        uint32_t scheme);
 void ffn_network_sm(struct network *n, bool print, bool pprint,
-                uint32_t scheme);
+        uint32_t scheme);
 void rnn_network_sm(struct network *n, bool print, bool pprint,
-                uint32_t scheme);
+        uint32_t scheme);
 
 void print_sm_summary(struct network *n, struct matrix *sm, bool print,
-                bool pprint, uint32_t scheme);
+        bool pprint, uint32_t scheme);
 
 void sm_signal_handler(int32_t signal);
 

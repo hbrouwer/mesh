@@ -75,7 +75,7 @@ void dynsys_test_item(struct network *n, struct group *g, struct item *item)
 }
 
 double dynsys_processing_time(struct network *n, struct vector *a_out0,
-                struct vector *a_out1)
+        struct vector *a_out1)
 {
         struct vector *da_out_dt = create_vector(a_out0->size);
         struct vector *a_outx = create_vector(a_out0->size);

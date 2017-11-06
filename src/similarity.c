@@ -27,7 +27,7 @@
 static bool keep_running = true;
 
 void similarity_matrix(struct network *n, bool print, bool pprint,
-                uint32_t scheme)
+        uint32_t scheme)
 {
         struct sigaction sa;
         sa.sa_handler = sm_signal_handler;
@@ -49,7 +49,7 @@ void similarity_matrix(struct network *n, bool print, bool pprint,
 }
 
 void ffn_network_sm(struct network *n, bool print, bool pprint,
-                uint32_t scheme)
+        uint32_t scheme)
 {
         uint32_t d = n->asp->items->num_elements;
         struct matrix *sm = create_matrix(d, d);
@@ -92,7 +92,7 @@ void ffn_network_sm(struct network *n, bool print, bool pprint,
 }
 
 void rnn_network_sm(struct network *n, bool print, bool pprint,
-                uint32_t scheme)
+        uint32_t scheme)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
 
@@ -138,13 +138,16 @@ shift_stack:
 }
 
 void print_sm_summary(struct network *n, struct matrix *sm, bool print,
-                bool pprint, uint32_t scheme)
+        bool pprint, uint32_t scheme)
 {
         if (print) {
-                pprintf("Output-target similarity matrix:\n\n");
+                cprintf("Output-target similarity matrix:\n\n");
                 pprint == true ? pprint_matrix(sm, scheme) : print_matrix(sm);
                 cprintf("\n");
         }
+
+        cprintf("\n");
+        cprintf("Similarity statistics:\n");
 
         /*
          * Compute mean similarity, and its standard deviation. Also,
@@ -171,14 +174,16 @@ void print_sm_summary(struct network *n, struct matrix *sm, bool print,
                 sim_sd += pow(sm->elements[i][i] - sim_mean, 2.0);
         sim_sd = sqrt(sim_sd / n->asp->items->num_elements);
 
-        pprintf("Number of items: \t\t %d\n",
+        cprintf("\n");
+        cprintf("Number of items: \t\t %d\n",
                         n->asp->items->num_elements);
-        pprintf("Mean similarity: \t\t %lf\n",
+        cprintf("Mean similarity: \t\t %lf\n",
                         sim_mean);
-        pprintf("SD of similarity:\t\t %lf\n",
+        cprintf("SD of similarity:\t\t %lf\n",
                         sim_sd);
-        pprintf("# Items reached threshold:  %d (%.2lf%%)\n",
+        cprintf("# Items reached threshold: \t %d (%.2lf%%)\n",
                         tr, ((double)tr / n->asp->items->num_elements) * 100.0);
+        cprintf("\n");
 }
 
 void sm_signal_handler(int32_t signal)

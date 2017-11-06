@@ -157,7 +157,7 @@ void dispose_network(struct network *n)
 }
 
 struct group *create_group(char *name, uint32_t size, bool bias,
-                bool recurrent)
+        bool recurrent)
 {
         struct group *g;
         if (!(g = malloc(sizeof(struct group))))
@@ -226,30 +226,30 @@ struct group *attach_bias_group(struct network *n, struct group *g)
 
         /* weight matrix */
         struct matrix *weights = create_matrix(
-                        bg->vector->size,
-                        g->vector->size);
+                bg->vector->size,
+                g->vector->size);
         /* gradients matrix */
         struct matrix *gradients = create_matrix(
-                        bg->vector->size,
-                        g->vector->size);
+                bg->vector->size,
+                g->vector->size);
         /* previous gradients matrix */
         struct matrix *prev_gradients = create_matrix(
-                        bg->vector->size,
-                        g->vector->size);
+                bg->vector->size,
+                g->vector->size);
         /* previous weight deltas matrix */
         struct matrix *prev_deltas = create_matrix(
-                        bg->vector->size,
-                        g->vector->size);
+                bg->vector->size,
+                g->vector->size);
         /* dynamic learning parameters matrix */
         struct matrix *dynamic_pars = create_matrix(
-                        bg->vector->size,
-                        g->vector->size);
+                bg->vector->size,
+                g->vector->size);
 
         /* add projections */
-        struct projection *op = create_projection(g, weights, gradients,
-                        prev_gradients, prev_deltas, dynamic_pars);
-        struct projection *ip = create_projection(bg, weights, gradients,
-                        prev_gradients, prev_deltas, dynamic_pars);
+        struct projection *op = create_projection(g, weights,
+                gradients, prev_gradients, prev_deltas, dynamic_pars);
+        struct projection *ip = create_projection(bg, weights,
+                gradients, prev_gradients, prev_deltas, dynamic_pars);
 
         op->recurrent = false;
         ip->recurrent = false;
@@ -390,12 +390,12 @@ void reset_rnn_error_signals(struct network *n)
 }
 
 struct projection *create_projection(
-                struct group *to,
-                struct matrix *weights,
-                struct matrix *gradients,
-                struct matrix *prev_gradients,
-                struct matrix *prev_deltas,
-                struct matrix *dynamic_pars)
+        struct group *to,
+        struct matrix *weights,
+        struct matrix *gradients,
+        struct matrix *prev_gradients,
+        struct matrix *prev_deltas,
+        struct matrix *dynamic_pars)
 {
         struct projection *p;
 

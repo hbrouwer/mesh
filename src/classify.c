@@ -27,7 +27,7 @@
 static bool keep_running = true;
 
 void confusion_matrix(struct network *n, bool print, bool pprint,
-                uint32_t scheme)
+        uint32_t scheme)
 {
         struct sigaction sa;
         sa.sa_handler = cm_signal_handler;
@@ -49,7 +49,7 @@ void confusion_matrix(struct network *n, bool print, bool pprint,
 }
 
 void ffn_network_cm(struct network *n, bool print, bool pprint,
-                uint32_t scheme)
+        uint32_t scheme)
 {
         uint32_t d = n->output->vector->size;
         struct matrix *cm = create_matrix(d, d);
@@ -94,7 +94,7 @@ void ffn_network_cm(struct network *n, bool print, bool pprint,
 }
 
 void rnn_network_cm(struct network *n, bool print, bool pprint,
-                uint32_t scheme)
+        uint32_t scheme)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
 
@@ -141,15 +141,17 @@ shift_stack:
 }
 
 void print_cm_summary(struct network *n, struct matrix *cm, bool print,
-                bool pprint, uint32_t scheme)
+        bool pprint, uint32_t scheme)
 {
         if (print) {
-                pprintf("Confusion matrix (actual x predicted):\n\n");
+                cprintf("Confusion matrix (actual x predicted):\n\n");
                 pprint == true ? pprint_matrix(cm, scheme)
                         : print_matrix(cm);
+                cprintf("\n");
         }
-        pprintf("Classification statistics:\n");
-        pprintf("\n");
+
+        cprintf("\n");
+        cprintf("Classification statistics:\n");
 
         /* row and column totals */
         struct vector *rows = create_vector(cm->rows);
@@ -185,11 +187,13 @@ void print_cm_summary(struct network *n, struct matrix *cm, bool print,
         double fs = (1.0 + pow(beta,2.0))  * (pr * rc) / ((pr * pow(beta,2.0)) + rc);
 
         /* report statistics */
-        pprintf("Accurracy:\t\t%f\n", cc / (cc + ic));
-        pprintf("Error rate:\t%f\n", ic / (cc + ic));
-        pprintf("Precision:\t\t%f\n", pr);
-        pprintf("Recall:\t\t%f\n", rc);
-        pprintf("F(%.2f)-score:\t%f\n", beta, fs);
+        cprintf("\n");
+        cprintf("Accurracy: \t %f\n", cc / (cc + ic));
+        cprintf("Error rate: \t %f\n", ic / (cc + ic));
+        cprintf("Precision: \t %f\n", pr);
+        cprintf("Recall: \t %f\n", rc);
+        cprintf("F(%.2f)-score: \t %f\n", beta, fs);
+        cprintf("\n");
         
         dispose_vector(rows);
         dispose_vector(cols);

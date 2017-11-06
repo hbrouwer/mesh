@@ -397,7 +397,7 @@ bool cmd_list_networks(char *cmd, char *fmt, struct session *s)
                         struct network *n = s->networks->elements[i];
                         cprintf("* %s", n->name);
                         if (n == s->anp) {
-                                cprintf("\t <- active network\n");
+                                cprintf(" (active network)\n");
                         } else {
                                 cprintf("\n");
                         }
@@ -520,9 +520,9 @@ bool cmd_list_groups(char *cmd, char *fmt, struct session *s)
                         struct group *g = s->anp->groups->elements[i];
                         cprintf("* %s :: %d", g->name, g->vector->size);
                         if (g == s->anp->input) {
-                                cprintf("\t\t <- input group\n");
+                                cprintf(" (input group)\n");
                         } else if (g == s->anp->output) {
-                                cprintf("\t\t <- output group\n");
+                                cprintf(" (output group)\n");
                         } else {
                                 cprintf("\n");
                         }
@@ -549,7 +549,7 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct session *s)
                 goto error_out;
         if (find_array_element_by_name(s->anp->groups, arg_bias)) {
                 eprintf("Cannot attach bias group--group '%s' already exists in network '%s'\n",
-                                arg_bias, s->anp->name);
+                        arg_bias, s->anp->name);
                 return true;
         }
         free(arg_bias);
@@ -726,7 +726,7 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
                         exists = true;
         if (exists) {
                 eprintf("Cannot set projection--projection '%s -> %s' already exists\n",
-                                arg1, arg2);
+                        arg1, arg2);
                 return true;
         }
 
@@ -735,30 +735,25 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
         else {
                 /* weight matrix */
                 struct matrix *weights = create_matrix(
-                                fg->vector->size,
-                                tg->vector->size);
+                        fg->vector->size, tg->vector->size);
                 /* gradients matrix */
                 struct matrix *gradients = create_matrix(
-                                fg->vector->size,
-                                tg->vector->size);
+                        fg->vector->size, tg->vector->size);
                 /* previous gradients matrix */
                 struct matrix *prev_gradients = create_matrix(
-                                fg->vector->size,
-                                tg->vector->size);
+                        fg->vector->size, tg->vector->size);
                 /* previous weight deltas matrix */
                 struct matrix *prev_deltas = create_matrix(
-                                fg->vector->size,
-                                tg->vector->size);
+                        fg->vector->size, tg->vector->size);
                 /* dynamic learning parameters matrix */
                 struct matrix *dynamic_pars = create_matrix(
-                                fg->vector->size,
-                                tg->vector->size);
+                        fg->vector->size, tg->vector->size);
 
                 /* add projections */
-                struct projection *op = create_projection(tg, weights, gradients,
-                                prev_gradients, prev_deltas, dynamic_pars);
-                struct projection *ip = create_projection(fg, weights, gradients,
-                                prev_gradients, prev_deltas, dynamic_pars);
+                struct projection *op = create_projection(tg, weights,
+                        gradients, prev_gradients, prev_deltas, dynamic_pars);
+                struct projection *ip = create_projection(fg, weights,
+                        gradients, prev_gradients, prev_deltas, dynamic_pars);
 
                 add_to_array(fg->out_projs, op);
                 add_to_array(tg->inc_projs, ip);
@@ -837,13 +832,13 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s)
         }
         if (fg->vector->size != tg->vector->size) {
                 eprintf("Cannot set Elman-projection--groups '%s' and '%s' have unequal vector sizes (%d and %d)\n",
-                                fg->name, tg->name, fg->vector->size, tg->vector->size);
+                        fg->name, tg->name, fg->vector->size, tg->vector->size);
                 return true;
         }
 
         for (uint32_t i = 0; i < fg->ctx_groups->num_elements; i++) {
                 if (fg->ctx_groups->elements[i] == tg) {
-                        eprintf("cannot set Elman-projection--Elman-projection '%s -> %s' already exists\n",
+                        eprintf("Cannot set Elman-projection--Elman-projection '%s -> %s' already exists\n",
                                 arg1, arg2);
                         return true;
                 }
@@ -995,7 +990,7 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
                 tg_to_fg->frozen = true;
         } else {
                 eprintf("Cannot freeze projection--no projection between groups '%s' and '%s')\n",
-                                arg1, arg2);
+                        arg1, arg2);
                 return true;
         }
 
@@ -1060,35 +1055,35 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
                         exists = true;
         if (exists) {
                 eprintf("Cannot set tunnel projection--projection '%s -> %s' already exists\n",
-                                arg1, arg2);
+                        arg1, arg2);
                 return true;
         }
 
         /* check ranges */
         if (arg_int2 - arg_int1 != arg_int4 - arg_int3) {
                 eprintf("Cannot set tunnel projection--indices [%d:%d] and [%d:%d] cover differ ranges\n",
-                                arg_int1, arg_int2, arg_int3, arg_int4);
+                        arg_int1, arg_int2, arg_int3, arg_int4);
                 return true;
         }
 
         /* check from group bounds */
         if (arg_int1 < 0 
-                        || arg_int1 > fg->vector->size
-                        || arg_int2 < 0
-                        || arg_int2 > fg->vector->size
-                        || arg_int2 < arg_int1)
+                || arg_int1 > fg->vector->size
+                || arg_int2 < 0
+                || arg_int2 > fg->vector->size
+                || arg_int2 < arg_int1)
         {
                 eprintf("Cannot set tunnel projection--indices [%d:%d] out of bounds\n",
-                                arg_int1, arg_int2);
+                        arg_int1, arg_int2);
                 return true;
         }
 
         /* check to group bounds */
         if (arg_int3 < 0 
-                        || arg_int3 > tg->vector->size
-                        || arg_int4 < 0
-                        || arg_int4 > tg->vector->size
-                        || arg_int4 < arg_int3)
+                || arg_int3 > tg->vector->size
+                || arg_int4 < 0
+                || arg_int4 > tg->vector->size
+                || arg_int4 < arg_int3)
         {
                 eprintf("Cannot set tunnel projection--indices [%d:%d] out of bounds\n",
                                 arg_int3, arg_int4);
@@ -1097,30 +1092,25 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
 
         /* weight matrix */
         struct matrix *weights = create_matrix(
-                        fg->vector->size,
-                        tg->vector->size);
+                fg->vector->size, tg->vector->size);
         /* gradients matrix */
         struct matrix *gradients = create_matrix(
-                        fg->vector->size,
-                        tg->vector->size);
+                fg->vector->size, tg->vector->size);
         /* previous gradients matrix */
         struct matrix *prev_gradients = create_matrix(
-                        fg->vector->size,
-                        tg->vector->size);
+                fg->vector->size, tg->vector->size);
         /* previous weight deltas matrix */
         struct matrix *prev_deltas = create_matrix(
-                        fg->vector->size,
-                        tg->vector->size);
+                fg->vector->size, tg->vector->size);
         /* dynamic learning parameters matrix */
         struct matrix *dynamic_pars = create_matrix(
-                        fg->vector->size,
-                        tg->vector->size);
+                fg->vector->size, tg->vector->size);
 
         /* add projections */
-        struct projection *op = create_projection(tg, weights, gradients,
-                        prev_gradients, prev_deltas, dynamic_pars);
-        struct projection *ip = create_projection(fg, weights, gradients,
-                        prev_gradients, prev_deltas, dynamic_pars);
+        struct projection *op = create_projection(tg, weights,
+                gradients, prev_gradients, prev_deltas, dynamic_pars);
+        struct projection *ip = create_projection(fg, weights,
+                gradients, prev_gradients, prev_deltas, dynamic_pars);
 
         op->frozen = true;
         ip->frozen = true;
@@ -1133,7 +1123,7 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
                 weights->elements[r][c] = 1.0;
 
         mprintf("Created tunnel projection \t [ %s [%d:%d] -> %s [%d:%d] ]\n",
-                        arg1, arg_int1, arg_int2, arg2, arg_int3, arg_int4);
+                arg1, arg_int1, arg_int2, arg2, arg_int3, arg_int4);
 
         return true;
 }
@@ -1248,7 +1238,8 @@ bool cmd_load_set(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        struct set *set = load_set(arg1, arg2, s->anp->input->vector->size, s->anp->output->vector->size);
+        struct set *set = load_set(arg1, arg2, s->anp->input->vector->size,
+                s->anp->output->vector->size);
         if (!set) {
                 eprintf("Cannot load set--no such file '%s'\n", arg2);
                 return true;
@@ -1257,7 +1248,8 @@ bool cmd_load_set(char *cmd, char *fmt, struct session *s)
         add_to_array(s->anp->sets, set);
         s->anp->asp = set;
 
-        mprintf("Loaded set \t\t\t [ %s => %s :: %d ]\n", arg2, set->name, set->items->num_elements);
+        mprintf("Loaded set \t\t\t [ %s => %s :: %d ]\n", arg2, set->name,
+                set->items->num_elements);
 
         return true;
 }
@@ -1298,7 +1290,7 @@ bool cmd_list_sets(char *cmd, char *fmt, struct session *s)
                         struct set *set = s->anp->sets->elements[i];
                         cprintf("* %s (%d)", set->name, set->items->num_elements);
                         if (set == s->anp->asp) {
-                                cprintf("\t <- active set\n");
+                                cprintf(" (active set)\n");
                         } else {
                                 cprintf("\n");
                         }
@@ -1358,26 +1350,27 @@ bool cmd_show_item(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("\n");
-
-        pprintf("Name: \"%s\"\n", item->name);
-        pprintf("Meta: \"%s\"\n", item->meta);
-        pprintf("\n");
-        pprintf("Events: %d\n", item->num_events);
+        cprintf("\n");
+        cprintf("Name:   \"%s\"\n", item->name);
+        cprintf("Meta:   \"%s\"\n", item->meta);
+        cprintf("Events: %d\n", item->num_events);
+        cprintf("\n");
+        cprintf("(E: Event; I: Input; T: Target)\n");
 
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* print event number, and input vector */
                 cprintf("\n");
-                cprintf("Event: %d\n", i + 1);
-                cprintf("Input:\n\n");
-                s->pprint == true ? pprint_vector(item->inputs[i], s->pprint_scheme)
+                cprintf("E: %d\n", i + 1);
+                cprintf("I: ");
+                s->pprint == true
+                        ? pprint_vector(item->inputs[i], s->pprint_scheme)
                         : print_vector(item->inputs[i]);
 
                 /* print target vector (if available) */
                 if (item->targets[i]) {
-                        cprintf("\n");
-                        cprintf("Target:\n\n");
-                        s->pprint == true ? pprint_vector(item->targets[i], s->pprint_scheme)
+                        cprintf("T: ");
+                        s->pprint == true
+                                ? pprint_vector(item->targets[i], s->pprint_scheme)
                                 : print_vector(item->targets[i]);
                 }
         }
@@ -1582,11 +1575,9 @@ bool cmd_train(char *cmd, char *fmt, struct session *s)
                 return false;
 
         mprintf("Training network '%s'\n", s->anp->name);
-        mprintf("\n");
+        cprintf("\n");
 
         train_network(s->anp);
-
-        mprintf("\n");
 
         return true;
 }
@@ -1597,11 +1588,8 @@ bool cmd_test(char *cmd, char *fmt, struct session *s)
                 return false;
 
         mprintf("Testing network '%s'\n", s->anp->name);
-        mprintf("\n");
 
         test_network(s->anp);
-
-        mprintf("\n");
 
         return true;
 }
@@ -1612,8 +1600,7 @@ bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s)
         s->anp->ms_set = NULL;
 
         mprintf("Set single-stage training \t [ %s --> %s ]\n", 
-                        s->anp->input->name,
-                        s->anp->output->name);
+                s->anp->input->name, s->anp->output->name);
         
         return true;
 }
@@ -1640,10 +1627,8 @@ bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s)
         s->anp->ms_set = set;
 
         mprintf("Set multi-stage training \t [ %s --> %s :: %s ==> %s ]\n", 
-                        s->anp->input->name,
-                        s->anp->ms_input->name,
-                        s->anp->ms_set->name,
-                        s->anp->output->name);
+                s->anp->input->name, s->anp->ms_input->name,
+                s->anp->ms_set->name, s->anp->output->name);
 
         return true;
 }
@@ -1660,11 +1645,9 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("Testing network '%s' with item '%s'\n\n", s->anp->name, arg);
+        mprintf("Testing network '%s' with item '%s'\n", s->anp->name, arg);
 
         test_network_with_item(s->anp, item, s->pprint, s->pprint_scheme);
-
-        cprintf("\n");
 
         return true;
 }
@@ -1674,12 +1657,10 @@ bool cmd_similarity_matrix(char *cmd, char *fmt, struct session *s)
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
-        cprintf("Computing similarity matrix for network '%s'\n\n", s->anp->name);
+        mprintf("Computing similarity matrix for network '%s'\n", s->anp->name);
 
         // TODO: handle matrix printing
         similarity_matrix(s->anp, false, s->pprint, s->pprint_scheme);
-
-        cprintf(" ");
 
         return true;
 }
@@ -1689,12 +1670,10 @@ bool cmd_confusion_matrix(char *cmd, char *fmt, struct session *s)
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
-        cprintf("Computing confusion matrix for network '%s'\n\n", s->anp->name);
+        mprintf("Computing confusion matrix for network '%s'\n", s->anp->name);
 
         // TODO: handle matrix printing
         confusion_matrix(s->anp, false, s->pprint, s->pprint_scheme);
-
-        cprintf("\n");
 
         return true;
 }
@@ -1704,22 +1683,9 @@ bool cmd_weight_stats(char *cmd, char *fmt, struct session *s)
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
-        cprintf("Weight statistics for network '%s'\n\n", s->anp->name);
-
         struct weight_stats *ws = create_weight_statistics(s->anp);
-     
-        pprintf("Number of weights:\t\t%d\n", ws->num_weights);
-        pprintf("Cost:\t\t\t%f\n", ws->cost);
-        pprintf("Mean:\t\t\t%f\n", ws->mean);
-        pprintf("Absolute mean:\t\t%f\n", ws->mean_abs);
-        pprintf("Mean dist.:\t\t%f\n", ws->mean_dist);
-        pprintf("Variance:\t\t\t%f\n", ws->variance);
-        pprintf("Minimum:\t\t\t%f\n", ws->minimum);
-        pprintf("Maximum:\t\t\t%f\n", ws->maximum);
-        
+        print_weight_statistics(s->anp, ws);
         dispose_weight_statistics(ws);
-
-        cprintf("\n");
 
         return true;
 }
@@ -1742,8 +1708,10 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
+        cprintf("\n");
+
         if (type == VTYPE_UNITS) {
-                cprintf("Unit vector for '%s'\n", arg);
+                cprintf("Unit vector for '%s':\n\n", arg);
                 if (s->pprint) {
                         pprint_vector(g->vector, s->pprint_scheme);
                 } else {
@@ -1751,13 +1719,15 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
                 }
         }
         if (type == VTYPE_ERROR) {
-                cprintf("Error vector for '%s'\n", arg);
+                cprintf("Error vector for '%s':\n\n", arg);
                 if (s->pprint) {
                         pprint_vector(g->error, s->pprint_scheme);
                 } else {
                         print_vector(g->error);
                 }
         }
+
+        cprintf("\n");
 
         return true;
 }
@@ -1791,6 +1761,8 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
+        cprintf("\n");
+
         struct projection *fg_to_tg = NULL;
         for (uint32_t i = 0; i < fg->out_projs->num_elements; i++) {
                 if (((struct projection *)fg->out_projs->elements[i])->to == tg) {
@@ -1800,7 +1772,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
         }
         if (fg_to_tg) {
                 if (type == MTYPE_WEIGHTS) {
-                        cprintf("Weight matrix for projection '%s -> %s'\n", arg1, arg2);
+                        cprintf("Weight matrix for projection '%s -> %s':\n\n", arg1, arg2);
                         if (s->pprint) {
                                 pprint_matrix(fg_to_tg->weights, s->pprint_scheme);
                         } else {
@@ -1808,7 +1780,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                         }
                 }
                 if (type == MTYPE_GRADIENTS) {
-                        mprintf("Gradient matrix for projection '%s -> %s'\n", arg1, arg2);                  
+                        mprintf("Gradient matrix for projection '%s -> %s':\n\n", arg1, arg2);                  
                         if (s->pprint) {
                                 pprint_matrix(fg_to_tg->gradients, s->pprint_scheme);
                         } else {
@@ -1816,7 +1788,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                         }
                 }
                 if (type == MTYPE_DYN_PARS) {
-                        mprintf("Dynamic learning parameters for projection '%s -> %s'\n",
+                        mprintf("Dynamic learning parameters for projection '%s -> %s':\n\n",
                                         arg1, arg2);               
                         if (s->pprint) {
                                 pprint_matrix(fg_to_tg->dynamic_pars, s->pprint_scheme);
@@ -1828,7 +1800,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                 cprintf("\n");
         } else {
                 eprintf("Cannot show matrix--no projection between groups '%s' and '%s'\n",
-                                arg1, arg2);
+                        arg1, arg2);
                 return true;
         }
 
@@ -1946,11 +1918,7 @@ bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        cprintf("\n");
-
         erp_contrast(s->anp, gen, item1, item2);
-
-        cprintf("\n");
 
         return true;
 }
@@ -2019,11 +1987,9 @@ bool cmd_dss_test(char *cmd, char *fmt, struct session *s)
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
-        cprintf("Testing network '%s':\n\n", s->anp->name);
+        cprintf("Testing network '%s':\n", s->anp->name);
 
         dss_test(s->anp);
-
-        cprintf("\n");
 
         return true;
 }
@@ -2046,11 +2012,7 @@ bool cmd_dss_scores(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        cprintf("\n");
-
         dss_scores(s->anp, set, item);
-
-        cprintf("\n");
 
         return true;
 }
@@ -2067,11 +2029,7 @@ bool cmd_dss_write_scores(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        cprintf("\n");
-
         dss_write_scores(s->anp, set, arg2);
-
-        cprintf("\n");
 
         return true;
 }
@@ -2101,11 +2059,7 @@ bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
 
         }
 
-        cprintf("\n");
-
         dss_inferences(s->anp, set, item, arg3);
-
-        cprintf("\n");
 
         return true;
 }
@@ -2127,11 +2081,9 @@ bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s)
                 return true;
         }
         
-        cprintf("Testing network '%s' with item '%s':\n\n", s->anp->name, arg2);
+        mprintf("Testing network '%s' with item '%s':\n", s->anp->name, arg2);
 
         dss_word_information(s->anp, set, item);
-
-        cprintf("\n");
 
         return true;
 }
@@ -2180,11 +2132,9 @@ bool cmd_dynsys_test_item(char *cmd, char *fmt, struct session *s)
                 return true;
         }
         
-        cprintf("Testing network '%s' with item '%s':\n\n", s->anp->name, arg2);
+        mprintf("Testing network '%s' with item '%s':\n", s->anp->name, arg2);
 
         dynsys_test_item(s->anp, group, item);
-
-        cprintf("\n");
 
         return true;
 }

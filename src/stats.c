@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "main.h"
 #include "math.h"
 #include "matrix.h"
 #include "stats.h"
@@ -97,4 +98,21 @@ void collect_mean_dependent_ws(struct weight_stats *ws, struct group *g)
 
                 collect_mean_dependent_ws(ws, p->to);
         }
+}
+
+void print_weight_statistics(struct network *n, struct weight_stats *ws)
+{
+        cprintf("\n");
+        cprintf("Weight statistics for network '%s'\n\n", n->name);
+
+        cprintf("Number of weights: \t %d\n", ws->num_weights);
+        cprintf("Cost: \t\t\t %f\n", ws->cost);
+        cprintf("Mean: \t\t\t %f\n", ws->mean);
+        cprintf("Absolute mean: \t\t %f\n", ws->mean_abs);
+        cprintf("Mean dist.: \t\t %f\n", ws->mean_dist);
+        cprintf("Variance: \t\t %f\n", ws->variance);
+        cprintf("Minimum: \t\t %f\n", ws->minimum);
+        cprintf("Maximum: \t\t %f\n", ws->maximum);
+        
+        cprintf("\n");
 }

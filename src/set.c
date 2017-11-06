@@ -95,7 +95,7 @@ void dispose_item(struct item *item)
 }
 
 struct set *load_set(char *name, char *filename, uint32_t input_size,
-                uint32_t output_size)
+        uint32_t output_size)
 {
         struct set *s = create_set(name);
 

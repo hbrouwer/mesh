@@ -83,7 +83,7 @@ and its derivative:
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 double error_sum_of_squares(struct group *g, struct vector *t, double tr,
-                double zr)
+        double zr)
 {
         double se = 0.0;
 
@@ -101,7 +101,7 @@ double error_sum_of_squares(struct group *g, struct vector *t, double tr,
 }
 
 void error_sum_of_squares_deriv(struct group *g, struct vector *t, double tr,
-                double zr)
+        double zr)
 {
 #ifdef _OPENMP
 #pragma omp parallel for
@@ -136,7 +136,7 @@ Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 double error_cross_entropy(struct group *g, struct vector *t, double tr,
-                double zr)
+        double zr)
 {
         double ce = 0.0;
 
@@ -227,7 +227,7 @@ double error_cross_entropy(struct group *g, struct vector *t, double tr,
 }
 
 void error_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
-                double zr)
+        double zr)
 {
 #ifdef _OPENMP
 #pragma omp parallel for
@@ -320,7 +320,7 @@ Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 double error_divergence(struct group *g, struct vector *t, double tr,
-                double zr)
+        double zr)
 {
         double de = 0.0;
 
@@ -363,7 +363,7 @@ double error_divergence(struct group *g, struct vector *t, double tr,
 }
 
 void error_divergence_deriv(struct group *g, struct vector *t, double tr,
-                double zr)
+        double zr)
 {
 #ifdef _OPENMP
 #pragma omp parallel for

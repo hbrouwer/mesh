@@ -33,7 +33,7 @@ Brouwer, H. (2014). The Electrophysiology of Language Comprehension: A
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 void erp_contrast(struct network *n, struct group *gen,
-                struct item *control, struct item *target)
+        struct item *control, struct item *target)
 {
         struct vector *ctlav = erp_amplitudes_for_item(n, gen, control);
         struct vector *tgtav = erp_amplitudes_for_item(n, gen, target);
@@ -101,7 +101,7 @@ error_out:
 */
 
 void erp_amplitudes(struct network *n, struct group *n400_gen,
-                struct group *p600_gen)
+        struct group *p600_gen)
 {
         char *filename;
         if (asprintf(&filename, "%s.ERPs.csv", n->asp->name) < 0)
@@ -139,7 +139,7 @@ error_out:
 }
 
 struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
-                struct item *item)
+        struct item *item)
 {
         struct vector *av = create_vector(item->num_events);
         struct vector *pv = create_vector(g->vector->size);

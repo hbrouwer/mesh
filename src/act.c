@@ -100,8 +100,9 @@ void feed_forward(struct network *n, struct group *g)
                                 if (!n->act_lookup) {
                                         rg->vector->elements[j] = rg->act_fun->fun(rg->vector, j);
                                 } else {
-                                        rg->vector->elements[j] = act_lookup(rg->vector->elements[j],
-                                                        rg->act_fun->lookup);
+                                        rg->vector->elements[j] = act_lookup(
+                                                rg->vector->elements[j],
+                                                rg->act_fun->lookup);
                                 }
                         }
                 }
@@ -135,11 +136,11 @@ void feed_forward(struct network *n, struct group *g)
 #define ACT_LOOKUP_MAXIMUM 16
 #define ACT_LOOKUP_GRANULARITY 1024
 
-double ACT_LOOKUP_STEP_SIZE = ((double)ACT_LOOKUP_MAXIMUM 
-                - ACT_LOOKUP_MINIMUM) / ACT_LOOKUP_GRANULARITY;
+double ACT_LOOKUP_STEP_SIZE = ((double)ACT_LOOKUP_MAXIMUM
+        - ACT_LOOKUP_MINIMUM) / ACT_LOOKUP_GRANULARITY;
 
 struct vector *create_act_lookup_vector(double (*fun)(struct vector *,
-                        uint32_t))
+        uint32_t))
 {
         /* skip softmax */
         if (fun == act_fun_softmax)

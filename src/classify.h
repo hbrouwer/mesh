@@ -23,14 +23,14 @@
 #include "matrix.h"
 
 void confusion_matrix(struct network *n, bool print, bool pprint,
-                uint32_t scheme);
+        uint32_t scheme);
 void ffn_network_cm(struct network *n, bool print, bool pprint,
-                uint32_t scheme);
+        uint32_t scheme);
 void rnn_network_cm(struct network *n, bool print, bool pprint,
-                uint32_t scheme);
+        uint32_t scheme);
 
 void print_cm_summary(struct network *n, struct matrix *cm, bool print,
-                bool pprint, uint32_t scheme);
+        bool pprint, uint32_t scheme);
 
 void cm_signal_handler(int32_t signal);
 

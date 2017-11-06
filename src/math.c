@@ -96,7 +96,7 @@ Fourth-order Runge-Kutta method for solving Ordinary Differential Equations
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 double runge_kutta4(double (*f)(double, double), double h, double xn,
-                double yn)
+        double yn)
 {
         /* 
          * k1 = h * f(x_n, y_n)

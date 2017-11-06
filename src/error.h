@@ -27,20 +27,20 @@ double adjust_target(double y, double d, double tr, double zr);
 
 /* sum of squares */
 double error_sum_of_squares(struct group *g, struct vector *t, double tr,
-                double zr);
+        double zr);
 void error_sum_of_squares_deriv(struct group *g, struct vector *t, double tr,
-                double zr);
+        double zr);
 
 /* cross entropy */
 double error_cross_entropy(struct group *g, struct vector *t, double tr,
-                double zr);
+        double zr);
 void error_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
-                double zr);
+        double zr);
 
 /* divergence */
 double error_divergence(struct group *g, struct vector *t, double tr,
-                double zr);
+        double zr);
 void error_divergence_deriv(struct group *g, struct vector *t, double tr,
-                double zr);
+        double zr);
 
 #endif /* ERROR_H */

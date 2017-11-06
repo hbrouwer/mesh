@@ -42,6 +42,8 @@ void train_network(struct network *n)
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
+        
+        cprintf("\n");
 }
 
                 /*************************
@@ -267,7 +269,7 @@ shift_stack:
 void print_training_progress(struct network *n)
 {
         if (n->status->epoch == 1 || n->status->epoch % n->report_after == 0)
-                pprintf("%.4d \t %lf \t %lf \t %lf\n",
+                pprintf("%.4d \t\t %lf \t %lf \t %lf\n",
                         n->status->epoch,
                         n->status->error,
                         n->status->weight_cost,

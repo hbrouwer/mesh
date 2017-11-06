@@ -90,7 +90,7 @@ Fahlman, S. E. (1988). An empirical study of learning speed in back-
  * This computes the error signal delta_j for each output unit j.
  */
 void bp_output_error(struct group *g, struct vector *t, double tr,
-                double zr)
+        double zr)
 {
         /*
          * First, compute error derivates dE/dy for all units in the output
@@ -251,8 +251,8 @@ void bp_update_sd(struct network *n)
          *         * sqrt(sum_i sum_j (dE/dw_ij ^ 2))
          */
         n->status->gradient_linearity = -(n->status->gradient_linearity
-                        / sqrt(n->status->last_deltas_length
-                                * n->status->gradients_length));
+                / sqrt(n->status->last_deltas_length
+                        * n->status->gradients_length));
 }
 
 /*
@@ -290,7 +290,7 @@ void bp_recursively_update_sd(struct network *n, struct group *g)
  * This adjusts the weights of a projection p between a group g' and g.
  */
 void bp_update_projection_sd(struct network *n, struct group *g,
-                struct projection *p)
+        struct projection *p)
 {
         /* local status statistics */
         double weight_cost = 0.0;
@@ -566,8 +566,8 @@ void bp_update_rprop(struct network *n)
          *         * sqrt(sum_i sum_j (dE/dw_ij ^ 2))
          */
         n->status->gradient_linearity = -(n->status->gradient_linearity
-                        / sqrt(n->status->last_deltas_length
-                                * n->status->gradients_length));
+                / sqrt(n->status->last_deltas_length
+                        * n->status->gradients_length));
 }
 
 /*
@@ -605,7 +605,7 @@ void bp_recursively_update_rprop(struct network *n, struct group *g)
  * This adjusts the weights of a projection p between a group g' and g.
  */
 void bp_update_projection_rprop(struct network *n, struct group *g,
-                struct projection *p)
+        struct projection *p)
 {
         /* local status statistics */
         double weight_cost = 0.0;
@@ -638,14 +638,14 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                          * dE/dw_ij(t-1) * dE/dw_ij(t) > 0
                          */
                         if (p->prev_gradients->elements[i][j]
-                                        * p->gradients->elements[i][j] > 0.0) {
+                                * p->gradients->elements[i][j] > 0.0) {
 
                                 /*
                                  * Bind update value u_ij to u_max.
                                  */
                                 p->dynamic_pars->elements[i][j] = minimum(
-                                                p->dynamic_pars->elements[i][j] * n->rp_eta_plus,
-                                                RP_MAX_STEP_SIZE);
+                                        p->dynamic_pars->elements[i][j] * n->rp_eta_plus,
+                                         RP_MAX_STEP_SIZE);
 
                                 /*
                                  * Perform weight update:
@@ -664,14 +664,14 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                          * dE/dw_ij(t-1) * dE/dw_ij(t) < 0
                          */
                         } else if (p->prev_gradients->elements[i][j]
-                                        * p->gradients->elements[i][j] < 0.0) {
+                                * p->gradients->elements[i][j] < 0.0) {
 
                                 /*
                                  * Bind update value u_ij to u_min.
                                  */
                                 p->dynamic_pars->elements[i][j] = maximum(
-                                                p->dynamic_pars->elements[i][j] * n->rp_eta_minus,
-                                                RP_MIN_STEP_SIZE);
+                                        p->dynamic_pars->elements[i][j] * n->rp_eta_minus,
+                                        RP_MIN_STEP_SIZE);
 
                                 /*
                                  * Perform weight backtracking for RPROP+.
@@ -783,7 +783,6 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                 += gradients_length;
 }
 
-
                 /***********************************
                  **** quickprop backpropagation ****
                  ***********************************/
@@ -842,8 +841,8 @@ void bp_update_qprop(struct network *n)
          *         * sqrt(sum_i sum_j (dE/dw_ij ^ 2))
          */
         n->status->gradient_linearity = -(n->status->gradient_linearity
-                        / sqrt(n->status->last_deltas_length
-                                * n->status->gradients_length));
+                / sqrt(n->status->last_deltas_length
+                        * n->status->gradients_length));
 }
 
 /*
@@ -881,7 +880,7 @@ void bp_recursively_update_qprop(struct network *n, struct group *g)
  * This adjusts the weights of a projection p between a group g' and g.
  */
 void bp_update_projection_qprop(struct network *n, struct group *g,
-                struct projection *p)
+        struct projection *p)
 {
         double shrink_factor = QP_MAX_STEP_SIZE / (1.0 + QP_MAX_STEP_SIZE);
 
@@ -928,7 +927,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                  * Dw_ij(t) = Dw_ij(t) + u * Dw(t-1)
                                  */
                                 if (p->gradients->elements[i][j] <
-                                                shrink_factor * p->prev_gradients->elements[i][j]) {
+                                        shrink_factor * p->prev_gradients->elements[i][j]) {
                                         weight_delta += QP_MAX_STEP_SIZE
                                                 * p->prev_deltas->elements[i][j];
                                 /*
@@ -941,8 +940,8 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                 } else {
                                         weight_delta += p->gradients->elements[i][j]
                                                 / (p->prev_gradients->elements[i][j] 
-                                                                - p->gradients->elements[i][j])
-                                                * p->prev_deltas->elements[i][j];
+                                                        - p->gradients->elements[i][j])
+                                                        * p->prev_deltas->elements[i][j];
                                 }
                         
                         /*
@@ -971,7 +970,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                  * Dw_ij(t) = Dw_ij(t) + u * Dw(t-1)
                                  */
                                 if (p->gradients->elements[i][j] >
-                                                shrink_factor * p->prev_gradients->elements[i][j]) {
+                                        shrink_factor * p->prev_gradients->elements[i][j]) {
                                         weight_delta += QP_MAX_STEP_SIZE
                                                 * p->prev_deltas->elements[i][j];
                                 /*
@@ -984,8 +983,8 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                 } else {
                                         weight_delta += p->gradients->elements[i][j]
                                                 / (p->prev_gradients->elements[i][j] 
-                                                                - p->gradients->elements[i][j])
-                                                * p->prev_deltas->elements[i][j];
+                                                        - p->gradients->elements[i][j])
+                                                        * p->prev_deltas->elements[i][j];
                                 }
 
                         /*
@@ -1081,7 +1080,6 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                 += gradients_length;
 }
 
-
                 /*****************************************
                  **** delta-bar-delta backpropagation ****
                  *****************************************/
@@ -1141,8 +1139,8 @@ void bp_update_dbd(struct network *n)
          *         * sqrt(sum_i sum_j (dE/dw_ij ^ 2))
          */
         n->status->gradient_linearity = -(n->status->gradient_linearity
-                        / sqrt(n->status->last_deltas_length
-                                * n->status->gradients_length));
+                / sqrt(n->status->last_deltas_length
+                        * n->status->gradients_length));
 }
 
 /*
@@ -1180,7 +1178,7 @@ void bp_recursively_update_dbd(struct network *n, struct group *g)
  * between a group g' and g.
  */
 void bp_update_projection_dbd(struct network *n, struct group *g,
-                struct projection *p)
+        struct projection *p)
 {
         /* local status statistics */
         double weight_cost = 0.0;
@@ -1289,7 +1287,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                          * prev_gradients matrix of the projection.
                          */
                         if (p->prev_gradients->elements[i][j]
-                                        * p->gradients->elements[i][j] > 0.0) {
+                                * p->gradients->elements[i][j] > 0.0) {
                                 /*
                                  * De_ij = kappa
                                  */
@@ -1302,7 +1300,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                          * dE/dw_ij_bar(t-1) * dE/dw_ij(t) < 0
                          */
                         } else if (p->prev_gradients->elements[i][j]
-                                        * p->gradients->elements[i][j] < 0.0) {
+                                * p->gradients->elements[i][j] < 0.0) {
                                 /*
                                  * De_ij = -phi * e_ij(t)
                                  */

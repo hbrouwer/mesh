@@ -135,7 +135,7 @@ shift_stack:
 }
 
 void test_network_with_item(struct network *n, struct item *item,
-                bool pprint, uint32_t scheme)
+        bool pprint, uint32_t scheme)
 {
         if (n->type == TYPE_FFN)
                 test_ffn_network_with_item(n, item, pprint, scheme);
@@ -146,10 +146,11 @@ void test_network_with_item(struct network *n, struct item *item,
 }
 
 void test_ffn_network_with_item(struct network *n, struct item *item,
-                bool pprint, uint32_t scheme)
+        bool pprint, uint32_t scheme)
 {
         n->status->error = 0.0;
 
+        cprintf("\n");
         cprintf("Name:   \"%s\"\n", item->name);
         cprintf("Meta:   \"%s\"\n", item->meta);
         cprintf("Events: %d\n", item->num_events);
@@ -175,13 +176,15 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
                 /* print target vector (if available) */
                 if (item->targets[i]) {
                         cprintf("T: ");
-                        pprint == true ? pprint_vector(item->targets[i], scheme)
+                        pprint == true
+                                ? pprint_vector(item->targets[i], scheme)
                                 : print_vector(item->targets[i]);
                 }
 
                 /* print output vector */
                 cprintf("O: ");
-                pprint == true ? pprint_vector(n->output->vector, scheme)
+                pprint == true
+                        ? pprint_vector(n->output->vector, scheme)
                         : print_vector(n->output->vector);
 
                 /* only compute and print error for last event */
@@ -198,15 +201,18 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
                 cprintf("\n");
                 cprintf("Error:\t%lf\n", n->status->error);
         }
+
+        cprintf("\n");
 }
 
 void test_rnn_network_with_item(struct network *n, struct item *item,
-                bool pprint, uint32_t scheme)
+        bool pprint, uint32_t scheme)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
         un->sp = 0;
         n->status->error = 0.0;
         
+        cprintf("\n");
         cprintf("Name:   \"%s\"\n", item->name);
         cprintf("Meta:   \"%s\"\n", item->meta);
         cprintf("Events: %d\n", item->num_events);
@@ -219,7 +225,8 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                 cprintf("\n");
                 cprintf("E:  %d\n", i + 1);
                 cprintf("I:  ");
-                pprint == true ? pprint_vector(item->inputs[i], scheme)
+                pprint == true
+                        ? pprint_vector(item->inputs[i], scheme)
                         : print_vector(item->inputs[i]);
 
                 /* feed activation vector */
@@ -229,13 +236,15 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                 /* print target vector (if available) */
                 if (item->targets[i]) {
                         cprintf("T: ");
-                        pprint == true ? pprint_vector(item->targets[i], scheme)
+                        pprint == true
+                                ? pprint_vector(item->targets[i], scheme)
                                 : print_vector(item->targets[i]);
                 }
 
                 /* print output vector */
                 cprintf("O: ");
-                pprint == true ? pprint_vector(un->stack[un->sp]->output->vector, scheme)
+                pprint == true
+                        ? pprint_vector(un->stack[un->sp]->output->vector, scheme)
                         : print_vector(un->stack[un->sp]->output->vector);
 
                 /*
@@ -258,18 +267,22 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
 shift_stack:
                 un->sp == un->stack_size - 1 ? rnn_shift_stack(un) : un->sp++;
         }
+        
+        cprintf("\n");
 }
 
 void print_testing_summary(struct network *n, uint32_t tr)
 {
+        cprintf("\n");
         cprintf("Number of items: \t\t %d\n",
                         n->asp->items->num_elements);
-        cprintf("Total error: \t\t %lf\n",
+        cprintf("Total error: \t\t\t %lf\n",
                         n->status->error);
-        cprintf("Error per example:\t\t %lf\n",
+        cprintf("Error per example: \t\t %lf\n",
                         n->status->error / n->asp->items->num_elements);
-        cprintf("# Items reached threshold:  %d (%.2lf%%)\n",
+        cprintf("# Items reached threshold: \t %d (%.2lf%%)\n",
                         tr, ((double)tr / n->asp->items->num_elements) * 100.0);
+        cprintf("\n");
 }
 
 void testing_signal_handler(int32_t signal)

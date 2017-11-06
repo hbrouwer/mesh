@@ -210,7 +210,7 @@ void reset_network(struct network *n);
 void dispose_network(struct network *n);
 
 struct group *create_group(char *name, uint32_t size, bool bias,
-                bool recurrent);
+        bool recurrent);
 struct group *attach_bias_group(struct network *n, struct group *g);
 void dispose_group(struct group *g);
 void dispose_groups(struct array *gs);
@@ -225,12 +225,12 @@ void reset_ffn_error_signals(struct network *n);
 void reset_rnn_error_signals(struct network *n);
 
 struct projection *create_projection(
-                struct group *to,
-                struct matrix *weights,
-                struct matrix *gradients,
-                struct matrix *prev_gradients,
-                struct matrix *prev_deltas,
-                struct matrix *dynamic_pars);
+        struct group *to,
+        struct matrix *weights,
+        struct matrix *gradients,
+        struct matrix *prev_gradients,
+        struct matrix *prev_deltas,
+        struct matrix *dynamic_pars);
 void dispose_projection(struct projection *p);
 
 void dispose_sets(struct array *ss);

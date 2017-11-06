@@ -42,11 +42,11 @@ struct set *create_set(char *name);
 void dispose_set(struct set *s);
 
 struct item *create_item(char *name, uint32_t num_events, char *meta,
-                struct vector **inputs, struct vector **targets);
+        struct vector **inputs, struct vector **targets);
 void dispose_item(struct item *item);
 
 struct set *load_set(char *name, char *filename, uint32_t input_size,
-                uint32_t output_size);
+        uint32_t output_size);
 
 void order_set(struct set *s);
 void permute_set(struct set *s);
