@@ -637,6 +637,11 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
         else if (strcmp(arg2, "step") == 0) {
                 g->act_fun->fun   = act_fun_step;
                 g->act_fun->deriv = act_fun_step_deriv;
+        }
+        /* softplus activation function */
+        else if (strcmp(arg2, "softplus") == 0) {
+                g->act_fun->fun   = act_fun_softplus;
+                g->act_fun->deriv = act_fun_softplus_deriv;
         } else {
                 eprintf("Cannot set activation function--no such activation function '%s'\n", arg2);
                 return true;

@@ -627,8 +627,10 @@ void rnn_shift_stack(struct rnn_unfolded_network *un)
                 struct group *rg = un->rcr_groups->elements[i];
 
                 /* recurrent groups in stack/0 and stack/1 */
-                struct group *g1 = find_array_element_by_name(un->stack[0]->groups, rg->name);
-                struct group *g2 = find_array_element_by_name(un->stack[1]->groups, rg->name);
+                struct group *g1 = find_array_element_by_name(
+                        un->stack[0]->groups, rg->name);
+                struct group *g2 = find_array_element_by_name(
+                        un->stack[1]->groups, rg->name);
 
                 /* store a reference to the terminal recurrent group */
                 uint32_t j = g1->inc_projs->num_elements - 1;
