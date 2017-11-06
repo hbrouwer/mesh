@@ -29,8 +29,6 @@
 #include "math.h"
 #include "session.h"
 
-#define VERSION "0.1"
-
 int main(int argc, char **argv)
 {
         struct session *s;

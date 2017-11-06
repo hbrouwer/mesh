@@ -96,15 +96,8 @@ void feed_forward(struct network *n, struct group *g)
                          *
                          * y_j = f(x_j)
                          */
-                        if (rg->act_fun->fun != act_fun_softmax) {
-                                if (!n->act_lookup) {
-                                        rg->vector->elements[j] = rg->act_fun->fun(rg->vector, j);
-                                } else {
-                                        rg->vector->elements[j] = act_lookup(
-                                                rg->vector->elements[j],
-                                                rg->act_fun->lookup);
-                                }
-                        }
+                        if (rg->act_fun->fun != act_fun_softmax)
+                                rg->vector->elements[j] = rg->act_fun->fun(rg->vector, j);
                 }
 
                 /* apply softmax activation function (if required) */
@@ -126,49 +119,6 @@ void feed_forward(struct network *n, struct group *g)
                 if (!op->recurrent)
                         feed_forward(n, op->to);
         }
-}
-
-                /****************************************
-                 **** activation value lookup tables ****
-                 ****************************************/
-
-#define ACT_LOOKUP_MINIMUM -16
-#define ACT_LOOKUP_MAXIMUM 16
-#define ACT_LOOKUP_GRANULARITY 1024
-
-double ACT_LOOKUP_STEP_SIZE = ((double)ACT_LOOKUP_MAXIMUM
-        - ACT_LOOKUP_MINIMUM) / ACT_LOOKUP_GRANULARITY;
-
-struct vector *create_act_lookup_vector(double (*fun)(struct vector *,
-        uint32_t))
-{
-        /* skip softmax */
-        if (fun == act_fun_softmax)
-                return NULL;
-
-        struct vector *lv = create_vector(ACT_LOOKUP_GRANULARITY);
-
-        for (uint32_t i = 0; i < ACT_LOOKUP_GRANULARITY; i++) {
-                lv->elements[i] = ACT_LOOKUP_MINIMUM + i * ACT_LOOKUP_STEP_SIZE;
-                lv->elements[i] = fun(lv, i);
-        }
-
-        return lv;
-}
-
-double act_lookup(double x, struct vector *lv)
-{
-        uint32_t i;
-
-        if (x <= ACT_LOOKUP_MINIMUM) {
-                i = 0;
-        } else if (x >= ACT_LOOKUP_MAXIMUM) {
-                i = ACT_LOOKUP_GRANULARITY - 1;
-        } else {
-                i = ((ACT_LOOKUP_MAXIMUM + x) / ACT_LOOKUP_STEP_SIZE) - 1;
-        }
-
-        return lv->elements[i];
 }
 
                 /******************************

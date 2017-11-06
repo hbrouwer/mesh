@@ -50,7 +50,6 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct session *s);
 bool cmd_set_io_group(char *cmd, char *fmt, struct session *s);
 bool cmd_set_act_func(char *cmd, char *fmt, struct session *s);
 bool cmd_set_err_func(char *cmd, char *fmt, struct session *s);
-bool cmd_toggle_act_lookup(char *cmd, char *fmt, struct session *s);
 
 bool cmd_create_projection(char *cmd, char *fmt, struct session *s);
 bool cmd_dispose_projection(char *cmd, char *fmt, struct session *s);

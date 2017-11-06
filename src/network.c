@@ -114,10 +114,6 @@ void init_network(struct network *n)
         /* initialize dynamic learning parameters */
         initialize_dynamic_pars(n->input, n);
 
-        /* initialize activation function look up table (if required) */
-        if (n->act_lookup)
-                initialize_act_lookup_vectors(n);
-
         /* 
          * If batch size is set to 0, set it to the number of items
          * in the active set.
@@ -464,18 +460,6 @@ void initialize_dynamic_pars(struct group *g, struct network *n)
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
                 initialize_dynamic_pars(op->to, n);
-        }
-}
-
-void initialize_act_lookup_vectors(struct network *n)
-{
-        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
-                struct group *g = n->groups->elements[i];
-                if (g == n->input || g->bias)
-                        continue;
-                if (g->act_fun->lookup)
-                        dispose_vector(g->act_fun->lookup);
-                g->act_fun->lookup = create_act_lookup_vector(g->act_fun->fun);
         }
 }
 

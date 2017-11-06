@@ -88,7 +88,6 @@ const static struct command cmds[] = {
         {"set OutputGroup",         "%s",            &cmd_set_io_group},
         {"set ActFunc",             "%s %s",         &cmd_set_act_func},
         {"set ErrFunc",             "%s %s",         &cmd_set_err_func},
-        {"toggleActLookup",         NULL,            &cmd_toggle_act_lookup},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"createProjection",        "%s %s",         &cmd_create_projection},
@@ -684,23 +683,6 @@ bool cmd_set_err_func(char *cmd, char *fmt, struct session *s)
         }
 
         mprintf("Set error function \t\t [ %s :: %s ]\n", arg1, arg2);
-
-        return true;
-}
-
-bool cmd_toggle_act_lookup(char *cmd, char *fmt, struct session *s)
-{
-        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
-                return false;
-
-        s->anp->act_lookup = !s->anp->act_lookup;
-        
-        if (s->anp->act_lookup) {
-                initialize_act_lookup_vectors(s->anp);
-                mprintf("Toggle activation lookup \t [ on ]\n");
-        } else {
-                mprintf("Toggle activation lookup \t [ off ]\n");
-        }
 
         return true;
 }

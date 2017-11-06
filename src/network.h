@@ -50,7 +50,6 @@ struct network
         struct group *input;        /* input group */
         struct group *output;       /* output group */
 
-        bool act_lookup;            /* use activation lookup */
         bool initialized;           /* flags initialization status */
 
         void (*random_algorithm)    /* randomization algorithm */
@@ -237,7 +236,6 @@ void dispose_sets(struct array *ss);
 
 void randomize_weight_matrices(struct group *g, struct network *n);
 void initialize_dynamic_pars(struct group *g, struct network *n);
-void initialize_act_lookup_vectors(struct network *n);
 
 bool save_weight_matrices(struct network *n, char *fn);
 void save_weight_matrix(struct group *g, FILE *fd);
