@@ -337,10 +337,15 @@ and its derivative:
 
 double act_fun_softplus(struct vector *v, uint32_t i)
 {
+        double x = v->elements[i];
+
         return log(1.0 + EXP(x));
 }
 
 double act_fun_softplus_deriv(struct vector *v, uint32_t i)
 {
-        return 1.0 / (1.0 + EXP(-x));       
+        double y = v->elements[i];
+
+        return 1.0 / (1.0 + EXP(-y));
 }
+
