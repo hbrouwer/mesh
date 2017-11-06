@@ -254,7 +254,7 @@ void process_command(char *cmd, struct session *s)
         /* invalid command */
         if (strlen(cmd) > 1) {
                 eprintf("Invalid command: %s\n", cmd); 
-                eprintf("(type `help` for a list of valid commands)\n");
+                eprintf("(type `help` for help)\n");
         }
 
         return;
