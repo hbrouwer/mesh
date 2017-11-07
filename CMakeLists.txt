@@ -1,52 +1,59 @@
-cmake_minimum_required(VERSION 2.8)
+##
+# Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+##
 
-project(mesh)
+cmake_minimum_required(VERSION 3.4)
 
-include(CheckIncludeFile)
+project(Mesh)
 
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -march=core2")# -DFAST_EXP")
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+option(FAST_EXP "Enable fast exponentional"     OFF)
+option(OPENMP   "Enable OpenMP support"         OFF)
 
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        # Use GNU and POSIX source directives
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=c99 -Wall -O3 -march=core2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L")# -DFAST_EXP")
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -march=core2")
 
-# Sources
-set(SOURCE_FILES 
-        src/act.c
-        src/array.c
-        src/bp.c
-        src/classify.c
-        src/cli.c
-        src/cmd.c
-        src/error.c
-        src/help.c
-        src/main.c
-        src/math.c
-        src/matrix.c
-        src/pprint.c
-        src/random.c
-        src/rnn_unfold.c
-        src/sanity.c
-        src/session.c
-        src/set.c
-        src/similarity.c
-        src/stats.c
-        src/test.c
-        src/train.c
-        src/network.c
-        src/vector.c
-        src/modules/dss.c
-        src/modules/dynsys.c
+set(Mesh_SOURCE_FILES
+        src/act.c src/array.c src/bp.c src/classify.c src/cli.c src/cmd.c
+        src/error.c src/help.c src/main.c src/math.c src/matrix.c
+        src/network.c src/pprint.c src/random.c src/rnn_unfold.c src/sanity.c
+        src/session.c src/set.c src/similarity.c src/stats.c src/test.c
+        src/train.c src/vector.c src/modules/dss.c src/modules/dynsys.c
         src/modules/erp.c)
 
-# mesh
-add_executable(mesh ${SOURCE_FILES})
+####################
+#### executable ####
+####################
+
+add_executable(mesh ${Mesh_SOURCE_FILES})
 target_link_libraries(mesh m)
 
-# mesh + openmp
-#add_executable(mesh-mp ${SOURCE_FILES})
-#target_link_libraries(mesh-mp m)
-#set_target_properties(mesh-mp PROPERTIES COMPILE_FLAGS -fopenmp LINK_FLAGS -fopenmp)
+############################
+#### fast exponentional ####
+############################
+
+if(FAST_EXP)
+        add_definitions(-DFAST_EXP)
+endif(FAST_EXP)
+
+################
+#### OpenMP ####
+################
+
+if(OPENMP)
+        set_target_properties(
+                mesh PROPERTIES
+                COMPILE_FLAGS -fopenmp
+                LINK_FLAGS    -fopenmp
+        )
+endif(OPENMP)

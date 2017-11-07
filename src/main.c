@@ -72,14 +72,14 @@ error_out:
 #ifdef FAST_EXP
 void print_fast_exp_status()
 {
-        cprintf("[+fast_exp: using Schraudolph's exp() approximation (c: %d)]\n", EXP_C);
+        cprintf("+ [ FastExp ]: Using Schraudolph's exp() approximation (c: %d)\n", EXP_C);
 }
 #endif /* FAST_EXP */
 
 #ifdef _OPENMP
 void print_openmp_status()
 {
-        cprintf("[+openmp: %d processor(s) available (%d thread(s) max)]\n",
+        cprintf("+ [ OpenMP ]: %d processor(s) available (%d thread(s) max)\n",
                         omp_get_num_procs(),
                         omp_get_max_threads());
 
@@ -88,16 +88,16 @@ void print_openmp_status()
         omp_get_schedule(&k, &m);
         switch(k) {
                 case 1:
-                        cprintf("[+openmp: static schedule (chunk size: %d)]\n", m);
+                        cprintf("+ [ OpenMP ]: Static schedule (chunk size: %d)\n", m);
                         break;
                 case 2:
-                        cprintf("[+openmp: dynamic schedule (chunk size: %d)]\n", m);
+                        cprintf("+ [ OpenMP ]: Dynamic schedule (chunk size: %d)\n", m);
                         break;
                 case 3:
-                        cprintf("[+openmp: guided schedule (chunk size: %d)]\n", m);
+                        cprintf("+ [ OpenMP ]: Guided schedule (chunk size: %d)\n", m);
                         break;
                 case 4:
-                        cprintf("[+openmp: auto schedule]\n");
+                        cprintf("+ [ OpenMP ]: Auto schedule\n");
                         break;
         }
 }
