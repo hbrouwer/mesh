@@ -76,7 +76,6 @@ struct matrix *ffn_network_cm(struct network *n)
                         /* classify */
                         struct vector *ov = n->output->vector;
                         struct vector *tv = item->targets[j];
-
                         uint32_t t = 0, o = 0;
                         for (uint32_t x = 0; x < ov->size; x++) {
                                 if (tv->elements[x] > tv->elements[t]) t = x;
