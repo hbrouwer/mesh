@@ -43,7 +43,7 @@ struct network *create_network(char *name, uint32_t type)
         strncpy(n->name, name, strlen(name));
 
         n->type = type;
-
+        
         n->groups = create_array(ATYPE_GROUPS);
         n->sets = create_array(ATYPE_SETS);
 
@@ -222,24 +222,19 @@ struct group *attach_bias_group(struct network *n, struct group *g)
 
         /* weight matrix */
         struct matrix *weights = create_matrix(
-                bg->vector->size,
-                g->vector->size);
+                bg->vector->size, g->vector->size);
         /* gradients matrix */
         struct matrix *gradients = create_matrix(
-                bg->vector->size,
-                g->vector->size);
+                bg->vector->size, g->vector->size);
         /* previous gradients matrix */
         struct matrix *prev_gradients = create_matrix(
-                bg->vector->size,
-                g->vector->size);
+                bg->vector->size, g->vector->size);
         /* previous weight deltas matrix */
         struct matrix *prev_deltas = create_matrix(
-                bg->vector->size,
-                g->vector->size);
+                bg->vector->size, g->vector->size);
         /* dynamic learning parameters matrix */
         struct matrix *dynamic_pars = create_matrix(
-                bg->vector->size,
-                g->vector->size);
+                bg->vector->size, g->vector->size);
 
         /* add projections */
         struct projection *op = create_projection(g, weights,
@@ -278,7 +273,6 @@ void dispose_group(struct group *g)
 
         dispose_array(g->inc_projs);
         dispose_array(g->out_projs);
-
         dispose_array(g->ctx_groups);
 
         free(g);

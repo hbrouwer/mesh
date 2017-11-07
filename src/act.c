@@ -101,11 +101,9 @@ void feed_forward(struct network *n, struct group *g)
                 }
 
                 /* apply softmax activation function (if required) */
-                if (rg->act_fun->fun == act_fun_softmax) {
-                        for (uint32_t j = 0; j < rg->vector->size; j++) {
+                if (rg->act_fun->fun == act_fun_softmax)
+                        for (uint32_t j = 0; j < rg->vector->size; j++)
                                 rg->vector->elements[j] = rg->act_fun->fun(rg->vector, j);
-                        }
-                }
         }
 
         /* 
@@ -137,16 +135,12 @@ and its derivative:
 
 double act_fun_binary_sigmoid(struct vector *v, uint32_t i)
 {
-        double x = v->elements[i];
-
-        return 1.0 / (1.0 + EXP(-x));
+        return 1.0 / (1.0 + EXP(-v->elements[i]));
 }
 
 double act_fun_binary_sigmoid_deriv(struct vector *v, uint32_t i)
 {
-        double y = v->elements[i];
-
-        return y * (1.0 - y);
+        return v->elements[i] * (1.0 - v->elements[i]);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -161,16 +155,12 @@ and its derivative:
 
 double act_fun_bipolar_sigmoid(struct vector *v, uint32_t i)
 {
-        double x = v->elements[i];
-
-        return (-1.0) + 2.0 / (1.0 + EXP(-x));
+        return (-1.0) + 2.0 / (1.0 + EXP(-v->elements[i]));
 }
 
 double act_fun_bipolar_sigmoid_deriv(struct vector *v, uint32_t i)
 {
-        double y = v->elements[i];
-
-        return 0.5 * (1.0 + y) * (1.0 - y);
+        return 0.5 * (1.0 + v->elements[i]) * (1.0 - v->elements[i]);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -192,9 +182,7 @@ double act_fun_softmax(struct vector *v, uint32_t i)
                         sum += EXP(v->elements[j]);
         }
 
-        double x = EXP(v->elements[i]);
-
-        return x / sum;
+        return EXP(v->elements[i]) / sum;
 }
 
 double act_fun_softmax_deriv(struct vector *v, uint32_t i)
@@ -214,16 +202,12 @@ and its derivative:
 
 double act_fun_tanh(struct vector *v, uint32_t i)
 {
-        double x = v->elements[i];
-
-        return tanh(x);
+        return tanh(v->elements[i]);
 }
 
 double act_fun_tanh_deriv(struct vector *v, uint32_t i)
 {
-        double y = v->elements[i];
-
-        return 1.0 - pow(y, 2.0);
+        return 1.0 - pow(v->elements[i], 2.0);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -238,9 +222,7 @@ and its derivative:
 
 double act_fun_linear(struct vector *v, uint32_t i)
 {
-        double x = v->elements[i];
-
-        return x;
+        return v->elements[i];
 }
 
 double act_fun_linear_deriv(struct vector *v, uint32_t i)
@@ -262,9 +244,7 @@ and its derivative:
 
 double act_fun_step(struct vector *v, uint32_t i)
 {
-        double x = v->elements[i];
-
-        if (x >= 0.0)
+        if (v->elements[i] >= 0.0)
                 return 1.0;
         else
                 return 0.0;
@@ -287,15 +267,11 @@ and its derivative:
 
 double act_fun_softplus(struct vector *v, uint32_t i)
 {
-        double x = v->elements[i];
-
-        return log(1.0 + EXP(x));
+        return log(1.0 + EXP(v->elements[i]));
 }
 
 double act_fun_softplus_deriv(struct vector *v, uint32_t i)
 {
-        double y = v->elements[i];
-
-        return 1.0 / (1.0 + EXP(-y));
+        return 1.0 / (1.0 + EXP(-v->elements[i]));
 }
 
