@@ -51,8 +51,8 @@ void bp_update_projection_sd(struct network *n, struct group *g,
         struct projection *p);
 
 /* bounded steepest descent */                
-void bp_determine_sd_sf(struct network *n);
-void bp_recursively_determine_sd_sf(struct network *n, struct group *g);
+void determine_sd_scale_factor(struct network *n);
+void determine_gradient_ssq(struct network *n, struct group *g);
 
 /* resilient backpropagation */
 void bp_update_rprop(struct network *n);

@@ -226,7 +226,7 @@ void bp_update_sd(struct network *n)
         if (n->sd_type == SD_DEFAULT)
                 n->sd_scale_factor = 1.0;
         if (n->sd_type == SD_BOUNDED)
-                bp_determine_sd_sf(n);
+                determine_sd_scale_factor(n);
 
         bp_update_inc_projs_sd(n, n->output);
 
@@ -404,7 +404,7 @@ learning rate and the gradient by setting the scaling factor to 1.0:
         where sf is the scaling factor.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-void bp_determine_sd_sf(struct network *n)
+void determine_sd_scale_factor(struct network *n)
 {
         /* reset scaling factor */
         n->sd_scale_factor = 0.0;
@@ -413,7 +413,7 @@ void bp_determine_sd_sf(struct network *n)
          * Resursively compute the sum of squares of the individual weight
          * gradients.
          */
-        bp_recursively_determine_sd_sf(n, n->output);
+        determine_gradient_ssq(n, n->output);
 
         /* determine the scaling factor */
         if (n->sd_scale_factor > 1.0)
@@ -423,9 +423,10 @@ void bp_determine_sd_sf(struct network *n)
 }
 
 /*
- * Recursively adjusts the weights of all incoming projections of a group g.
+ * Resursively compute the sum of squares of the individual weight
+ * gradients.
  */
-void bp_recursively_determine_sd_sf(struct network *n, struct group *g)
+void determine_gradient_ssq(struct network *n, struct group *g)
 {
         /* local scale factor */
         double sd_scale_factor = 0.0;
@@ -442,7 +443,7 @@ void bp_recursively_determine_sd_sf(struct network *n, struct group *g)
                                 sd_scale_factor +=
                                         pow(p->gradients->elements[j][x], 2.0);
                 
-                bp_recursively_determine_sd_sf(n, p->to);
+                determine_gradient_ssq(n, p->to);
         }
 
         /* add local scale factor to global scale factor */
