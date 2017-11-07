@@ -262,9 +262,10 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
                 // XXX: What about multi-stage training?
 
 shift_stack:
-                un->sp == un->stack_size - 1
-                        ? rnn_shift_stack(un)
-                        : un->sp++;
+                if (un->sp == un->stack_size - 1)
+                        rnn_shift_stack(un);
+                else
+                        un->sp++;
         }
 }
 

@@ -37,12 +37,9 @@ struct matrix *similarity_matrix(struct network *n)
         keep_running = true;
 
         struct matrix *sm;
-        if (n->type == NTYPE_FFN)
-                sm = ffn_network_sm(n);
-        if (n->type == NTYPE_SRN)
-                sm = ffn_network_sm(n);
-        if (n->type == NTYPE_RNN)
-                sm = rnn_network_sm(n);
+        if (n->type == NTYPE_FFN) sm = ffn_network_sm(n);
+        if (n->type == NTYPE_SRN) sm = ffn_network_sm(n);
+        if (n->type == NTYPE_RNN) sm = rnn_network_sm(n);
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
@@ -127,9 +124,10 @@ struct matrix *rnn_network_sm(struct network *n)
                         }
 
 shift_stack:
-                        un->sp == un->stack_size - 1
-                                ? rnn_shift_stack(un)
-                                : un->sp++;
+                        if (un->sp == un->stack_size - 1)
+                                rnn_shift_stack(un);
+                        else
+                                un->sp++;
                 }
         }
 
@@ -137,15 +135,16 @@ return_matrix:
         return sm;
 }
 
-void print_sm_summary(struct session *s, struct matrix *sm, bool print_sm)
+void print_sm_summary(struct network *n, struct matrix *sm, bool print_sm,
+        bool pprint, uint32_t scheme)
 {
-        struct network *n = s->anp;
-
         if (print_sm) {
                 cprintf("\nOutput-target similarity matrix:\n\n");
-                s->pprint == true
-                        ? pprint_matrix(sm, s->pprint_scheme)
-                        : print_matrix(sm);
+                if (pprint) {
+                        pprint_matrix(sm, scheme);
+                } else {
+                        print_matrix(sm);
+                }
         }
         
         cprintf("\nSimilarity statistics:\n");

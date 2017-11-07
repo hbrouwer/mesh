@@ -46,7 +46,6 @@ void cli_loop(struct session *s)
                 ssize_t num_chars;
                 if ((num_chars = getline(&line, &linecap, stdin)) == -1)
                         goto error_out;
-
                 line[num_chars - 1] = '\0';
 
                 /* process command */

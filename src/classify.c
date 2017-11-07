@@ -37,12 +37,9 @@ struct matrix *confusion_matrix(struct network *n)
         keep_running = true;
 
         struct matrix *cm;
-        if (n->type == NTYPE_FFN)
-                cm = ffn_network_cm(n);
-        if (n->type == NTYPE_SRN)
-                cm = ffn_network_cm(n);
-        if (n->type == NTYPE_RNN)
-                cm = rnn_network_cm(n);
+        if (n->type == NTYPE_FFN) cm = ffn_network_cm(n);
+        if (n->type == NTYPE_SRN) cm = ffn_network_cm(n);
+        if (n->type == NTYPE_RNN) cm = rnn_network_cm(n);
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
@@ -52,6 +49,7 @@ struct matrix *confusion_matrix(struct network *n)
 
 struct matrix *ffn_network_cm(struct network *n)
 {
+        /* confusion matrix */
         uint32_t d = n->output->vector->size;
         struct matrix *cm = create_matrix(d, d);
 
@@ -85,7 +83,6 @@ struct matrix *ffn_network_cm(struct network *n)
                                 if (ov->elements[x] > ov->elements[o]) o = x;
                         }
                         cm->elements[t][o]++;
-
                 }
         }
 
@@ -97,6 +94,7 @@ struct matrix *rnn_network_cm(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
 
+        /* confusion matrix */
         uint32_t d = n->output->vector->size;
         struct matrix *cm = create_matrix(d, d);
 
@@ -114,14 +112,13 @@ struct matrix *rnn_network_cm(struct network *n)
                         copy_vector(un->stack[un->sp]->input->vector, item->inputs[j]);
                         feed_forward(un->stack[un->sp], un->stack[un->sp]->input);
 
-                        /* only classify metrics for last event */
+                        /* only classify last event */
                         if (!(item->targets[j] && j == item->num_events - 1))
                                 goto shift_stack;
 
                         /* classify */
                         struct vector *ov = n->output->vector;
                         struct vector *tv = item->targets[j];
-
                         uint32_t t = 0, o = 0;
                         for (uint32_t x = 0; x < ov->size; x++) {
                                 if (tv->elements[x] > tv->elements[t]) t = x;
@@ -130,9 +127,10 @@ struct matrix *rnn_network_cm(struct network *n)
                         cm->elements[t][o]++;
 
 shift_stack:
-                        un->sp == un->stack_size - 1
-                                ? rnn_shift_stack(un)
-                                : un->sp++;
+                        if (un->sp == un->stack_size - 1)
+                                rnn_shift_stack(un);
+                        else
+                                un->sp++;
                 }
         }
 
@@ -140,13 +138,16 @@ return_matrix:
         return cm;
 }
 
-void print_cm_summary(struct session *s, struct matrix *cm, bool print_cm)
+void print_cm_summary(struct matrix *cm, bool print_cm, bool pprint,
+        uint32_t scheme)
 {       
         if (print_cm) {
                 cprintf("\nConfusion matrix (actual x predicted):\n\n");
-                s->pprint == true
-                        ? pprint_matrix(cm, s->pprint_scheme)
-                        : print_matrix(cm);
+                if (pprint) {
+                        pprint_matrix(cm, scheme);
+                } else {
+                        print_matrix(cm);
+                }
         }
 
         cprintf("\nClassification statistics:\n");
@@ -154,7 +155,6 @@ void print_cm_summary(struct session *s, struct matrix *cm, bool print_cm)
         /* row and column totals */
         struct vector *rows = create_vector(cm->rows);
         struct vector *cols = create_vector(cm->cols);
-
         for (uint32_t r = 0; r < cm->rows; r++) {
                 for (uint32_t c = 0; c < cm->cols; c++) {
                         rows->elements[r] += cm->elements[r][c];
@@ -169,20 +169,25 @@ void print_cm_summary(struct session *s, struct matrix *cm, bool print_cm)
                         if (r == c) {
                                 cc += cm->elements[r][c];
                                 if (cols->elements[c] > 0)
-                                        pr += cm->elements[r][c] / cols->elements[c];
+                                        pr += cm->elements[r][c]
+                                                / cols->elements[c];
                                 if (rows->elements[r] > 0)
-                                        rc += cm->elements[r][c] / rows->elements[r];
+                                        rc += cm->elements[r][c]
+                                                / rows->elements[r];
                         } else {
                                 ic += cm->elements[r][c];
                         }
                 }
         }
 
+        /* precision and recall */
         pr /= cols->size;
         rc /= rows->size;
 
-        double beta = 1.0; // TODO: make beta a parameter
-        double fs = (1.0 + pow(beta,2.0))  * (pr * rc) / ((pr * pow(beta,2.0)) + rc);
+        // TODO: make beta a parameter
+        double beta = 1.0;
+        double fs = (1.0 + pow(beta,2.0)) * (pr * rc)
+                / ((pr * pow(beta,2.0)) + rc);
 
         /* report statistics */
         cprintf("\n");
