@@ -228,7 +228,7 @@ void bp_update_sd(struct network *n)
         if (n->sd_type == SD_BOUNDED)
                 bp_determine_sd_sf(n);
 
-        bp_recursively_update_sd(n, n->output);
+        bp_update_inc_projs_sd(n, n->output);
 
         /*
          * Compute gradient linearity:
@@ -246,7 +246,7 @@ void bp_update_sd(struct network *n)
 /*
  * Recursively adjusts the weights of all incoming projections of a group g.
  */
-void bp_recursively_update_sd(struct network *n, struct group *g)
+void bp_update_inc_projs_sd(struct network *n, struct group *g)
 {
         for (uint32_t  i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
@@ -270,7 +270,7 @@ void bp_recursively_update_sd(struct network *n, struct group *g)
                 if (p->recurrent)
                         continue;
 
-                bp_recursively_update_sd(n, p->to);
+                bp_update_inc_projs_sd(n, p->to);
         }
 }
 
@@ -437,19 +437,15 @@ void bp_recursively_determine_sd_sf(struct network *n, struct group *g)
 #ifdef _OPENMP
 #pragma omp parallel for reduction(+:sd_scale_factor)
 #endif /* _OPENMP */
-                for (uint32_t  j = 0; j < p->to->vector->size; j++) {
-                        for (uint32_t  x = 0; x < g->vector->size; x++) {
-                                double gradient = p->gradients->elements[j][x];
-                                sd_scale_factor += pow(gradient, 2.0);
-                        }
-                }
+                for (uint32_t  j = 0; j < p->to->vector->size; j++)
+                        for (uint32_t  x = 0; x < g->vector->size; x++)
+                                sd_scale_factor +=
+                                        pow(p->gradients->elements[j][x], 2.0);
                 
                 bp_recursively_determine_sd_sf(n, p->to);
         }
 
-        /*
-         * Add local scale factor to global scale factor.
-         */
+        /* add local scale factor to global scale factor */
         n->sd_scale_factor += sd_scale_factor;
 }
 
@@ -537,12 +533,7 @@ void bp_update_rprop(struct network *n)
         n->status->last_deltas_length = 0.0;
         n->status->gradients_length = 0.0;
 
-        /*
-        n->rp_eta_plus = 1.2;
-        n->rp_eta_minus = 0.5;
-        */
-
-        bp_recursively_update_rprop(n, n->output);
+        bp_update_inc_projs_rprop(n, n->output);
 
         /*
          * Compute gradient linearity:
@@ -560,7 +551,7 @@ void bp_update_rprop(struct network *n)
 /*
  * Recursively adjusts the weights of all incoming projections of a group g.
  */
-void bp_recursively_update_rprop(struct network *n, struct group *g)
+void bp_update_inc_projs_rprop(struct network *n, struct group *g)
 {
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
@@ -584,7 +575,7 @@ void bp_recursively_update_rprop(struct network *n, struct group *g)
                 if (p->recurrent)
                         continue;
 
-                bp_recursively_update_rprop(n, p->to);
+                bp_update_inc_projs_rprop(n, p->to);
         }
 }
 
@@ -632,7 +623,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  */
                                 p->dynamic_pars->elements[i][j] = minimum(
                                         p->dynamic_pars->elements[i][j] * n->rp_eta_plus,
-                                         RP_MAX_STEP_SIZE);
+                                        RP_MAX_STEP_SIZE);
 
                                 /*
                                  * Perform weight update:
@@ -817,7 +808,7 @@ void bp_update_qprop(struct network *n)
         n->status->last_deltas_length = 0.0;
         n->status->gradients_length = 0.0;
 
-        bp_recursively_update_qprop(n, n->output);
+        bp_update_inc_projs_qprop(n, n->output);
 
         /*
          * Compute gradient linearity:
@@ -835,7 +826,7 @@ void bp_update_qprop(struct network *n)
 /*
  * Recursively adjusts the weights of all incoming projections of a group g.
  */
-void bp_recursively_update_qprop(struct network *n, struct group *g)
+void bp_update_inc_projs_qprop(struct network *n, struct group *g)
 {
         for (uint32_t  i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
@@ -859,7 +850,7 @@ void bp_recursively_update_qprop(struct network *n, struct group *g)
                 if (p->recurrent)
                         continue;
 
-                bp_recursively_update_qprop(n, p->to);
+                bp_update_inc_projs_qprop(n, p->to);
         }
 }
 
@@ -928,7 +919,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                         weight_delta += p->gradients->elements[i][j]
                                                 / (p->prev_gradients->elements[i][j] 
                                                         - p->gradients->elements[i][j])
-                                                        * p->prev_deltas->elements[i][j];
+                                                * p->prev_deltas->elements[i][j];
                                 }
                         
                         /*
@@ -971,7 +962,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                         weight_delta += p->gradients->elements[i][j]
                                                 / (p->prev_gradients->elements[i][j] 
                                                         - p->gradients->elements[i][j])
-                                                        * p->prev_deltas->elements[i][j];
+                                                * p->prev_deltas->elements[i][j];
                                 }
 
                         /*
@@ -1115,7 +1106,7 @@ void bp_update_dbd(struct network *n)
         n->dbd_rate_decrement = 0.9;
         */
 
-        bp_recursively_update_dbd(n, n->output);
+        bp_update_inc_projs_dbd(n, n->output);
 
         /*
          * Compute gradient linearity:
@@ -1134,7 +1125,7 @@ void bp_update_dbd(struct network *n)
  * Recursively adjusts the weights and their learning rates of all incoming
  * projections of a group g.
  */
-void bp_recursively_update_dbd(struct network *n, struct group *g)
+void bp_update_inc_projs_dbd(struct network *n, struct group *g)
 {
         for (uint32_t  i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
@@ -1156,7 +1147,7 @@ void bp_recursively_update_dbd(struct network *n, struct group *g)
                 if (p->recurrent)
                         continue;
 
-                bp_recursively_update_dbd(n, p->to);
+                bp_update_inc_projs_dbd(n, p->to);
         }
 }
 

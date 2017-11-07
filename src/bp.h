@@ -46,7 +46,7 @@ void bp_backpropagate_error(struct network *n, struct group *g);
 
 /* steepest descent */
 void bp_update_sd(struct network *n);
-void bp_recursively_update_sd(struct network *n, struct group *g);
+void bp_update_inc_projs_sd(struct network *n, struct group *g);
 void bp_update_projection_sd(struct network *n, struct group *g,
         struct projection *p);
 
@@ -56,19 +56,19 @@ void bp_recursively_determine_sd_sf(struct network *n, struct group *g);
 
 /* resilient backpropagation */
 void bp_update_rprop(struct network *n);
-void bp_recursively_update_rprop(struct network *n, struct group *g);
+void bp_update_inc_projs_rprop(struct network *n, struct group *g);
 void bp_update_projection_rprop(struct network *n, struct group *g,
         struct projection *p);
 
 /* quickprop backpropagation */
 void bp_update_qprop(struct network *n);
-void bp_recursively_update_qprop(struct network *n, struct group *g);
+void bp_update_inc_projs_qprop(struct network *n, struct group *g);
 void bp_update_projection_qprop(struct network *n, struct group *g,
         struct projection *p);
 
 /* delta-bar-delta backpropagation */
 void bp_update_dbd(struct network *n);
-void bp_recursively_update_dbd(struct network *n, struct group *g);
+void bp_update_inc_projs_dbd(struct network *n, struct group *g);
 void bp_update_projection_dbd(struct network *n, struct group *g,
         struct projection *p);
 
