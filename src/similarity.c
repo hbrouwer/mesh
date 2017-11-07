@@ -26,8 +26,7 @@
 
 static bool keep_running = true;
 
-void similarity_matrix(struct network *n, bool print, bool pprint,
-        uint32_t scheme)
+struct matrix *similarity_matrix(struct network *n)
 {
         struct sigaction sa;
         sa.sa_handler = sm_signal_handler;
@@ -37,19 +36,21 @@ void similarity_matrix(struct network *n, bool print, bool pprint,
 
         keep_running = true;
 
+        struct matrix *sm;
         if (n->type == NTYPE_FFN)
-                ffn_network_sm(n, print, pprint, scheme);
+                sm = ffn_network_sm(n);
         if (n->type == NTYPE_SRN)
-                ffn_network_sm(n, print, pprint, scheme);
+                sm = ffn_network_sm(n);
         if (n->type == NTYPE_RNN)
-                rnn_network_sm(n, print, pprint, scheme);
+                sm = rnn_network_sm(n);
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
+
+        return sm;
 }
 
-void ffn_network_sm(struct network *n, bool print, bool pprint,
-        uint32_t scheme)
+struct matrix *ffn_network_sm(struct network *n)
 {
         uint32_t d = n->asp->items->num_elements;
         struct matrix *sm = create_matrix(d, d);
@@ -59,7 +60,7 @@ void ffn_network_sm(struct network *n, bool print, bool pprint,
 
                 /* abort after signal */
                 if (!keep_running)
-                        return;
+                        goto return_matrix;
 
                 if (n->type == NTYPE_SRN)
                         reset_context_groups(n);
@@ -86,13 +87,11 @@ void ffn_network_sm(struct network *n, bool print, bool pprint,
                 }
         }
 
-        print_sm_summary(n, sm, print, pprint, scheme);
-
-        free_matrix(sm);
+return_matrix:
+        return sm;
 }
 
-void rnn_network_sm(struct network *n, bool print, bool pprint,
-        uint32_t scheme)
+struct matrix *rnn_network_sm(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
 
@@ -105,7 +104,7 @@ void rnn_network_sm(struct network *n, bool print, bool pprint,
 
                 /* abort after signal */
                 if (!keep_running)
-                        return;
+                        goto return_matrix;
 
                 reset_recurrent_groups(un->stack[un->sp]);
                 for (uint32_t j = 0; j < item->num_events; j++) {
@@ -134,24 +133,22 @@ shift_stack:
                 }
         }
 
-        print_sm_summary(n, sm, print, pprint, scheme);
-        
-        free_matrix(sm);
+return_matrix:
+        return sm;
 }
 
-void print_sm_summary(struct network *n, struct matrix *sm, bool print,
-        bool pprint, uint32_t scheme)
+void print_sm_summary(struct session *s, struct matrix *sm, bool print_sm)
 {
-        if (print) {
-                cprintf("Output-target similarity matrix:\n\n");
-                pprint == true
-                        ? pprint_matrix(sm, scheme)
-                        : print_matrix(sm);
-                cprintf("\n");
-        }
+        struct network *n = s->anp;
 
-        cprintf("\n");
-        cprintf("Similarity statistics:\n");
+        if (print_sm) {
+                cprintf("\nOutput-target similarity matrix:\n\n");
+                s->pprint == true
+                        ? pprint_matrix(sm, s->pprint_scheme)
+                        : print_matrix(sm);
+        }
+        
+        cprintf("\nSimilarity statistics:\n");
 
         /*
          * Compute mean similarity, and its standard deviation. Also,

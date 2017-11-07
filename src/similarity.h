@@ -19,19 +19,14 @@
 
 #include <stdint.h>
 
-#include "matrix.h"
 #include "network.h"
+#include "matrix.h"
+#include "session.h"
 
-void similarity_matrix(struct network *n, bool print, bool pprint,
-        uint32_t scheme);
-void ffn_network_sm(struct network *n, bool print, bool pprint,
-        uint32_t scheme);
-void rnn_network_sm(struct network *n, bool print, bool pprint,
-        uint32_t scheme);
-
-void print_sm_summary(struct network *n, struct matrix *sm, bool print,
-        bool pprint, uint32_t scheme);
-
+struct matrix *similarity_matrix(struct network *n);
+struct matrix *ffn_network_sm(struct network *n);
+struct matrix *rnn_network_sm(struct network *n);
+void print_sm_summary(struct session *s, struct matrix *sm, bool print_sm);
 void sm_signal_handler(int32_t signal);
 
 #endif /* SIMILARITY_H */

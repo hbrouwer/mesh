@@ -87,7 +87,9 @@ bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s);
 bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s);
 
 bool cmd_similarity_matrix(char *cmd, char *fmt, struct session *s);
+bool cmd_similarity_stats(char *cmd, char *fmt, struct session *s);
 bool cmd_confusion_matrix(char *cmd, char *fmt, struct session *s);
+bool cmd_confusion_stats(char *cmd, char *fmt, struct session *s);
 
 bool cmd_weight_stats(char *cmd, char *fmt, struct session *s);
 

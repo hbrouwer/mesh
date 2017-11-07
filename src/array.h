@@ -19,13 +19,13 @@
 
 #include <stdint.h>
 
-#define MAX_ARRAY_ELEMENTS 2
+#define MAX_ARRAY_ELEMENTS 4
 
-#define ATYPE_NETWORKS   0
-#define ATYPE_GROUPS     1
-#define ATYPE_PROJS      2
-#define ATYPE_SETS       3
-#define ATYPE_ITEMS      4
+#define ATYPE_NETWORKS  0
+#define ATYPE_GROUPS    1
+#define ATYPE_PROJS     2
+#define ATYPE_SETS      3
+#define ATYPE_ITEMS     4
 
 struct array
 {

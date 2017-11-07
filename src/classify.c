@@ -26,8 +26,7 @@
 
 static bool keep_running = true;
 
-void confusion_matrix(struct network *n, bool print, bool pprint,
-        uint32_t scheme)
+struct matrix *confusion_matrix(struct network *n)
 {
         struct sigaction sa;
         sa.sa_handler = cm_signal_handler;
@@ -37,19 +36,21 @@ void confusion_matrix(struct network *n, bool print, bool pprint,
 
         keep_running = true;
 
+        struct matrix *cm;
         if (n->type == NTYPE_FFN)
-                ffn_network_cm(n, print, pprint, scheme);
+                cm = ffn_network_cm(n);
         if (n->type == NTYPE_SRN)
-                ffn_network_cm(n, print, pprint, scheme);
+                cm = ffn_network_cm(n);
         if (n->type == NTYPE_RNN)
-                rnn_network_cm(n, print, pprint, scheme);
+                cm = rnn_network_cm(n);
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
+
+        return cm;
 }
 
-void ffn_network_cm(struct network *n, bool print, bool pprint,
-        uint32_t scheme)
+struct matrix *ffn_network_cm(struct network *n)
 {
         uint32_t d = n->output->vector->size;
         struct matrix *cm = create_matrix(d, d);
@@ -59,7 +60,7 @@ void ffn_network_cm(struct network *n, bool print, bool pprint,
 
                 /* abort after signal */
                 if (!keep_running)
-                        return;
+                        goto return_matrix;
 
                 if (n->type == NTYPE_SRN)
                         reset_context_groups(n);
@@ -88,13 +89,11 @@ void ffn_network_cm(struct network *n, bool print, bool pprint,
                 }
         }
 
-        print_cm_summary(n, cm, print, pprint, scheme);
-
-        free_matrix(cm);
+return_matrix:
+        return cm;
 }
 
-void rnn_network_cm(struct network *n, bool print, bool pprint,
-        uint32_t scheme)
+struct matrix *rnn_network_cm(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
 
@@ -107,7 +106,7 @@ void rnn_network_cm(struct network *n, bool print, bool pprint,
 
                 /* abort after signal */
                 if (!keep_running)
-                        return;
+                        goto return_matrix;
 
                 reset_recurrent_groups(un->stack[un->sp]);
                 for (uint32_t j = 0; j < item->num_events; j++) {
@@ -137,24 +136,20 @@ shift_stack:
                 }
         }
 
-        print_cm_summary(n, cm, print, pprint, scheme);
-
-        free_matrix(cm);
+return_matrix:
+        return cm;
 }
 
-void print_cm_summary(struct network *n, struct matrix *cm, bool print,
-        bool pprint, uint32_t scheme)
-{
-        if (print) {
-                cprintf("Confusion matrix (actual x predicted):\n\n");
-                pprint == true
-                        ? pprint_matrix(cm, scheme)
+void print_cm_summary(struct session *s, struct matrix *cm, bool print_cm)
+{       
+        if (print_cm) {
+                cprintf("\nConfusion matrix (actual x predicted):\n\n");
+                s->pprint == true
+                        ? pprint_matrix(cm, s->pprint_scheme)
                         : print_matrix(cm);
-                cprintf("\n");
         }
 
-        cprintf("\n");
-        cprintf("Classification statistics:\n");
+        cprintf("\nClassification statistics:\n");
 
         /* row and column totals */
         struct vector *rows = create_vector(cm->rows);

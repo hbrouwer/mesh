@@ -19,19 +19,14 @@
 
 #include <stdint.h>
 
-#include "network.h"
 #include "matrix.h"
+#include "network.h"
+#include "session.h"
 
-void confusion_matrix(struct network *n, bool print, bool pprint,
-        uint32_t scheme);
-void ffn_network_cm(struct network *n, bool print, bool pprint,
-        uint32_t scheme);
-void rnn_network_cm(struct network *n, bool print, bool pprint,
-        uint32_t scheme);
-
-void print_cm_summary(struct network *n, struct matrix *cm, bool print,
-        bool pprint, uint32_t scheme);
-
+struct matrix *confusion_matrix(struct network *n);
+struct matrix *ffn_network_cm(struct network *n);
+struct matrix *rnn_network_cm(struct network *n);
+void print_cm_summary(struct session *s, struct matrix *cm, bool print_cm);
 void cm_signal_handler(int32_t signal);
 
 #endif /* CLASSIFY_H */

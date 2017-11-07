@@ -160,7 +160,9 @@ const static struct command cmds[] = {
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"similarityMatrix",        NULL,            &cmd_similarity_matrix},
+        {"similarityStats",         NULL,            &cmd_similarity_stats},
         {"confusionMatrix",         NULL,            &cmd_confusion_matrix},
+        {"confusionStats",          NULL,            &cmd_confusion_stats},
 
         /* weight statistics */
         {"weightStats",             NULL,            &cmd_weight_stats},
@@ -1661,8 +1663,23 @@ bool cmd_similarity_matrix(char *cmd, char *fmt, struct session *s)
 
         mprintf("Computing similarity matrix for network '%s'\n", s->anp->name);
 
-        // TODO: handle matrix printing
-        similarity_matrix(s->anp, false, s->pprint, s->pprint_scheme);
+        struct matrix *sm = similarity_matrix(s->anp);
+        print_sm_summary(s, sm, true);
+        free_matrix(sm);
+
+        return true;
+}
+
+bool cmd_similarity_stats(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf("Computing similarity matrix for network '%s'\n", s->anp->name);
+
+        struct matrix *sm = similarity_matrix(s->anp);
+        print_sm_summary(s, sm, false);
+        free_matrix(sm);
 
         return true;
 }
@@ -1674,8 +1691,23 @@ bool cmd_confusion_matrix(char *cmd, char *fmt, struct session *s)
 
         mprintf("Computing confusion matrix for network '%s'\n", s->anp->name);
 
-        // TODO: handle matrix printing
-        confusion_matrix(s->anp, false, s->pprint, s->pprint_scheme);
+        struct matrix *cm = confusion_matrix(s->anp);
+        print_cm_summary(s, cm, true);
+        free_matrix(cm);
+
+        return true;
+}
+
+bool cmd_confusion_stats(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf("Computing confusion matrix for network '%s'\n", s->anp->name);
+
+        struct matrix *cm = confusion_matrix(s->anp);
+        print_cm_summary(s, cm, false);
+        free_matrix(cm);
 
         return true;
 }
