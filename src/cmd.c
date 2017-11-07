@@ -76,13 +76,13 @@ const static struct command cmds[] = {
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"createNetwork",           "%s %s",         &cmd_create_network},
-        {"disposeNetwork",          "%s",            &cmd_dispose_network},
+        {"removeNetwork",          "%s",             &cmd_remove_network},
         {"listNetworks",            NULL,            &cmd_list_networks},
         {"changeNetwork",           "%s",            &cmd_change_network},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"createGroup",             "%s %d",         &cmd_create_group},
-        {"disposeGroup",            "%s",            &cmd_dispose_group},
+        {"removeGroup",            "%s",             &cmd_remove_group},
         {"listGroups",              NULL,            &cmd_list_groups},
         {"attachBias",              "%s",            &cmd_attach_bias},
         {"set InputGroup",          "%s",            &cmd_set_io_group},
@@ -92,9 +92,9 @@ const static struct command cmds[] = {
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"createProjection",        "%s %s",         &cmd_create_projection},
-        {"disposeProjection",       "%s %s",         &cmd_dispose_projection},
+        {"removeProjection",       "%s %s",          &cmd_remove_projection},
         {"createElmanProjection",   "%s %s",         &cmd_create_elman_projection},
-        {"disposeElmanProjection",  "%s %s",         &cmd_dispose_elman_projection},
+        {"removeElmanProjection",  "%s %s",          &cmd_remove_elman_projection},
         {"listProjections",         NULL,            &cmd_list_projections},
         {"freezeProjection",        "%s %s",         &cmd_freeze_projection},
         {"createTunnelProjection",  "%s %d %d %s %d %d",
@@ -132,7 +132,7 @@ const static struct command cmds[] = {
         
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"loadSet",                 "%s %s",         &cmd_load_set},
-        {"disposeSet",              "%s",            &cmd_dispose_set},
+        {"removeSet",              "%s",             &cmd_remove_set},
         {"listSets",                NULL,            &cmd_list_sets},
         {"changeSet",               "%s",            &cmd_change_set},
         {"listItems",               NULL,            &cmd_list_items},
@@ -274,7 +274,7 @@ bool cmd_exit(char *cmd, char *fmt, struct session *s)
 
         cprintf("Goodbye.\n");
         
-        dispose_session(s);
+        free_session(s);
         exit(EXIT_SUCCESS);
 
         return true;
@@ -371,7 +371,7 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_dispose_network(char *cmd, char *fmt, struct session *s)
+bool cmd_remove_network(char *cmd, char *fmt, struct session *s)
 {
         char arg[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg) != 1)
@@ -379,7 +379,7 @@ bool cmd_dispose_network(char *cmd, char *fmt, struct session *s)
 
         struct network *n = find_array_element_by_name(s->networks, arg);
         if (!n) {
-                eprintf("Cannot dispose network--no such network '%s'\n", arg);
+                eprintf("Cannot remove network--no such network '%s'\n", arg);
                 return true;
         }
 
@@ -391,9 +391,9 @@ bool cmd_dispose_network(char *cmd, char *fmt, struct session *s)
                                 s->anp = s->networks->elements[i];
         }
         remove_from_array(s->networks, n);
-        dispose_network(n);
+        free_network(n);
 
-        mprintf("Disposed network \t\t [ %s ]\n", arg);
+        mprintf("Removed network \t\t [ %s ]\n", arg);
 
         return true;
 }
@@ -464,7 +464,7 @@ bool cmd_create_group(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_dispose_group(char *cmd, char *fmt, struct session *s)
+bool cmd_remove_group(char *cmd, char *fmt, struct session *s)
 {
         char arg[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg) != 1)
@@ -472,7 +472,7 @@ bool cmd_dispose_group(char *cmd, char *fmt, struct session *s)
 
         struct group *g = find_array_element_by_name(s->anp->groups, arg);
         if (g == NULL) {
-                eprintf("Cannot dispose group--no such group '%s'\n", arg);
+                eprintf("Cannot remove group--no such group '%s'\n", arg);
                 return true;
         }
 
@@ -514,9 +514,9 @@ bool cmd_dispose_group(char *cmd, char *fmt, struct session *s)
         }
 
         remove_from_array(s->anp->groups, g);
-        dispose_group(g);
+        free_group(g);
 
-        mprintf("Disposed group \t\t [ %s ]\n", arg);
+        mprintf("Removed group \t\t [ %s ]\n", arg);
 
         return true;
 }
@@ -766,7 +766,7 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_dispose_projection(char *cmd, char *fmt, struct session *s)
+bool cmd_remove_projection(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
@@ -776,11 +776,11 @@ bool cmd_dispose_projection(char *cmd, char *fmt, struct session *s)
         struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
 
         if (fg == NULL) {
-                eprintf("Cannot dispose projection--no such group '%s'\n", arg1);
+                eprintf("Cannot remove projection--no such group '%s'\n", arg1);
                 return  true;
         }
         if (tg == NULL) {
-                eprintf("Cannot dispose projection--no such group '%s'\n", arg2);
+                eprintf("Cannot remove projection--no such group '%s'\n", arg2);
                 return true;
         }
 
@@ -797,16 +797,16 @@ bool cmd_dispose_projection(char *cmd, char *fmt, struct session *s)
         if (fg_to_tg && tg_to_fg) {
                 remove_from_array(fg->out_projs, fg_to_tg);
                 remove_from_array(tg->inc_projs, tg_to_fg);
-                dispose_projection(fg_to_tg);
+                free_projection(fg_to_tg);
                 free(tg_to_fg);
                 s->anp->initialized = false;
         } else {
-                eprintf("Cannot dispose projection--no projection between groups '%s' and '%s')\n",
+                eprintf("Cannot remove projection--no projection between groups '%s' and '%s')\n",
                                 arg1, arg2);
                 return true;
         }
 
-        mprintf("Disposed projection \t [ %s -> %s ]\n", arg1, arg2);
+        mprintf("Removed projection \t [ %s -> %s ]\n", arg1, arg2);
 
         return true;
 }
@@ -854,7 +854,7 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_dispose_elman_projection(char *cmd, char *fmt, struct session *s)
+bool cmd_remove_elman_projection(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
@@ -864,11 +864,11 @@ bool cmd_dispose_elman_projection(char *cmd, char *fmt, struct session *s)
         struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
 
         if (fg == NULL) {
-                eprintf("Cannot dispose Elman-projection--no such group '%s'\n", arg1);
+                eprintf("Cannot remove Elman-projection--no such group '%s'\n", arg1);
                 return true;
         }
         if (tg == NULL) {
-                eprintf("Cannot dispose Elman-projection--no such group '%s'\n", arg2);
+                eprintf("Cannot remove Elman-projection--no such group '%s'\n", arg2);
                 return true;
         }
 
@@ -881,12 +881,12 @@ bool cmd_dispose_elman_projection(char *cmd, char *fmt, struct session *s)
                 }
         }
         if (!removed) {
-                eprintf("Cannot dispose Elman-projection--no Elman projection from group '%s' to '%s'\n",
+                eprintf("Cannot remove Elman-projection--no Elman projection from group '%s' to '%s'\n",
                                 arg1, arg2);
                 return true;
         }
 
-        mprintf("Disposed Elman projection \t [ %s -> %s ]\n", arg1, arg2);
+        mprintf("Removed Elman projection \t [ %s -> %s ]\n", arg1, arg2);
         
         return true;
 
@@ -1256,7 +1256,7 @@ bool cmd_load_set(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_dispose_set(char *cmd, char *fmt, struct session *s)
+bool cmd_remove_set(char *cmd, char *fmt, struct session *s)
 {
         char arg[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg) != 1)
@@ -1271,9 +1271,9 @@ bool cmd_dispose_set(char *cmd, char *fmt, struct session *s)
         if (set == s->anp->asp)
                 s->anp->asp = NULL;
         remove_from_array(s->anp->sets, set);
-        dispose_set(set);
+        free_set(set);
 
-        mprintf("Disposed set \t\t [ %s ]\n", arg);
+        mprintf("Removed set \t\t [ %s ]\n", arg);
 
         return true;
 }
@@ -1687,7 +1687,7 @@ bool cmd_weight_stats(char *cmd, char *fmt, struct session *s)
 
         struct weight_stats *ws = create_weight_statistics(s->anp);
         print_weight_statistics(s->anp, ws);
-        dispose_weight_statistics(ws);
+        remove_weight_statistics(ws);
 
         return true;
 }

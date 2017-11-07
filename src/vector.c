@@ -40,7 +40,7 @@ error_out:
         return NULL;
 }
 
-void dispose_vector(struct vector *v)
+void free_vector(struct vector *v)
 {
         free(v->elements);
         free(v);

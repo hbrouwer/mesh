@@ -206,13 +206,13 @@ struct network *create_network(char *name, uint32_t type);
 void set_network_defaults(struct network *n);
 void init_network(struct network *n);
 void reset_network(struct network *n);
-void dispose_network(struct network *n);
+void free_network(struct network *n);
 
 struct group *create_group(char *name, uint32_t size, bool bias,
         bool recurrent);
 struct group *attach_bias_group(struct network *n, struct group *g);
-void dispose_group(struct group *g);
-void dispose_groups(struct array *gs);
+void free_group(struct group *g);
+void free_groups(struct array *gs);
 
 void shift_context_groups(struct network *n);
 void shift_context_group_chain(struct group *g, struct vector *v);
@@ -230,9 +230,9 @@ struct projection *create_projection(
         struct matrix *prev_gradients,
         struct matrix *prev_deltas,
         struct matrix *dynamic_pars);
-void dispose_projection(struct projection *p);
+void free_projection(struct projection *p);
 
-void dispose_sets(struct array *ss);
+void free_sets(struct array *ss);
 
 void randomize_weight_matrices(struct group *g, struct network *n);
 void initialize_dynamic_pars(struct group *g, struct network *n);

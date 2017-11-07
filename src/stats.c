@@ -46,7 +46,7 @@ error_out:
         return NULL;
 }
 
-void dispose_weight_statistics(struct weight_stats *ws)
+void remove_weight_statistics(struct weight_stats *ws)
 {
         free(ws);
 }

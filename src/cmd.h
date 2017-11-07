@@ -40,12 +40,12 @@ bool cmd_help(char *cmd, char *fmt, struct session *s);
 bool cmd_load_file(char *cmd, char *fmt, struct session *s);
 
 bool cmd_create_network(char *cmd, char *fmt, struct session *s);
-bool cmd_dispose_network(char *cmd, char *fmt, struct session *s);
+bool cmd_remove_network(char *cmd, char *fmt, struct session *s);
 bool cmd_list_networks(char *cmd, char *fmt, struct session *s);
 bool cmd_change_network(char *cmd, char *fmt, struct session *s);
 
 bool cmd_create_group(char *cmd, char *fmt, struct session *s);
-bool cmd_dispose_group(char *cmd, char *fmt, struct session *s); 
+bool cmd_remove_group(char *cmd, char *fmt, struct session *s); 
 bool cmd_list_groups(char *cmd, char *fmt, struct session *s);
 bool cmd_attach_bias(char *cmd, char *fmt, struct session *s);
 bool cmd_set_io_group(char *cmd, char *fmt, struct session *s);
@@ -53,9 +53,9 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct session *s);
 bool cmd_set_err_func(char *cmd, char *fmt, struct session *s);
 
 bool cmd_create_projection(char *cmd, char *fmt, struct session *s);
-bool cmd_dispose_projection(char *cmd, char *fmt, struct session *s);
+bool cmd_remove_projection(char *cmd, char *fmt, struct session *s);
 bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s);
-bool cmd_dispose_elman_projection(char *cmd, char *fmt, struct session *s);
+bool cmd_remove_elman_projection(char *cmd, char *fmt, struct session *s);
 bool cmd_list_projections(char *cmd, char *fmt, struct session *s);
 bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s);
 bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s);
@@ -64,7 +64,7 @@ bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s);
 bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s);
 
 bool cmd_load_set(char *cmd, char *fmt, struct session *s);
-bool cmd_dispose_set(char *cmd, char *fmt, struct session *s);
+bool cmd_remove_set(char *cmd, char *fmt, struct session *s);
 bool cmd_list_sets(char *cmd, char *fmt, struct session *s);
 bool cmd_change_set(char *cmd, char *fmt, struct session *s);
 bool cmd_list_items(char *cmd, char *fmt, struct session *s);

@@ -44,12 +44,12 @@ error_out:
         return NULL;
 }
 
-void dispose_set(struct set *s)
+void free_set(struct set *s)
 {
         free(s->name);
         for (uint32_t i = 0; i < s->items->num_elements; i++)
-                dispose_item(s->items->elements[i]);
-        dispose_array(s->items);
+                free_item(s->items->elements[i]);
+        free_array(s->items);
         free(s->order);
         free(s);
 }
@@ -76,16 +76,16 @@ error_out:
         return NULL;
 }
 
-void dispose_item(struct item *item)
+void free_item(struct item *item)
 {
         free(item->name);
         free(item->meta);
 
         for (uint32_t i = 0; i < item->num_events; i++) {
                 if (item->inputs[i])
-                        dispose_vector(item->inputs[i]);
+                        free_vector(item->inputs[i]);
                 if (item->targets[i])
-                        dispose_vector(item->targets[i]);
+                        free_vector(item->targets[i]);
         }
 
         free(item->inputs);

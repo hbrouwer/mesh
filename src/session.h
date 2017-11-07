@@ -31,6 +31,6 @@ struct session
 };
 
 struct session *create_session();
-void dispose_session(struct session *s);
+void free_session(struct session *s);
 
 #endif /* SESSION_H */

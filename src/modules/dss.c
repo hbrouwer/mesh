@@ -173,7 +173,7 @@ void dss_scores(struct network *n, struct set *set, struct item *item)
         }
         cprintf("\n");
 
-        dispose_matrix(sm);
+        free_matrix(sm);
 
         return;
 }
@@ -200,7 +200,7 @@ void dss_write_scores(struct network *n, struct set *set, char *filename)
                         fprintf(fd, "\n");
                 }
                 pprintf("%d: %s\n", i + 1, item->name);
-                dispose_matrix(sm);
+                free_matrix(sm);
         }
         
         fclose(fd);
@@ -249,7 +249,7 @@ void dss_inferences(struct network *n, struct set *set, struct item *item,
         
         cprintf("\n");
 
-        dispose_matrix(sm);
+        free_matrix(sm);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -446,7 +446,7 @@ void dss_word_information(struct network *n, struct set *s,
         }
         cprintf("\n");
 
-        dispose_matrix(im);
+        free_matrix(im);
         
         free(freq_table);
 
@@ -476,7 +476,7 @@ void dss_write_word_information(struct network *n, struct set *s)
                         fprintf(fd, "\n");
                 }
                 pprintf("%d: %s\n", i, item->name);
-                dispose_matrix(im);
+                free_matrix(im);
         }
 
         free(freq_table);
@@ -709,8 +709,8 @@ struct matrix *dss_word_information_matrix(struct network *n,
                 im->elements[i][3] = delta_hsem;
         }
 
-        dispose_vector(sit1);
-        dispose_vector(sit2);
+        free_vector(sit1);
+        free_vector(sit2);
 
                 /*************************
                  **** online measures ****
@@ -753,7 +753,7 @@ struct matrix *dss_word_information_matrix(struct network *n,
                 copy_vector(pv, n->output->vector);
         }
 
-        dispose_vector(pv);
+        free_vector(pv);
 
         return im;
 }

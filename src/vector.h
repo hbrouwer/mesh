@@ -26,7 +26,7 @@ struct vector
 };
 
 struct vector *create_vector(uint32_t size);
-void dispose_vector(struct vector *v);
+void free_vector(struct vector *v);
 void copy_vector(struct vector *v1, struct vector *v2);
 
 void zero_out_vector(struct vector *v);

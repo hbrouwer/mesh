@@ -74,18 +74,6 @@ Rumelhart, D. E., Hinton, G. E., & Williams, R. J. (1986). Learning
         representations by back-propagating errors. Nature, 323, 553-536.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Flat spot correction constant. This constant is added to the derivative
-f'(x_j) of the sigmoid activation function to avoid that it approaches zero
-when y_j is near 1.0 or 0.0. See:
-
-Fahlman, S. E. (1988). An empirical study of learning speed in back-
-        propagation networks. Technical report CMU-CS-88-162. School of
-        Computer Science, Carnegie Mellon University, Pittsburgh, PA 15213.
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-#define BP_FLAT_SPOT_CORRECTION 0.1
-
 /*
  * This computes the error signal delta_j for each output unit j.
  */
@@ -428,11 +416,10 @@ void bp_determine_sd_sf(struct network *n)
         bp_recursively_determine_sd_sf(n, n->output);
 
         /* determine the scaling factor */
-        if (n->sd_scale_factor > 1.0) {
+        if (n->sd_scale_factor > 1.0)
                 n->sd_scale_factor = 1.0 / sqrt(n->sd_scale_factor);
-        } else {
+        else
                 n->sd_scale_factor = 1.0;
-        }
 }
 
 /*

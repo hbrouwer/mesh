@@ -90,7 +90,7 @@ void ffn_network_cm(struct network *n, bool print, bool pprint,
 
         print_cm_summary(n, cm, print, pprint, scheme);
 
-        dispose_matrix(cm);
+        free_matrix(cm);
 }
 
 void rnn_network_cm(struct network *n, bool print, bool pprint,
@@ -139,7 +139,7 @@ shift_stack:
 
         print_cm_summary(n, cm, print, pprint, scheme);
 
-        dispose_matrix(cm);
+        free_matrix(cm);
 }
 
 void print_cm_summary(struct network *n, struct matrix *cm, bool print,
@@ -198,8 +198,8 @@ void print_cm_summary(struct network *n, struct matrix *cm, bool print,
         cprintf("F(%.2f)-score: \t %f\n", beta, fs);
         cprintf("\n");
         
-        dispose_vector(rows);
-        dispose_vector(cols);
+        free_vector(rows);
+        free_vector(cols);
 }
 
 void cm_signal_handler(int32_t signal)

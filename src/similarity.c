@@ -88,7 +88,7 @@ void ffn_network_sm(struct network *n, bool print, bool pprint,
 
         print_sm_summary(n, sm, print, pprint, scheme);
 
-        dispose_matrix(sm);
+        free_matrix(sm);
 }
 
 void rnn_network_sm(struct network *n, bool print, bool pprint,
@@ -136,7 +136,7 @@ shift_stack:
 
         print_sm_summary(n, sm, print, pprint, scheme);
         
-        dispose_matrix(sm);
+        free_matrix(sm);
 }
 
 void print_sm_summary(struct network *n, struct matrix *sm, bool print,

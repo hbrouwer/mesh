@@ -39,10 +39,10 @@ error_out:
         return NULL;
 }
 
-void dispose_session(struct session *s)
+void free_session(struct session *s)
 {
         for (uint32_t i = 0; i < s->networks->num_elements; i++)
-                dispose_network(s->networks->elements[i]);
-        dispose_array(s->networks);
+                free_network(s->networks->elements[i]);
+        free_array(s->networks);
         free(s);
 }

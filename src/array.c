@@ -103,7 +103,7 @@ error_out:
         return;       
 }
 
-void dispose_array(struct array *a)
+void free_array(struct array *a)
 {
         free(a->elements);
         free(a);

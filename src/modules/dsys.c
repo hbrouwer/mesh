@@ -101,7 +101,7 @@ void dsys_proc_time(struct network *n, struct group *g, struct item *item)
         }
         cprintf("\n\n");
 
-        dispose_vector(pv);
+        free_vector(pv);
 
         return;
 }
@@ -143,8 +143,8 @@ double dsys_compute_proc_time(struct network *n, struct vector *a_out0,
 
         } while (norm_da_out_dt > maximum(0.1 * norm_a_outx, pow(10.0, -8.0)));
 
-        dispose_vector(da_out_dt);
-        dispose_vector(a_outx);
+        free_vector(da_out_dt);
+        free_vector(a_outx);
 
         return dt;
 }

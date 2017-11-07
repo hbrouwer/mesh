@@ -61,7 +61,7 @@ int main(int argc, char **argv)
         cli_loop(s);
 
 leave_session:
-        dispose_session(s);
+        free_session(s);
         exit(EXIT_SUCCESS);
 
 error_out:

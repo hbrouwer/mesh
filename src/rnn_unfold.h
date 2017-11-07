@@ -35,22 +35,22 @@ struct rnn_unfolded_network
 };
 
 struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n);
-void rnn_dispose_unfolded_network(struct rnn_unfolded_network *un);
+void rnn_free_unfolded_network(struct rnn_unfolded_network *un);
 
 struct group *rnn_duplicate_group(struct group *g);
 struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
         struct group *g);
-void rnn_dispose_duplicate_groups(struct group *dg);
+void rnn_free_duplicate_groups(struct group *dg);
 
 struct projection *rnn_duplicate_projection(
         struct group *to,
         struct projection *p,
         struct matrix *gradients,
         struct matrix *prev_gradients);
-void rnn_dispose_duplicate_projection(struct projection *dp);
+void rnn_free_duplicate_projection(struct projection *dp);
 
 struct network *rnn_duplicate_network(struct network *n);
-void rnn_dispose_duplicate_network(struct network *n);
+void rnn_free_duplicate_network(struct network *n);
 
 struct array *rnn_recurrent_groups(struct network *n);
 void rnn_collect_recurrent_groups(struct group *g, struct array *gs);

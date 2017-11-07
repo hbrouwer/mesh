@@ -61,10 +61,10 @@ void erp_contrast(struct network *n, struct group *gen,
         print_matrix(effects);
         cprintf("\n");
 
-        dispose_matrix(effects);
+        free_matrix(effects);
 
-        dispose_vector(ctlav);
-        dispose_vector(tgtav);
+        free_vector(ctlav);
+        free_vector(tgtav);
 }
 
 void erp_amplitudes(struct network *n, struct group *n400_gen,
@@ -91,8 +91,8 @@ void erp_amplitudes(struct network *n, struct group *n400_gen,
                                         item->name, item->meta, j,
                                         n4av->elements[j], p6av->elements[j]);
 
-                dispose_vector(n4av);
-                dispose_vector(p6av);
+                free_vector(n4av);
+                free_vector(p6av);
         }
 
         fclose(fd);
@@ -127,7 +127,7 @@ struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
                 copy_vector(pv, g->vector);
         }
 
-        dispose_vector(pv);
+        free_vector(pv);
 
         return av;
 }

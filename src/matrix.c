@@ -51,7 +51,7 @@ error_out:
         return NULL;
 }
 
-void dispose_matrix(struct matrix *m)
+void free_matrix(struct matrix *m)
 {
         for (uint32_t i = 0; i < m->rows; i++)
                 free(m->elements[i]);

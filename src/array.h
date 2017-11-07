@@ -40,7 +40,7 @@ void add_to_array(struct array *a, void *e);
 void remove_from_array(struct array *a, void *e);
 void increase_array_size(struct array *a);
 void decrease_array_size(struct array *a);
-void dispose_array(struct array *a);
+void free_array(struct array *a);
 void *find_array_element_by_name(struct array *a, char *name);
 
 #endif /* ARRAY_H */

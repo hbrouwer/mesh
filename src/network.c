@@ -135,19 +135,19 @@ void reset_network(struct network *n)
         initialize_dynamic_pars(n->input, n);
 }
 
-void dispose_network(struct network *n)
+void free_network(struct network *n)
 {
         free(n->name);
         free(n->status);
 
         if (n->unfolded_net)
-                rnn_dispose_unfolded_network(n->unfolded_net);
+                rnn_free_unfolded_network(n->unfolded_net);
 
-        dispose_groups(n->groups);
-        dispose_array(n->groups);
+        free_groups(n->groups);
+        free_array(n->groups);
 
-        dispose_sets(n->sets);
-        dispose_array(n->sets);
+        free_sets(n->sets);
+        free_array(n->sets);
 
         free(n);
 }
@@ -255,33 +255,33 @@ error_out:
         return NULL;
 }
 
-void dispose_group(struct group *g)
+void free_group(struct group *g)
 {
         free(g->name);
-        dispose_vector(g->vector);
-        dispose_vector(g->error);
+        free_vector(g->vector);
+        free_vector(g->error);
                 
         if (g->act_fun->lookup)
-                dispose_vector(g->act_fun->lookup);
+                free_vector(g->act_fun->lookup);
         free(g->act_fun);
         free(g->err_fun);
 
         for (uint32_t j = 0; j < g->inc_projs->num_elements; j++)
-                dispose_projection(g->inc_projs->elements[j]);
+                free_projection(g->inc_projs->elements[j]);
         for (uint32_t j = 0; j < g->out_projs->num_elements; j++)
                 free(g->out_projs->elements[j]);
 
-        dispose_array(g->inc_projs);
-        dispose_array(g->out_projs);
-        dispose_array(g->ctx_groups);
+        free_array(g->inc_projs);
+        free_array(g->out_projs);
+        free_array(g->ctx_groups);
 
         free(g);
 }
 
-void dispose_groups(struct array *gs)
+void free_groups(struct array *gs)
 {
         for (uint32_t i = 0; i < gs->num_elements; i++)
-                dispose_group(gs->elements[i]);
+                free_group(gs->elements[i]);
 }
 
 void shift_context_groups(struct network *n)
@@ -407,21 +407,21 @@ error_out:
         return NULL;
 }
 
-void dispose_projection(struct projection *p)
+void free_projection(struct projection *p)
 {
-        dispose_matrix(p->weights);
-        dispose_matrix(p->gradients);
-        dispose_matrix(p->prev_gradients);
-        dispose_matrix(p->prev_deltas);
-        dispose_matrix(p->dynamic_pars);
+        free_matrix(p->weights);
+        free_matrix(p->gradients);
+        free_matrix(p->prev_gradients);
+        free_matrix(p->prev_deltas);
+        free_matrix(p->dynamic_pars);
 
         free(p);
 }
 
-void dispose_sets(struct array *ss)
+void free_sets(struct array *ss)
 {
         for (uint32_t i = 0; i < ss->num_elements; i++)
-                dispose_set(ss->elements[i]);
+                free_set(ss->elements[i]);
 }
 
 void randomize_weight_matrices(struct group *g, struct network *n)

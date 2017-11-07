@@ -29,7 +29,7 @@ struct matrix
 };
 
 struct matrix *create_matrix(uint32_t rows, uint32_t cols);
-void dispose_matrix(struct matrix *m);
+void free_matrix(struct matrix *m);
 void copy_matrix(struct matrix *m1, struct matrix *m2);
 
 struct vector *row_to_vector(struct matrix *m, uint32_t row);
