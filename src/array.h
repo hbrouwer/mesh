@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 
-#define MAX_ARRAY_ELEMENTS 10
+#define MAX_ARRAY_ELEMENTS 2
 
 #define ATYPE_NETWORKS   0
 #define ATYPE_GROUPS     1
@@ -39,6 +39,7 @@ struct array *create_array(uint32_t type);
 void add_to_array(struct array *a, void *e);
 void remove_from_array(struct array *a, void *e);
 void increase_array_size(struct array *a);
+void decrease_array_size(struct array *a);
 void dispose_array(struct array *a);
 void *find_array_element_by_name(struct array *a, char *name);
 

@@ -383,8 +383,13 @@ bool cmd_dispose_network(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        if (n == s->anp)
+        if (n == s->anp) {
                 s->anp = NULL;
+                for (uint32_t i = 0; i < s->networks->num_elements; i++)
+                        if (s->networks->elements[i] != NULL
+                                && s->networks->elements[i] != n)
+                                s->anp = s->networks->elements[i];
+        }
         remove_from_array(s->networks, n);
         dispose_network(n);
 

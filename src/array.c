@@ -62,6 +62,9 @@ void remove_from_array(struct array *a, void *e)
                 a->elements[j] = a->elements[j + 1];
         a->elements[a->num_elements - 1] = NULL;
         a->num_elements--;
+
+        if (a->num_elements < a->max_elements - MAX_ARRAY_ELEMENTS)
+                decrease_array_size(a);
 }
 
 void increase_array_size(struct array *a)
@@ -75,13 +78,29 @@ void increase_array_size(struct array *a)
 
         /* zero out all additional cells */
         for (uint32_t i = a->num_elements; i < a->max_elements; i++)
-                a->elements[i] = NULL;
-
+                a->elements[i] = NULL; 
+        
         return;
 
 error_out:
         perror("[increase_array_size()]");
         return;
+}
+
+void decrease_array_size(struct array *a)
+{
+        a->max_elements = a->max_elements - MAX_ARRAY_ELEMENTS;
+        
+        /* decrease array size */
+        size_t block_size = a->max_elements * sizeof(void *);
+        if (!(a->elements = realloc(a->elements, block_size)))
+                goto error_out;
+
+        return;
+
+error_out:
+        perror("[decrease_array_size()]");
+        return;       
 }
 
 void dispose_array(struct array *a)
