@@ -23,6 +23,10 @@
 #include "../main.h"
 #include "../math.h"
 
+                /*************************
+                 **** dynamic systems ****
+                 *************************/
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 This implements machinery to transform a connectionist model into a dynamic
 system by turning the activation function of a specified group:
@@ -50,7 +54,7 @@ Frank, S. L. and Vigliocco, G. (2011). Sentence comprehension as mental
         672-696.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-void dsys_test_item(struct network *n, struct group *g, struct item *item)
+void dsys_proc_time(struct network *n, struct group *g, struct item *item)
 {
         struct vector *pv = create_vector(g->vector->size);
         fill_vector_with_value(pv, 1.0);
@@ -87,7 +91,7 @@ void dsys_test_item(struct network *n, struct group *g, struct item *item)
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 
-                double t = dsys_processing_time(n, pv, g->vector);
+                double t = dsys_compute_proc_time(n, pv, g->vector);
                 
                 cprintf("%.5f", t);
                 for (uint32_t i = 0; i < col_len - 7; i++)
@@ -102,7 +106,7 @@ void dsys_test_item(struct network *n, struct group *g, struct item *item)
         return;
 }
 
-double dsys_processing_time(struct network *n, struct vector *a_out0,
+double dsys_compute_proc_time(struct network *n, struct vector *a_out0,
         struct vector *a_out1)
 {
         struct vector *da_out_dt = create_vector(a_out0->size);

@@ -100,10 +100,6 @@ bool cmd_load_weights(char *cmd, char *fmt, struct session *s);
 bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s);
 bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s);
 
-bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s);
-/* bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s); XXX: deprecated */
-bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s);
-
 bool cmd_dss_test(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_scores(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_write_scores(char *cmd, char *fmt, struct session *s);
@@ -112,6 +108,9 @@ bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_write_word_information(char *cmd, char *fmt,
                 struct session *s);
 
-bool cmd_dsys_test_item(char *cmd, char *fmt, struct session *s);
+bool cmd_dsys_proc_time(char *cmd, char *fmt, struct session *s);
+
+bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s);
+bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s);
 
 #endif /* CMD_H */

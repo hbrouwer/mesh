@@ -181,12 +181,6 @@ const static struct command cmds[] = {
         {"set ColorScheme",         "%s",            &cmd_set_color_scheme},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"erpContrast",             "%s \"%[^\"]\" \"%[^\"]\"",
-                                                     &cmd_erp_contrast},
-        /* {"erpGenerateTable",        "%s %s %s",      &cmd_erp_generate_table}, XXX: deprecated */
-        {"erpAmplitudes",           "%s %s",         &cmd_erp_amplitudes},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"dssTest",                 NULL,            &cmd_dss_test},
         {"dssScores",               "%s \"%[^\"]\"", &cmd_dss_scores},
         {"dssWriteScores",          "%s %s",         &cmd_dss_write_scores},
@@ -196,7 +190,12 @@ const static struct command cmds[] = {
         {"dssWriteWordInformation", "%s",            &cmd_dss_write_word_information},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"dsysTestItem",            "%s \"%[^\"]\"", &cmd_dsys_test_item},
+        {"dsysProcTime",            "%s \"%[^\"]\"", &cmd_dsys_proc_time},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"erpContrast",             "%s \"%[^\"]\" \"%[^\"]\"",
+                                                     &cmd_erp_contrast},
+        {"erpAmplitudes",           "%s %s",         &cmd_erp_amplitudes},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {NULL,                      NULL,            NULL}                   /* tail */
@@ -1888,97 +1887,9 @@ bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-                /********************
-                 **** ERP module ****
-                 ********************/
-
-bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
-{
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE], arg3[MAX_ARG_SIZE];
-        if (sscanf(cmd, fmt, arg1, arg2, arg3) != 3)
-                return false;
-
-        struct group *gen = find_array_element_by_name(s->anp->groups, arg1);
-        if (gen == NULL) {
-                eprintf("Cannot compute ERP correlates--no such group '%s'\n", arg1);
-                return true;
-        }
-
-        struct item *item1 = find_array_element_by_name(s->anp->asp->items, arg2);
-        struct item *item2 = find_array_element_by_name(s->anp->asp->items, arg3);
-
-        if (!item1) {
-                eprintf("Cannot compute ERP correlates--no such item '%s'\n", arg2);
-                return true;
-        }
-        if (!item2) {
-                eprintf("Cannot compute ERP correlates--no such item '%s'\n", arg3);
-                return true;
-        }
-
-        erp_contrast(s->anp, gen, item1, item2);
-
-        return true;
-}
-
-/*
- * XXX: deprecated (for legacy purposes only)
- */
-/*
-bool cmd_erp_generate_table(char *cmd, char *fmt, struct session *s)
-{
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE], arg3[MAX_ARG_SIZE];
-        if (sscanf(cmd, fmt, arg1, arg2, arg3) != 3)
-                return false;
-
-        struct group *n400_gen = find_array_element_by_name(s->anp->groups, arg1);
-        struct group *p600_gen = find_array_element_by_name(s->anp->groups, arg2);
-
-        if (n400_gen == NULL) {
-                eprintf("Cannot compute ERP correlates--no such group '%s'\n", arg1);
-                return true;
-        }
-        if (p600_gen == NULL) {
-                eprintf("Cannot compute ERP correlates--no such group '%s'\n", arg2);
-                return true;
-        }
-
-        erp_generate_table(s->anp, n400_gen, p600_gen, arg3);
-
-        return true;
-}
-*/
-
-bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s)
-{
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
-        if (sscanf(cmd, fmt, arg1, arg2) != 2)
-                return false;
-
-        struct group *n400_gen = find_array_element_by_name(s->anp->groups, arg1);
-        struct group *p600_gen = find_array_element_by_name(s->anp->groups, arg2);
-
-        if (n400_gen == NULL) {
-                eprintf("Cannot compute ERP correlates--no such group '%s'\n", arg1);
-                return true;
-        }
-        if (p600_gen == NULL) {
-                eprintf("Cannot compute ERP correlates--no such group '%s'\n", arg2);
-                return true;
-        }
-
-        mprintf("Computing ERP amplitudes \t [ N400 :: %s | P600 :: %s ]\n", arg1, arg2);
-
-        erp_amplitudes(s->anp, n400_gen, p600_gen);
-
-        mprintf("Written ERP amplitudes \t [ %s.ERPs.csv ]\n", s->anp->asp->name);
-
-        return true;
-}
-
-                /********************
-                 **** DSS module ****
-                 ********************/
+                /********************************************
+                 **** distributed-situation state spaces ****
+                 ********************************************/
 
 bool cmd_dss_test(char *cmd, char *fmt, struct session *s)
 {
@@ -2108,11 +2019,11 @@ bool cmd_dss_write_word_information(char *cmd, char *fmt,
         return true;
 }
 
-                /*********************************
-                 **** Dynanmic systems module ****
-                 *********************************/
+                /*************************
+                 **** dynamic systems ****
+                 *************************/
 
-bool cmd_dsys_test_item(char *cmd, char *fmt, struct session *s)
+bool cmd_dsys_proc_time(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
@@ -2132,7 +2043,67 @@ bool cmd_dsys_test_item(char *cmd, char *fmt, struct session *s)
         
         mprintf("Testing network '%s' with item '%s':\n", s->anp->name, arg2);
 
-        dsys_test_item(s->anp, group, item);
+        dsys_proc_time(s->anp, group, item);
+
+        return true;
+}
+
+                /**********************************
+                 **** event-related potentials ****
+                 **********************************/
+
+bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE], arg3[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, arg1, arg2, arg3) != 3)
+                return false;
+
+        struct group *gen = find_array_element_by_name(s->anp->groups, arg1);
+        if (gen == NULL) {
+                eprintf("Cannot compute ERP correlates--no such group '%s'\n", arg1);
+                return true;
+        }
+
+        struct item *item1 = find_array_element_by_name(s->anp->asp->items, arg2);
+        struct item *item2 = find_array_element_by_name(s->anp->asp->items, arg3);
+
+        if (!item1) {
+                eprintf("Cannot compute ERP correlates--no such item '%s'\n", arg2);
+                return true;
+        }
+        if (!item2) {
+                eprintf("Cannot compute ERP correlates--no such item '%s'\n", arg3);
+                return true;
+        }
+
+        erp_contrast(s->anp, gen, item1, item2);
+
+        return true;
+}
+
+bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        if (sscanf(cmd, fmt, arg1, arg2) != 2)
+                return false;
+
+        struct group *n400_gen = find_array_element_by_name(s->anp->groups, arg1);
+        struct group *p600_gen = find_array_element_by_name(s->anp->groups, arg2);
+
+        if (n400_gen == NULL) {
+                eprintf("Cannot compute ERP correlates--no such group '%s'\n", arg1);
+                return true;
+        }
+        if (p600_gen == NULL) {
+                eprintf("Cannot compute ERP correlates--no such group '%s'\n", arg2);
+                return true;
+        }
+
+        mprintf("Computing ERP amplitudes \t [ N400 :: %s | P600 :: %s ]\n", arg1, arg2);
+
+        erp_amplitudes(s->anp, n400_gen, p600_gen);
+
+        mprintf("Written ERP amplitudes \t [ %s.ERPs.csv ]\n", s->anp->asp->name);
 
         return true;
 }

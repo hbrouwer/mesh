@@ -21,8 +21,8 @@
 #include "../set.h"
 #include "../vector.h"
 
-void dsys_test_item(struct network *n, struct group *g, struct item *item);
-double dsys_processing_time(struct network *n, struct vector *a_out0,
+void dsys_proc_time(struct network *n, struct group *g, struct item *item);
+double dsys_compute_proc_time(struct network *n, struct vector *a_out0,
         struct vector *a_out1);
 double dsys_unit_act(double x, double y);
 

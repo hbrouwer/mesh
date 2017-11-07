@@ -24,6 +24,10 @@
 #include "../main.h"
 #include "../math.h"
 
+                /********************************************
+                 **** distributed-situation state spaces ****
+                 ********************************************/
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 This implements a variety of functions for dealing with Distributed
 Situation Space vectors, see:

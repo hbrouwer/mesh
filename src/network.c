@@ -446,11 +446,10 @@ void randomize_weight_matrices(struct group *g, struct network *n)
 void initialize_dynamic_pars(struct group *g, struct network *n)
 {
         double v = 0.0;
-        if (n->update_algorithm == bp_update_dbd) {
+        if (n->update_algorithm == bp_update_dbd)
                 v = n->learning_rate;
-        } else {
+        else
                 v = n->rp_init_update;
-        }
 
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
