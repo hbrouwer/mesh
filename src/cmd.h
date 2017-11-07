@@ -112,6 +112,6 @@ bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_write_word_information(char *cmd, char *fmt,
                 struct session *s);
 
-bool cmd_dynsys_test_item(char *cmd, char *fmt, struct session *s);
+bool cmd_dsys_test_item(char *cmd, char *fmt, struct session *s);
 
 #endif /* CMD_H */

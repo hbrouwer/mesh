@@ -15,10 +15,12 @@
  */
 
 #include <math.h>
+#include <string.h>
 
-#include "dynsys.h"
+#include "dsys.h"
 
 #include "../act.h"
+#include "../main.h"
 #include "../math.h"
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,12 +50,34 @@ Frank, S. L. and Vigliocco, G. (2011). Sentence comprehension as mental
         672-696.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-void dynsys_test_item(struct network *n, struct group *g, struct item *item)
+void dsys_test_item(struct network *n, struct group *g, struct item *item)
 {
         struct vector *pv = create_vector(g->vector->size);
         fill_vector_with_value(pv, 1.0);
         fill_vector_with_value(pv, 1.0 / euclidean_norm(pv));
 
+        size_t block_size = strlen(item->name) + 1;
+        char sentence[block_size];
+        memset(&sentence, 0, block_size);
+        strncpy(sentence, item->name, block_size - 1);
+
+        cprintf("\n");
+
+        uint32_t col_len = 10;
+
+        /* print the words of the sentence */
+        for (uint32_t i = 0; i < col_len; i++)
+                cprintf(" ");
+        char *token = strtok(sentence, " ");
+        do {
+                cprintf("\x1b[35m%s\x1b[0m", token);
+                for (uint32_t i = 0; i < col_len - strlen(token); i++)
+                        cprintf(" ");
+                token = strtok(NULL, " ");
+        } while (token);
+        cprintf("\n\n");
+
+        cprintf("ProcTime: ");
         if (n->type == NTYPE_SRN)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
@@ -63,18 +87,22 @@ void dynsys_test_item(struct network *n, struct group *g, struct item *item)
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 
-                double t = dynsys_processing_time(n, pv, g->vector);
-                printf("processing time for event %d: %f\n", i, t);
+                double t = dsys_processing_time(n, pv, g->vector);
+                
+                cprintf("%.5f", t);
+                for (uint32_t i = 0; i < col_len - 7; i++)
+                        cprintf(" ");
 
                 copy_vector(pv, g->vector);
         }
+        cprintf("\n\n");
 
         dispose_vector(pv);
 
         return;
 }
 
-double dynsys_processing_time(struct network *n, struct vector *a_out0,
+double dsys_processing_time(struct network *n, struct vector *a_out0,
         struct vector *a_out1)
 {
         struct vector *da_out_dt = create_vector(a_out0->size);
@@ -91,7 +119,7 @@ double dynsys_processing_time(struct network *n, struct vector *a_out0,
                 /* update a_out */
                 for (uint32_t i = 0; i < a_out0->size; i++)
                         a_outx->elements[i] = runge_kutta4(
-                                &dynsys_unit_act,
+                                &dsys_unit_act,
                                 h, a_out1->elements[i],
                                 a_outx->elements[i]);
 
@@ -117,7 +145,7 @@ double dynsys_processing_time(struct network *n, struct vector *a_out0,
         return dt;
 }
 
-double dynsys_unit_act(double yn1, double yn0)
+double dsys_unit_act(double yn1, double yn0)
 {
         return yn1 - yn0;
 }

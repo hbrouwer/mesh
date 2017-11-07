@@ -39,7 +39,7 @@
 
 /* modules */
 #include "modules/dss.h"
-#include "modules/dynsys.h"
+#include "modules/dsys.h"
 #include "modules/erp.h"
 
 /* group types */
@@ -196,7 +196,7 @@ const static struct command cmds[] = {
         {"dssWriteWordInformation", "%s",            &cmd_dss_write_word_information},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"dynsysTestItem",          "%s \"%[^\"]\"", &cmd_dynsys_test_item},
+        {"dsysTestItem",            "%s \"%[^\"]\"", &cmd_dsys_test_item},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {NULL,                      NULL,            NULL}                   /* tail */
@@ -2108,11 +2108,11 @@ bool cmd_dss_write_word_information(char *cmd, char *fmt,
         return true;
 }
 
-                /***********************
-                 **** DynSys module ****
-                 ***********************/
+                /*********************************
+                 **** Dynanmic systems module ****
+                 *********************************/
 
-bool cmd_dynsys_test_item(char *cmd, char *fmt, struct session *s)
+bool cmd_dsys_test_item(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
@@ -2132,7 +2132,7 @@ bool cmd_dynsys_test_item(char *cmd, char *fmt, struct session *s)
         
         mprintf("Testing network '%s' with item '%s':\n", s->anp->name, arg2);
 
-        dynsys_test_item(s->anp, group, item);
+        dsys_test_item(s->anp, group, item);
 
         return true;
 }

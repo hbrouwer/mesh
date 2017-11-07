@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-#ifndef DYNSYS_H
-#define DYNSYS_H
+#ifndef DSYS_H
+#define DSYS_H
 
 #include "../network.h"
 #include "../set.h"
 #include "../vector.h"
 
-void dynsys_test_item(struct network *n, struct group *g, struct item *item);
-double dynsys_processing_time(struct network *n, struct vector *a_out0,
+void dsys_test_item(struct network *n, struct group *g, struct item *item);
+double dsys_processing_time(struct network *n, struct vector *a_out0,
         struct vector *a_out1);
-double dynsys_unit_act(double x, double y);
+double dsys_unit_act(double x, double y);
 
-#endif /* DYNSYS_H */
+#endif /* DSYS_H */
