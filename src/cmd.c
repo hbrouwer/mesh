@@ -61,10 +61,11 @@
 
 const static struct command cmds[] = {
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"quit",                    NULL,            &cmd_quit},
-        {"exit",                    NULL,            &cmd_quit},
+        {"exit",                    NULL,            &cmd_exit},
+        {"quit",                    NULL,            &cmd_exit},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"about",                   NULL,            &cmd_about},
         {"help",                    NULL,            &cmd_help},
         {"?",                       NULL,            &cmd_help},
         {"help",                    "%s",            &cmd_help},
@@ -267,7 +268,7 @@ error_out:
                  **** individual commands ****
                  *****************************/
 
-bool cmd_quit(char *cmd, char *fmt, struct session *s)
+bool cmd_exit(char *cmd, char *fmt, struct session *s)
 {
         if (strcmp(cmd, fmt) != 0)
                 return false;
@@ -276,6 +277,16 @@ bool cmd_quit(char *cmd, char *fmt, struct session *s)
         
         dispose_session(s);
         exit(EXIT_SUCCESS);
+
+        return true;
+}
+
+bool cmd_about(char *cmd, char *fmt, struct session *s)
+{
+        if (strcmp(cmd, fmt) != 0)
+                return false;
+
+        help("about");
 
         return true;
 }

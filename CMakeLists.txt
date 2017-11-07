@@ -31,24 +31,16 @@ set(Mesh_SOURCE_FILES
         src/train.c src/vector.c src/modules/dss.c src/modules/dynsys.c
         src/modules/erp.c)
 
-####################
-#### executable ####
-####################
-
 add_executable(mesh ${Mesh_SOURCE_FILES})
 target_link_libraries(mesh m)
 
-############################
 #### fast exponentional ####
-############################
 
 if(FAST_EXP)
         add_definitions(-DFAST_EXP)
 endif(FAST_EXP)
 
-################
 #### OpenMP ####
-################
 
 if(OPENMP)
         set_target_properties(

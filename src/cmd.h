@@ -32,8 +32,9 @@ struct command
 
 void process_command(char *cmd, struct session *s);
 
-bool cmd_quit(char *cmd, char *fmt, struct session *s);
+bool cmd_exit(char *cmd, char *fmt, struct session *s);
 
+bool cmd_about(char *cmd, char *fmt, struct session *s);
 bool cmd_help(char *cmd, char *fmt, struct session *s);
 
 bool cmd_load_file(char *cmd, char *fmt, struct session *s);
