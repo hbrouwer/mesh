@@ -22,14 +22,6 @@
 #include "network.h"
 #include "session.h"
 
-struct command
-{
-        char *cmd_base;             /* base command */
-        char *cmd_args;             /* argument format */
-        bool (*cmd_proc)            /* processor */
-                (char *cmd, char *fmt, struct session *s);
-};
-
 void process_command(char *cmd, struct session *s);
 
 bool cmd_exit(char *cmd, char *fmt, struct session *s);
@@ -114,5 +106,163 @@ bool cmd_dsys_proc_time(char *cmd, char *fmt, struct session *s);
 
 bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s);
 bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s);
+
+                /******************
+                 **** commands ****
+                 ******************/
+
+struct command
+{
+        /* base command */
+        char *cmd_base;
+        /* argument format */
+        char *cmd_args;
+        /* command processor */
+        bool (*cmd_proc)(char *cmd, char *fmt, struct session *s);
+};
+
+const static struct command cmds[] = {
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"exit",                    NULL,            &cmd_exit},
+        {"quit",                    NULL,            &cmd_exit},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"about",                   NULL,            &cmd_about},
+        {"help",                    NULL,            &cmd_help},
+        {"?",                       NULL,            &cmd_help},
+        {"help",                    "%s",            &cmd_help},
+        {"?",                       "%s",            &cmd_help},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"loadFile",                "%s",            &cmd_load_file},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"createNetwork",           "%s %s",         &cmd_create_network},
+        {"removeNetwork",          "%s",             &cmd_remove_network},
+        {"listNetworks",            NULL,            &cmd_list_networks},
+        {"changeNetwork",           "%s",            &cmd_change_network},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"createGroup",             "%s %d",         &cmd_create_group},
+        {"removeGroup",            "%s",             &cmd_remove_group},
+        {"listGroups",              NULL,            &cmd_list_groups},
+        {"attachBias",              "%s",            &cmd_attach_bias},
+        {"set InputGroup",          "%s",            &cmd_set_io_group},
+        {"set OutputGroup",         "%s",            &cmd_set_io_group},
+        {"set ActFunc",             "%s %s",         &cmd_set_act_func},
+        {"set ErrFunc",             "%s %s",         &cmd_set_err_func},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"createProjection",        "%s %s",         &cmd_create_projection},
+        {"removeProjection",       "%s %s",          &cmd_remove_projection},
+        {"createElmanProjection",   "%s %s",         &cmd_create_elman_projection},
+        {"removeElmanProjection",  "%s %s",          &cmd_remove_elman_projection},
+        {"listProjections",         NULL,            &cmd_list_projections},
+        {"freezeProjection",        "%s %s",         &cmd_freeze_projection},
+        {"createTunnelProjection",  "%s %d %d %s %d %d",
+                                                     &cmd_create_tunnel_projection},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"set BatchSize",           "%d",            &cmd_set_int_parameter},
+        {"set MaxEpochs",           "%d",            &cmd_set_int_parameter},
+        {"set ReportAfter",         "%d",            &cmd_set_int_parameter},
+        {"set RandomSeed",          "%d",            &cmd_set_int_parameter},
+        {"set BackTicks",           "%d",            &cmd_set_int_parameter},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"set RandomMu",            "%lf",           &cmd_set_double_parameter},
+        {"set RandomSigma",         "%lf",           &cmd_set_double_parameter},
+        {"set RandomMax",           "%lf",           &cmd_set_double_parameter},
+        {"set RandomMin",           "%lf",           &cmd_set_double_parameter},
+        {"set LearningRate",        "%lf",           &cmd_set_double_parameter},
+        {"set LRScaleFactor",       "%lf",           &cmd_set_double_parameter},
+        {"set LRScaleAfter",        "%lf",           &cmd_set_double_parameter},
+        {"set Momentum",            "%lf",           &cmd_set_double_parameter},
+        {"set MNScaleFactor",       "%lf",           &cmd_set_double_parameter},
+        {"set MNScaleAfter",        "%lf",           &cmd_set_double_parameter},
+        {"set WeightDecay",         "%lf",           &cmd_set_double_parameter},
+        {"set WDScaleFactor",       "%lf",           &cmd_set_double_parameter},
+        {"set WDScaleAfter",        "%lf",           &cmd_set_double_parameter},
+        {"set ErrorThreshold",      "%lf",           &cmd_set_double_parameter},
+        {"set TargetRadius",        "%lf",           &cmd_set_double_parameter},
+        {"set ZeroErrorRadius",     "%lf",           &cmd_set_double_parameter},
+        {"set RpropInitUpdate",     "%lf",           &cmd_set_double_parameter},
+        {"set RpropEtaPlus",        "%lf",           &cmd_set_double_parameter},
+        {"set RpropEtaMinus",       "%lf",           &cmd_set_double_parameter},
+        {"set DBDRateIncrement",    "%lf",           &cmd_set_double_parameter},
+        {"set DBDRateDecrement",    "%lf",           &cmd_set_double_parameter},
+        
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"loadSet",                 "%s %s",         &cmd_load_set},
+        {"removeSet",              "%s",             &cmd_remove_set},
+        {"listSets",                NULL,            &cmd_list_sets},
+        {"changeSet",               "%s",            &cmd_change_set},
+        {"listItems",               NULL,            &cmd_list_items},
+        {"showItem",                "\"%[^\"]\"",    &cmd_show_item},
+        {"set TrainingOrder",       "%s",            &cmd_set_training_order},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"set RandomAlgorithm",     "%s"  ,          &cmd_set_random_algorithm},
+        {"set LearningAlgorithm",   "%s",            &cmd_set_learning_algorithm},
+        {"set UpdateAlgorithm",     "%s",            &cmd_set_update_algorithm},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"set SimilarityMetric",    "%s",            &cmd_set_similarity_metric},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"init",                    NULL,            &cmd_init},
+        {"reset",                   NULL,            &cmd_reset},
+        {"train",                   NULL,            &cmd_train},
+        {"testItem",                "\"%[^\"]\"",    &cmd_test_item},        /* swapped */
+        {"test",                    NULL,            &cmd_test},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"set SingleStage",         NULL,            &cmd_set_single_stage},
+        {"set MultiStage",          "%s %s",         &cmd_set_multi_stage},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"similarityMatrix",        NULL,            &cmd_similarity_matrix},
+        {"similarityStats",         NULL,            &cmd_similarity_stats},
+        {"confusionMatrix",         NULL,            &cmd_confusion_matrix},
+        {"confusionStats",          NULL,            &cmd_confusion_stats},
+
+        /* weight statistics */
+        {"weightStats",             NULL,            &cmd_weight_stats},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"showUnits",               "%s",            &cmd_show_vector},
+        {"showError",               "%s",            &cmd_show_vector},
+        {"showWeights",             "%s",            &cmd_show_matrix},
+        {"showGradients",           "%s",            &cmd_show_matrix},
+        {"showDynPars",             "%s",            &cmd_show_matrix},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"loadWeights",             "%s",            &cmd_load_weights},
+        {"saveWeights",             "%s",            &cmd_save_weights},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"togglePrettyPrinting",    NULL,            &cmd_toggle_pretty_printing},
+        {"set ColorScheme",         "%s",            &cmd_set_color_scheme},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"dssTest",                 NULL,            &cmd_dss_test},
+        {"dssScores",               "%s \"%[^\"]\"", &cmd_dss_scores},
+        {"dssWriteScores",          "%s %s",         &cmd_dss_write_scores},
+        {"dssInferences",           "%s \"%[^\"]\" %lf",
+                                                     &cmd_dss_inferences},
+        {"dssWordInformation",      "%s \"%[^\"]\"", &cmd_dss_word_information},
+        {"dssWriteWordInformation", "%s",            &cmd_dss_write_word_information},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"dsysProcTime",            "%s \"%[^\"]\"", &cmd_dsys_proc_time},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"erpContrast",             "%s \"%[^\"]\" \"%[^\"]\"",
+                                                     &cmd_erp_contrast},
+        {"erpAmplitudes",           "%s %s",         &cmd_erp_amplitudes},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {NULL,                      NULL,            NULL}                   /* tail */
+};
 
 #endif /* CMD_H */

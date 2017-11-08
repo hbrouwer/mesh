@@ -39,7 +39,7 @@ struct array
         void **elements;            /* elements */
 };
 
-struct array *create_array(uint32_t type);
+struct array *create_array(enum array_type type);
 void add_to_array(struct array *a, void *e);
 void remove_from_array(struct array *a, void *e);
 void increase_array_size(struct array *a);

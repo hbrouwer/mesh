@@ -16,7 +16,7 @@
 
 #ifdef _OPENMP
 #include <omp.h>
-#endif /* OPENMP */
+#endif /* _OPENMP */
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,8 +31,6 @@
 
 int main(int argc, char **argv)
 {
-        struct session *s;
-
         cprintf("Mesh, version %s: http://hbrouwer.github.io/mesh/\n", VERSION);
 #ifdef FAST_EXP
         print_fast_exp_status();
@@ -41,14 +39,12 @@ int main(int argc, char **argv)
         print_openmp_status();
 #endif /* _OPENMP */
 
-        s = create_session();
-
+        struct session *s = create_session();
         for (uint32_t i = 1; i < argc; i++) {
                 if (strcmp(argv[i],"--help") == 0) {
                         help("usage");
-                        goto leave_session;
+                        goto exit_session;
                 }
-                
                 else if (argv[i] != NULL) {
                         char *cmd;
                         if (asprintf(&cmd, "loadFile %s", argv[i]) < 0)
@@ -57,10 +53,9 @@ int main(int argc, char **argv)
                         free(cmd);
                 }
         }
-
         cli_loop(s);
 
-leave_session:
+exit_session:
         free_session(s);
         exit(EXIT_SUCCESS);
 
@@ -72,7 +67,8 @@ error_out:
 #ifdef FAST_EXP
 void print_fast_exp_status()
 {
-        cprintf("+ [ FastExp ]: Using Schraudolph's exp() approximation (c: %d)\n", EXP_C);
+        cprintf("+ [ FastExp ]: Using Schraudolph's exp() approximation (c: %d)\n",
+                EXP_C);
 }
 #endif /* FAST_EXP */
 
@@ -82,7 +78,6 @@ void print_openmp_status()
         cprintf("+ [ OpenMP ]: %d processor(s) available (%d thread(s) max)\n",
                         omp_get_num_procs(),
                         omp_get_max_threads());
-
         omp_sched_t k;
         int m;
         omp_get_schedule(&k, &m);
@@ -103,38 +98,29 @@ void print_openmp_status()
 }
 #endif /* _OPENMP */
 
-/*
- * Print console message
- */
+/* console message */
 void cprintf(const char *fmt, ...)
 {
         va_list args;
-
         va_start(args, fmt);
         vfprintf(stdout, fmt, args);
         va_end(args);
 }
 
-/*
- * Print program message
- */
+/* program message */
 void mprintf(const char *fmt, ...)
 {
         va_list args;
-
         fprintf(stderr,"> ");
         va_start(args, fmt);
         vfprintf(stdout, fmt, args);
         va_end(args);
 }
 
-/*
- * Print error message
- */
+/* error message */
 void eprintf(const char *fmt, ...)
 {
         va_list args;
-
         fprintf(stderr, "\x1b[31m");
         fprintf(stderr, "! ");
         va_start(args, fmt);
@@ -143,13 +129,10 @@ void eprintf(const char *fmt, ...)
         fprintf(stderr, "\x1b[0m");
 }
 
-/*
- * Print progress/report message
- */
+/* progress message */
 void pprintf(const char *fmt, ...)
 {
         va_list args;
-
         fprintf(stdout, "%% ");
         va_start(args, fmt);
         vfprintf(stdout, fmt, args);

@@ -17,24 +17,6 @@
 #include "main.h"
 #include "pprint.h"
 
-#define VALUE_SYMBOL " "
-
-/* palettes */
-uint32_t PALETTE_BLUE_RED[10] =
-        {196, 160, 124, 88,  52,  17,  18,  19,  20,  21};
-uint32_t PALETTE_BLUE_YELLOW[10] =
-        {226, 220, 214, 208, 202, 27,  33,  39,  45,  51};
-uint32_t PALETTE_GRAYSCALE[10] =
-        {255, 253, 251, 249, 247, 245, 243, 241, 239, 237};
-uint32_t PALETTE_SPACEPIGS[10] =
-        {82,  77,  113, 108, 144, 139, 175, 170, 206, 201};
-uint32_t PALETTE_MOODY_BLUES[10] = 
-        {129, 128, 127, 91,  90,  55,  54,  19,  20,  21};
-uint32_t PALETTE_FOR_JOHN[10] =
-        {46,  40,  34,  28,  64,  100, 136, 166, 202, 196};
-uint32_t PALETTE_GRAY_ORANGE[10] =
-        {220, 221, 222, 223, 224, 255, 253, 251, 249, 247};
-
 void pprint_vector(struct vector *v, enum color_scheme scheme)
 {
         double min = vector_minimum(v);
@@ -90,7 +72,7 @@ double scale_value(double v, double min, double max)
 
 void value_as_color(double v, enum color_scheme scheme)
 {
-        uint32_t *palette;
+        const uint32_t *palette;
 
         switch (scheme) {
         case scheme_blue_red:

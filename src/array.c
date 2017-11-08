@@ -23,7 +23,7 @@
 #include "network.h"
 #include "set.h"
 
-struct array *create_array(uint32_t type)
+struct array *create_array(enum array_type type)
 {
         struct array *a;
         if (!(a = malloc(sizeof(struct array))))

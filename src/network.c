@@ -29,7 +29,7 @@
 #include "sanity.h"
 #include "train.h"
 
-struct network *create_network(char *name, uint32_t type)
+struct network *create_network(char *name, enum network_type type)
 {
         struct network *n;
         if (!(n = malloc(sizeof(struct network))))

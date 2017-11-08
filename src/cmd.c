@@ -36,228 +36,123 @@
 #include "similarity.h"
 #include "test.h"
 #include "train.h"
-
-/* modules */
 #include "modules/dss.h"
 #include "modules/dsys.h"
 #include "modules/erp.h"
 
 /* group types */
-#define GTYPE_INPUT  0
-#define GTYPE_OUTPUT 1
+enum group_type
+{
+        gtype_input,
+        gtype_output
+};
 
 /* vector types */
-#define VTYPE_UNITS 0
-#define VTYPE_ERROR 1
+enum vector_type
+{
+        vtype_units,
+        vtype_error
+};
 
 /* matrix types */
-#define MTYPE_WEIGHTS   0
-#define MTYPE_GRADIENTS 1
-#define MTYPE_DYN_PARS  2
-
-                /******************
-                 **** commands ****
-                 ******************/
-
-const static struct command cmds[] = {
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"exit",                    NULL,            &cmd_exit},
-        {"quit",                    NULL,            &cmd_exit},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"about",                   NULL,            &cmd_about},
-        {"help",                    NULL,            &cmd_help},
-        {"?",                       NULL,            &cmd_help},
-        {"help",                    "%s",            &cmd_help},
-        {"?",                       "%s",            &cmd_help},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"loadFile",                "%s",            &cmd_load_file},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"createNetwork",           "%s %s",         &cmd_create_network},
-        {"removeNetwork",          "%s",             &cmd_remove_network},
-        {"listNetworks",            NULL,            &cmd_list_networks},
-        {"changeNetwork",           "%s",            &cmd_change_network},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"createGroup",             "%s %d",         &cmd_create_group},
-        {"removeGroup",            "%s",             &cmd_remove_group},
-        {"listGroups",              NULL,            &cmd_list_groups},
-        {"attachBias",              "%s",            &cmd_attach_bias},
-        {"set InputGroup",          "%s",            &cmd_set_io_group},
-        {"set OutputGroup",         "%s",            &cmd_set_io_group},
-        {"set ActFunc",             "%s %s",         &cmd_set_act_func},
-        {"set ErrFunc",             "%s %s",         &cmd_set_err_func},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"createProjection",        "%s %s",         &cmd_create_projection},
-        {"removeProjection",       "%s %s",          &cmd_remove_projection},
-        {"createElmanProjection",   "%s %s",         &cmd_create_elman_projection},
-        {"removeElmanProjection",  "%s %s",          &cmd_remove_elman_projection},
-        {"listProjections",         NULL,            &cmd_list_projections},
-        {"freezeProjection",        "%s %s",         &cmd_freeze_projection},
-        {"createTunnelProjection",  "%s %d %d %s %d %d",
-                                                     &cmd_create_tunnel_projection},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"set BatchSize",           "%d",            &cmd_set_int_parameter},
-        {"set MaxEpochs",           "%d",            &cmd_set_int_parameter},
-        {"set ReportAfter",         "%d",            &cmd_set_int_parameter},
-        {"set RandomSeed",          "%d",            &cmd_set_int_parameter},
-        {"set BackTicks",           "%d",            &cmd_set_int_parameter},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"set RandomMu",            "%lf",           &cmd_set_double_parameter},
-        {"set RandomSigma",         "%lf",           &cmd_set_double_parameter},
-        {"set RandomMax",           "%lf",           &cmd_set_double_parameter},
-        {"set RandomMin",           "%lf",           &cmd_set_double_parameter},
-        {"set LearningRate",        "%lf",           &cmd_set_double_parameter},
-        {"set LRScaleFactor",       "%lf",           &cmd_set_double_parameter},
-        {"set LRScaleAfter",        "%lf",           &cmd_set_double_parameter},
-        {"set Momentum",            "%lf",           &cmd_set_double_parameter},
-        {"set MNScaleFactor",       "%lf",           &cmd_set_double_parameter},
-        {"set MNScaleAfter",        "%lf",           &cmd_set_double_parameter},
-        {"set WeightDecay",         "%lf",           &cmd_set_double_parameter},
-        {"set WDScaleFactor",       "%lf",           &cmd_set_double_parameter},
-        {"set WDScaleAfter",        "%lf",           &cmd_set_double_parameter},
-        {"set ErrorThreshold",      "%lf",           &cmd_set_double_parameter},
-        {"set TargetRadius",        "%lf",           &cmd_set_double_parameter},
-        {"set ZeroErrorRadius",     "%lf",           &cmd_set_double_parameter},
-        {"set RpropInitUpdate",     "%lf",           &cmd_set_double_parameter},
-        {"set RpropEtaPlus",        "%lf",           &cmd_set_double_parameter},
-        {"set RpropEtaMinus",       "%lf",           &cmd_set_double_parameter},
-        {"set DBDRateIncrement",    "%lf",           &cmd_set_double_parameter},
-        {"set DBDRateDecrement",    "%lf",           &cmd_set_double_parameter},
-        
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"loadSet",                 "%s %s",         &cmd_load_set},
-        {"removeSet",              "%s",             &cmd_remove_set},
-        {"listSets",                NULL,            &cmd_list_sets},
-        {"changeSet",               "%s",            &cmd_change_set},
-        {"listItems",               NULL,            &cmd_list_items},
-        {"showItem",                "\"%[^\"]\"",    &cmd_show_item},
-        {"set TrainingOrder",       "%s",            &cmd_set_training_order},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"set RandomAlgorithm",     "%s"  ,          &cmd_set_random_algorithm},
-        {"set LearningAlgorithm",   "%s",            &cmd_set_learning_algorithm},
-        {"set UpdateAlgorithm",     "%s",            &cmd_set_update_algorithm},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"set SimilarityMetric",    "%s",            &cmd_set_similarity_metric},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"init",                    NULL,            &cmd_init},
-        {"reset",                   NULL,            &cmd_reset},
-        {"train",                   NULL,            &cmd_train},
-        {"testItem",                "\"%[^\"]\"",    &cmd_test_item},        /* swapped */
-        {"test",                    NULL,            &cmd_test},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"set SingleStage",         NULL,            &cmd_set_single_stage},
-        {"set MultiStage",          "%s %s",         &cmd_set_multi_stage},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"similarityMatrix",        NULL,            &cmd_similarity_matrix},
-        {"similarityStats",         NULL,            &cmd_similarity_stats},
-        {"confusionMatrix",         NULL,            &cmd_confusion_matrix},
-        {"confusionStats",          NULL,            &cmd_confusion_stats},
-
-        /* weight statistics */
-        {"weightStats",             NULL,            &cmd_weight_stats},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"showUnits",               "%s",            &cmd_show_vector},
-        {"showError",               "%s",            &cmd_show_vector},
-        {"showWeights",             "%s",            &cmd_show_matrix},
-        {"showGradients",           "%s",            &cmd_show_matrix},
-        {"showDynPars",             "%s",            &cmd_show_matrix},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"loadWeights",             "%s",            &cmd_load_weights},
-        {"saveWeights",             "%s",            &cmd_save_weights},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"togglePrettyPrinting",    NULL,            &cmd_toggle_pretty_printing},
-        {"set ColorScheme",         "%s",            &cmd_set_color_scheme},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"dssTest",                 NULL,            &cmd_dss_test},
-        {"dssScores",               "%s \"%[^\"]\"", &cmd_dss_scores},
-        {"dssWriteScores",          "%s %s",         &cmd_dss_write_scores},
-        {"dssInferences",           "%s \"%[^\"]\" %lf",
-                                                     &cmd_dss_inferences},
-        {"dssWordInformation",      "%s \"%[^\"]\"", &cmd_dss_word_information},
-        {"dssWriteWordInformation", "%s",            &cmd_dss_write_word_information},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"dsysProcTime",            "%s \"%[^\"]\"", &cmd_dsys_proc_time},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"erpContrast",             "%s \"%[^\"]\" \"%[^\"]\"",
-                                                     &cmd_erp_contrast},
-        {"erpAmplitudes",           "%s %s",         &cmd_erp_amplitudes},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {NULL,                      NULL,            NULL}                   /* tail */
+enum matrix_type
+{
+        mtype_weights,
+        mtype_gradients,
+        mtype_dyn_pars
 };
 
                 /***************************
                  **** command processor ****
                  ***************************/
-
+/*
+ * Match an incoming command against the base of a command in the command
+ * list, and process it if possible. Within the command list, two commands
+ * are special `createNetwork` and `init`:
+ *
+ * - All commands following `createNetwork` require an active network to be
+ *   present in the current session;
+ * 
+ * - And all commands following `init` require an initialized network to be
+ *   prsent in the current session;
+ */
 void process_command(char *cmd, struct session *s)
 {
         /* comment or blank line */
-        if (cmd[0] == '%') {
+        switch (cmd[0]) {
+        case '%':       /* verbose comment */
                 cprintf("\x1b[1m\x1b[36m%s\x1b[0m\n", cmd);
-                return;
+                goto out;
+        case '#':       /* silent comment */
+        case '\0':      /* blank line */
+                goto out;
         }
-        if (cmd[0] == '\0' || cmd[0] == '#')
-                return;
 
-        bool req_network = false;
-        bool req_init_network = false;
-
-        /* command */
+        bool req_netw = false; /* require network */
+        bool req_init = false; /* require intialized network */
         for (uint32_t i = 0; cmds[i].cmd_base != NULL; i++) {
-                if (req_network && !s->anp) {
-                        eprintf("Cannot process command: %s\n", cmd);
-                        eprintf("(no active network)\n");
-                        return;
+                /* 
+                 * Skip commands that require an active network if
+                 * necessary.
+                 */
+                if (req_netw && !s->anp) {
+                        eprintf("Cannot process command: `%s`\n", cmd);
+                        eprintf("(no active network - see `help newtorks`)\n");
+                        goto out;
                 }
-                else if (req_init_network && !s->anp->initialized) {
-                        eprintf("Cannot process command: %s\n", cmd);
-                        eprintf("(uninitialized network--use `init` command to initialize)\n");
-                        return;
+                /* 
+                 * Skip commands that require an initialized network if
+                 * necessary.
+                 */
+                else if (req_init && !s->anp->initialized) {
+                        eprintf("Cannot process command: `%s`\n", cmd);
+                        eprintf("(uninitialized network - use `init` command to initialize)\n");
+                        goto out;
                 }
-                else if (strncmp(cmd, cmds[i].cmd_base, strlen(cmds[i].cmd_base)) == 0) {
+                /*
+                 * If a command has arguments, we pass its processor its
+                 * base and its arguments. Otherwise, we just pass its base.
+                 */
+                if (strncmp(cmd, cmds[i].cmd_base,
+                        strlen(cmds[i].cmd_base)) == 0) {
                         bool success;
                         if (cmds[i].cmd_args != NULL) {
                                 char *cmd_args;
-                                if (asprintf(&cmd_args, "%s %s", cmds[i].cmd_base, cmds[i].cmd_args) < 0)
+                                if (asprintf(&cmd_args, "%s %s",
+                                        cmds[i].cmd_base,
+                                        cmds[i].cmd_args) < 0)
                                         goto error_out;
-                                success = cmds[i].cmd_proc(cmd, cmd_args, s);
+                                success = cmds[i].cmd_proc(
+                                        cmd, cmd_args, s);
                                 free(cmd_args);
-                        } else {                     
-                                success = cmds[i].cmd_proc(cmd, cmds[i].cmd_base, s);
+                        } else {                   
+                                success = cmds[i].cmd_proc(
+                                        cmd,cmds[i].cmd_base, s);
                         }
                         if (success)
-                                return;
+                                goto out;
                 }
+                /* 
+                 * All commands following `createNetwork` require an active
+                 * network.
+                 */
                 else if (strcmp("createNetwork", cmds[i].cmd_base) == 0)
-                        req_network = true;
+                        req_netw = true;
+                /* 
+                 * All commands following this `init` require an initialized
+                 * network.
+                 */
                 else if (strcmp("init", cmds[i].cmd_base) == 0)
-                        req_init_network = true;
+                        req_init = true;
         }
 
         /* invalid command */
         if (strlen(cmd) > 1) {
-                eprintf("Invalid command: %s\n", cmd); 
+                eprintf("No such command: `%s`\n", cmd); 
                 eprintf("(type `help` for help)\n");
         }
 
+out:
         return;
 
 error_out:
@@ -265,9 +160,9 @@ error_out:
         return;
 }
 
-                /*****************************
-                 **** individual commands ****
-                 *****************************/
+                /******************
+                 **** commands ****
+                 ******************/
 
 bool cmd_exit(char *cmd, char *fmt, struct session *s)
 {
@@ -275,7 +170,6 @@ bool cmd_exit(char *cmd, char *fmt, struct session *s)
                 return false;
 
         cprintf("Goodbye.\n");
-        
         free_session(s);
         exit(EXIT_SUCCESS);
 
@@ -295,8 +189,8 @@ bool cmd_about(char *cmd, char *fmt, struct session *s)
 bool cmd_help(char *cmd, char *fmt, struct session *s)
 {
         char arg[MAX_ARG_SIZE];
+        
         bool help_on_topic = false;
-
         if (strcmp(cmd, fmt) != 0) {
                 if (sscanf(cmd, fmt, arg) != 1) {
                         return false;
@@ -324,13 +218,11 @@ bool cmd_load_file(char *cmd, char *fmt, struct session *s)
                 eprintf("cannot open file '%s'\n", arg);
                 return true;
         }
-
         char buf[MAX_BUF_SIZE];
         while (fgets(buf, sizeof(buf), fd)) {
                 buf[strlen(buf) - 1] = '\0';
                 process_command(buf, s);
         }
-
         fclose(fd);
 
         mprintf("Loaded file \t\t\t [ %s ]\n", arg);
@@ -340,11 +232,12 @@ bool cmd_load_file(char *cmd, char *fmt, struct session *s)
 
 bool cmd_create_network(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; 
+        char arg2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
-        uint32_t type = 0;
+        enum network_type type = 0;
         /* feed forward network */
         if (strcmp(arg2, "ffn") == 0)
                 type = ntype_ffn;
@@ -355,15 +248,17 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s)
         else if (strcmp(arg2, "rnn") == 0)
                 type = ntype_rnn;
         else {
-                eprintf("Cannot create network--invalid network type: '%s'\n", arg2);
+                eprintf("Cannot create network - invalid network type: '%s'\n", arg2);
                 return true;
         }
 
+        /* network should not already exist */
         if (find_array_element_by_name(s->networks, arg1)) {
-                eprintf("Cannot create network--network '%s' already exists\n", arg1);
+                eprintf("Cannot create network - network '%s' already exists\n", arg1);
                 return true;
         }
         
+        /* create network, and set as active */
         struct network *n = create_network(arg1, type);
         add_to_array(s->networks, n);
         s->anp = n;
@@ -379,12 +274,17 @@ bool cmd_remove_network(char *cmd, char *fmt, struct session *s)
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
+        /* find network */
         struct network *n = find_array_element_by_name(s->networks, arg);
         if (!n) {
-                eprintf("Cannot remove network--no such network '%s'\n", arg);
+                eprintf("Cannot remove network - no such network '%s'\n", arg);
                 return true;
         }
 
+        /*
+         * If the network to be removed is the active network, try finding
+         * another active network.
+         */
         if (n == s->anp) {
                 s->anp = NULL;
                 for (uint32_t i = 0; i < s->networks->num_elements; i++)
@@ -392,6 +292,8 @@ bool cmd_remove_network(char *cmd, char *fmt, struct session *s)
                                 && s->networks->elements[i] != n)
                                 s->anp = s->networks->elements[i];
         }
+
+        /* remove network */
         remove_from_array(s->networks, n);
         free_network(n);
 
@@ -412,11 +314,10 @@ bool cmd_list_networks(char *cmd, char *fmt, struct session *s)
                 for (uint32_t i = 0; i < s->networks->num_elements; i++) {
                         struct network *n = s->networks->elements[i];
                         cprintf("* %s", n->name);
-                        if (n == s->anp) {
+                        if (n == s->anp)
                                 cprintf(" (active network)\n");
-                        } else {
+                        else
                                 cprintf("\n");
-                        }
                 }
         }
 
@@ -429,9 +330,10 @@ bool cmd_change_network(char *cmd, char *fmt, struct session *s)
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
+        /* find network */
         struct network *n = find_array_element_by_name(s->networks, arg);
         if (!n) {
-                eprintf("Cannot change to network--no such network '%s'\n", arg);
+                eprintf("Cannot change to network - no such network '%s'\n", arg);
                 return true;
         }
         s->anp = n;
@@ -448,13 +350,16 @@ bool cmd_create_group(char *cmd, char *fmt, struct session *s)
         if (sscanf(cmd, fmt, arg, &arg_int) != 2)
                 return false;
 
+        /* group should not already exist */
         if (find_array_element_by_name(s->anp->groups, arg)) {
-                eprintf("Cannot create group--group '%s' already exists in network '%s'\n",
-                                arg, s->anp->name);
+                eprintf("Cannot create group - group '%s' already exists in network '%s'\n",
+                        arg, s->anp->name);
                 return true;
         }
+
+        /* group size should be positive */
         if (!(arg_int > 0)) {
-                eprintf("Cannot create group--group size should be positive\n");
+                eprintf("Cannot create group - group size should be positive\n");
                 return true;
         }
 
@@ -472,9 +377,10 @@ bool cmd_remove_group(char *cmd, char *fmt, struct session *s)
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
+        /* find group */
         struct group *g = find_array_element_by_name(s->anp->groups, arg);
         if (g == NULL) {
-                eprintf("Cannot remove group--no such group '%s'\n", arg);
+                eprintf("Cannot remove group - no such group '%s'\n", arg);
                 return true;
         }
 
@@ -515,6 +421,7 @@ bool cmd_remove_group(char *cmd, char *fmt, struct session *s)
                 }
         }
 
+        /* remove group */
         remove_from_array(s->anp->groups, g);
         free_group(g);
 
@@ -535,13 +442,12 @@ bool cmd_list_groups(char *cmd, char *fmt, struct session *s)
                 for (uint32_t i = 0; i < s->anp->groups->num_elements; i++) {
                         struct group *g = s->anp->groups->elements[i];
                         cprintf("* %s :: %d", g->name, g->vector->size);
-                        if (g == s->anp->input) {
+                        if (g == s->anp->input)
                                 cprintf(" (input group)\n");
-                        } else if (g == s->anp->output) {
+                        else if (g == s->anp->output)
                                 cprintf(" (output group)\n");
-                        } else {
+                        else
                                 cprintf("\n");
-                        }
                 }
         }
 
@@ -554,22 +460,25 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct session *s)
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
+        /* find group */
         struct group *g = find_array_element_by_name(s->anp->groups, arg);
         if (g == NULL) {
-                eprintf("Cannot attach bias group--no such group '%s'\n", arg);
+                eprintf("Cannot attach bias group - no such group '%s'\n", arg);
                 return true;
         }
 
+        /* bias group should not already exists */
         char *arg_bias;
         if (asprintf(&arg_bias, "%s_bias", arg) < 0)
                 goto error_out;
         if (find_array_element_by_name(s->anp->groups, arg_bias)) {
-                eprintf("Cannot attach bias group--group '%s' already exists in network '%s'\n",
+                eprintf("Cannot attach bias group - group '%s' already exists in network '%s'\n",
                         arg_bias, s->anp->name);
                 return true;
         }
         free(arg_bias);
 
+        /* attach bias */
         struct group *bg = attach_bias_group(s->anp, g);
 
         mprintf("Attached bias to group \t [ %s -> %s ]\n", bg->name, g->name);
@@ -583,28 +492,28 @@ error_out:
 
 bool cmd_set_io_group(char *cmd, char *fmt, struct session *s)
 {
-        uint32_t type;
+        enum group_type type;
 
         char arg[MAX_ARG_SIZE];
-        /* input group */
         if (sscanf(cmd, "set InputGroup %s", arg) == 1)
-                type = GTYPE_INPUT;
-        /* output group */
+                type = gtype_input;
         else if((sscanf(cmd, "set OutputGroup %s", arg) == 1))
-                type = GTYPE_OUTPUT;
+                type = gtype_output;
         else
                 return false;
 
+        /* find group */
         struct group *g = find_array_element_by_name(s->anp->groups, arg);
         if (g == NULL) {
-                eprintf("Cannot set input group--no such group '%s'\n", arg);
+                eprintf("Cannot set input group - no such group '%s'\n", arg);
                 return true;
         }
 
-        if (type == GTYPE_INPUT) {
+        /* set input or output group */
+        if (type == gtype_input) {
                 s->anp->input = g;
                 mprintf("Set input group \t\t [ %s ]\n", arg);
-        } else {
+        } else if (type == gtype_output) {
                 s->anp->output = g;
                 mprintf("Set output group \t\t [ %s ]\n", arg);
         }
@@ -614,13 +523,15 @@ bool cmd_set_io_group(char *cmd, char *fmt, struct session *s)
 
 bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE];
+        char arg2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
+        /* find group */
         struct group *g = find_array_element_by_name(s->anp->groups, arg1);
         if (g == NULL) {
-                eprintf("Cannot set activation function--no such group '%s'\n", arg1);
+                eprintf("Cannot set activation function - no such group '%s'\n", arg1);
                 return true;
         }
 
@@ -659,7 +570,7 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
                 g->act_fun->fun   = act_fun_softplus;
                 g->act_fun->deriv = act_fun_softplus_deriv;
         } else {
-                eprintf("Cannot set activation function--no such activation function '%s'\n", arg2);
+                eprintf("Cannot set activation function - no such activation function '%s'\n", arg2);
                 return true;
         }
 
@@ -670,13 +581,15 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
 
 bool cmd_set_err_func(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE];
+        char arg2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
+        /* find group */
         struct group *g = find_array_element_by_name(s->anp->groups, arg1);
         if (g == NULL) {
-                eprintf("Cannot set error function--no such group '%s'\n", arg1);
+                eprintf("Cannot set error function - no such group '%s'\n", arg1);
                 return true;
         }
 
@@ -695,7 +608,7 @@ bool cmd_set_err_func(char *cmd, char *fmt, struct session *s)
                 g->err_fun->fun   = error_divergence;
                 g->err_fun->deriv = error_divergence_deriv;
         } else {
-                eprintf("Cannot set error function--no such error function '%s'\n", arg2);
+                eprintf("Cannot set error function - no such error function '%s'\n", arg2);
                 return true;
         }
 
@@ -706,22 +619,25 @@ bool cmd_set_err_func(char *cmd, char *fmt, struct session *s)
 
 bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE];
+        char arg2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
+        /* find 'from' group */
         struct group *fg = find_array_element_by_name(s->anp->groups, arg1);
-        struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
-
         if (fg == NULL) {
-                eprintf("Cannot set projection--no such group '%s'\n", arg1);
+                eprintf("Cannot set projection - no such group '%s'\n", arg1);
                 return true;
         }
+        /* find 'to' group */
+        struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
         if (tg == NULL) {
-                eprintf("Cannot set projection--no such group '%s'\n", arg2);
+                eprintf("Cannot set projection - no such group '%s'\n", arg2);
                 return true;
         }
 
+        /* projection should not already exist */
         bool exists = false;
         if (fg->recurrent)
                 exists = true;
@@ -729,11 +645,12 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
                 if (((struct projection *)fg->out_projs->elements[i])->to == tg)
                         exists = true;
         if (exists) {
-                eprintf("Cannot set projection--projection '%s -> %s' already exists\n",
+                eprintf("Cannot set projection - projection '%s -> %s' already exists\n",
                         arg1, arg2);
                 return true;
         }
 
+        /* create projection */
         if (fg == tg)
                 fg->recurrent = true;
         else {
@@ -770,32 +687,40 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
 
 bool cmd_remove_projection(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE];
+        char arg2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
+        /* find 'from' group */
         struct group *fg = find_array_element_by_name(s->anp->groups, arg1);
-        struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
-
         if (fg == NULL) {
-                eprintf("Cannot remove projection--no such group '%s'\n", arg1);
+                eprintf("Cannot remove projection - no such group '%s'\n", arg1);
                 return  true;
         }
+
+        /* find 'to' group */
+        struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
         if (tg == NULL) {
-                eprintf("Cannot remove projection--no such group '%s'\n", arg2);
+                eprintf("Cannot remove projection - no such group '%s'\n", arg2);
                 return true;
         }
 
+        /* find outgoing 'from->to' projection */
         struct projection *fg_to_tg = NULL;
         for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
-                if (((struct projection *)fg->out_projs->elements[i])->to == tg)
+                if (((struct projection *)
+                        fg->out_projs->elements[i])->to == tg)
                         fg_to_tg = fg->out_projs->elements[i];
         
+        /* find incoming 'to->from' projection */
         struct projection *tg_to_fg = NULL;
         for (uint32_t i = 0; i < tg->inc_projs->num_elements; i++)
-                if (((struct projection *)tg->inc_projs->elements[i])->to == fg)
+                if (((struct projection *)
+                        tg->inc_projs->elements[i])->to == fg)
                         tg_to_fg = tg->inc_projs->elements[i];
         
+        /* remove projection, if it exists */
         if (fg_to_tg && tg_to_fg) {
                 remove_from_array(fg->out_projs, fg_to_tg);
                 remove_from_array(tg->inc_projs, tg_to_fg);
@@ -803,8 +728,8 @@ bool cmd_remove_projection(char *cmd, char *fmt, struct session *s)
                 free(tg_to_fg);
                 s->anp->initialized = false;
         } else {
-                eprintf("Cannot remove projection--no projection between groups '%s' and '%s')\n",
-                                arg1, arg2);
+                eprintf("Cannot remove projection - no projection between groups '%s' and '%s')\n",
+                        arg1, arg2);
                 return true;
         }
 
@@ -815,39 +740,51 @@ bool cmd_remove_projection(char *cmd, char *fmt, struct session *s)
 
 bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE];
+        char arg2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
+        /* find 'from' group */
         struct group *fg = find_array_element_by_name(s->anp->groups, arg1);
-        struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
-
         if (fg == NULL) {
-                eprintf("Cannot set Elman-projection--no such group '%s'\n", arg1);
+                eprintf("Cannot set Elman-projection - no such group '%s'\n",
+                        arg1);
                 return true;
         }
+        
+        /* find 'to' group */
+        struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
         if (tg == NULL) {
-                eprintf("Cannot set Elman-projection--no such group '%s'\n", arg2);
+                eprintf("Cannot set Elman-projection - no such group '%s'\n",
+                        arg2);
                 return true;
         }
+
+        /* projection should be recurrent */ 
         if (fg == tg) {
-                eprintf("Cannot set Elman-projection--projection is recurrent for group '%s'\n", fg->name);
+                eprintf("Cannot set Elman-projection - projection is recurrent for group '%s'\n",
+                        fg->name);
                 return true;
         }
+
+        /* groups should not have unequal vector size */
         if (fg->vector->size != tg->vector->size) {
-                eprintf("Cannot set Elman-projection--groups '%s' and '%s' have unequal vector sizes (%d and %d)\n",
+                eprintf("Cannot set Elman-projection - groups '%s' and '%s' have unequal vector sizes (%d and %d)\n",
                         fg->name, tg->name, fg->vector->size, tg->vector->size);
                 return true;
         }
 
+        /* Elman projection should not already exist */
         for (uint32_t i = 0; i < fg->ctx_groups->num_elements; i++) {
                 if (fg->ctx_groups->elements[i] == tg) {
-                        eprintf("Cannot set Elman-projection--Elman-projection '%s -> %s' already exists\n",
+                        eprintf("Cannot set Elman-projection - Elman-projection '%s -> %s' already exists\n",
                                 arg1, arg2);
                         return true;
                 }
         }
 
+        /* add Elman projection */
         add_to_array(fg->ctx_groups, tg);
         reset_context_groups(s->anp);
 
@@ -858,22 +795,26 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s)
 
 bool cmd_remove_elman_projection(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE];
+        char arg2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
+        /* find 'from' group */
         struct group *fg = find_array_element_by_name(s->anp->groups, arg1);
-        struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
-
         if (fg == NULL) {
-                eprintf("Cannot remove Elman-projection--no such group '%s'\n", arg1);
-                return true;
-        }
-        if (tg == NULL) {
-                eprintf("Cannot remove Elman-projection--no such group '%s'\n", arg2);
+                eprintf("Cannot remove Elman-projection - no such group '%s'\n", arg1);
                 return true;
         }
 
+        /* find 'to' group */
+        struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
+        if (tg == NULL) {
+                eprintf("Cannot remove Elman-projection - no such group '%s'\n", arg2);
+                return true;
+        }
+
+        /* remove Elman projection, if it exists */
         bool removed = false;
         for (uint32_t i = 0; i < fg->ctx_groups->num_elements; i++) {
                 if (fg->ctx_groups->elements[i] == tg) {
@@ -883,8 +824,8 @@ bool cmd_remove_elman_projection(char *cmd, char *fmt, struct session *s)
                 }
         }
         if (!removed) {
-                eprintf("Cannot remove Elman-projection--no Elman projection from group '%s' to '%s'\n",
-                                arg1, arg2);
+                eprintf("Cannot remove Elman-projection - no Elman projection from group '%s' to '%s'\n",
+                        arg1, arg2);
                 return true;
         }
 
@@ -899,10 +840,14 @@ bool cmd_list_projections(char *cmd, char *fmt, struct session *s)
         if (strcmp(cmd, fmt) != 0)
                 return false;
 
+        /*
+         * List incoming, recurrent, and outgoing projections for each
+         * group.
+         */
         cprintf("Available projections:\n");
         for (uint32_t i = 0; i < s->anp->groups->num_elements; i++) {
                 struct group *g = s->anp->groups->elements[i];
-                
+
                 /* incoming projections */
                 cprintf("* ");
                 for (uint32_t j = 0; j < g->inc_projs->num_elements; j++) {
@@ -948,7 +893,9 @@ bool cmd_list_projections(char *cmd, char *fmt, struct session *s)
                 /* context (Elman) groups */
                 if (g->ctx_groups->num_elements > 0) {
                         cprintf("* [%s] => ", g->name);
-                        for (uint32_t j = 0; j < g->ctx_groups->num_elements; j++) {
+                        for (uint32_t j = 0;
+                                j < g->ctx_groups->num_elements;
+                                j++) {
                                 struct group *cg = g->ctx_groups->elements[j];
                                 if (j > 0 && j < g->out_projs->num_elements)
                                         cprintf(", ");
@@ -961,39 +908,50 @@ bool cmd_list_projections(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
+/*
+ * TODO: Toggle frozen projections.
+ */
 bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE];
+        char arg2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
+        /* find 'from' group */
         struct group *fg = find_array_element_by_name(s->anp->groups, arg1);
-        struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
-
         if (fg == NULL) {
-                eprintf("Cannot freeze projection--no such group '%s'\n", arg1);
-                return true;
-        }
-        if (tg == NULL) {
-                eprintf("Cannot freeze projection--no such group '%s'\n", arg2);
+                eprintf("Cannot freeze projection - no such group '%s'\n", arg1);
                 return true;
         }
 
+        /* find 'to' group */
+        struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
+        if (tg == NULL) {
+                eprintf("Cannot freeze projection - no such group '%s'\n", arg2);
+                return true;
+        }
+
+        /* find outgoing 'from->to' projection */
         struct projection *fg_to_tg = NULL;
         for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
-                if (((struct projection *)fg->out_projs->elements[i])->to == tg)
+                if (((struct projection *)
+                        fg->out_projs->elements[i])->to == tg)
                         fg_to_tg = fg->out_projs->elements[i];
 
+        /* find incoming 'to->from' projection */
         struct projection *tg_to_fg = NULL;
         for (uint32_t i = 0; i < tg->inc_projs->num_elements; i++)
-                if (((struct projection *)tg->inc_projs->elements[i])->to == fg)
+                if (((struct projection *)
+                        tg->inc_projs->elements[i])->to == fg)
                         tg_to_fg = tg->inc_projs->elements[i];
         
+        /* free projection, if it exists */
         if (fg_to_tg && tg_to_fg) {
                 fg_to_tg->frozen = true;
                 tg_to_fg->frozen = true;
         } else {
-                eprintf("Cannot freeze projection--no projection between groups '%s' and '%s')\n",
+                eprintf("Cannot freeze projection - no projection between groups '%s' and '%s')\n",
                         arg1, arg2);
                 return true;
         }
@@ -1029,68 +987,81 @@ and for the merging of several output vectors into a single vector:
 
 bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE];
+        char arg2[MAX_ARG_SIZE];
         int32_t arg_int1, arg_int2, arg_int3, arg_int4;
-        if (sscanf(cmd, fmt, arg1, &arg_int1, &arg_int2, arg2, &arg_int3, &arg_int4) != 6)
+        if (sscanf(cmd, fmt,
+                arg1, &arg_int1, &arg_int2,
+                arg2, &arg_int3, &arg_int4) != 6)
                 return false;
 
+        /* find 'from' group */
         struct group *fg = find_array_element_by_name(s->anp->groups, arg1);
-        struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
-
         if (fg == NULL) {
-                eprintf("Cannot set tunnel projection--no such group '%s'\n", arg1);
+                eprintf("Cannot set tunnel projection - no such group '%s'\n", arg1);
                 return true;
         }
+        
+        /* find 'to' group */
+        struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
         if (tg == NULL) {
-                eprintf("Cannot set tunnel projection--no such group '%s'\n", arg2);
+                eprintf("Cannot set tunnel projection - no such group '%s'\n", arg2);
                 return true;
         }
+
+        /* 'from' and 'to' should be the same group */
         if (fg == tg) {
                 eprintf("Cannot set recurrent tunnel projection\n");
                 return true;
         }
 
-        // XXX: This precludes multiple tunnels to the same layer.
+        /*
+         * The from group should not be a recurrent group, and there should
+         * not already be a projection between the 'from' and 'to' group.
+         * 
+         * TODO: Check logic.
+         */
         bool exists = false;
         if (fg->recurrent)
                 exists = true;
         for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
-                if (((struct projection *)fg->out_projs->elements[i])->to == tg)
+                if (((struct projection *)
+                        fg->out_projs->elements[i])->to == tg)
                         exists = true;
         if (exists) {
-                eprintf("Cannot set tunnel projection--projection '%s -> %s' already exists\n",
+                eprintf("Cannot set tunnel projection - projection '%s -> %s' already exists\n",
                         arg1, arg2);
                 return true;
         }
 
-        /* check ranges */
+        /* 'from' and 'to' ranges should not mismatch */
         if (arg_int2 - arg_int1 != arg_int4 - arg_int3) {
-                eprintf("Cannot set tunnel projection--indices [%d:%d] and [%d:%d] cover differ ranges\n",
+                eprintf("Cannot set tunnel projection - indices [%d:%d] and [%d:%d] cover differ ranges\n",
                         arg_int1, arg_int2, arg_int3, arg_int4);
                 return true;
         }
 
-        /* check from group bounds */
+        /* tunnel should be within 'from' group bounds */
         if (arg_int1 < 0 
                 || arg_int1 > fg->vector->size
                 || arg_int2 < 0
                 || arg_int2 > fg->vector->size
                 || arg_int2 < arg_int1)
         {
-                eprintf("Cannot set tunnel projection--indices [%d:%d] out of bounds\n",
+                eprintf("Cannot set tunnel projection - indices [%d:%d] out of bounds\n",
                         arg_int1, arg_int2);
                 return true;
         }
 
-        /* check to group bounds */
+        /* tunnel should be within 'to' group bounds */
         if (arg_int3 < 0 
                 || arg_int3 > tg->vector->size
                 || arg_int4 < 0
                 || arg_int4 > tg->vector->size
                 || arg_int4 < arg_int3)
         {
-                eprintf("Cannot set tunnel projection--indices [%d:%d] out of bounds\n",
-                                arg_int3, arg_int4);
+                eprintf("Cannot set tunnel projection - indices [%d:%d] out of bounds\n",
+                        arg_int3, arg_int4);
                 return true;
         }
 
@@ -1115,15 +1086,19 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
                 gradients, prev_gradients, prev_deltas, dynamic_pars);
         struct projection *ip = create_projection(fg, weights,
                 gradients, prev_gradients, prev_deltas, dynamic_pars);
-
+        
+        /* freeze projections */
         op->frozen = true;
         ip->frozen = true;
 
+        /* add projections */
         add_to_array(fg->out_projs, op);
         add_to_array(tg->inc_projs, ip);
 
-        /* setup the weights for tunneling */
-        for (uint32_t r = arg_int1 - 1, c = arg_int3 - 1; r < arg_int2 && c < arg_int4; r++, c++) 
+        /* setup weights for tunneling */
+        for (uint32_t r = arg_int1 - 1, c = arg_int3 - 1;
+                r < arg_int2 && c < arg_int4;
+                r++, c++) 
                 weights->elements[r][c] = 1.0;
 
         mprintf("Created tunnel projection \t [ %s [%d:%d] -> %s [%d:%d] ]\n",
@@ -1224,28 +1199,29 @@ bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s)
 
 bool cmd_load_set(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE];
+        char arg2[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
         if (!s->anp->input) {
-                eprintf("Cannot load set--input group size unknown\n");
+                eprintf("Cannot load set - input group size unknown\n");
                 return true;
         }
         if (!s->anp->output) {
-                eprintf("Cannot load set--output group size unknown\n");
+                eprintf("Cannot load set - output group size unknown\n");
                 return true;
         }
 
         if (find_array_element_by_name(s->anp->sets, arg1)) {
-                eprintf("Cannot load set--set '%s' already exists\n", arg1);
+                eprintf("Cannot load set - set '%s' already exists\n", arg1);
                 return true;
         }
 
         struct set *set = load_set(arg1, arg2, s->anp->input->vector->size,
                 s->anp->output->vector->size);
         if (!set) {
-                eprintf("Cannot load set--no such file '%s'\n", arg2);
+                eprintf("Cannot load set - no such file '%s'\n", arg2);
                 return true;
         }
                 
@@ -1266,7 +1242,7 @@ bool cmd_remove_set(char *cmd, char *fmt, struct session *s)
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg);
         if (!set) {
-                eprintf("Cannot change to set--no such set '%s'\n", arg);
+                eprintf("Cannot change to set - no such set '%s'\n", arg);
                 return true;
         }
 
@@ -1286,18 +1262,16 @@ bool cmd_list_sets(char *cmd, char *fmt, struct session *s)
                 return false;
 
         cprintf("Available sets:\n");
-
         if (s->anp->sets->num_elements == 0) {
                 cprintf("(no sets)\n");
         } else {
                 for (uint32_t i = 0; i < s->anp->sets->num_elements; i++) {
                         struct set *set = s->anp->sets->elements[i];
                         cprintf("* %s (%d)", set->name, set->items->num_elements);
-                        if (set == s->anp->asp) {
+                        if (set == s->anp->asp)
                                 cprintf(" (active set)\n");
-                        } else {
+                        else
                                 cprintf("\n");
-                        }
                 }
         }
 
@@ -1312,7 +1286,7 @@ bool cmd_change_set(char *cmd, char *fmt, struct session *s)
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg);
         if (!set) {
-                eprintf("Cannot change to set--no such set '%s'\n", arg);
+                eprintf("Cannot change to set - no such set '%s'\n", arg);
                 return true;
         }
         
@@ -1329,7 +1303,7 @@ bool cmd_list_items(char *cmd, char *fmt, struct session *s)
                 return false;
 
         if (!s->anp->asp) {
-                eprintf("Cannot list items--no active set\n");
+                eprintf("Cannot list items - no active set\n");
                 return true;
         }
 
@@ -1350,7 +1324,7 @@ bool cmd_show_item(char *cmd, char *fmt, struct session *s)
 
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg);
         if (!item) {
-                eprintf("Cannot show item--no such item '%s'\n", arg);
+                eprintf("Cannot show item - no such item '%s'\n", arg);
                 return true;
         }
 
@@ -1626,7 +1600,7 @@ bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s)
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg2);
         if (!set) {
-                eprintf("Cannot set multi-stage training--no such set '%s'\n", arg2);
+                eprintf("Cannot set multi-stage training - no such set '%s'\n", arg2);
                 return true;
         }
 
@@ -1648,7 +1622,7 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s)
 
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg);
         if (!item) {
-                eprintf("Cannot test network--no such item '%s'\n", arg);
+                eprintf("Cannot test network - no such item '%s'\n", arg);
                 return true;
         }
 
@@ -1729,25 +1703,25 @@ bool cmd_weight_stats(char *cmd, char *fmt, struct session *s)
 
 bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
 {
-        uint32_t type;
+        enum vector_type type;
 
         char arg[MAX_ARG_SIZE];
         if (sscanf(cmd, "showUnits %s", arg) == 1)
-                type = VTYPE_UNITS;
+                type = vtype_units;
         else if (sscanf(cmd, "showError %s", arg) == 1)
-                type = VTYPE_ERROR;
+                type = vtype_error;
         else 
                 return false;
 
         struct group *g = find_array_element_by_name(s->anp->groups, arg);
         if (g == NULL) {
-                eprintf("Cannot show vector--no such group '%s'\n", arg);
+                eprintf("Cannot show vector - no such group '%s'\n", arg);
                 return true;
         }
 
         cprintf("\n");
 
-        if (type == VTYPE_UNITS) {
+        if (type == vtype_units) {
                 cprintf("Unit vector for '%s':\n\n", arg);
                 if (s->pprint) {
                         pprint_vector(g->vector, s->scheme);
@@ -1755,7 +1729,7 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
                         print_vector(g->vector);
                 }
         }
-        if (type == VTYPE_ERROR) {
+        if (type == vtype_error) {
                 cprintf("Error vector for '%s':\n\n", arg);
                 if (s->pprint) {
                         pprint_vector(g->error, s->scheme);
@@ -1771,18 +1745,18 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
 
 bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
 {
-        uint32_t type;
+        enum matrix_type type;
 
         char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
         /* weights */
         if (sscanf(cmd, "showWeights %s %s", arg1, arg2) == 2)
-                type = MTYPE_WEIGHTS;
+                type = mtype_weights;
         /* gradients */
         else if (sscanf(cmd, "showGradients %s %s", arg1, arg2) == 2)
-                type = MTYPE_GRADIENTS;
+                type = mtype_gradients;
         /* dynamic learning parameters */
         else if (sscanf(cmd, "showDynPars %s %s", arg1, arg2) == 2)
-                type = MTYPE_DYN_PARS;
+                type = mtype_dyn_pars;
         else
                 return false;
 
@@ -1790,11 +1764,11 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
         struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
 
         if (fg == NULL) {
-                eprintf("Cannot show matrix--no such group '%s'\n", arg1);
+                eprintf("Cannot show matrix - no such group '%s'\n", arg1);
                 return true;
         }
         if (tg == NULL) {
-                eprintf("Cannot show matrix--no such group '%s'\n", arg2);
+                eprintf("Cannot show matrix - no such group '%s'\n", arg2);
                 return true;
         }
 
@@ -1808,7 +1782,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                 }
         }
         if (fg_to_tg) {
-                if (type == MTYPE_WEIGHTS) {
+                if (type == mtype_weights) {
                         cprintf("Weight matrix for projection '%s -> %s':\n\n", arg1, arg2);
                         if (s->pprint) {
                                 pprint_matrix(fg_to_tg->weights, s->scheme);
@@ -1816,7 +1790,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                                 print_matrix(fg_to_tg->weights);
                         }
                 }
-                if (type == MTYPE_GRADIENTS) {
+                if (type == mtype_gradients) {
                         mprintf("Gradient matrix for projection '%s -> %s':\n\n", arg1, arg2);                  
                         if (s->pprint) {
                                 pprint_matrix(fg_to_tg->gradients, s->scheme);
@@ -1824,7 +1798,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                                 print_matrix(fg_to_tg->gradients);
                         }
                 }
-                if (type == MTYPE_DYN_PARS) {
+                if (type == mtype_dyn_pars) {
                         mprintf("Dynamic learning parameters for projection '%s -> %s':\n\n",
                                         arg1, arg2);               
                         if (s->pprint) {
@@ -1836,7 +1810,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
 
                 cprintf("\n");
         } else {
-                eprintf("Cannot show matrix--no projection between groups '%s' and '%s'\n",
+                eprintf("Cannot show matrix - no projection between groups '%s' and '%s'\n",
                         arg1, arg2);
                 return true;
         }
@@ -1918,7 +1892,7 @@ bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s)
         else if (strcmp(arg, "gray_orange") == 0)
                 s->scheme = scheme_gray_orange;
         else {
-                eprintf("Cannot set color scheme--no such scheme '%s'\n", arg);
+                eprintf("Cannot set color scheme - no such scheme '%s'\n", arg);
                 return true;
         }
 
@@ -1951,13 +1925,13 @@ bool cmd_dss_scores(char *cmd, char *fmt, struct session *s)
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg1);
         if (!set) {
-                eprintf("Cannot compute scores--no such set '%s'\n", arg1);
+                eprintf("Cannot compute scores - no such set '%s'\n", arg1);
                 return true;
         }
 
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg2);
         if (!item) {
-                eprintf("Cannot compute scores--no such item '%s'\n", arg2);
+                eprintf("Cannot compute scores - no such item '%s'\n", arg2);
                 return true;
         }
 
@@ -1974,7 +1948,7 @@ bool cmd_dss_write_scores(char *cmd, char *fmt, struct session *s)
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg1);
         if (!set) {
-                eprintf("Cannot compute scores--no such set '%s'\n", arg1);
+                eprintf("Cannot compute scores - no such set '%s'\n", arg1);
                 return true;
         }
 
@@ -1992,18 +1966,18 @@ bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg1);
         if (!set) {
-                eprintf("Cannot compute inferences--no such set '%s'\n", arg1);
+                eprintf("Cannot compute inferences - no such set '%s'\n", arg1);
                 return true;
         }
 
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg2);
         if (!item) {
-                eprintf("Cannot compute inferences--no such item '%s'\n", arg2);
+                eprintf("Cannot compute inferences - no such item '%s'\n", arg2);
                 return true;
         }
 
         if (arg3 < -1.0 || arg3 > 1.0) {
-                eprintf("Cannot compute inferences--invalid score threshold '%lf'\n", arg3);
+                eprintf("Cannot compute inferences - invalid score threshold '%lf'\n", arg3);
                 return true;
 
         }
@@ -2021,12 +1995,12 @@ bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s)
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg1);
         if (!set) {
-                eprintf("Cannot compute informativity metrics--no such set '%s'\n", arg1);
+                eprintf("Cannot compute informativity metrics - no such set '%s'\n", arg1);
                 return true;
         }
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg2);
         if (!item) {
-                eprintf("Cannot compute informativity metrics--no such item '%s'\n", arg2);
+                eprintf("Cannot compute informativity metrics - no such item '%s'\n", arg2);
                 return true;
         }
         
@@ -2046,7 +2020,7 @@ bool cmd_dss_write_word_information(char *cmd, char *fmt,
 
         struct set *set = find_array_element_by_name(s->anp->sets, arg);
         if (!set) {
-                eprintf("Cannot compute informativity metrics--no such set '%s'\n", arg);
+                eprintf("Cannot compute informativity metrics - no such set '%s'\n", arg);
                 return true;
         }
 
@@ -2071,13 +2045,13 @@ bool cmd_dsys_proc_time(char *cmd, char *fmt, struct session *s)
 
         struct group *group = find_array_element_by_name(s->anp->groups, arg1);
         if (group == NULL) {
-                eprintf("Cannot test network--no such group '%s'\n", arg1);
+                eprintf("Cannot test network - no such group '%s'\n", arg1);
                 return true;
         }
 
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg2);
         if (!item) {
-                eprintf("Cannot test network--no such item '%s'\n", arg2);
+                eprintf("Cannot test network - no such item '%s'\n", arg2);
                 return true;
         }
         
@@ -2100,7 +2074,7 @@ bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
 
         struct group *gen = find_array_element_by_name(s->anp->groups, arg1);
         if (gen == NULL) {
-                eprintf("Cannot compute ERP correlates--no such group '%s'\n", arg1);
+                eprintf("Cannot compute ERP correlates - no such group '%s'\n", arg1);
                 return true;
         }
 
@@ -2108,11 +2082,11 @@ bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
         struct item *item2 = find_array_element_by_name(s->anp->asp->items, arg3);
 
         if (!item1) {
-                eprintf("Cannot compute ERP correlates--no such item '%s'\n", arg2);
+                eprintf("Cannot compute ERP correlates - no such item '%s'\n", arg2);
                 return true;
         }
         if (!item2) {
-                eprintf("Cannot compute ERP correlates--no such item '%s'\n", arg3);
+                eprintf("Cannot compute ERP correlates - no such item '%s'\n", arg3);
                 return true;
         }
 
@@ -2131,11 +2105,11 @@ bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s)
         struct group *p600_gen = find_array_element_by_name(s->anp->groups, arg2);
 
         if (n400_gen == NULL) {
-                eprintf("Cannot compute ERP correlates--no such group '%s'\n", arg1);
+                eprintf("Cannot compute ERP correlates - no such group '%s'\n", arg1);
                 return true;
         }
         if (p600_gen == NULL) {
-                eprintf("Cannot compute ERP correlates--no such group '%s'\n", arg2);
+                eprintf("Cannot compute ERP correlates - no such group '%s'\n", arg2);
                 return true;
         }
 

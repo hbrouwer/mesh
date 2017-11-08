@@ -50,7 +50,7 @@ enum training_order
 struct network
 {
         char *name;                 /* network name */
-        uint32_t type;              /* network type */
+        enum network_type type;     /* network type */
         
         struct array *groups;       /* groups in the network */
         struct group *input;        /* input group */
@@ -208,7 +208,7 @@ struct status
         double gradients_length;    /* length of weight gradients vector */
 };
 
-struct network *create_network(char *name, uint32_t type);
+struct network *create_network(char *name, enum network_type type);
 void set_network_defaults(struct network *n);
 void init_network(struct network *n);
 void reset_network(struct network *n);
