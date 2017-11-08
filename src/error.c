@@ -93,7 +93,7 @@ double error_sum_of_squares(struct group *g, struct vector *t, double tr,
         for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
                 double d = adjust_target(y, t->elements[i], tr, zr);
-
+                
                 se += pow(y - d, 2.0);
         }
 

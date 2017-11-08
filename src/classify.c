@@ -39,7 +39,6 @@ matrix will be the 'actual' classes, and the columns the 'predicted' ones:
                 C  |   0   |   1   |  10   | 11
                 ----------------------------
                       27      25      13     65
-
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 struct matrix *confusion_matrix(struct network *n)
@@ -149,9 +148,12 @@ void print_cm_summary(struct matrix *cm, bool print_cm, bool pprint,
                 pprint ? pprint_matrix(cm, scheme) : print_matrix(cm);
         }
 
-        cprintf("\nClassification statistics:\n");
+        double num_correct   = 0.0;
+        double num_incorrect = 0.0;
+        double precision     = 0.0;
+        double recall        = 0.0;
 
-        /* row and column totals */
+        /* compute row and column totals */
         struct vector *rows = create_vector(cm->rows);
         struct vector *cols = create_vector(cm->cols);
         for (uint32_t r = 0; r < cm->rows; r++) {
@@ -160,11 +162,6 @@ void print_cm_summary(struct matrix *cm, bool print_cm, bool pprint,
                         cols->elements[c] += cm->elements[r][c];
                 }
         }
-        
-        double num_correct   = 0.0;
-        double num_incorrect = 0.0;
-        double precision     = 0.0;
-        double recall        = 0.0;
 
         /*
          * precision = #correct / column total
@@ -187,7 +184,7 @@ void print_cm_summary(struct matrix *cm, bool print_cm, bool pprint,
                 }
         }
         precision /= cols->size;
-        recall /= rows->size;
+        recall    /= rows->size;
 
         /*
          *            precision * recall
@@ -209,6 +206,7 @@ void print_cm_summary(struct matrix *cm, bool print_cm, bool pprint,
          */
         double error_rate = num_incorrect / (num_correct + num_incorrect);
 
+        cprintf("\nClassification statistics:\n");
         cprintf("\n");
         cprintf("Accurracy: \t %f\n",   accuracy);
         cprintf("Error rate: \t %f\n",  error_rate);

@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "defaults.h"
 #include "network.h"
 #include "session.h"
 
@@ -29,8 +30,8 @@ struct session *create_session()
         memset(s, 0, sizeof(struct session));
 
         s->networks = create_array(atype_networks);
-
-        s->pprint = true;
+        s->pprint   = DEFAULT_PRETTY_PRINTING;
+        s->scheme   = DEFAULT_COLOR_SCHEME;
 
         return s;
 

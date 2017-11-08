@@ -140,8 +140,6 @@ void print_sm_summary(struct network *n, struct matrix *sm, bool print_sm,
                 cprintf("\nOutput-target similarity matrix:\n\n");
                 pprint ? pprint_matrix(sm, scheme) : print_matrix(sm);
         }
-        
-        cprintf("\nSimilarity statistics:\n");
 
         /*
          * Compute mean similarity, and its standard deviation. Also,
@@ -165,6 +163,7 @@ void print_sm_summary(struct network *n, struct matrix *sm, bool print_sm,
                 sim_sd += pow(sm->elements[i][i] - sim_mean, 2.0);
         sim_sd = sqrt(sim_sd / n->asp->items->num_elements);
 
+        cprintf("\nSimilarity statistics:\n");
         cprintf("\n");
         cprintf("Number of items: \t\t %d\n",
                         n->asp->items->num_elements);
