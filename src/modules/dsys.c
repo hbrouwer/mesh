@@ -82,11 +82,11 @@ void dsys_proc_time(struct network *n, struct group *g, struct item *item)
         cprintf("\n\n");
 
         cprintf("ProcTime: ");
-        if (n->type == NTYPE_SRN)
+        if (n->type == ntype_srn)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* feed activation forward */
-                if (i > 0 && n->type == NTYPE_SRN)
+                if (i > 0 && n->type == ntype_srn)
                         shift_context_groups(n);
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);

@@ -22,18 +22,22 @@
 #include "matrix.h"
 #include "vector.h"
 
-#define SCHEME_BLUE_RED    0
-#define SCHEME_BLUE_YELLOW 1
-#define SCHEME_GRAYSCALE   2
-#define SCHEME_SPACEPIGS   3
-#define SCHEME_MOODY_BLUES 4
-#define SCHEME_FOR_JOHN    5
-#define SCHEME_GRAY_ORANGE 6
+/* color scheme */
+enum color_scheme
+{
+        scheme_blue_red,
+        scheme_blue_yellow,
+        scheme_grayscale,
+        scheme_spacepigs,
+        scheme_moody_blues,
+        scheme_for_john,
+        scheme_gray_orange
+};
 
-void pprint_vector(struct vector *v, uint32_t scheme);
-void pprint_matrix(struct matrix *m, uint32_t scheme);
+void pprint_vector(struct vector *v, enum color_scheme scheme);
+void pprint_matrix(struct matrix *m, enum color_scheme scheme);
 
 double scale_value(double v, double min, double max);
-void value_as_color(double v, uint32_t scheme);
+void value_as_color(double v, enum color_scheme scheme);
 
 #endif /* PPRINT_H */

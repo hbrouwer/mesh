@@ -44,8 +44,8 @@ struct network *create_network(char *name, uint32_t type)
 
         n->type = type;
         
-        n->groups = create_array(ATYPE_GROUPS);
-        n->sets = create_array(ATYPE_SETS);
+        n->groups = create_array(atype_groups);
+        n->sets = create_array(atype_sets);
 
         block_size = sizeof(struct status);
         if (!(n->status = malloc(block_size)))
@@ -63,39 +63,39 @@ error_out:
 
 void set_network_defaults(struct network *n)
 {
-        n->random_algorithm   = DFLT_RANDOM_ALGORITHM;
-        n->random_mu          = DFLT_RANDOM_MU;
-        n->random_sigma       = DFLT_RANDOM_SIGMA;
-        n->random_min         = DFLT_RANDOM_MIN;
-        n->random_max         = DFLT_RANDOM_MAX;
+        n->random_algorithm   = DEFAULT_RANDOM_ALGORITHM;
+        n->random_mu          = DEFAULT_RANDOM_MU;
+        n->random_sigma       = DEFAULT_RANDOM_SIGMA;
+        n->random_min         = DEFAULT_RANDOM_MIN;
+        n->random_max         = DEFAULT_RANDOM_MAX;
 
-        n->learning_rate      = DFLT_LEARNING_RATE;
-        n->lr_scale_factor    = DFLT_LR_SCALE_FACTOR;
-        n->lr_scale_after     = DFLT_LR_SCALE_AFTER;
+        n->learning_rate      = DEFAULT_LEARNING_RATE;
+        n->lr_scale_factor    = DEFAULT_LR_SCALE_FACTOR;
+        n->lr_scale_after     = DEFAULT_LR_SCALE_AFTER;
 
-        n->momentum           = DFLT_MOMENTUM;
-        n->mn_scale_factor    = DFLT_MN_SCALE_FACTOR;
-        n->mn_scale_after     = DFLT_MN_SCALE_AFTER;
+        n->momentum           = DEFAULT_MOMENTUM;
+        n->mn_scale_factor    = DEFAULT_MN_SCALE_FACTOR;
+        n->mn_scale_after     = DEFAULT_MN_SCALE_AFTER;
 
-        n->weight_decay       = DFLT_WEIGHT_DECAY;
-        n->wd_scale_factor    = DFLT_WD_SCALE_FACTOR;
-        n->wd_scale_after     = DFLT_WD_SCALE_AFTER;
+        n->weight_decay       = DEFAULT_WEIGHT_DECAY;
+        n->wd_scale_factor    = DEFAULT_WD_SCALE_FACTOR;
+        n->wd_scale_after     = DEFAULT_WD_SCALE_AFTER;
 
-        n->target_radius      = DFLT_TARGET_RADIUS;
-        n->zero_error_radius  = DFLT_ZERO_ERROR_RADIUS;
+        n->target_radius      = DEFAULT_TARGET_RADIUS;
+        n->zero_error_radius  = DEFAULT_ZERO_ERROR_RADIUS;
 
-        n->error_threshold    = DFLT_ERROR_THRESHOLD;
-        n->max_epochs         = DFLT_MAX_EPOCHS;
-        n->report_after       = DFLT_REPORT_AFTER;
+        n->error_threshold    = DEFAULT_ERROR_THRESHOLD;
+        n->max_epochs         = DEFAULT_MAX_EPOCHS;
+        n->report_after       = DEFAULT_REPORT_AFTER;
 
-        n->rp_init_update     = DFLT_RP_INIT_UPDATE;
-        n->rp_eta_plus        = DFLT_RP_ETA_PLUS;
-        n->rp_eta_minus       = DFLT_RP_ETA_MINUS;
+        n->rp_init_update     = DEFAULT_RP_INIT_UPDATE;
+        n->rp_eta_plus        = DEFAULT_RP_ETA_PLUS;
+        n->rp_eta_minus       = DEFAULT_RP_ETA_MINUS;
 
-        n->dbd_rate_increment = DFLT_DBD_RATE_INCREMENT;
-        n->dbd_rate_decrement = DFLT_DBD_RATE_DECREMENT;
+        n->dbd_rate_increment = DEFAULT_DBD_RATE_INCREMENT;
+        n->dbd_rate_decrement = DEFAULT_DBD_RATE_DECREMENT;
 
-        n->similarity_metric  = DFLT_SIMILARITY_METRIC;
+        n->similarity_metric  = DEFAULT_SIMILARITY_METRIC;
 }
 
 void init_network(struct network *n)
@@ -179,10 +179,10 @@ struct group *create_group(char *name, uint32_t size, bool bias,
                 goto error_out;
         memset(g->err_fun, 0, sizeof(struct err_fun));
 
-        g->inc_projs = create_array(ATYPE_PROJS);
-        g->out_projs = create_array(ATYPE_PROJS);
+        g->inc_projs = create_array(atype_projs);
+        g->out_projs = create_array(atype_projs);
 
-        g->ctx_groups = create_array(ATYPE_GROUPS);
+        g->ctx_groups = create_array(atype_groups);
 
         g->bias = bias;
         g->recurrent = recurrent;
@@ -310,6 +310,20 @@ void shift_context_group_chain(struct group *g,
         }
         
         copy_vector(g->vector, v);
+}
+
+/*
+ * If the stack pointer of an unfolded net is not yet pointing to stack/n,
+ * increment the pointer. Otherwise shift the stack such that stack/n
+ * become useable for the next tick.
+ */
+void shift_pointer_or_stack(struct network *n)
+{
+        struct rnn_unfolded_network *un = n->unfolded_net;
+        if (un->sp < un->stack_size - 1)
+                un->sp++;
+        else
+                rnn_shift_stack(un);
 }
 
 void reset_context_groups(struct network *n)
@@ -462,11 +476,11 @@ bool save_weight_matrices(struct network *n, char *fn)
         if (!(fd = fopen(fn, "w")))
                 goto error_out;
 
-        if (n->type == NTYPE_FFN)
+        if (n->type == ntype_ffn)
                 save_weight_matrix(n->input, fd);
-        if (n->type == NTYPE_SRN)
+        if (n->type == ntype_srn)
                 save_weight_matrix(n->input, fd);
-        if (n->type == NTYPE_RNN)
+        if (n->type == ntype_rnn)
                 save_weight_matrix(n->unfolded_net->stack[0]->input, fd);
 
         fclose(fd);
@@ -516,11 +530,11 @@ bool load_weight_matrices(struct network *n, char *fn)
                 goto error_out;
 
         struct network *np = NULL;
-        if (n->type == NTYPE_FFN)
+        if (n->type == ntype_ffn)
                 np = n;
-        if (n->type == NTYPE_SRN)
+        if (n->type == ntype_srn)
                 np = n;
-        if (n->type == NTYPE_RNN)
+        if (n->type == ntype_rnn)
                 np = n->unfolded_net->stack[0];
 
         char buf[MAX_BUF_SIZE];

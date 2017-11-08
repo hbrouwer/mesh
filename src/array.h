@@ -21,15 +21,19 @@
 
 #define MAX_ARRAY_ELEMENTS 4
 
-#define ATYPE_NETWORKS  0
-#define ATYPE_GROUPS    1
-#define ATYPE_PROJS     2
-#define ATYPE_SETS      3
-#define ATYPE_ITEMS     4
+/* array type */
+enum array_type
+{
+        atype_networks,
+        atype_groups,
+        atype_projs,
+        atype_sets,
+        atype_items
+};
 
 struct array
 {
-        uint32_t type;              /* array type */
+        enum array_type type;       /* array type */
         uint32_t num_elements;      /* number of elements in the array */
         uint32_t max_elements;      /* max number of elements */
         void **elements;            /* elements */

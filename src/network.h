@@ -27,15 +27,21 @@
 #include "set.h"
 #include "vector.h"
 
-/* network types */
-#define NTYPE_FFN 0
-#define NTYPE_SRN 1
-#define NTYPE_RNN 2
+/* network type */
+enum network_type
+{
+        ntype_ffn,
+        ntype_srn,
+        ntype_rnn
+};
 
-/* training orders */
-#define TRAIN_ORDERED    0
-#define TRAIN_PERMUTED   1
-#define TRAIN_RANDOMIZED 2
+/* training order */
+enum training_order
+{
+        train_ordered,
+        train_permuted,
+        train_randomized
+};
 
                 /*****************
                  **** network ****
@@ -216,6 +222,7 @@ void free_groups(struct array *gs);
 
 void shift_context_groups(struct network *n);
 void shift_context_group_chain(struct group *g, struct vector *v);
+void shift_pointer_or_stack(struct network *n);
 
 void reset_context_groups(struct network *n);
 void reset_context_group_chain(struct group *g);

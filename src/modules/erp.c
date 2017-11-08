@@ -112,11 +112,11 @@ struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
         struct vector *pv = create_vector(g->vector->size);
         fill_vector_with_value(pv, 0.5);
 
-        if (n->type == NTYPE_SRN)
+        if (n->type == ntype_srn)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* feed activation forward */
-                if (i > 0 && n->type == NTYPE_SRN)
+                if (i > 0 && n->type == ntype_srn)
                         shift_context_groups(n);
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);

@@ -46,11 +46,11 @@ void dss_test(struct network *n)
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
 
-                if (n->type == NTYPE_SRN)
+                if (n->type == ntype_srn)
                         reset_context_groups(n);
                 for (uint32_t j = 0; j < item->num_events; j++) {
                         /* feed activation forward */
-                        if (j > 0 && n->type == NTYPE_SRN)
+                        if (j > 0 && n->type == ntype_srn)
                                 shift_context_groups(n);
                         copy_vector(n->input->vector, item->inputs[j]);
                         feed_forward(n, n->input);
@@ -273,11 +273,11 @@ struct matrix *dss_score_matrix(struct network *n, struct set *set,
         uint32_t cols = item->num_events;
         struct matrix *sm = create_matrix(rows, cols);
 
-        if (n->type == NTYPE_SRN)
+        if (n->type == ntype_srn)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* feed activation forward */
-                if (i > 0 && n->type == NTYPE_SRN)
+                if (i > 0 && n->type == ntype_srn)
                         shift_context_groups(n);
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
@@ -722,11 +722,11 @@ struct matrix *dss_word_information_matrix(struct network *n,
 
         struct vector *ov = n->output->vector;
 
-        if (n->type == NTYPE_SRN)
+        if (n->type == ntype_srn)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* feed activation forward */
-                if (i > 0 && n->type == NTYPE_SRN)
+                if (i > 0 && n->type == ntype_srn)
                         shift_context_groups(n);
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);

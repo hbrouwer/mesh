@@ -35,9 +35,9 @@ void test_network(struct network *n)
 
         keep_running = true;
 
-        if (n->type == NTYPE_FFN) test_ffn_network(n);
-        if (n->type == NTYPE_SRN) test_ffn_network(n);
-        if (n->type == NTYPE_RNN) test_rnn_network(n);
+        if (n->type == ntype_ffn) test_ffn_network(n);
+        if (n->type == ntype_srn) test_ffn_network(n);
+        if (n->type == ntype_rnn) test_rnn_network(n);
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
@@ -56,11 +56,11 @@ void test_ffn_network(struct network *n)
                 if (!keep_running)
                         return;
 
-                if (n->type == NTYPE_SRN)
+                if (n->type == ntype_srn)
                         reset_context_groups(n);
                 for (uint32_t j = 0; j < item->num_events; j++) {
                         /* feed activation forward */
-                        if (j > 0 && n->type == NTYPE_SRN)
+                        if (j > 0 && n->type == ntype_srn)
                                 shift_context_groups(n);
                         copy_vector(n->input->vector, item->inputs[j]);
                         feed_forward(n, n->input);
@@ -110,7 +110,7 @@ void test_rnn_network(struct network *n)
                          * current event.
                          */
                         if (!item->targets[j])
-                                goto shift_stack;
+                                goto next_tick;
 
                         struct group *g = un->stack[un->sp]->output;
                         struct vector *tv = item->targets[j];
@@ -123,11 +123,8 @@ void test_rnn_network(struct network *n)
                         if (error < n->error_threshold)
                                 threshold_reached++;
 
-shift_stack:
-                        if (un->sp == un->stack_size - 1)
-                                rnn_shift_stack(un);
-                        else
-                                un->sp++;
+next_tick:
+                        shift_pointer_or_stack(n);
                 }
         }
 
@@ -135,18 +132,18 @@ shift_stack:
 }
 
 void test_network_with_item(struct network *n, struct item *item,
-        bool pprint, uint32_t scheme)
+        bool pprint, enum color_scheme scheme)
 {
-        if (n->type == NTYPE_FFN)
+        if (n->type == ntype_ffn)
                 test_ffn_network_with_item(n, item, pprint, scheme);
-        if (n->type == NTYPE_SRN)
+        if (n->type == ntype_srn)
                 test_ffn_network_with_item(n, item, pprint, scheme);
-        if (n->type == NTYPE_RNN)
+        if (n->type == ntype_rnn)
                 test_rnn_network_with_item(n, item, pprint, scheme);
 }
 
 void test_ffn_network_with_item(struct network *n, struct item *item,
-        bool pprint, uint32_t scheme)
+        bool pprint, enum color_scheme scheme)
 {
         n->status->error = 0.0;
 
@@ -157,7 +154,7 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
         cprintf("\n");
         cprintf("(E: Event; I: Input; T: Target; O: Output)\n");
 
-        if (n->type == NTYPE_SRN)
+        if (n->type == ntype_srn)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* print event number, and input vector */
@@ -170,7 +167,7 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
                         print_vector(item->inputs[i]);
 
                 /* feed activation forward */
-                if (i > 0 && n->type == NTYPE_SRN)
+                if (i > 0 && n->type == ntype_srn)
                         shift_context_groups(n);
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
@@ -211,7 +208,7 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
 }
 
 void test_rnn_network_with_item(struct network *n, struct item *item,
-        bool pprint, uint32_t scheme)
+        bool pprint, enum color_scheme scheme)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
         un->sp = 0;
@@ -262,7 +259,7 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                  * current event.
                  */
                 if (!item->targets[i])
-                        goto shift_stack;
+                        goto next_tick;
 
                 struct group *g = un->stack[un->sp]->output;
                 struct vector *tv = item->targets[i];
@@ -274,11 +271,8 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                 cprintf("\n");
                 cprintf("Error:\t%lf\n", n->status->error);
 
-shift_stack:
-                if (un->sp == un->stack_size - 1)
-                        rnn_shift_stack(un);
-                else
-                        un->sp++;
+next_tick:
+                shift_pointer_or_stack(n);
         }
         
         cprintf("\n");

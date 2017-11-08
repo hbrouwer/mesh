@@ -32,9 +32,6 @@ struct matrix *create_matrix(uint32_t rows, uint32_t cols);
 void free_matrix(struct matrix *m);
 void copy_matrix(struct matrix *m1, struct matrix *m2);
 
-struct vector *row_to_vector(struct matrix *m, uint32_t row);
-struct vector *column_to_vector(struct matrix *m, uint32_t col);
-
 void zero_out_matrix(struct matrix *m);
 void fill_matrix_with_value(struct matrix *m, double val);
 

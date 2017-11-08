@@ -53,7 +53,7 @@ void train_network(struct network *n)
 void train_network_with_bp(struct network *n)
 {
         /* make sure training set is ordered, if required */
-        if (n->training_order == TRAIN_ORDERED)
+        if (n->training_order == train_ordered)
                 order_set(n->asp);
 
         uint32_t item_itr = 0;
@@ -64,9 +64,9 @@ void train_network_with_bp(struct network *n)
 
                 /* reorder training set, if required */
                 if (item_itr == 0) {
-                        if (n->training_order == TRAIN_PERMUTED)
+                        if (n->training_order == train_permuted)
                                 permute_set(n->asp);
-                        if (n->training_order == TRAIN_RANDOMIZED)
+                        if (n->training_order == train_randomized)
                                 randomize_set(n->asp);
                 }
 
@@ -110,11 +110,11 @@ void train_network_with_bp(struct network *n)
 
 void train_ffn_network_with_item(struct network *n, struct item *item)
 {
-        if (n->type == NTYPE_SRN)
+        if (n->type == ntype_srn)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* feed activation forward */
-                if (i > 0 && n->type == NTYPE_SRN)
+                if (i > 0 && n->type == ntype_srn)
                         shift_context_groups(n);
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
@@ -171,7 +171,7 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
 void train_network_with_bptt(struct network *n)
 {
         /* make sure training set is ordered, if required */
-        if (n->training_order == TRAIN_ORDERED)
+        if (n->training_order == train_ordered)
                 order_set(n->asp);
 
         uint32_t item_itr = 0;
@@ -186,9 +186,9 @@ void train_network_with_bptt(struct network *n)
 
                 /* reorder training set, if required */
                 if (item_itr == 0) {
-                        if (n->training_order == TRAIN_PERMUTED)
+                        if (n->training_order == train_permuted)
                                 permute_set(n->asp);
-                        if (n->training_order == TRAIN_RANDOMIZED)
+                        if (n->training_order == train_randomized)
                                 randomize_set(n->asp);
                 }
 
@@ -236,7 +236,7 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
                  * current event.
                  */                
                 if (!item->targets[i])
-                        goto shift_stack;
+                        goto next_tick;
 
                 struct group *g = un->stack[un->sp]->output;
                 struct vector *tv = item->targets[i];
@@ -261,11 +261,8 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
 
                 // XXX: What about multi-stage training?
 
-shift_stack:
-                if (un->sp == un->stack_size - 1)
-                        rnn_shift_stack(un);
-                else
-                        un->sp++;
+next_tick:
+                shift_pointer_or_stack(n);
         }
 }
 

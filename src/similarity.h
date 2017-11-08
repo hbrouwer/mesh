@@ -21,13 +21,14 @@
 
 #include "network.h"
 #include "matrix.h"
+#include "pprint.h"
 
 struct matrix *similarity_matrix(struct network *n);
 struct matrix *ffn_network_sm(struct network *n);
 struct matrix *rnn_network_sm(struct network *n);
 
 void print_sm_summary(struct network *n, struct matrix *sm, bool print_sm,
-        bool pprint, uint32_t scheme);
+        bool pprint, enum color_scheme scheme);
 
 void sm_signal_handler(int32_t signal);
 

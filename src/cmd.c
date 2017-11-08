@@ -347,13 +347,13 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s)
         uint32_t type = 0;
         /* feed forward network */
         if (strcmp(arg2, "ffn") == 0)
-                type = NTYPE_FFN;
+                type = ntype_ffn;
          /* simple recurrent network */
         else if (strcmp(arg2, "srn") == 0)
-                type = NTYPE_SRN;
+                type = ntype_srn;
         /* recurrent network */
         else if (strcmp(arg2, "rnn") == 0)
-                type = NTYPE_RNN;
+                type = ntype_rnn;
         else {
                 eprintf("Cannot create network--invalid network type: '%s'\n", arg2);
                 return true;
@@ -1367,7 +1367,7 @@ bool cmd_show_item(char *cmd, char *fmt, struct session *s)
                 cprintf("E: %d\n", i + 1);
                 cprintf("I: ");
                 if (s->pprint)
-                        pprint_vector(item->inputs[i], s->pprint_scheme);
+                        pprint_vector(item->inputs[i], s->scheme);
                 else
                         print_vector(item->inputs[i]);
 
@@ -1375,7 +1375,7 @@ bool cmd_show_item(char *cmd, char *fmt, struct session *s)
                 if (item->targets[i]) {
                         cprintf("T: ");
                         if (s->pprint) {
-                                pprint_vector(item->targets[i], s->pprint_scheme);
+                                pprint_vector(item->targets[i], s->scheme);
                         } else {
                                 print_vector(item->targets[i]);
                         }
@@ -1395,13 +1395,13 @@ bool cmd_set_training_order(char *cmd, char *fmt, struct session *s)
 
         /* ordered */
         if (strcmp(arg, "ordered") == 0)
-                s->anp->training_order = TRAIN_ORDERED;
+                s->anp->training_order = train_ordered;
         /* permuted */
         else if (strcmp(arg, "permuted") == 0)    
-                s->anp->training_order = TRAIN_PERMUTED;
+                s->anp->training_order = train_permuted;
         /* randomized */
         else if (strcmp(arg, "randomized") == 0)
-                s->anp->training_order = TRAIN_RANDOMIZED;
+                s->anp->training_order = train_randomized;
         else {
                 eprintf("Invalid training order '%s'\n", arg);
                 return true;
@@ -1654,7 +1654,7 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s)
 
         mprintf("Testing network '%s' with item '%s'\n", s->anp->name, arg);
 
-        test_network_with_item(s->anp, item, s->pprint, s->pprint_scheme);
+        test_network_with_item(s->anp, item, s->pprint, s->scheme);
 
         return true;
 }
@@ -1667,7 +1667,7 @@ bool cmd_similarity_matrix(char *cmd, char *fmt, struct session *s)
         mprintf("Computing similarity matrix for network '%s'\n", s->anp->name);
 
         struct matrix *sm = similarity_matrix(s->anp);
-        print_sm_summary(s->anp, sm, true, s->pprint, s->pprint_scheme);
+        print_sm_summary(s->anp, sm, true, s->pprint, s->scheme);
         free_matrix(sm);
 
         return true;
@@ -1681,7 +1681,7 @@ bool cmd_similarity_stats(char *cmd, char *fmt, struct session *s)
         mprintf("Computing similarity matrix for network '%s'\n", s->anp->name);
 
         struct matrix *sm = similarity_matrix(s->anp);
-        print_sm_summary(s->anp, sm, false, s->pprint, s->pprint_scheme);
+        print_sm_summary(s->anp, sm, false, s->pprint, s->scheme);
         free_matrix(sm);
 
         return true;
@@ -1695,7 +1695,7 @@ bool cmd_confusion_matrix(char *cmd, char *fmt, struct session *s)
         mprintf("Computing confusion matrix for network '%s'\n", s->anp->name);
 
         struct matrix *cm = confusion_matrix(s->anp);
-        print_cm_summary(cm, true, s->pprint, s->pprint_scheme);
+        print_cm_summary(cm, true, s->pprint, s->scheme);
         free_matrix(cm);
 
         return true;
@@ -1709,7 +1709,7 @@ bool cmd_confusion_stats(char *cmd, char *fmt, struct session *s)
         mprintf("Computing confusion matrix for network '%s'\n", s->anp->name);
 
         struct matrix *cm = confusion_matrix(s->anp);
-        print_cm_summary(cm, false,  s->pprint, s->pprint_scheme);
+        print_cm_summary(cm, false,  s->pprint, s->scheme);
         free_matrix(cm);
 
         return true;
@@ -1722,7 +1722,7 @@ bool cmd_weight_stats(char *cmd, char *fmt, struct session *s)
 
         struct weight_stats *ws = create_weight_statistics(s->anp);
         print_weight_statistics(s->anp, ws);
-        remove_weight_statistics(ws);
+        free_weight_statistics(ws);
 
         return true;
 }
@@ -1750,7 +1750,7 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
         if (type == VTYPE_UNITS) {
                 cprintf("Unit vector for '%s':\n\n", arg);
                 if (s->pprint) {
-                        pprint_vector(g->vector, s->pprint_scheme);
+                        pprint_vector(g->vector, s->scheme);
                 } else {
                         print_vector(g->vector);
                 }
@@ -1758,7 +1758,7 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
         if (type == VTYPE_ERROR) {
                 cprintf("Error vector for '%s':\n\n", arg);
                 if (s->pprint) {
-                        pprint_vector(g->error, s->pprint_scheme);
+                        pprint_vector(g->error, s->scheme);
                 } else {
                         print_vector(g->error);
                 }
@@ -1811,7 +1811,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                 if (type == MTYPE_WEIGHTS) {
                         cprintf("Weight matrix for projection '%s -> %s':\n\n", arg1, arg2);
                         if (s->pprint) {
-                                pprint_matrix(fg_to_tg->weights, s->pprint_scheme);
+                                pprint_matrix(fg_to_tg->weights, s->scheme);
                         } else {
                                 print_matrix(fg_to_tg->weights);
                         }
@@ -1819,7 +1819,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                 if (type == MTYPE_GRADIENTS) {
                         mprintf("Gradient matrix for projection '%s -> %s':\n\n", arg1, arg2);                  
                         if (s->pprint) {
-                                pprint_matrix(fg_to_tg->gradients, s->pprint_scheme);
+                                pprint_matrix(fg_to_tg->gradients, s->scheme);
                         } else {
                                 print_matrix(fg_to_tg->gradients);
                         }
@@ -1828,7 +1828,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                         mprintf("Dynamic learning parameters for projection '%s -> %s':\n\n",
                                         arg1, arg2);               
                         if (s->pprint) {
-                                pprint_matrix(fg_to_tg->dynamic_pars, s->pprint_scheme);
+                                pprint_matrix(fg_to_tg->dynamic_pars, s->scheme);
                         } else {
                                 print_matrix(fg_to_tg->dynamic_pars);
                         }
@@ -1898,25 +1898,25 @@ bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s)
 
         /* blue and red */
         if (strcmp(arg, "blue_red") == 0)
-                s->pprint_scheme = SCHEME_BLUE_RED;
+                s->scheme = scheme_blue_red;
         /* blue and yellow */
         else if (strcmp(arg, "blue_yellow") == 0)
-                s->pprint_scheme = SCHEME_BLUE_YELLOW;
+                s->scheme = scheme_blue_yellow;
         /* grayscale */
         else if (strcmp(arg, "grayscale") == 0)
-                s->pprint_scheme = SCHEME_GRAYSCALE;
+                s->scheme = scheme_grayscale;
         /* spacepigs */
         else if (strcmp(arg, "spacepigs") == 0)
-                s->pprint_scheme = SCHEME_SPACEPIGS;
+                s->scheme = scheme_spacepigs;
         /* moody blues */
         else if (strcmp(arg, "moody_blues") == 0)
-                s->pprint_scheme = SCHEME_MOODY_BLUES;
+                s->scheme = scheme_moody_blues;
         /* for John */
         else if (strcmp(arg, "for_john") == 0)
-                s->pprint_scheme = SCHEME_FOR_JOHN;
+                s->scheme = scheme_for_john;
         /* gray and orange */
         else if (strcmp(arg, "gray_orange") == 0)
-                s->pprint_scheme = SCHEME_GRAY_ORANGE;
+                s->scheme = scheme_gray_orange;
         else {
                 eprintf("Cannot set color scheme--no such scheme '%s'\n", arg);
                 return true;

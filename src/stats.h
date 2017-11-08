@@ -34,7 +34,7 @@ struct weight_stats
 };
 
 struct weight_stats *create_weight_statistics(struct network *n);
-void remove_weight_statistics(struct weight_stats *ws);
+void free_weight_statistics(struct weight_stats *ws);
 
 void collect_weight_statistics(struct weight_stats *ws, struct group *g);
 void collect_mean_dependent_ws(struct weight_stats *ws, struct group *g);

@@ -31,16 +31,12 @@ struct matrix *create_matrix(uint32_t rows, uint32_t cols)
         m->rows = rows;
         m->cols = cols;
 
-        /* allocate rows */
         if (!(m->elements = malloc(m->rows * sizeof(double *))))
                 goto error_out;
         memset(m->elements, 0, m->rows * sizeof(double *));
-
         for (uint32_t i = 0; i < m->rows; i++) {
-                /* allocate columns */
                 if (!(m->elements[i] = malloc(m->cols * sizeof(double))))
                         goto error_out;
-                /* set cells to zero */
                 memset(m->elements[i], 0, m->cols * sizeof(double));
         }
 
@@ -67,26 +63,6 @@ void copy_matrix(struct matrix *m1, struct matrix *m2)
         for (uint32_t i = 0; i < m1->rows; i++)
                 for (uint32_t j = 0; j < m1->cols; j++)
                         m1->elements[i][j] = m2->elements[i][j];
-}
-
-struct vector *row_to_vector(struct matrix *m, uint32_t row)
-{
-        struct vector *v = create_vector(m->cols);
-
-        for (uint32_t i = 0; i < m->cols; i++)
-                v->elements[i] = m->elements[row][i];
-
-        return v;
-}
-
-struct vector *column_to_vector(struct matrix *m, uint32_t col)
-{
-        struct vector *v = create_vector(m->rows);
-
-        for (uint32_t i = 0; i < m->rows; i++)
-                v->elements[i] = m->elements[i][col];
-
-        return v;
 }
 
 void zero_out_matrix(struct matrix *m)

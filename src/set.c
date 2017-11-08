@@ -35,7 +35,7 @@ struct set *create_set(char *name)
         memset(s->name, 0, block_size);
         strncpy(s->name, name, strlen(name));
 
-        s->items = create_array(ATYPE_ITEMS);
+        s->items = create_array(atype_items);
 
         return s;
 

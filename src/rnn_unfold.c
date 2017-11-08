@@ -211,7 +211,7 @@ struct network *rnn_duplicate_network(struct network *n)
         memcpy(dn, n, sizeof(struct network));
 
         /* duplicate the network's groups */
-        dn->groups = create_array(ATYPE_GROUPS);
+        dn->groups = create_array(atype_groups);
         rnn_duplicate_groups(n, dn, n->input);
 
         return dn;
@@ -244,23 +244,23 @@ struct group *rnn_duplicate_group(struct group *g)
         strncpy(dg->name, g->name, strlen(g->name));
 
         dg->vector = create_vector(g->vector->size);
-        dg->error = create_vector(g->vector->size);
+        dg->error  = create_vector(g->vector->size);
 
         if (!(dg->act_fun = malloc(sizeof(struct act_fun))))
                 goto error_out;
         memset(dg->act_fun, 0, sizeof(struct act_fun));
-        dg->act_fun->fun = g->act_fun->fun;
+        dg->act_fun->fun   = g->act_fun->fun;
         dg->act_fun->deriv = g->act_fun->deriv;
 
         if (!(dg->err_fun = malloc(sizeof(struct err_fun))))
                 goto error_out;
         memset(dg->err_fun, 0, sizeof(struct err_fun));
-        dg->err_fun->fun = g->err_fun->fun;
+        dg->err_fun->fun   = g->err_fun->fun;
         dg->err_fun->deriv = g->err_fun->deriv;
 
-        dg->inc_projs = create_array(ATYPE_PROJS);
+        dg->inc_projs = create_array(atype_projs);
         dg->inc_projs->num_elements = g->inc_projs->num_elements;
-        dg->out_projs = create_array(ATYPE_PROJS);
+        dg->out_projs = create_array(atype_projs);
         dg->out_projs->num_elements = g->out_projs->num_elements;
 
         dg->bias = g->bias;
@@ -424,7 +424,7 @@ void rnn_free_duplicate_projection(struct projection *dp)
 
 struct array *rnn_recurrent_groups(struct network *n)
 {
-        struct array *gs = create_array(ATYPE_GROUPS);
+        struct array *gs = create_array(atype_groups);
         rnn_collect_recurrent_groups(n->input, gs);
 
         return gs;

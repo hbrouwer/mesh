@@ -217,10 +217,10 @@ minimized.
 void bp_update_sd(struct network *n)
 {
         /* reset status statistics */
-        n->status->weight_cost = 0.0;
+        n->status->weight_cost        = 0.0;
         n->status->gradient_linearity = 0.0;
         n->status->last_deltas_length = 0.0;
-        n->status->gradients_length = 0.0;
+        n->status->gradients_length   = 0.0;
 
         /* determine the scaling factor for steepest descent */
         if (n->sd_type == SD_DEFAULT)
@@ -281,10 +281,10 @@ void bp_update_projection_sd(struct network *n, struct group *g,
         struct projection *p)
 {
         /* local status statistics */
-        double weight_cost = 0.0;
+        double weight_cost        = 0.0;
         double gradient_linearity = 0.0;
         double last_deltas_length = 0.0;
-        double gradients_length = 0.0;
+        double gradients_length   = 0.0;
 
         /*
          * Adjust the weight between unit i in group g' and unit j in group
@@ -376,14 +376,10 @@ void bp_update_projection_sd(struct network *n, struct group *g,
         /*
          * Add the local status statistics to the global status statistics.
          */
-        n->status->weight_cost
-                += weight_cost;
-        n->status->gradient_linearity
-                += gradient_linearity;
-        n->status->last_deltas_length
-                += last_deltas_length;
-        n->status->gradients_length
-                += gradients_length;
+        n->status->weight_cost        += weight_cost;
+        n->status->gradient_linearity += gradient_linearity;
+        n->status->last_deltas_length += last_deltas_length;
+        n->status->gradients_length   += gradients_length;
 }
 
                 /**********************************
@@ -529,10 +525,10 @@ Igel, C., & Husken, M. (2000). Improving the Rprop Algorithm. Proceedings of
 void bp_update_rprop(struct network *n)
 {
         /* reset status statistics */
-        n->status->weight_cost = 0.0;
+        n->status->weight_cost        = 0.0;
         n->status->gradient_linearity = 0.0;
         n->status->last_deltas_length = 0.0;
-        n->status->gradients_length = 0.0;
+        n->status->gradients_length   = 0.0;
 
         bp_update_inc_projs_rprop(n, n->output);
 
@@ -587,10 +583,10 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
         struct projection *p)
 {
         /* local status statistics */
-        double weight_cost = 0.0;
+        double weight_cost        = 0.0;
         double gradient_linearity = 0.0;
         double last_deltas_length = 0.0;
-        double gradients_length = 0.0;
+        double gradients_length   = 0.0;
 
         /*
          * Adjust the weight between unit i in group g' and unit j in group
@@ -752,14 +748,10 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
         /*
          * Add the local status statistics to the global status statistics.
          */
-        n->status->weight_cost
-                += weight_cost;
-        n->status->gradient_linearity
-                += gradient_linearity;
-        n->status->last_deltas_length
-                += last_deltas_length;
-        n->status->gradients_length
-                += gradients_length;
+        n->status->weight_cost        += weight_cost;
+        n->status->gradient_linearity += gradient_linearity;
+        n->status->last_deltas_length += last_deltas_length;
+        n->status->gradients_length   += gradients_length;
 }
 
                 /***********************************
@@ -804,10 +796,10 @@ Fahlman, S. E. (1988). An empirical study of learning speed in back-
 void bp_update_qprop(struct network *n)
 {
         /* reset status statistics */
-        n->status->weight_cost = 0.0;
+        n->status->weight_cost        = 0.0;
         n->status->gradient_linearity = 0.0;
         n->status->last_deltas_length = 0.0;
-        n->status->gradients_length = 0.0;
+        n->status->gradients_length   = 0.0;
 
         bp_update_inc_projs_qprop(n, n->output);
 
@@ -864,10 +856,10 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
         double shrink_factor = QP_MAX_STEP_SIZE / (1.0 + QP_MAX_STEP_SIZE);
 
         /* local status statistics */
-        double weight_cost = 0.0;
+        double weight_cost        = 0.0;
         double gradient_linearity = 0.0;
         double last_deltas_length = 0.0;
-        double gradients_length = 0.0;
+        double gradients_length   = 0.0;
 
         /*
          * Adjust the weight between unit i in group g' and unit j in group
@@ -1049,14 +1041,10 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
         /*
          * Add the local status statistics to the global status statistics.
          */
-        n->status->weight_cost
-                += weight_cost;
-        n->status->gradient_linearity
-                += gradient_linearity;
-        n->status->last_deltas_length
-                += last_deltas_length;
-        n->status->gradients_length
-                += gradients_length;
+        n->status->weight_cost        += weight_cost;
+        n->status->gradient_linearity += gradient_linearity;
+        n->status->last_deltas_length += last_deltas_length;
+        n->status->gradients_length   += gradients_length;
 }
 
                 /*****************************************
@@ -1097,10 +1085,10 @@ Jacobs, R. A. (1988). Increased Rates of Convergence Through Learning Rate
 void bp_update_dbd(struct network *n)
 {
         /* reset status statistics */
-        n->status->weight_cost = 0.0;
+        n->status->weight_cost        = 0.0;
         n->status->gradient_linearity = 0.0;
         n->status->last_deltas_length = 0.0;
-        n->status->gradients_length = 0.0;
+        n->status->gradients_length   = 0.0;
 
         /*
         n->dbd_rate_increment = 0.1;
@@ -1160,10 +1148,10 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
         struct projection *p)
 {
         /* local status statistics */
-        double weight_cost = 0.0;
+        double weight_cost        = 0.0;
         double gradient_linearity = 0.0;
         double last_deltas_length = 0.0;
-        double gradients_length = 0.0;
+        double gradients_length   = 0.0;
 
         /*
          * Adjust the weight and its learning rate between unit i in group
@@ -1316,12 +1304,8 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
         /*
          * Add the local status statistics to the global status statistics.
          */
-        n->status->weight_cost
-                += weight_cost;
-        n->status->gradient_linearity
-                += gradient_linearity;
-        n->status->last_deltas_length
-                += last_deltas_length;
-        n->status->gradients_length
-                += gradients_length;
+        n->status->weight_cost        += weight_cost;
+        n->status->gradient_linearity += gradient_linearity;
+        n->status->last_deltas_length += last_deltas_length;
+        n->status->gradients_length   += gradients_length;
 }

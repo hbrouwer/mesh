@@ -22,9 +22,7 @@
 #include "cmd.h"
 #include "main.h"
 
-/*
- * Command line interface loop.
- */
+/* command line interface loop */
 void cli_loop(struct session *s)
 {
         char *line = NULL;
@@ -48,7 +46,6 @@ void cli_loop(struct session *s)
                         goto error_out;
                 line[num_chars - 1] = '\0';
 
-                /* process command */
                 process_command(line, s);
                 
                 memset(line, 0, num_chars);

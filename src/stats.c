@@ -46,7 +46,7 @@ error_out:
         return NULL;
 }
 
-void remove_weight_statistics(struct weight_stats *ws)
+void free_weight_statistics(struct weight_stats *ws)
 {
         free(ws);
 }
@@ -61,7 +61,6 @@ void collect_weight_statistics(struct weight_stats *ws, struct group *g)
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
                 struct matrix *w = p->weights;
-
                 for (uint32_t r = 0; r < w->rows; r++) {
                         for (uint32_t c = 0; c < w->cols; c++) {
                                 ws->num_weights++;
@@ -74,7 +73,6 @@ void collect_weight_statistics(struct weight_stats *ws, struct group *g)
                                         ws->maximum = w->elements[r][c];
                         }
                 }
-
                 collect_weight_statistics(ws, p->to);
         }
 }
@@ -88,14 +86,14 @@ void collect_mean_dependent_ws(struct weight_stats *ws, struct group *g)
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
                 struct matrix *w = p->weights;
-
                 for (uint32_t r = 0; r < w->rows; r++) {
                         for (uint32_t c = 0; c < w->cols; c++) {
-                                ws->mean_dist += fabs(w->elements[r][c] - ws->mean);
-                                ws->variance += pow(w->elements[r][c] - ws->mean, 2.0);
+                                ws->mean_dist +=
+                                        fabs(w->elements[r][c] - ws->mean);
+                                ws->variance +=
+                                        pow(w->elements[r][c] - ws->mean, 2.0);
                         }
                 }
-
                 collect_mean_dependent_ws(ws, p->to);
         }
 }

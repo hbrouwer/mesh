@@ -22,9 +22,25 @@
 #include "act.h"
 #include "classify.h"
 #include "main.h"
-#include "pprint.h"
 
 static bool keep_running = true;
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Construct a confusion matrix for classification tasks. The rows of this
+matrix will be the 'actual' classes, and the columns the 'predicted' ones:
+
+                           predicted:
+                   |   A   |   B   |   C
+                ----------------------------
+                A  |  18   |   2   |   3   | 23
+                ----------------------------
+        actual: B  |   9   |  22   |   0   | 31
+                ----------------------------
+                C  |   0   |   1   |  10   | 11
+                ----------------------------
+                      27      25      13     65
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 struct matrix *confusion_matrix(struct network *n)
 {
@@ -37,9 +53,9 @@ struct matrix *confusion_matrix(struct network *n)
         keep_running = true;
 
         struct matrix *cm;
-        if (n->type == NTYPE_FFN) cm = ffn_network_cm(n);
-        if (n->type == NTYPE_SRN) cm = ffn_network_cm(n);
-        if (n->type == NTYPE_RNN) cm = rnn_network_cm(n);
+        if (n->type == ntype_ffn) cm = ffn_network_cm(n);
+        if (n->type == ntype_srn) cm = ffn_network_cm(n);
+        if (n->type == ntype_rnn) cm = rnn_network_cm(n);
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
@@ -49,31 +65,26 @@ struct matrix *confusion_matrix(struct network *n)
 
 struct matrix *ffn_network_cm(struct network *n)
 {
-        /* confusion matrix */
         uint32_t d = n->output->vector->size;
         struct matrix *cm = create_matrix(d, d);
 
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                if (!keep_running) goto out;
                 struct item *item = n->asp->items->elements[i];
 
-                /* abort after signal */
-                if (!keep_running)
-                        goto return_matrix;
-
-                if (n->type == NTYPE_SRN)
+                if (n->type == ntype_srn)
                         reset_context_groups(n);
                 for (uint32_t j = 0; j < item->num_events; j++) {
-                        /* feed activation forward */
-                        if (j > 0 && n->type == NTYPE_SRN)
+                        if (j > 0 && n->type == ntype_srn)
                                 shift_context_groups(n);
-                        copy_vector(n->input->vector, item->inputs[j]);
+                        copy_vector(
+                                n->input->vector,
+                                item->inputs[j]);
                         feed_forward(n, n->input);
                         
                         /* only classify last event */
                         if (!(item->targets[j] && j == item->num_events - 1))
                                 continue;
-
-                        /* classify */
                         struct vector *ov = n->output->vector;
                         struct vector *tv = item->targets[j];
                         uint32_t t = 0, o = 0;
@@ -85,7 +96,7 @@ struct matrix *ffn_network_cm(struct network *n)
                 }
         }
 
-return_matrix:
+out:
         return cm;
 }
 
@@ -93,30 +104,26 @@ struct matrix *rnn_network_cm(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
 
-        /* confusion matrix */
         uint32_t d = n->output->vector->size;
         struct matrix *cm = create_matrix(d, d);
 
-        /* test network on all items in the current set */
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                if (!keep_running) goto out;
                 struct item *item = n->asp->items->elements[i];
-
-                /* abort after signal */
-                if (!keep_running)
-                        goto return_matrix;
 
                 reset_recurrent_groups(un->stack[un->sp]);
                 for (uint32_t j = 0; j < item->num_events; j++) {
-                        /* feed activation forward */
-                        copy_vector(un->stack[un->sp]->input->vector, item->inputs[j]);
-                        feed_forward(un->stack[un->sp], un->stack[un->sp]->input);
+                        copy_vector(
+                                un->stack[un->sp]->input->vector,
+                                item->inputs[j]);
+                        feed_forward(
+                                un->stack[un->sp],
+                                un->stack[un->sp]->input);
 
                         /* only classify last event */
                         if (!(item->targets[j] && j == item->num_events - 1))
-                                goto shift_stack;
-
-                        /* classify */
-                        struct vector *ov = n->output->vector;
+                                goto next_tick;
+                        struct vector *ov = un->stack[un->sp]->output->vector;
                         struct vector *tv = item->targets[j];
                         uint32_t t = 0, o = 0;
                         for (uint32_t x = 0; x < ov->size; x++) {
@@ -125,28 +132,21 @@ struct matrix *rnn_network_cm(struct network *n)
                         }
                         cm->elements[t][o]++;
 
-shift_stack:
-                        if (un->sp == un->stack_size - 1)
-                                rnn_shift_stack(un);
-                        else
-                                un->sp++;
+next_tick:
+                        shift_pointer_or_stack(n);
                 }
         }
 
-return_matrix:
+out:
         return cm;
 }
 
 void print_cm_summary(struct matrix *cm, bool print_cm, bool pprint,
-        uint32_t scheme)
+        enum color_scheme scheme)
 {       
         if (print_cm) {
                 cprintf("\nConfusion matrix (actual x predicted):\n\n");
-                if (pprint) {
-                        pprint_matrix(cm, scheme);
-                } else {
-                        print_matrix(cm);
-                }
+                pprint ? pprint_matrix(cm, scheme) : print_matrix(cm);
         }
 
         cprintf("\nClassification statistics:\n");
@@ -160,46 +160,67 @@ void print_cm_summary(struct matrix *cm, bool print_cm, bool pprint,
                         cols->elements[c] += cm->elements[r][c];
                 }
         }
+        
+        double num_correct   = 0.0;
+        double num_incorrect = 0.0;
+        double precision     = 0.0;
+        double recall        = 0.0;
 
-        /* compute statistics */
-        double cc = 0.0, ic = 0.0, pr = 0.0, rc = 0.0;
+        /*
+         * precision = #correct / column total
+         *              
+         * recall = #correct / row total
+         */
         for (uint32_t r = 0; r < cm->rows; r++) {
                 for (uint32_t c = 0; c < cm->cols; c++) {
-                        if (r == c) {
-                                cc += cm->elements[r][c];
-                                if (cols->elements[c] > 0)
-                                        pr += cm->elements[r][c]
+                        if (r == c) {   /* correctly classified */
+                                num_correct += cm->elements[r][c];
+                                if (cols->elements[c] > 0) 
+                                        precision += cm->elements[r][c]
                                                 / cols->elements[c];
                                 if (rows->elements[r] > 0)
-                                        rc += cm->elements[r][c]
+                                        recall += cm->elements[r][c]
                                                 / rows->elements[r];
-                        } else {
-                                ic += cm->elements[r][c];
+                        } else {        /* incorrectly classified */
+                                num_incorrect += cm->elements[r][c];
                         }
                 }
         }
+        precision /= cols->size;
+        recall /= rows->size;
 
-        /* precision and recall */
-        pr /= cols->size;
-        rc /= rows->size;
+        /*
+         *            precision * recall
+         * F(1) = 2 * ------------------
+         *            precision + recall
+         */
+        double fscore = 2.0 * ((precision * recall) / (precision + recall));
 
-        // TODO: make beta a parameter
-        double beta = 1.0;
-        double fs = (1.0 + pow(beta,2.0)) * (pr * rc)
-                / ((pr * pow(beta,2.0)) + rc);
+        /*     
+         *                    #correct
+         * accuracy = ---------------------
+         *            #correct + #incorrect
+         */
+        double accuracy = num_correct / (num_correct + num_incorrect);
+        
+        /*                   #incorrect
+         * error rate = -------------------
+         *              #correct + #incorrect
+         */
+        double error_rate = num_incorrect / (num_correct + num_incorrect);
 
-        /* report statistics */
         cprintf("\n");
-        cprintf("Accurracy: \t %f\n", cc / (cc + ic));
-        cprintf("Error rate: \t %f\n", ic / (cc + ic));
-        cprintf("Precision: \t %f\n", pr);
-        cprintf("Recall: \t %f\n", rc);
-        cprintf("F(%.2f)-score: \t %f\n", beta, fs);
+        cprintf("Accurracy: \t %f\n",   accuracy);
+        cprintf("Error rate: \t %f\n",  error_rate);
+        cprintf("Precision: \t %f\n",   precision);
+        cprintf("Recall: \t %f\n",      recall);
+        cprintf("F(1)-score: \t %f\n",  fscore);
         cprintf("\n");
         
         free_vector(rows);
         free_vector(cols);
 }
+
 
 void cm_signal_handler(int32_t signal)
 {

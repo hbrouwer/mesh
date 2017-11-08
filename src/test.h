@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "network.h"
+#include "pprint.h"
 #include "session.h"
 #include "set.h"
 
@@ -28,11 +29,11 @@ void test_ffn_network(struct network *n);
 void test_rnn_network(struct network *n);
 
 void test_network_with_item(struct network *n, struct item *item,
-        bool pprint, uint32_t scheme);
+        bool pprint, enum color_scheme scheme);
 void test_ffn_network_with_item(struct network *n, struct item *item,
-        bool pprint, uint32_t scheme);
+        bool pprint, enum color_scheme scheme);
 void test_rnn_network_with_item(struct network *n, struct item *item,
-        bool pprint, uint32_t scheme);
+        bool pprint, enum color_scheme scheme);
 
 void print_testing_summary(struct network *n, uint32_t tr);
 
