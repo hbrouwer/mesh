@@ -27,6 +27,7 @@ static bool keep_running = true;
 
 void train_network(struct network *n)
 {
+        cprintf("\n");
         pprintf("Epoch \t Error \t\t Weight Cost \t Gradient Lin.\n");
         pprintf("----- \t ----- \t\t ----------- \t -------------\n");
 

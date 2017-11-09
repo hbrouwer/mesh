@@ -112,6 +112,11 @@ void process_command(char *cmd, struct session *s)
                 /*
                  * If a command has arguments, we pass its processor its
                  * base and its arguments. Otherwise, we just pass its base.
+                 * 
+                 * Each command processor returns true if the command passed
+                 * to it could be parsed and executed either successfully or
+                 * unsuccesfully. It returns false, by contrast, if a
+                 * command could not be parsed.
                  */
                 if (strncmp(cmd, cmds[i].cmd_base,
                         strlen(cmds[i].cmd_base)) == 0) {
@@ -188,7 +193,7 @@ bool cmd_about(char *cmd, char *fmt, struct session *s)
 
 bool cmd_help(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* help topic */
         
         bool help_on_topic = false;
         if (strcmp(cmd, fmt) != 0) {
@@ -209,7 +214,7 @@ bool cmd_help(char *cmd, char *fmt, struct session *s)
 
 bool cmd_load_file(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* filename */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
@@ -232,8 +237,8 @@ bool cmd_load_file(char *cmd, char *fmt, struct session *s)
 
 bool cmd_create_network(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE]; 
-        char arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* network name */
+        char arg2[MAX_ARG_SIZE]; /* network type */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
@@ -270,7 +275,7 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s)
 
 bool cmd_remove_network(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* network name */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
@@ -326,7 +331,7 @@ bool cmd_list_networks(char *cmd, char *fmt, struct session *s)
 
 bool cmd_change_network(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* network name */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
@@ -345,7 +350,7 @@ bool cmd_change_network(char *cmd, char *fmt, struct session *s)
 
 bool cmd_create_group(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* group name */
         int32_t arg_int;
         if (sscanf(cmd, fmt, arg, &arg_int) != 2)
                 return false;
@@ -373,7 +378,7 @@ bool cmd_create_group(char *cmd, char *fmt, struct session *s)
 
 bool cmd_remove_group(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* group name */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
@@ -456,7 +461,7 @@ bool cmd_list_groups(char *cmd, char *fmt, struct session *s)
 
 bool cmd_attach_bias(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* group name */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
@@ -492,9 +497,8 @@ error_out:
 
 bool cmd_set_io_group(char *cmd, char *fmt, struct session *s)
 {
+        char arg[MAX_ARG_SIZE]; /* group name */
         enum group_type type;
-
-        char arg[MAX_ARG_SIZE];
         if (sscanf(cmd, "set InputGroup %s", arg) == 1)
                 type = gtype_input;
         else if((sscanf(cmd, "set OutputGroup %s", arg) == 1))
@@ -523,8 +527,8 @@ bool cmd_set_io_group(char *cmd, char *fmt, struct session *s)
 
 bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE];
-        char arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* group name */
+        char arg2[MAX_ARG_SIZE]; /* activation function */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
@@ -581,8 +585,8 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
 
 bool cmd_set_err_func(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE];
-        char arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* group name */
+        char arg2[MAX_ARG_SIZE]; /* error function */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
@@ -619,8 +623,8 @@ bool cmd_set_err_func(char *cmd, char *fmt, struct session *s)
 
 bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE];
-        char arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* 'from' group name */
+        char arg2[MAX_ARG_SIZE]; /* 'to' group name */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
@@ -642,8 +646,10 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
         if (fg->recurrent)
                 exists = true;
         for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
-                if (((struct projection *)fg->out_projs->elements[i])->to == tg)
+                if (((struct projection *)fg->out_projs->elements[i])->to == tg) {
                         exists = true;
+                        break;
+                }
         if (exists) {
                 eprintf("Cannot set projection - projection '%s -> %s' already exists\n",
                         arg1, arg2);
@@ -687,8 +693,8 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
 
 bool cmd_remove_projection(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE];
-        char arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* 'from' group name */
+        char arg2[MAX_ARG_SIZE]; /* 'to' group name */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
@@ -710,15 +716,19 @@ bool cmd_remove_projection(char *cmd, char *fmt, struct session *s)
         struct projection *fg_to_tg = NULL;
         for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
                 if (((struct projection *)
-                        fg->out_projs->elements[i])->to == tg)
+                        fg->out_projs->elements[i])->to == tg) {
                         fg_to_tg = fg->out_projs->elements[i];
+                        break;
+                }
         
         /* find incoming 'to->from' projection */
         struct projection *tg_to_fg = NULL;
         for (uint32_t i = 0; i < tg->inc_projs->num_elements; i++)
                 if (((struct projection *)
-                        tg->inc_projs->elements[i])->to == fg)
+                        tg->inc_projs->elements[i])->to == fg) {
                         tg_to_fg = tg->inc_projs->elements[i];
+                        break;
+                }
         
         /* remove projection, if it exists */
         if (fg_to_tg && tg_to_fg) {
@@ -740,8 +750,8 @@ bool cmd_remove_projection(char *cmd, char *fmt, struct session *s)
 
 bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE];
-        char arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* 'from' group name */
+        char arg2[MAX_ARG_SIZE]; /* 'to' group name */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
@@ -795,8 +805,8 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s)
 
 bool cmd_remove_elman_projection(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE];
-        char arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* 'from' group name */
+        char arg2[MAX_ARG_SIZE]; /* 'to' group name */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
@@ -913,8 +923,8 @@ bool cmd_list_projections(char *cmd, char *fmt, struct session *s)
  */
 bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE];
-        char arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* 'from' group name */
+        char arg2[MAX_ARG_SIZE]; /* 'to' group name */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
@@ -936,15 +946,19 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
         struct projection *fg_to_tg = NULL;
         for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
                 if (((struct projection *)
-                        fg->out_projs->elements[i])->to == tg)
+                        fg->out_projs->elements[i])->to == tg) {
                         fg_to_tg = fg->out_projs->elements[i];
+                        break;
+                }
 
         /* find incoming 'to->from' projection */
         struct projection *tg_to_fg = NULL;
         for (uint32_t i = 0; i < tg->inc_projs->num_elements; i++)
                 if (((struct projection *)
-                        tg->inc_projs->elements[i])->to == fg)
+                        tg->inc_projs->elements[i])->to == fg) {
                         tg_to_fg = tg->inc_projs->elements[i];
+                        break;
+                }
         
         /* free projection, if it exists */
         if (fg_to_tg && tg_to_fg) {
@@ -987,8 +1001,8 @@ and for the merging of several output vectors into a single vector:
 
 bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE];
-        char arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* 'from' group name */
+        char arg2[MAX_ARG_SIZE]; /* 'to' group name */
         int32_t arg_int1, arg_int2, arg_int3, arg_int4;
         if (sscanf(cmd, fmt,
                 arg1, &arg_int1, &arg_int2,
@@ -1026,8 +1040,10 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
                 exists = true;
         for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
                 if (((struct projection *)
-                        fg->out_projs->elements[i])->to == tg)
+                        fg->out_projs->elements[i])->to == tg) {
                         exists = true;
+                        break;
+                }
         if (exists) {
                 eprintf("Cannot set tunnel projection - projection '%s -> %s' already exists\n",
                         arg1, arg2);
@@ -1054,7 +1070,7 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
         }
 
         /* tunnel should be within 'to' group bounds */
-        if (arg_int3 < 0 
+        if (arg_int3 < 0
                 || arg_int3 > tg->vector->size
                 || arg_int4 < 0
                 || arg_int4 > tg->vector->size
@@ -1110,20 +1126,30 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
 bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s)
 {
         /* batch size */
-        if (sscanf(cmd, "set BatchSize %d", &s->anp->batch_size) == 1)
-                mprintf("Set batch size \t\t [ %d ]\n", s->anp->batch_size);
+        if (sscanf(cmd, "set BatchSize %d",
+                &s->anp->batch_size) == 1)
+                mprintf("Set batch size \t\t [ %d ]\n",
+                        s->anp->batch_size);
         /* max number of epochs */
-        else if (sscanf(cmd, "set MaxEpochs %d", &s->anp->max_epochs) == 1)
-                mprintf("Set maximum #epochs \t [ %d ]\n", s->anp->max_epochs);
+        else if (sscanf(cmd, "set MaxEpochs %d",
+                &s->anp->max_epochs) == 1)
+                mprintf("Set maximum #epochs \t [ %d ]\n",
+                        s->anp->max_epochs);
         /* report after */
-        else if (sscanf(cmd, "set ReportAfter %d", &s->anp->report_after) == 1)
-                mprintf("Set report after (#epochs) \t [ %d ]\n", s->anp->report_after);
+        else if (sscanf(cmd, "set ReportAfter %d",
+                &s->anp->report_after) == 1)
+                mprintf("Set report after (#epochs) \t [ %d ]\n",
+                        s->anp->report_after);
         /* random seed */
-        else if (sscanf(cmd, "set RandomSeed %d", &s->anp->random_seed) == 1)
-                mprintf("Set random seed \t\t [ %d ]\n", s->anp->random_seed);
+        else if (sscanf(cmd, "set RandomSeed %d",
+                &s->anp->random_seed) == 1)
+                mprintf("Set random seed \t\t [ %d ]\n",
+                        s->anp->random_seed);
         /* number of back ticks */
-        else if (sscanf(cmd, "set BackTicks %d", &s->anp->back_ticks) == 1)
-                mprintf("Set BPTT back ticks \t [ %d ]\n", s->anp->back_ticks);
+        else if (sscanf(cmd, "set BackTicks %d",
+                &s->anp->back_ticks) == 1)
+                mprintf("Set BPTT back ticks \t [ %d ]\n",
+                        s->anp->back_ticks);
 
         return true;
 }
@@ -1131,100 +1157,149 @@ bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s)
 bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s)
 {
         /* random mu */
-        if (sscanf(cmd, "set RandomMu %lf", &s->anp->random_mu) == 1)
-                mprintf("Set random Mu \t\t [ %lf ]\n", s->anp->random_mu);
+        if (sscanf(cmd, "set RandomMu %lf",
+                &s->anp->random_mu) == 1)
+                mprintf("Set random Mu \t\t [ %lf ]\n",
+                        s->anp->random_mu);
         /* random sigma */
-        else if (sscanf(cmd, "set RandomSigma %lf", &s->anp->random_sigma) == 1)
-                mprintf("Set random Sigma \t\t [ %lf ]\n", s->anp->random_sigma);
+        else if (sscanf(cmd, "set RandomSigma %lf",
+                &s->anp->random_sigma) == 1)
+                mprintf("Set random Sigma \t\t [ %lf ]\n",
+                        s->anp->random_sigma);
         /* random minimum */
-        else if (sscanf(cmd, "set RandomMin %lf", &s->anp->random_min) == 1)
-                mprintf("Set random minimum \t\t [ %lf ]\n", s->anp->random_min);
+        else if (sscanf(cmd, "set RandomMin %lf",
+                &s->anp->random_min) == 1)
+                mprintf("Set random minimum \t\t [ %lf ]\n",
+                        s->anp->random_min);
         /* random maximum */
-        else if (sscanf(cmd, "set RandomMax %lf", &s->anp->random_max) == 1)
-                mprintf("Set random maximum \t\t [ %lf ]\n", s->anp->random_max);
+        else if (sscanf(cmd, "set RandomMax %lf",
+                &s->anp->random_max) == 1)
+                mprintf("Set random maximum \t\t [ %lf ]\n",
+                        s->anp->random_max);
         /* learning rate */
-        else if (sscanf(cmd, "set LearningRate %lf", &s->anp->learning_rate) == 1)
-                mprintf("Set learning rate \t\t [ %lf ]\n", s->anp->learning_rate);
+        else if (sscanf(cmd, "set LearningRate %lf",
+                &s->anp->learning_rate) == 1)
+                mprintf("Set learning rate \t\t [ %lf ]\n",
+                        s->anp->learning_rate);
         /* learning rate scale factor */
-        else if (sscanf(cmd, "set LRScaleFactor %lf", &s->anp->lr_scale_factor) == 1)
-                mprintf("Set LR scale factor \t [ %lf ]\n", s->anp->lr_scale_factor);
+        else if (sscanf(cmd, "set LRScaleFactor %lf",
+                &s->anp->lr_scale_factor) == 1)
+                mprintf("Set LR scale factor \t [ %lf ]\n",
+                        s->anp->lr_scale_factor);
         /* learning rate scale after */
-        else if (sscanf(cmd, "set LRScaleAfter %lf", &s->anp->lr_scale_after) == 1)
-                mprintf("Set LR scale after (%%epochs) [ %lf ]\n", s->anp->lr_scale_after);
+        else if (sscanf(cmd, "set LRScaleAfter %lf",
+                &s->anp->lr_scale_after) == 1)
+                mprintf("Set LR scale after (%%epochs) [ %lf ]\n",
+                        s->anp->lr_scale_after);
         /* momentum */
-        else if (sscanf(cmd, "set Momentum %lf", &s->anp->momentum) == 1)
-                mprintf("Set momentum \t\t [ %lf ]\n", s->anp->momentum);
+        else if (sscanf(cmd, "set Momentum %lf",
+                &s->anp->momentum) == 1)
+                mprintf("Set momentum \t\t [ %lf ]\n",
+                        s->anp->momentum);
         /* momentum scale factor */
-        else if (sscanf(cmd, "set MNScaleFactor %lf", &s->anp->mn_scale_factor) == 1)
-                mprintf("Set MN scale factor \t [ %lf ]\n", s->anp->mn_scale_factor);
+        else if (sscanf(cmd, "set MNScaleFactor %lf",
+                &s->anp->mn_scale_factor) == 1)
+                mprintf("Set MN scale factor \t [ %lf ]\n",
+                        s->anp->mn_scale_factor);
         /* momentum scale after */
-        else if (sscanf(cmd, "set MNScaleAfter %lf", &s->anp->mn_scale_after) == 1)
-                mprintf("Set MN scale after (%%epochs) [ %lf ]\n", s->anp->mn_scale_after);
+        else if (sscanf(cmd, "set MNScaleAfter %lf",
+                &s->anp->mn_scale_after) == 1)
+                mprintf("Set MN scale after (%%epochs) [ %lf ]\n",
+                        s->anp->mn_scale_after);
         /* weight decay */
-        else if (sscanf(cmd, "set WeightDecay %lf", &s->anp->weight_decay) == 1)
-                mprintf("Set weight decay \t\t [ %lf ]\n", s->anp->weight_decay);
+        else if (sscanf(cmd, "set WeightDecay %lf",
+                &s->anp->weight_decay) == 1)
+                mprintf("Set weight decay \t\t [ %lf ]\n",
+                        s->anp->weight_decay);
         /* weight decay scale factor */
-        else if (sscanf(cmd, "set WDScaleFactor %lf", &s->anp->wd_scale_factor) == 1)
-                mprintf("Set WD scale factor \t [ %lf ]\n", s->anp->wd_scale_factor);
+        else if (sscanf(cmd, "set WDScaleFactor %lf",
+                &s->anp->wd_scale_factor) == 1)
+                mprintf("Set WD scale factor \t [ %lf ]\n",
+                        s->anp->wd_scale_factor);
         /* weight decay scale after */
-        else if (sscanf(cmd, "set WDScaleAfter %lf", &s->anp->wd_scale_after) == 1)
-                mprintf("Set WD scale after (%%epochs) [ %lf ]\n", s->anp->wd_scale_after);
+        else if (sscanf(cmd, "set WDScaleAfter %lf",
+                &s->anp->wd_scale_after) == 1)
+                mprintf("Set WD scale after (%%epochs) [ %lf ]\n",
+                        s->anp->wd_scale_after);
         /* error threshold */
-        else if (sscanf(cmd, "set ErrorThreshold %lf", &s->anp->error_threshold) == 1)
-                mprintf("Set error threshold \t [ %lf ]\n", s->anp->error_threshold);
+        else if (sscanf(cmd, "set ErrorThreshold %lf",
+                &s->anp->error_threshold) == 1)
+                mprintf("Set error threshold \t [ %lf ]\n",
+                        s->anp->error_threshold);
         /* target radius */
-        else if (sscanf(cmd, "set TargetRadius %lf", &s->anp->target_radius) == 1)
-                mprintf("Set target radius \t\t [ %lf ]\n", s->anp->target_radius);
+        else if (sscanf(cmd, "set TargetRadius %lf",
+                &s->anp->target_radius) == 1)
+                mprintf("Set target radius \t\t [ %lf ]\n",
+                        s->anp->target_radius);
         /* zero error radius */
-        else if (sscanf(cmd, "set ZeroErrorRadius %lf", &s->anp->zero_error_radius) == 1)
-                mprintf("Set zero-error radius \t [ %lf ]\n", s->anp->zero_error_radius);
+        else if (sscanf(cmd, "set ZeroErrorRadius %lf",
+                &s->anp->zero_error_radius) == 1)
+                mprintf("Set zero-error radius \t [ %lf ]\n",
+                        s->anp->zero_error_radius);
         /* rprop initial update value */
-        else if (sscanf(cmd, "set RpropInitUpdate %lf", &s->anp->rp_init_update) == 1)
-                mprintf("Set init update (for Rprop)  [ %lf ]\n", s->anp->rp_init_update);
+        else if (sscanf(cmd, "set RpropInitUpdate %lf",
+                &s->anp->rp_init_update) == 1)
+                mprintf("Set init update (for Rprop)  [ %lf ]\n",
+                        s->anp->rp_init_update);
         /* rprop eta plus */
-        else if (sscanf(cmd, "set RpropEtaPlus %lf", &s->anp->rp_eta_plus) == 1)
-                mprintf("Set Eta+ (for Rprop) \t [ %lf ]\n", s->anp->rp_eta_plus);
+        else if (sscanf(cmd, "set RpropEtaPlus %lf",
+                &s->anp->rp_eta_plus) == 1)
+                mprintf("Set Eta+ (for Rprop) \t [ %lf ]\n",
+                        s->anp->rp_eta_plus);
         /* rprop eta minus */
-        else if (sscanf(cmd, "set RpropEtaMinus %lf", &s->anp->rp_eta_minus) == 1)
-                mprintf("Set Eta- (for Rprop) \t [ %lf ]\n", s->anp->rp_eta_minus);
+        else if (sscanf(cmd, "set RpropEtaMinus %lf",
+                &s->anp->rp_eta_minus) == 1)
+                mprintf("Set Eta- (for Rprop) \t [ %lf ]\n",
+                        s->anp->rp_eta_minus);
         /* delta-bar-delta increment rate */
-        else if (sscanf(cmd, "set DBDRateIncrement %lf", &s->anp->dbd_rate_increment) == 1)
-                mprintf("Set increment rate (for DBD) \t [ %lf ]\n", s->anp->dbd_rate_increment);
+        else if (sscanf(cmd, "set DBDRateIncrement %lf",
+                &s->anp->dbd_rate_increment) == 1)
+                mprintf("Set increment rate (for DBD) \t [ %lf ]\n",
+                        s->anp->dbd_rate_increment);
         /* delta-bar-delta decrement rate */
-        else if (sscanf(cmd, "set DBDRateDecrement %lf", &s->anp->dbd_rate_decrement) == 1)
-                mprintf("Set decrement rate (for DBD) \t [ %lf ]\n", s->anp->dbd_rate_decrement);
+        else if (sscanf(cmd, "set DBDRateDecrement %lf",
+                &s->anp->dbd_rate_decrement) == 1)
+                mprintf("Set decrement rate (for DBD) \t [ %lf ]\n",
+                        s->anp->dbd_rate_decrement);
 
         return true;
 }
 
 bool cmd_load_set(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE];
-        char arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* set name */
+        char arg2[MAX_ARG_SIZE]; /* set filename */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
+        /* input group size should be known */
         if (!s->anp->input) {
                 eprintf("Cannot load set - input group size unknown\n");
                 return true;
         }
+        
+        /* output group size should be known */
         if (!s->anp->output) {
                 eprintf("Cannot load set - output group size unknown\n");
                 return true;
         }
 
+        /* set should not already exist */
         if (find_array_element_by_name(s->anp->sets, arg1)) {
                 eprintf("Cannot load set - set '%s' already exists\n", arg1);
                 return true;
         }
 
-        struct set *set = load_set(arg1, arg2, s->anp->input->vector->size,
+        /* load set, if it exists */
+        struct set *set = load_set(arg1, arg2,
+                s->anp->input->vector->size,
                 s->anp->output->vector->size);
         if (!set) {
                 eprintf("Cannot load set - no such file '%s'\n", arg2);
                 return true;
         }
-                
+        
+        /* add set to active network */
         add_to_array(s->anp->sets, set);
         s->anp->asp = set;
 
@@ -1236,18 +1311,30 @@ bool cmd_load_set(char *cmd, char *fmt, struct session *s)
 
 bool cmd_remove_set(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* set name */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
+        /* find set */
         struct set *set = find_array_element_by_name(s->anp->sets, arg);
         if (!set) {
                 eprintf("Cannot change to set - no such set '%s'\n", arg);
                 return true;
         }
 
-        if (set == s->anp->asp)
+        /*
+         * If the set to be removed is the active set, try finding another
+         * active set.
+         */
+        if (set == s->anp->asp) {
                 s->anp->asp = NULL;
+                for (uint32_t i = 0; i < s->anp->sets->num_elements; i++)
+                        if (s->anp->sets->elements[i] != NULL
+                                && s->anp->sets->elements[i] != set)
+                                s->anp->asp = s->anp->sets->elements[i];
+        }
+
+        /* remove set */
         remove_from_array(s->anp->sets, set);
         free_set(set);
 
@@ -1280,16 +1367,16 @@ bool cmd_list_sets(char *cmd, char *fmt, struct session *s)
 
 bool cmd_change_set(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* set name */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
+        /* find set */
         struct set *set = find_array_element_by_name(s->anp->sets, arg);
         if (!set) {
                 eprintf("Cannot change to set - no such set '%s'\n", arg);
                 return true;
         }
-        
         s->anp->asp = set;
 
         mprintf("Changed to set \t\t [ %s ]\n", arg);
@@ -1302,6 +1389,7 @@ bool cmd_list_items(char *cmd, char *fmt, struct session *s)
         if (strcmp(cmd, fmt) != 0)
                 return false;
 
+        /* there should be an active set */
         if (!s->anp->asp) {
                 eprintf("Cannot list items - no active set\n");
                 return true;
@@ -1310,7 +1398,8 @@ bool cmd_list_items(char *cmd, char *fmt, struct session *s)
         cprintf("Available items in set '%s':\n", s->anp->asp->name);
         for (uint32_t i = 0; i < s->anp->asp->items->num_elements; i++) {
                 struct item *item = s->anp->asp->items->elements[i];
-                cprintf("* \"%s\" %d \"%s\"\n", item->name, item->num_events, item->meta);
+                cprintf("* \"%s\" %d \"%s\"\n",
+                        item->name, item->num_events, item->meta);
         }
 
         return true;
@@ -1318,10 +1407,11 @@ bool cmd_list_items(char *cmd, char *fmt, struct session *s)
 
 bool cmd_show_item(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* item name */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
+        /* find item */
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg);
         if (!item) {
                 eprintf("Cannot show item - no such item '%s'\n", arg);
@@ -1334,28 +1424,18 @@ bool cmd_show_item(char *cmd, char *fmt, struct session *s)
         cprintf("Events: %d\n", item->num_events);
         cprintf("\n");
         cprintf("(E: Event; I: Input; T: Target)\n");
-
         for (uint32_t i = 0; i < item->num_events; i++) {
-                /* print event number, and input vector */
                 cprintf("\n");
                 cprintf("E: %d\n", i + 1);
                 cprintf("I: ");
-                if (s->pprint)
-                        pprint_vector(item->inputs[i], s->scheme);
-                else
-                        print_vector(item->inputs[i]);
-
-                /* print target vector (if available) */
+                s->pprint ? pprint_vector(item->inputs[i], s->scheme)
+                          : print_vector(item->inputs[i]);
                 if (item->targets[i]) {
                         cprintf("T: ");
-                        if (s->pprint) {
-                                pprint_vector(item->targets[i], s->scheme);
-                        } else {
-                                print_vector(item->targets[i]);
-                        }
+                        s->pprint ? pprint_vector(item->targets[i], s->scheme)
+                                  : print_vector(item->targets[i]);
                 }
         }
-
         cprintf("\n");
 
         return true;
@@ -1388,7 +1468,7 @@ bool cmd_set_training_order(char *cmd, char *fmt, struct session *s)
 
 bool cmd_set_random_algorithm(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* training order */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
@@ -1419,7 +1499,7 @@ bool cmd_set_random_algorithm(char *cmd, char *fmt, struct session *s)
 
 bool cmd_set_learning_algorithm(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* learning algortihm */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
@@ -1441,7 +1521,7 @@ bool cmd_set_learning_algorithm(char *cmd, char *fmt, struct session *s)
 
 bool cmd_set_update_algorithm(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* update algortihm */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
@@ -1493,7 +1573,7 @@ bool cmd_set_update_algorithm(char *cmd, char *fmt, struct session *s)
 
 bool cmd_set_similarity_metric(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* similarity metric */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
@@ -1556,9 +1636,28 @@ bool cmd_train(char *cmd, char *fmt, struct session *s)
                 return false;
 
         mprintf("Training network '%s'\n", s->anp->name);
-        cprintf("\n");
 
         train_network(s->anp);
+
+        return true;
+}
+
+bool cmd_test_item(char *cmd, char *fmt, struct session *s)
+{
+        char arg[MAX_ARG_SIZE]; /* item name */
+        if (sscanf(cmd, fmt, arg) != 1)
+                return false;
+
+        /* find item */
+        struct item *item = find_array_element_by_name(s->anp->asp->items, arg);
+        if (!item) {
+                eprintf("Cannot test network - no such item '%s'\n", arg);
+                return true;
+        }
+
+        mprintf("Testing network '%s' with item '%s'\n", s->anp->name, arg);
+
+        test_network_with_item(s->anp, item, s->pprint, s->scheme);
 
         return true;
 }
@@ -1575,37 +1674,34 @@ bool cmd_test(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s)
-{
-        s->anp->ms_input = NULL;
-        s->anp->ms_set = NULL;
-
-        mprintf("Set single-stage training \t [ %s --> %s ]\n", 
-                s->anp->input->name, s->anp->output->name);
-        
-        return true;
-}
-
+/*
+ * TODO: Document this.
+ */
 bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* multi-stage input group name */
+        char arg2[MAX_ARG_SIZE]; /* multi-stage input set name */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
+        /* find multi-stage input group */
         struct group *g = find_array_element_by_name(s->anp->groups, arg1);
         if (g == NULL) {
-                eprintf("Cannot set multi-stage training-no such group '%s'\n", arg1);
+                eprintf("Cannot set multi-stage training-no such group '%s'\n",
+                        arg1);
                 return true;
         }
 
+        /* find multi-stage input set */
         struct set *set = find_array_element_by_name(s->anp->sets, arg2);
         if (!set) {
-                eprintf("Cannot set multi-stage training - no such set '%s'\n", arg2);
+                eprintf("Cannot set multi-stage training - no such set '%s'\n",
+                        arg2);
                 return true;
         }
 
         s->anp->ms_input = g;
-        s->anp->ms_set = set;
+        s->anp->ms_set   = set;
 
         mprintf("Set multi-stage training \t [ %s --> %s :: %s ==> %s ]\n", 
                 s->anp->input->name, s->anp->ms_input->name,
@@ -1614,22 +1710,14 @@ bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_test_item(char *cmd, char *fmt, struct session *s)
+bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
-        if (sscanf(cmd, fmt, arg) != 1)
-                return false;
+        s->anp->ms_input = NULL;
+        s->anp->ms_set   = NULL;
 
-        struct item *item = find_array_element_by_name(s->anp->asp->items, arg);
-        if (!item) {
-                eprintf("Cannot test network - no such item '%s'\n", arg);
-                return true;
-        }
-
-        mprintf("Testing network '%s' with item '%s'\n", s->anp->name, arg);
-
-        test_network_with_item(s->anp, item, s->pprint, s->scheme);
-
+        mprintf("Set single-stage training \t [ %s --> %s ]\n", 
+                s->anp->input->name, s->anp->output->name);
+        
         return true;
 }
 
@@ -1703,9 +1791,8 @@ bool cmd_weight_stats(char *cmd, char *fmt, struct session *s)
 
 bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
 {
+        char arg[MAX_ARG_SIZE]; /* group name */
         enum vector_type type;
-
-        char arg[MAX_ARG_SIZE];
         if (sscanf(cmd, "showUnits %s", arg) == 1)
                 type = vtype_units;
         else if (sscanf(cmd, "showError %s", arg) == 1)
@@ -1713,6 +1800,7 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
         else 
                 return false;
 
+        /* find group */
         struct group *g = find_array_element_by_name(s->anp->groups, arg);
         if (g == NULL) {
                 eprintf("Cannot show vector - no such group '%s'\n", arg);
@@ -1720,24 +1808,18 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
         }
 
         cprintf("\n");
-
-        if (type == vtype_units) {
+        switch (type) {
+        case vtype_units:
                 cprintf("Unit vector for '%s':\n\n", arg);
-                if (s->pprint) {
-                        pprint_vector(g->vector, s->scheme);
-                } else {
-                        print_vector(g->vector);
-                }
-        }
-        if (type == vtype_error) {
+                s->pprint ? pprint_vector(g->vector, s->scheme)
+                          : print_vector(g->vector);
+                break;
+        case vtype_error:
                 cprintf("Error vector for '%s':\n\n", arg);
-                if (s->pprint) {
-                        pprint_vector(g->error, s->scheme);
-                } else {
-                        print_vector(g->error);
-                }
+                s->pprint ? pprint_vector(g->error, s->scheme)
+                          : print_vector(g->error);
+                break;
         }
-
         cprintf("\n");
 
         return true;
@@ -1745,9 +1827,9 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
 
 bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
 {
+        char arg1[MAX_ARG_SIZE]; /* 'from' group name */
+        char arg2[MAX_ARG_SIZE]; /* 'to' group name */
         enum matrix_type type;
-
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
         /* weights */
         if (sscanf(cmd, "showWeights %s %s", arg1, arg2) == 2)
                 type = mtype_weights;
@@ -1760,20 +1842,21 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
         else
                 return false;
 
+        /* find 'from' group */
         struct group *fg = find_array_element_by_name(s->anp->groups, arg1);
-        struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
-
         if (fg == NULL) {
                 eprintf("Cannot show matrix - no such group '%s'\n", arg1);
                 return true;
         }
+
+        /* find 'to' group */
+        struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
         if (tg == NULL) {
                 eprintf("Cannot show matrix - no such group '%s'\n", arg2);
                 return true;
         }
 
-        cprintf("\n");
-
+        /* find outgoing 'from->to' projection */
         struct projection *fg_to_tg = NULL;
         for (uint32_t i = 0; i < fg->out_projs->num_elements; i++) {
                 if (((struct projection *)fg->out_projs->elements[i])->to == tg) {
@@ -1781,69 +1864,63 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                         break;
                 }
         }
-        if (fg_to_tg) {
-                if (type == mtype_weights) {
-                        cprintf("Weight matrix for projection '%s -> %s':\n\n", arg1, arg2);
-                        if (s->pprint) {
-                                pprint_matrix(fg_to_tg->weights, s->scheme);
-                        } else {
-                                print_matrix(fg_to_tg->weights);
-                        }
-                }
-                if (type == mtype_gradients) {
-                        mprintf("Gradient matrix for projection '%s -> %s':\n\n", arg1, arg2);                  
-                        if (s->pprint) {
-                                pprint_matrix(fg_to_tg->gradients, s->scheme);
-                        } else {
-                                print_matrix(fg_to_tg->gradients);
-                        }
-                }
-                if (type == mtype_dyn_pars) {
-                        mprintf("Dynamic learning parameters for projection '%s -> %s':\n\n",
-                                        arg1, arg2);               
-                        if (s->pprint) {
-                                pprint_matrix(fg_to_tg->dynamic_pars, s->scheme);
-                        } else {
-                                print_matrix(fg_to_tg->dynamic_pars);
-                        }
-                }
 
-                cprintf("\n");
-        } else {
+        /* projection should exist */
+        if (!fg_to_tg) {
                 eprintf("Cannot show matrix - no projection between groups '%s' and '%s'\n",
                         arg1, arg2);
                 return true;
         }
+
+        switch(type) {
+        case mtype_weights:
+                cprintf("Weight matrix for projection '%s -> %s':\n\n",
+                        arg1, arg2);
+                s->pprint ? pprint_matrix(fg_to_tg->weights, s->scheme)
+                          : print_matrix(fg_to_tg->weights);
+                break;
+        case mtype_gradients:
+                cprintf("Gradient matrix for projection '%s -> %s':\n\n",
+                        arg1, arg2);
+                s->pprint ? pprint_matrix(fg_to_tg->gradients, s->scheme)
+                          : print_matrix(fg_to_tg->gradients);
+                break;
+        case mtype_dyn_pars:
+                cprintf("Dynamic learning parameters for projection '%s -> %s':\n\n",
+                        arg1, arg2);
+                s->pprint ? pprint_matrix(fg_to_tg->dynamic_pars, s->scheme)
+                          : print_matrix(fg_to_tg->dynamic_pars);
+                break;
+        }
+        cprintf("\n");
 
         return true;
 }
 
 bool cmd_save_weights(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* filename */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
-        if (save_weight_matrices(s->anp, arg)) {
+        if (save_weight_matrices(s->anp, arg))
                 mprintf("Saved weights \t\t [ %s ]\n", arg);
-        } else {
+        else
                 eprintf("Cannot save weights to file '%s'\n", arg);
-        }
 
         return true;
 }
 
 bool cmd_load_weights(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* filename */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
-        if (load_weight_matrices(s->anp, arg)) {
+        if (load_weight_matrices(s->anp, arg))
                 mprintf("Loaded weights \t\t [ %s ]\n", arg);
-        } else {
+        else
                 eprintf("Cannot load weights from file '%s'\n", arg);
-        }
 
         return true;
 }
@@ -1854,19 +1931,18 @@ bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s)
                 return false;
 
         s->pprint = !s->pprint;
-
-        if (s->pprint) {
+        
+        if (s->pprint)
                 mprintf("Toggled pretty printing \t [ on ]\n");
-        } else {
+        else
                 mprintf("Toggled pretty printing \t [ off ]\n");
-        }
 
         return true;
 }
 
 bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* color scheme */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
@@ -1910,7 +1986,7 @@ bool cmd_dss_test(char *cmd, char *fmt, struct session *s)
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
-        cprintf("Testing network '%s':\n", s->anp->name);
+        mprintf("Testing network '%s':\n", s->anp->name);
 
         dss_test(s->anp);
 
@@ -1919,17 +1995,21 @@ bool cmd_dss_test(char *cmd, char *fmt, struct session *s)
 
 bool cmd_dss_scores(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* set name */
+        char arg2[MAX_ARG_SIZE]; /* item name */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
+        /* find set */
         struct set *set = find_array_element_by_name(s->anp->sets, arg1);
         if (!set) {
                 eprintf("Cannot compute scores - no such set '%s'\n", arg1);
                 return true;
         }
 
-        struct item *item = find_array_element_by_name(s->anp->asp->items, arg2);
+        /* find item */
+        struct item *item = find_array_element_by_name(s->anp->asp->items,
+                arg2);
         if (!item) {
                 eprintf("Cannot compute scores - no such item '%s'\n", arg2);
                 return true;
@@ -1940,12 +2020,17 @@ bool cmd_dss_scores(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
+/*
+ * TODO: Infer filename.
+ */
 bool cmd_dss_write_scores(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* set name */
+        char arg2[MAX_ARG_SIZE]; /* filename */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
+        /* find set */
         struct set *set = find_array_element_by_name(s->anp->sets, arg1);
         if (!set) {
                 eprintf("Cannot compute scores - no such set '%s'\n", arg1);
@@ -1959,25 +2044,33 @@ bool cmd_dss_write_scores(char *cmd, char *fmt, struct session *s)
 
 bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
-        double arg3;
+        char arg1[MAX_ARG_SIZE]; /* set name */
+        char arg2[MAX_ARG_SIZE]; /* item name */
+        double arg3;             /* inference score threshold */
         if (sscanf(cmd, fmt, arg1, arg2, &arg3) != 3)
                 return false;
 
+        /* find set */
         struct set *set = find_array_element_by_name(s->anp->sets, arg1);
         if (!set) {
-                eprintf("Cannot compute inferences - no such set '%s'\n", arg1);
+                eprintf("Cannot compute inferences - no such set '%s'\n",
+                        arg1);
                 return true;
         }
 
-        struct item *item = find_array_element_by_name(s->anp->asp->items, arg2);
+        /* find item */
+        struct item *item = find_array_element_by_name(s->anp->asp->items,
+                arg2);
         if (!item) {
-                eprintf("Cannot compute inferences - no such item '%s'\n", arg2);
+                eprintf("Cannot compute inferences - no such item '%s'\n",
+                        arg2);
                 return true;
         }
 
+        /* require a proper threshold */
         if (arg3 < -1.0 || arg3 > 1.0) {
-                eprintf("Cannot compute inferences - invalid score threshold '%lf'\n", arg3);
+                eprintf("Cannot compute inferences - invalid score threshold '%lf'\n",
+                        arg3);
                 return true;
 
         }
@@ -1989,18 +2082,24 @@ bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
 
 bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* set name */
+        char arg2[MAX_ARG_SIZE]; /* item name */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
+        /* find set */
         struct set *set = find_array_element_by_name(s->anp->sets, arg1);
         if (!set) {
-                eprintf("Cannot compute informativity metrics - no such set '%s'\n", arg1);
+                eprintf("Cannot compute informativity metrics - no such set '%s'\n",
+                        arg1);
                 return true;
         }
+        
+        /* find item */
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg2);
         if (!item) {
-                eprintf("Cannot compute informativity metrics - no such item '%s'\n", arg2);
+                eprintf("Cannot compute informativity metrics - no such item '%s'\n",
+                        arg2);
                 return true;
         }
         
@@ -2011,24 +2110,27 @@ bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_dss_write_word_information(char *cmd, char *fmt,
-                struct session *s)
+bool cmd_dss_write_word_information(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE];
+        char arg[MAX_ARG_SIZE]; /* set name */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
+        /* find set */
         struct set *set = find_array_element_by_name(s->anp->sets, arg);
         if (!set) {
-                eprintf("Cannot compute informativity metrics - no such set '%s'\n", arg);
+                eprintf("Cannot compute informativity metrics - no such set '%s'\n",
+                        arg);
                 return true;
         }
 
-        mprintf("Computing word informativity metrics \t [ %s :: %s ]\n", s->anp->asp->name, arg);
+        mprintf("Computing word informativity metrics \t [ %s :: %s ]\n",
+                s->anp->asp->name, arg);
 
         dss_write_word_information(s->anp, set);
 
-        mprintf("Written word informativity metrics \t [ %s.WIMs.csv ]\n", s->anp->asp->name);
+        mprintf("Written word informativity metrics \t [ %s.WIMs.csv ]\n",
+                s->anp->asp->name);
 
         return true;
 }
@@ -2039,19 +2141,26 @@ bool cmd_dss_write_word_information(char *cmd, char *fmt,
 
 bool cmd_dsys_proc_time(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* group name */
+        char arg2[MAX_ARG_SIZE]; /* item name */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
-        struct group *group = find_array_element_by_name(s->anp->groups, arg1);
+        /* find group */
+        struct group *group = find_array_element_by_name(s->anp->groups,
+                arg1);
         if (group == NULL) {
-                eprintf("Cannot test network - no such group '%s'\n", arg1);
+                eprintf("Cannot test network - no such group '%s'\n",
+                        arg1);
                 return true;
         }
 
-        struct item *item = find_array_element_by_name(s->anp->asp->items, arg2);
+        /* find item */
+        struct item *item = find_array_element_by_name(s->anp->asp->items,
+                arg2);
         if (!item) {
-                eprintf("Cannot test network - no such item '%s'\n", arg2);
+                eprintf("Cannot test network - no such item '%s'\n",
+                        arg2);
                 return true;
         }
         
@@ -2068,25 +2177,36 @@ bool cmd_dsys_proc_time(char *cmd, char *fmt, struct session *s)
 
 bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE], arg3[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* group name */
+        char arg2[MAX_ARG_SIZE]; /* 'control' item name */
+        char arg3[MAX_ARG_SIZE]; /* 'target' item name */
         if (sscanf(cmd, fmt, arg1, arg2, arg3) != 3)
                 return false;
-
-        struct group *gen = find_array_element_by_name(s->anp->groups, arg1);
+        
+        /* find group */
+        struct group *gen = find_array_element_by_name(s->anp->groups,
+                        arg1);
         if (gen == NULL) {
-                eprintf("Cannot compute ERP correlates - no such group '%s'\n", arg1);
+                eprintf("Cannot compute ERP correlates - no such group '%s'\n",
+                        arg1);
                 return true;
         }
 
-        struct item *item1 = find_array_element_by_name(s->anp->asp->items, arg2);
-        struct item *item2 = find_array_element_by_name(s->anp->asp->items, arg3);
-
+        /* find 'control' item */
+        struct item *item1 = find_array_element_by_name(s->anp->asp->items,
+                arg2);
         if (!item1) {
-                eprintf("Cannot compute ERP correlates - no such item '%s'\n", arg2);
+                eprintf("Cannot compute ERP correlates - no such item '%s'\n",
+                        arg2);
                 return true;
         }
+
+        /* find 'target' item */
+        struct item *item2 = find_array_element_by_name(s->anp->asp->items,
+                arg3);
         if (!item2) {
-                eprintf("Cannot compute ERP correlates - no such item '%s'\n", arg3);
+                eprintf("Cannot compute ERP correlates - no such item '%s'\n",
+                        arg3);
                 return true;
         }
 
@@ -2097,27 +2217,36 @@ bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
 
 bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE], arg2[MAX_ARG_SIZE];
+        char arg1[MAX_ARG_SIZE]; /* N400 generator group name */
+        char arg2[MAX_ARG_SIZE]; /* P600 generator group name */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
-        struct group *n400_gen = find_array_element_by_name(s->anp->groups, arg1);
-        struct group *p600_gen = find_array_element_by_name(s->anp->groups, arg2);
-
+        /* find 'N400 generator' group */
+        struct group *n400_gen = find_array_element_by_name(s->anp->groups,
+                arg1);
         if (n400_gen == NULL) {
-                eprintf("Cannot compute ERP correlates - no such group '%s'\n", arg1);
-                return true;
-        }
-        if (p600_gen == NULL) {
-                eprintf("Cannot compute ERP correlates - no such group '%s'\n", arg2);
+                eprintf("Cannot compute ERP correlates - no such group '%s'\n",
+                        arg1);
                 return true;
         }
 
-        mprintf("Computing ERP amplitudes \t [ N400 :: %s | P600 :: %s ]\n", arg1, arg2);
+        /* find 'P600 generator' group */
+        struct group *p600_gen = find_array_element_by_name(s->anp->groups,
+                arg2);
+        if (p600_gen == NULL) {
+                eprintf("Cannot compute ERP correlates - no such group '%s'\n",
+                        arg2);
+                return true;
+        }
+
+        mprintf("Computing ERP amplitudes \t [ N400 :: %s | P600 :: %s ]\n",
+                arg1, arg2);
 
         erp_amplitudes(s->anp, n400_gen, p600_gen);
 
-        mprintf("Written ERP amplitudes \t [ %s.ERPs.csv ]\n", s->anp->asp->name);
+        mprintf("Written ERP amplitudes \t [ %s.ERPs.csv ]\n",
+                s->anp->asp->name);
 
         return true;
 }

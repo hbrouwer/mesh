@@ -72,11 +72,11 @@ bool cmd_set_similarity_metric(char *cmd, char *fmt, struct session *s);
 bool cmd_init(char *cmd, char *fmt, struct session *s);
 bool cmd_reset(char *cmd, char *fmt, struct session *s);
 bool cmd_train(char *cmd, char *fmt, struct session *s);
-bool cmd_test(char *cmd, char *fmt, struct session *s);
 bool cmd_test_item(char *cmd, char *fmt, struct session *s);
+bool cmd_test(char *cmd, char *fmt, struct session *s);
 
-bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s);
 bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s);
+bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s);
 
 bool cmd_similarity_matrix(char *cmd, char *fmt, struct session *s);
 bool cmd_similarity_stats(char *cmd, char *fmt, struct session *s);
@@ -99,8 +99,7 @@ bool cmd_dss_scores(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_write_scores(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s);
-bool cmd_dss_write_word_information(char *cmd, char *fmt,
-                struct session *s);
+bool cmd_dss_write_word_information(char *cmd, char *fmt, struct session *s);
 
 bool cmd_dsys_proc_time(char *cmd, char *fmt, struct session *s);
 
@@ -213,12 +212,12 @@ const static struct command cmds[] = {
         {"init",                    NULL,            &cmd_init},
         {"reset",                   NULL,            &cmd_reset},
         {"train",                   NULL,            &cmd_train},
-        {"testItem",                "\"%[^\"]\"",    &cmd_test_item},        /* swapped */
+        {"testItem",                "\"%[^\"]\"",    &cmd_test_item},
         {"test",                    NULL,            &cmd_test},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"set SingleStage",         NULL,            &cmd_set_single_stage},
         {"set MultiStage",          "%s %s",         &cmd_set_multi_stage},
+        {"set SingleStage",         NULL,            &cmd_set_single_stage},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"similarityMatrix",        NULL,            &cmd_similarity_matrix},
@@ -262,7 +261,7 @@ const static struct command cmds[] = {
         {"erpAmplitudes",           "%s %s",         &cmd_erp_amplitudes},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {NULL,                      NULL,            NULL}                   /* tail */
+        {NULL,                      NULL,            NULL} /* tail */
 };
 
 #endif /* CMD_H */

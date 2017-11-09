@@ -82,18 +82,18 @@ void print_openmp_status()
         int m;
         omp_get_schedule(&k, &m);
         switch(k) {
-                case 1:
-                        cprintf("+ [ OpenMP ]: Static schedule (chunk size: %d)\n", m);
-                        break;
-                case 2:
-                        cprintf("+ [ OpenMP ]: Dynamic schedule (chunk size: %d)\n", m);
-                        break;
-                case 3:
-                        cprintf("+ [ OpenMP ]: Guided schedule (chunk size: %d)\n", m);
-                        break;
-                case 4:
-                        cprintf("+ [ OpenMP ]: Auto schedule\n");
-                        break;
+        case 1:
+                cprintf("+ [ OpenMP ]: Static schedule (chunk size: %d)\n", m);
+                break;
+        case 2:
+                cprintf("+ [ OpenMP ]: Dynamic schedule (chunk size: %d)\n", m);
+                break;
+        case 3:
+                cprintf("+ [ OpenMP ]: Guided schedule (chunk size: %d)\n", m);
+                break;
+        case 4:
+                cprintf("+ [ OpenMP ]: Auto schedule\n");
+                break;
         }
 }
 #endif /* _OPENMP */
