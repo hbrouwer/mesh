@@ -271,9 +271,9 @@ void shift_context_groups(struct network *n)
 
 /*
  * Shifts a context group chain. If group g has a context group c, then the
- * activity vector of g is copied into that of c. However, if c has itself
- * a context group c', then the activity pattern of c is first copied into
- * c', and so forth.
+ * activity vector of g is copied into that of c. However, if c has itself a
+ * context group c', then the activity pattern of c is first copied into c',
+ * and so forth.
  */
 void shift_context_group_chain(struct group *g,
                 struct vector *v)
@@ -287,8 +287,8 @@ void shift_context_group_chain(struct group *g,
 
 /*
  * If the stack pointer of an unfolded net is not yet pointing to stack/n,
- * increment the pointer. Otherwise shift the stack such that stack/n
- * become useable for the next tick.
+ * increment the pointer. Otherwise shift the stack such that stack/n become
+ * useable for the next tick.
  */
 void shift_pointer_or_stack(struct network *n)
 {

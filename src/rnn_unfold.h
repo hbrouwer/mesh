@@ -29,8 +29,8 @@ struct rnn_unfolded_network
         struct matrix **rcr_weights;        /* ... weights */
         struct matrix **rcr_prev_deltas;    /* ... previous weight deltas */
         struct matrix **rcr_dynamic_params; /* ... dynamic parameters */
-        uint32_t stack_size;                /* state stack size */
-        struct network **stack;             /* network state stack */
+        uint32_t stack_size;                /* stack size */
+        struct network **stack;             /* network stack */
         uint32_t sp;                        /* stack pointer */
 };
 
@@ -61,12 +61,12 @@ void rnn_detach_recurrent_groups(struct rnn_unfolded_network *un,
         struct network *n);
 
 void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,
-        struct network *n1, struct network *n2);
+        struct network *n, struct network *nn);
 void rnn_disconnect_duplicate_networks(struct rnn_unfolded_network *un,
-        struct network *n1, struct network *n2);
+        struct network *n, struct network *nn);
 
 void rnn_sum_gradients(struct rnn_unfolded_network *un);
-void rnn_add_gradients(struct group *g1, struct group *g2);
+void rnn_add_gradients(struct group *g, struct group *dg);
 
 void rnn_shift_stack(struct rnn_unfolded_network *un);
 
