@@ -30,7 +30,7 @@ struct array *create_array(enum array_type type)
                 goto error_out;
         memset(a, 0, sizeof(struct array));
 
-        a->type = type;
+        a->type         = type;
         a->num_elements = 0;
         a->max_elements = MAX_ARRAY_ELEMENTS;
 
