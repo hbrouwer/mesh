@@ -25,6 +25,22 @@
 
 static bool keep_running = true;
 
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Construct a similarity matrix. The rows of this matrix represent the output
+vectors for each item the active set, the columns the target vector for each
+item, and the cells the similarity between each output and target vector:
+
+                           target:                        
+                   |   A   |   B   |   C
+                ----------------------------
+                A  |  .99  |  .26  |  .30  |
+                ----------------------------
+        output: B  |  .31  |  .97  |  .12  |
+                ----------------------------
+                C  |  .44  |  .15  |  .98  |
+                ----------------------------
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 struct matrix *similarity_matrix(struct network *n)
 {
         struct sigaction sa;

@@ -22,6 +22,7 @@
 #include "array.h"
 #include "vector.h"
 
+/* set */
 struct set
 {
         char *name;                 /* name of this set */
@@ -29,6 +30,7 @@ struct set
         uint32_t *order;            /* order in which to present items */
 };
 
+/* item */
 struct item
 {
         char *name;                 /* name of this item */

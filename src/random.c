@@ -28,7 +28,8 @@ void randomize_gaussian(struct matrix *m, struct network *n)
 {
         for (uint32_t i = 0; i < m->rows; i++)
                 for (uint32_t j = 0; j < m->cols; j++)
-                        m->elements[i][j] = normrand(n->random_mu, n->random_sigma);
+                        m->elements[i][j] = normrand(
+                                n->random_mu, n->random_sigma);
 }
 
 /*
@@ -38,7 +39,7 @@ void randomize_range(struct matrix *m, struct network *n)
 {
         for (uint32_t i = 0; i < m->rows; i++)
                 for (uint32_t j = 0; j < m->cols; j++)
-                        m->elements[i][j] = (double)rand() / RAND_MAX
+                        m->elements[i][j] = ((double)rand() / RAND_MAX)
                                 * (n->random_max - n->random_min)
                                 + n->random_min;
 }
@@ -59,7 +60,7 @@ where h is the number of neurons in the group that is being projected to,
 and i the number of units in the projecting group. Based on this beta value
 and the Euclidean norm, each weight is then adjusted to:
 
-w_ij = (beta * w_ij) / en
+        w_ij = (beta * w_ij) / en
 
 References
 
@@ -136,7 +137,7 @@ void randomize_fan_in(struct matrix *m, struct network *n)
          */
         for (uint32_t i = 0; i < m->rows; i++)
                 for (uint32_t j = 0; j < m->cols; j++)
-                        m->elements[i][j] = n->random_min / m->cols
+                        m->elements[i][j] = (n->random_min / m->cols)
                                 + m->elements[i][j]
                                 * ((n->random_max - n->random_min) / m->cols);
 }

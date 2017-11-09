@@ -26,8 +26,8 @@
 #include "math.h"
 #include "network.h"
 #include "random.h"
-#include "sanity.h"
 #include "train.h"
+#include "verify.h"
 
 struct network *create_network(char *name, enum network_type type)
 {
@@ -102,8 +102,9 @@ void init_network(struct network *n)
 {
         n->initialized = false;
 
-        if (!verify_network_sanity(n)) {
-                eprintf("Cannot initialize network--network is not sane\n");
+        /* verify network */
+        if (!verify_network(n)) {
+                eprintf("Cannot initialize network--network cannot be verified\n");
                 return;
         }
 

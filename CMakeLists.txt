@@ -26,9 +26,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -march=core2")
 set(Mesh_SOURCE_FILES
         src/act.c src/array.c src/bp.c src/classify.c src/cli.c src/cmd.c
         src/error.c src/help.c src/main.c src/math.c src/matrix.c
-        src/network.c src/pprint.c src/random.c src/rnn_unfold.c src/sanity.c
-        src/session.c src/set.c src/similarity.c src/stats.c src/test.c
-        src/train.c src/vector.c src/modules/dss.c src/modules/dsys.c
+        src/network.c src/pprint.c src/random.c src/rnn_unfold.c src/session.c
+        src/set.c src/similarity.c src/stats.c src/test.c src/train.c 
+        src/vector.c src/verify.c src/modules/dss.c src/modules/dsys.c
         src/modules/erp.c)
 
 add_executable(mesh ${Mesh_SOURCE_FILES})

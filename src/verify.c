@@ -15,9 +15,15 @@
  */
 
 #include "main.h"
-#include "sanity.h"
+#include "verify.h"
 
-bool verify_network_sanity(struct network *n)
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+This implements various check to verify if a network architecture is sane.
+
+TODO: Add verification check.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+bool verify_network(struct network *n)
 {
         if (!n->input) {
                 eprintf("Network has no input group\n");
@@ -27,8 +33,7 @@ bool verify_network_sanity(struct network *n)
                 eprintf("Network has no output group\n");
                 return false;
         }
-
-        if(!verify_input_to_output(n, n->input)) {
+        if(!verify_input_to_output_path(n, n->input)) {
                 eprintf("No pathway from input group to output group\n");
                 return false;
         }
@@ -36,17 +41,14 @@ bool verify_network_sanity(struct network *n)
         return true;
 }
 
-bool verify_input_to_output(struct network *n, struct group *g)
+bool verify_input_to_output_path(struct network *n, struct group *g)
 {
         bool reachable = false;
-
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *p = g->out_projs->elements[i];
-
                 if (p->to == n->output)
                         return true;
-
-                reachable = verify_input_to_output(n, p->to);
+                reachable = verify_input_to_output_path(n, p->to);
         }
 
         return reachable;

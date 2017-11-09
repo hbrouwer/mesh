@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-#ifndef SANITY_H
-#define SANITY_H
+#ifndef VERIFY_H
+#define VERIFY_H
 
 #include <stdbool.h>
 
 #include "network.h"
 
-bool verify_network_sanity(struct network *n);
-bool verify_input_to_output(struct network *n, struct group *g);
+bool verify_network(struct network *n);
+bool verify_input_to_output_path(struct network *n, struct group *g);
 
-#endif /* SANITY_H */
+#endif /* VERIFY_H */
