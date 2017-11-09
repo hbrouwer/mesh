@@ -52,9 +52,15 @@ struct matrix *similarity_matrix(struct network *n)
         keep_running = true;
 
         struct matrix *sm;
-        if (n->type == ntype_ffn) sm = ffn_network_sm(n);
-        if (n->type == ntype_srn) sm = ffn_network_sm(n);
-        if (n->type == ntype_rnn) sm = rnn_network_sm(n);
+        switch (n->type) {
+        case ntype_ffn: /* fall through */
+        case ntype_srn:
+                sm = ffn_network_sm(n);
+                break;
+        case ntype_rnn:
+                sm = rnn_network_sm(n);
+                break;
+        }
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);

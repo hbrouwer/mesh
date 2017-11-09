@@ -618,8 +618,8 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                 /*
                                  * Bind update value u_ij to u_max.
                                  */
-                                p->dynamic_pars->elements[i][j] = minimum(
-                                        p->dynamic_pars->elements[i][j] * n->rp_eta_plus,
+                                p->dynamic_params->elements[i][j] = minimum(
+                                        p->dynamic_params->elements[i][j] * n->rp_eta_plus,
                                         RP_MAX_STEP_SIZE);
 
                                 /*
@@ -630,7 +630,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  * w_ij = w_ij + Dw_ij
                                  */
                                 weight_delta += -sign(p->gradients->elements[i][j]) 
-                                        * p->dynamic_pars->elements[i][j];
+                                        * p->dynamic_params->elements[i][j];
                                 p->weights->elements[i][j] += weight_delta;
 
                         /*
@@ -644,8 +644,8 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                 /*
                                  * Bind update value u_ij to u_min.
                                  */
-                                p->dynamic_pars->elements[i][j] = maximum(
-                                        p->dynamic_pars->elements[i][j] * n->rp_eta_minus,
+                                p->dynamic_params->elements[i][j] = maximum(
+                                        p->dynamic_params->elements[i][j] * n->rp_eta_minus,
                                         RP_MIN_STEP_SIZE);
 
                                 /*
@@ -680,7 +680,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  */
                                 if (n->rp_type == RPROP_MINUS || n->rp_type == IRPROP_MINUS) {
                                         weight_delta += -sign(p->gradients->elements[i][j]) *
-                                                p->dynamic_pars->elements[i][j];
+                                                p->dynamic_params->elements[i][j];
                                         p->weights->elements[i][j] += weight_delta;
                                 }
 
@@ -699,7 +699,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  * w_ij = w_ij + Dw_ij
                                  */
                                 weight_delta += -sign(p->gradients->elements[i][j])
-                                        * p->dynamic_pars->elements[i][j];
+                                        * p->dynamic_params->elements[i][j];
                                 p->weights->elements[i][j] += weight_delta;
                         }
 
@@ -1174,7 +1174,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                          *
                          * Dw_ij = -esilon * dE/dw_ij
                          */
-                        weight_delta += -p->dynamic_pars->elements[i][j]
+                        weight_delta += -p->dynamic_params->elements[i][j]
                                 * p->gradients->elements[i][j];
 
                         /*
@@ -1272,7 +1272,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                                  * De_ij = -phi * e_ij(t)
                                  */
                                 lr_delta = -n->dbd_rate_decrement
-                                        * p->dynamic_pars->elements[i][j];
+                                        * p->dynamic_params->elements[i][j];
                         }
 
                         /*
@@ -1280,7 +1280,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                          *
                          * e_ij = e_ij + De_ij
                          */
-                        p->dynamic_pars->elements[i][j] += lr_delta;
+                        p->dynamic_params->elements[i][j] += lr_delta;
 
                         /*
                          * Determine the exponential average of the current

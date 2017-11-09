@@ -53,41 +53,26 @@ void train_network(struct network *n)
 
 void train_network_with_bp(struct network *n)
 {
-        /* make sure training set is ordered, if required */
-        if (n->training_order == train_ordered)
-                order_set(n->asp);
-
         uint32_t item_itr = 0;
         for (uint32_t epoch = 1; epoch <= n->max_epochs; epoch++) {
-                n->status->epoch = epoch;
+                n->status->epoch      = epoch;
                 n->status->prev_error = n->status->error;
-                n->status->error = 0.0;
+                n->status->error      = 0.0;
 
                 /* reorder training set, if required */
-                if (item_itr == 0) {
-                        if (n->training_order == train_permuted)
-                                permute_set(n->asp);
-                        if (n->training_order == train_randomized)
-                                randomize_set(n->asp);
-                }
+                if (item_itr == 0) reorder_training_set(n);
 
                 /* train network on one batch */
                 for (uint32_t i = 0; i < n->batch_size; i++) {
-                        /* abort after signal */
-                        if (!keep_running)
-                                return;
-
-                        /* 
-                         * Select training item, and set training item
-                         * iterator to the beginning of the training set if
-                         * necessary.
-                         */
+                        if (!keep_running) return;
+                
+                        /* select next item */
                         uint32_t item_idx = n->asp->order[item_itr++];
                         struct item *item = n->asp->items->elements[item_idx];
                         if (item_itr == n->asp->items->num_elements)
                                 item_itr = 0;
-
-                        /* train network on item */
+                
+                        /* train network with item */
                         train_ffn_network_with_item(n, item);
                 }
 
@@ -97,10 +82,8 @@ void train_network_with_bp(struct network *n)
                         break;
                 }
 
-                /* update network's weights */
+                /* update weights, and parameters */
                 n->update_algorithm(n);
-
-                /* scale learning parameters */
                 scale_learning_rate(n);
                 scale_momentum(n);
                 scale_weight_decay(n);
@@ -114,33 +97,25 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
         if (n->type == ntype_srn)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
-                /* feed activation forward */
                 if (i > 0 && n->type == ntype_srn)
                         shift_context_groups(n);
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 
-                /* 
-                 * Skip error backpropagation, if there is no target for the
-                 * current event.
-                 */
-                if (!item->targets[i])
-                        continue;
+                /* skip backpropagtation, if there is no target */
+                if (!item->targets[i]) continue;
 
-                struct group *g = n->output;
+                struct group *g   = n->output;
                 struct vector *tv = item->targets[i];
-                double tr = n->target_radius;
-                double zr = n->zero_error_radius;
+                double tr         = n->target_radius;
+                double zr         = n->zero_error_radius;
 
                 /* backpropagate error */
                 reset_ffn_error_signals(n);
                 bp_output_error(g, tv, tr, zr);
                 bp_backpropagate_error(n, g);
 
-                /* 
-                 * Update network error if all of the item's events have
-                 * been processed.
-                 */
+                /* update network error at the last event */
                 if (i == item->num_events - 1) {
                         double error = n->output->err_fun->fun(g, tv, tr, zr);
                         error /= n->batch_size;
@@ -154,13 +129,16 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
                  */
                 if (n->ms_input) {
                         struct item *ms_item = find_array_element_by_name(
-                                        n->ms_set->items, item->name);
-                        if (!ms_item) {
+                                        n->ms_set->items,
+                                        item->name);
+                        if (ms_item) {
+                                copy_vector(
+                                        n->ms_input->vector,
+                                        ms_item->inputs[i]);
+                                feed_forward(n, n->ms_input);       
+                        } else {
                                 eprintf("No matching item in multi-stage training\n");
-                                continue;
                         }
-                        copy_vector(n->ms_input->vector, ms_item->inputs[i]);
-                        feed_forward(n, n->ms_input);
                 }
         }
 }
@@ -169,40 +147,29 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
                  **** backpropagation through time ****
                  **************************************/
 
+/*
+ * TODO: Check logic.
+ */
 void train_network_with_bptt(struct network *n)
 {
-        /* make sure training set is ordered, if required */
-        if (n->training_order == train_ordered)
-                order_set(n->asp);
-
         uint32_t item_itr = 0;
         for (uint32_t epoch = 1; epoch <= n->max_epochs; epoch++) {
-                n->status->epoch = epoch;
+                if (!keep_running) return;
+
+                n->status->epoch      = epoch;
                 n->status->prev_error = n->status->error;
-                n->status->error = 0.0;
-
-                /* abort after signal */
-                if (!keep_running)
-                        return;
-
+                n->status->error      = 0.0;
+                
                 /* reorder training set, if required */
-                if (item_itr == 0) {
-                        if (n->training_order == train_permuted)
-                                permute_set(n->asp);
-                        if (n->training_order == train_randomized)
-                                randomize_set(n->asp);
-                }
+                if (item_itr == 0) reorder_training_set(n);
 
-                /* 
-                 * Select training item, and set training item iterator to
-                 * the beginning of the training set if necessary.
-                 */
+                /* select next item */
                 uint32_t item_idx = n->asp->order[item_itr++];
                 struct item *item = n->asp->items->elements[item_idx];
                 if (item_itr == n->asp->items->num_elements)
                         item_itr = 0;
-                
-                /* train network on item */
+
+                /* train network with item */
                 train_rnn_network_with_item(n, item);
 
                 /* stop training, if threshold was reached */ 
@@ -211,7 +178,7 @@ void train_network_with_bptt(struct network *n)
                         break;
                 }
 
-                /* scale learning parameters */
+                /* update learning parameters */
                 scale_learning_rate(n);
                 scale_momentum(n);
                 scale_weight_decay(n);
@@ -220,6 +187,9 @@ void train_network_with_bptt(struct network *n)
         }
 }
 
+/*
+ * TODO: Check logic.
+ */
 void train_rnn_network_with_item(struct network *n, struct item *item)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
@@ -228,42 +198,58 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
         reset_recurrent_groups(un->stack[un->sp]);
         reset_rnn_error_signals(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
-                /* feed activation forward */
-                copy_vector(un->stack[un->sp]->input->vector, item->inputs[i]);
-                feed_forward(un->stack[un->sp], un->stack[un->sp]->input);
+                copy_vector(
+                        un->stack[un->sp]->input->vector,
+                        item->inputs[i]);
+                feed_forward(
+                        un->stack[un->sp],
+                        un->stack[un->sp]->input);
 
-                /* 
-                 * Skip error backpropagation, if there is no target for the
-                 * current event.
-                 */                
-                if (!item->targets[i])
-                        goto next_tick;
+                /* skip backpropagation, if there is no target */             
+                if (!item->targets[i]) goto next_tick;
 
-                struct group *g = un->stack[un->sp]->output;
+                struct group *g   = un->stack[un->sp]->output;
                 struct vector *tv = item->targets[i];
-                double tr = n->target_radius;
-                double zr = n->zero_error_radius;
-                
+                double tr         = n->target_radius;
+                double zr         = n->zero_error_radius;
+
                 /* compute error for current item */
                 bp_output_error(g, tv, tr, zr);
 
-                /* backpropagate error through time (if stack is full) */
+                /* 
+                 * If unfolded network stack is full, backpropagate error
+                 * through time, update network error, and update weights.
+                 */
                 if (un->sp == un->stack_size - 1) {
                         /* backpropagate error */
                         bp_backpropagate_error(un->stack[un->sp], g);
-
-                        /* update network's error */
-                        n->status->error += n->output->err_fun->fun(g, tv, tr, zr);
-
-                        /* sum gradients, and update weights */
+                        /* update network error */
+                        n->status->error +=
+                                n->output->err_fun->fun(g, tv, tr, zr);
+                        /* update weights */        
                         rnn_sum_gradients(un);
                         n->update_algorithm(un->stack[0]);
                 }
 
-                // XXX: What about multi-stage training?
+                // TODO: Multi-stage training.
 
 next_tick:
                 shift_pointer_or_stack(n);
+        }
+}
+
+void reorder_training_set(struct network *n)
+{
+        switch (n->training_order) {
+        case train_ordered:
+                order_set(n->asp);
+                break;
+        case train_permuted:
+                permute_set(n->asp);
+                break;
+        case train_randomized:
+                randomize_set(n->asp);
+                break;
         }
 }
 
@@ -279,9 +265,9 @@ void print_training_progress(struct network *n)
 
 void print_training_summary(struct network *n)
 {
-        pprintf("\n");
-        pprintf("Training finished after %d epoch(s) -- Network error: %f\n",
-                        n->status->epoch, n->status->error);
+        pprintf("\nTraining finished after %d epoch(s) -- Network error: %f\n",
+                        n->status->epoch,
+                        n->status->error);
 }
 
 void scale_learning_rate(struct network *n)
@@ -291,7 +277,7 @@ void scale_learning_rate(struct network *n)
                 double lr = n->learning_rate;
                 n->learning_rate *= n->lr_scale_factor;
                 mprintf("scaled learning rate ... \t ( %lf => %lf )\n",
-                                lr, n->learning_rate);
+                        lr, n->learning_rate);
         }
 }
 
@@ -302,7 +288,7 @@ void scale_momentum(struct network *n)
                 double mn = n->momentum;
                 n->momentum *= n->mn_scale_factor;
                 mprintf("scaled momentum ... \t ( %lf => %lf )\n",
-                                mn, n->momentum);
+                        mn, n->momentum);
         }
 }
 
@@ -313,7 +299,7 @@ void scale_weight_decay(struct network *n)
                 double wd = n->weight_decay;
                 n->weight_decay *= n->wd_scale_factor;
                 mprintf("scaled weight decay ... \t ( %lf => %lf)\n",
-                                wd, n->weight_decay);
+                        wd, n->weight_decay);
         }
 }
 

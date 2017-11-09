@@ -673,14 +673,14 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
                 struct matrix *prev_deltas = create_matrix(
                         fg->vector->size, tg->vector->size);
                 /* dynamic learning parameters matrix */
-                struct matrix *dynamic_pars = create_matrix(
+                struct matrix *dynamic_params = create_matrix(
                         fg->vector->size, tg->vector->size);
 
                 /* add projections */
                 struct projection *op = create_projection(tg, weights,
-                        gradients, prev_gradients, prev_deltas, dynamic_pars);
+                        gradients, prev_gradients, prev_deltas, dynamic_params);
                 struct projection *ip = create_projection(fg, weights,
-                        gradients, prev_gradients, prev_deltas, dynamic_pars);
+                        gradients, prev_gradients, prev_deltas, dynamic_params);
 
                 add_to_array(fg->out_projs, op);
                 add_to_array(tg->inc_projs, ip);
@@ -1094,14 +1094,14 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
         struct matrix *prev_deltas = create_matrix(
                 fg->vector->size, tg->vector->size);
         /* dynamic learning parameters matrix */
-        struct matrix *dynamic_pars = create_matrix(
+        struct matrix *dynamic_params = create_matrix(
                 fg->vector->size, tg->vector->size);
 
         /* add projections */
         struct projection *op = create_projection(tg, weights,
-                gradients, prev_gradients, prev_deltas, dynamic_pars);
+                gradients, prev_gradients, prev_deltas, dynamic_params);
         struct projection *ip = create_projection(fg, weights,
-                gradients, prev_gradients, prev_deltas, dynamic_pars);
+                gradients, prev_gradients, prev_deltas, dynamic_params);
         
         /* freeze projections */
         op->frozen = true;
@@ -1133,7 +1133,7 @@ bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s)
         /* max number of epochs */
         else if (sscanf(cmd, "set MaxEpochs %d",
                 &s->anp->max_epochs) == 1)
-                mprintf("Set maximum #epochs \t [ %d ]\n",
+                mprintf("Set maximum #epochs \t\t [ %d ]\n",
                         s->anp->max_epochs);
         /* report after */
         else if (sscanf(cmd, "set ReportAfter %d",
@@ -1148,7 +1148,7 @@ bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s)
         /* number of back ticks */
         else if (sscanf(cmd, "set BackTicks %d",
                 &s->anp->back_ticks) == 1)
-                mprintf("Set BPTT back ticks \t [ %d ]\n",
+                mprintf("Set BPTT back ticks \t\t [ %d ]\n",
                         s->anp->back_ticks);
 
         return true;
@@ -1224,7 +1224,7 @@ bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s)
         /* error threshold */
         else if (sscanf(cmd, "set ErrorThreshold %lf",
                 &s->anp->error_threshold) == 1)
-                mprintf("Set error threshold \t [ %lf ]\n",
+                mprintf("Set error threshold \t\t [ %lf ]\n",
                         s->anp->error_threshold);
         /* target radius */
         else if (sscanf(cmd, "set TargetRadius %lf",
@@ -1888,8 +1888,8 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
         case mtype_dyn_pars:
                 cprintf("Dynamic learning parameters for projection '%s -> %s':\n\n",
                         arg1, arg2);
-                s->pprint ? pprint_matrix(fg_to_tg->dynamic_pars, s->scheme)
-                          : print_matrix(fg_to_tg->dynamic_pars);
+                s->pprint ? pprint_matrix(fg_to_tg->dynamic_params, s->scheme)
+                          : print_matrix(fg_to_tg->dynamic_params);
                 break;
         }
         cprintf("\n");

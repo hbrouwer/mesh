@@ -187,7 +187,7 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
                          * network.
                          */
                         if ((tokens = strtok(NULL, " ")) == NULL)
-                                goto finalize_item;
+                                continue;
                         targets[i] = create_vector(output_size);
                         for (uint32_t j = 0; j < output_size; j++) {
                                 if (!(tokens = strtok(NULL, " ")))
@@ -196,10 +196,8 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
                                         &targets[i]->elements[j]) != 1)
                                         goto error_out;
                         }
-                        
                 }
 
-finalize_item:
                 /* create an item, and add it to the set */
                 item = create_item(name, num_events, meta, inputs, targets);
                 add_to_array(s->items, item);

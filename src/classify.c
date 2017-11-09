@@ -52,9 +52,14 @@ struct matrix *confusion_matrix(struct network *n)
         keep_running = true;
 
         struct matrix *cm;
-        if (n->type == ntype_ffn) cm = ffn_network_cm(n);
-        if (n->type == ntype_srn) cm = ffn_network_cm(n);
-        if (n->type == ntype_rnn) cm = rnn_network_cm(n);
+        switch (n->type) {
+        case ntype_ffn: /* fall through */
+        case ntype_srn:
+                cm = ffn_network_cm(n);
+                break;
+        case ntype_rnn:
+                cm = rnn_network_cm(n);
+        }
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);

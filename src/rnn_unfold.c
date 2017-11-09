@@ -105,9 +105,9 @@ struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
         memset(un->rcr_prev_deltas, 0, block_size);
 
         /* array for dynamic learning parameter matrices */
-        if (!(un->rcr_dynamic_pars = malloc(block_size)))
+        if (!(un->rcr_dynamic_params = malloc(block_size)))
                 goto error_out;
-        memset(un->rcr_dynamic_pars, 0, block_size);
+        memset(un->rcr_dynamic_params, 0, block_size);
 
         /*
          * Fill the constructed arrays with the required matrices, and
@@ -131,11 +131,11 @@ struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n)
                  * Rprop is used, by constrast, we set its values to the
                  * initial Rprop update value.
                  */
-                un->rcr_dynamic_pars[i] = create_matrix(vz, vz);
+                un->rcr_dynamic_params[i] = create_matrix(vz, vz);
                 if (n->update_algorithm == bp_update_dbd)
-                        fill_matrix_with_value(un->rcr_dynamic_pars[i], n->learning_rate);
+                        fill_matrix_with_value(un->rcr_dynamic_params[i], n->learning_rate);
                 if (n->update_algorithm == bp_update_rprop)
-                        fill_matrix_with_value(un->rcr_dynamic_pars[i], n->rp_init_update);
+                        fill_matrix_with_value(un->rcr_dynamic_params[i], n->rp_init_update);
         }
 
         /* 
@@ -184,11 +184,11 @@ void rnn_free_unfolded_network(struct rnn_unfolded_network *un)
         for (uint32_t i = 0; i < un->rcr_groups->num_elements; i++) {
                 free_matrix(un->rcr_weights[i]);
                 free_matrix(un->rcr_prev_deltas[i]);
-                free_matrix(un->rcr_dynamic_pars[i]);
+                free_matrix(un->rcr_dynamic_params[i]);
         }
         free(un->rcr_weights);
         free(un->rcr_prev_deltas);
-        free(un->rcr_dynamic_pars);
+        free(un->rcr_dynamic_params);
 
         /* remove the array of recurrent groups */
         free_array(un->rcr_groups);
@@ -403,7 +403,7 @@ struct projection *rnn_duplicate_projection(
         dp->gradients = gradients;
         dp->prev_gradients = prev_gradients;
         dp->prev_deltas = p->prev_deltas;     /* <-- shared */
-        dp->dynamic_pars = p->dynamic_pars;   /* <-- shared */
+        dp->dynamic_params = p->dynamic_params;   /* <-- shared */
         
         // XXX: What about frozen projections?
 
@@ -469,11 +469,11 @@ void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
                 struct projection *op =
                         create_projection(g1, un->rcr_weights[i], gradients,
                                 prev_gradients, un->rcr_prev_deltas[i],
-                                un->rcr_dynamic_pars[i]);
+                                un->rcr_dynamic_params[i]);
                 struct projection *ip =
                         create_projection(g2, un->rcr_weights[i], gradients,
                                 prev_gradients, un->rcr_prev_deltas[i],
-                                un->rcr_dynamic_pars[i]);
+                                un->rcr_dynamic_params[i]);
 
                 op->recurrent = true;
                 ip->recurrent = true;
@@ -535,11 +535,11 @@ void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,
                 struct projection *op =
                         create_projection(g2, un->rcr_weights[i], gradients,
                                 prev_gradients, un->rcr_prev_deltas[i],
-                                un->rcr_dynamic_pars[i]);
+                                un->rcr_dynamic_params[i]);
                 struct projection *ip =
                         create_projection(g1, un->rcr_weights[i], gradients,
                                 prev_gradients, un->rcr_prev_deltas[i],
-                                un->rcr_dynamic_pars[i]);
+                                un->rcr_dynamic_params[i]);
 
                 op->recurrent = true;
                 ip->recurrent = true;

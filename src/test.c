@@ -25,6 +25,10 @@
 
 static bool keep_running = true;
 
+                /**********************
+                 **** test network ****
+                 **********************/
+
 void test_network(struct network *n)
 {
         struct sigaction sa;
@@ -35,9 +39,15 @@ void test_network(struct network *n)
 
         keep_running = true;
 
-        if (n->type == ntype_ffn) test_ffn_network(n);
-        if (n->type == ntype_srn) test_ffn_network(n);
-        if (n->type == ntype_rnn) test_rnn_network(n);
+        switch (n->type) {
+        case ntype_ffn: /* fall through */
+        case ntype_srn:
+                test_ffn_network(n);
+                break;
+        case ntype_rnn:
+                test_rnn_network(n);
+                break;
+        }
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
@@ -50,16 +60,12 @@ void test_ffn_network(struct network *n)
 
         /* test network on all items in the current set */
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                if (!keep_running) return;
                 struct item *item = n->asp->items->elements[i];
-
-                /* abort after signal */
-                if (!keep_running)
-                        return;
 
                 if (n->type == ntype_srn)
                         reset_context_groups(n);
                 for (uint32_t j = 0; j < item->num_events; j++) {
-                        /* feed activation forward */
                         if (j > 0 && n->type == ntype_srn)
                                 shift_context_groups(n);
                         copy_vector(n->input->vector, item->inputs[j]);
@@ -69,12 +75,11 @@ void test_ffn_network(struct network *n)
                         if (!(item->targets[j] && j == item->num_events - 1))
                                 continue;
 
-                        struct group *g = n->output;
+                        struct group *g   = n->output;
                         struct vector *tv = item->targets[j];
-                        double tr = n->target_radius;
-                        double zr = n->zero_error_radius;
+                        double tr         = n->target_radius;
+                        double zr         = n->zero_error_radius;
 
-                        /* compute error */
                         double error = n->output->err_fun->fun(g, tv, tr, zr);
                         n->status->error += error;
                         if (error <= n->error_threshold)
@@ -93,31 +98,26 @@ void test_rnn_network(struct network *n)
 
         /* test network on all items in the current set */
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                if (!keep_running) return;
                 struct item *item = n->asp->items->elements[i];
-
-                /* abort after signal */
-                if (!keep_running)
-                        return;
 
                 reset_recurrent_groups(un->stack[un->sp]);
                 for (uint32_t j = 0; j < item->num_events; j++) {
-                        /* feed activation forward */
-                        copy_vector(un->stack[un->sp]->input->vector, item->inputs[j]);
-                        feed_forward(un->stack[un->sp], un->stack[un->sp]->input);
+                        copy_vector(
+                                un->stack[un->sp]->input->vector,
+                                item->inputs[j]);
+                        feed_forward(
+                                un->stack[un->sp],
+                                un->stack[un->sp]->input);
 
-                        /*
-                         * Only compute error if there is a target for the
-                         * current event.
-                         */
-                        if (!item->targets[j])
-                                goto next_tick;
+                        /* only compute error if event has a target */
+                        if (!item->targets[j]) goto next_tick;
 
-                        struct group *g = un->stack[un->sp]->output;
+                        struct group *g   = un->stack[un->sp]->output;
                         struct vector *tv = item->targets[j];
-                        double tr = n->target_radius;
-                        double zr = n->zero_error_radius;
+                        double tr         = n->target_radius;
+                        double zr         = n->zero_error_radius;
 
-                        /* compute error */
                         double error = n->output->err_fun->fun(g, tv, tr, zr);
                         n->status->error += error;
                         if (error < n->error_threshold)
@@ -131,15 +131,22 @@ next_tick:
         print_testing_summary(n, threshold_reached);
 }
 
+                /********************************
+                 **** test network with item ****
+                 ********************************/
+
 void test_network_with_item(struct network *n, struct item *item,
         bool pprint, enum color_scheme scheme)
 {
-        if (n->type == ntype_ffn)
+        switch (n->type) {
+        case ntype_ffn: /* fall through */
+        case ntype_srn:
                 test_ffn_network_with_item(n, item, pprint, scheme);
-        if (n->type == ntype_srn)
-                test_ffn_network_with_item(n, item, pprint, scheme);
-        if (n->type == ntype_rnn)
+                break;
+        case ntype_rnn:
                 test_rnn_network_with_item(n, item, pprint, scheme);
+                break;
+        }
 }
 
 void test_ffn_network_with_item(struct network *n, struct item *item,
@@ -157,51 +164,36 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
         if (n->type == ntype_srn)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
-                /* print event number, and input vector */
+                if (i > 0 && n->type == ntype_srn)
+                shift_context_groups(n);
+                        copy_vector(n->input->vector, item->inputs[i]);
+                        feed_forward(n, n->input);
+
                 cprintf("\n");
                 cprintf("E: %d\n", i + 1);
                 cprintf("I: ");
-                if (pprint)
-                        pprint_vector(item->inputs[i], scheme);
-                else
-                        print_vector(item->inputs[i]);
-
-                /* feed activation forward */
-                if (i > 0 && n->type == ntype_srn)
-                        shift_context_groups(n);
-                copy_vector(n->input->vector, item->inputs[i]);
-                feed_forward(n, n->input);
-
-                /* print target vector (if available) */
+                pprint ? pprint_vector(item->inputs[i], scheme)
+                       : print_vector(item->inputs[i]);
                 if (item->targets[i]) {
                         cprintf("T: ");
-                        if (pprint) {
-                                pprint_vector(item->targets[i], scheme);
-                        } else {
-                                print_vector(item->targets[i]);
-                        }
+                        pprint ? pprint_vector(item->targets[i], scheme)
+                               : print_vector(item->targets[i]);
                 }
-
-                /* print output vector */
                 cprintf("O: ");
-                if (pprint)
-                        pprint_vector(n->output->vector, scheme);
-                else
-                        print_vector(n->output->vector);
+                pprint ? pprint_vector(n->output->vector, scheme)
+                       : print_vector(n->output->vector);
 
                 /* only compute and print error for last event */
                 if (!(i == item->num_events - 1) || !item->targets[i])
                         continue;
 
-                struct group *g = n->output;
+                struct group *g   = n->output;
                 struct vector *tv = item->targets[i];
-                double tr = n->target_radius;
-                double zr = n->zero_error_radius; 
+                double tr         = n->target_radius;
+                double zr         = n->zero_error_radius; 
 
-                /* compute and print error */
                 n->status->error += n->output->err_fun->fun(g, tv, tr, zr);
-                cprintf("\n");
-                cprintf("Error:\t%lf\n", n->status->error);
+                cprintf("\nError:\t%lf\n", n->status->error);
         }
 
         cprintf("\n");
@@ -223,53 +215,38 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
 
         reset_recurrent_groups(un->stack[un->sp]);
         for (uint32_t i = 0; i < item->num_events; i++) {
-                /* print event number, and input vector */
+                copy_vector(
+                        un->stack[un->sp]->input->vector,
+                        item->inputs[i]);
+                feed_forward(
+                        un->stack[un->sp],
+                        un->stack[un->sp]->input);
+
                 cprintf("\n");
-                cprintf("E:  %d\n", i + 1);
-                cprintf("I:  ");
-                if (pprint)
-                        pprint_vector(item->inputs[i], scheme);
-                else
-                        print_vector(item->inputs[i]);
-
-                /* feed activation vector */
-                copy_vector(un->stack[un->sp]->input->vector, item->inputs[i]);
-                feed_forward(un->stack[un->sp], un->stack[un->sp]->input);
-
-                /* print target vector (if available) */
+                cprintf("E: %d\n", i + 1);
+                cprintf("I: ");
+                pprint ? pprint_vector(item->inputs[i], scheme)
+                       : print_vector(item->inputs[i]);
                 if (item->targets[i]) {
                         cprintf("T: ");
-                        if (pprint) {
-                                pprint_vector(item->targets[i], scheme);
-                        } else {
-                                print_vector(item->targets[i]);
-                        }
+                        pprint ? pprint_vector(item->targets[i], scheme)
+                               : print_vector(item->targets[i]);
                 }
-
-                /* print output vector */
                 cprintf("O: ");
-                if (pprint) {
-                        pprint_vector(un->stack[un->sp]->output->vector, scheme);
-                } else {
-                        print_vector(un->stack[un->sp]->output->vector);
-                }
+                pprint ? pprint_vector(un->stack[un->sp]->output->vector,
+                                scheme)
+                       : print_vector(un->stack[un->sp]->output->vector);
 
-                /*
-                 * Only compute and print error if there is a target for the
-                 * current event.
-                 */
-                if (!item->targets[i])
-                        goto next_tick;
+                /* only compute error if event has a target */
+                if (!item->targets[i]) goto next_tick;
 
-                struct group *g = un->stack[un->sp]->output;
+                struct group *g   = un->stack[un->sp]->output;
                 struct vector *tv = item->targets[i];
-                double tr = n->target_radius;
-                double zr = n->zero_error_radius;
+                double tr         = n->target_radius;
+                double zr         = n->zero_error_radius;
 
-                /* compute and print error */
                 n->status->error += n->output->err_fun->fun(g, tv, tr, zr);
-                cprintf("\n");
-                cprintf("Error:\t%lf\n", n->status->error);
+                cprintf("\nError:\t%lf\n", n->status->error);
 
 next_tick:
                 shift_pointer_or_stack(n);
