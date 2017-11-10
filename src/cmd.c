@@ -1193,7 +1193,7 @@ bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s)
         /* momentum */
         else if (sscanf(cmd, "set Momentum %lf",
                 &s->anp->momentum) == 1)
-                mprintf("Set momentum \t\t [ %lf ]\n",
+                mprintf("Set momentum \t\t\t [ %lf ]\n",
                         s->anp->momentum);
         /* momentum scale factor */
         else if (sscanf(cmd, "set MNScaleFactor %lf",
