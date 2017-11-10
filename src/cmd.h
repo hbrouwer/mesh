@@ -195,6 +195,7 @@ const static struct command cmds[] = {
         {"changeSet",               "%s",            &cmd_change_set},
         {"listItems",               NULL,            &cmd_list_items},
         {"showItem",                "\"%[^\"]\"",    &cmd_show_item},
+        {"showItem",                "'%[^']'",      &cmd_show_item},
         {"set TrainingOrder",       "%s",            &cmd_set_training_order},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -210,6 +211,7 @@ const static struct command cmds[] = {
         {"reset",                   NULL,            &cmd_reset},
         {"train",                   NULL,            &cmd_train},
         {"testItem",                "\"%[^\"]\"",    &cmd_test_item},
+        {"testItem",                "'%[^']'",       &cmd_test_item},
         {"test",                    NULL,            &cmd_test},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -243,13 +245,23 @@ const static struct command cmds[] = {
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"dssTest",                 NULL,            &cmd_dss_test},
         {"dssScores",               "%s \"%[^\"]\"", &cmd_dss_scores},
+        {"dssScores",               "%s '%[^']'",    &cmd_dss_scores},
         {"dssInferences",           "%s \"%[^\"]\" %lf",
                                                      &cmd_dss_inferences},
+        {"dssInferences",           "%s '%[^']' %lf",
+                                                     &cmd_dss_inferences},
         {"dssWordInformation",      "%s \"%[^\"]\"", &cmd_dss_word_information},
+        {"dssWordInformation",      "%s '%[^']'",    &cmd_dss_word_information},
         {"dssWriteWordInformation", "%s %s",         &cmd_dss_write_word_information},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"erpContrast",             "%s \"%[^\"]\" \"%[^\"]\"",
+                                                     &cmd_erp_contrast},
+        {"erpContrast",             "%s '%[^']' \"%[^\"]\"",
+                                                     &cmd_erp_contrast},
+        {"erpContrast",             "%s \"%[^\"]\" '%[^']'",
+                                                     &cmd_erp_contrast},
+        {"erpContrast",             "%s '%[^']' '%[^']'",
                                                      &cmd_erp_contrast},
         {"erpWriteEstimates",       "%s %s %s",      &cmd_erp_write_estimates},
 
