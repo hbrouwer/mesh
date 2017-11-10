@@ -2020,28 +2020,6 @@ bool cmd_dss_scores(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/*
- * TODO: Infer filename.
- */
-bool cmd_dss_write_scores(char *cmd, char *fmt, struct session *s)
-{
-        char arg1[MAX_ARG_SIZE]; /* set name */
-        char arg2[MAX_ARG_SIZE]; /* filename */
-        if (sscanf(cmd, fmt, arg1, arg2) != 2)
-                return false;
-
-        /* find set */
-        struct set *set = find_array_element_by_name(s->anp->sets, arg1);
-        if (!set) {
-                eprintf("Cannot compute scores - no such set '%s'\n", arg1);
-                return true;
-        }
-
-        dss_write_scores(s->anp, set, arg2);
-
-        return true;
-}
-
 bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* set name */
@@ -2112,25 +2090,25 @@ bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s)
 
 bool cmd_dss_write_word_information(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE]; /* set name */
-        if (sscanf(cmd, fmt, arg) != 1)
+        char arg1[MAX_ARG_SIZE]; /* set name */
+        char arg2[MAX_ARG_SIZE]; /* filename */
+        if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
         /* find set */
-        struct set *set = find_array_element_by_name(s->anp->sets, arg);
+        struct set *set = find_array_element_by_name(s->anp->sets, arg1);
         if (!set) {
                 eprintf("Cannot compute informativity metrics - no such set '%s'\n",
-                        arg);
+                        arg1);
                 return true;
         }
 
         mprintf("Computing word informativity metrics \t [ %s :: %s ]\n",
-                s->anp->asp->name, arg);
+                s->anp->asp->name, arg1);
 
-        dss_write_word_information(s->anp, set);
+        dss_write_word_information(s->anp, set, arg2);
 
-        mprintf("Written word informativity metrics \t [ %s.WIMs.csv ]\n",
-                s->anp->asp->name);
+        mprintf("Written word informativity metrics \t [ %s ]\n", arg2);
 
         return true;
 }
@@ -2215,38 +2193,38 @@ bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_erp_amplitudes(char *cmd, char *fmt, struct session *s)
+bool cmd_erp_write_estimates(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* N400 generator group name */
         char arg2[MAX_ARG_SIZE]; /* P600 generator group name */
-        if (sscanf(cmd, fmt, arg1, arg2) != 2)
+        char arg3[MAX_ARG_SIZE]; /* filename */
+        if (sscanf(cmd, fmt, arg1, arg2, arg3) != 3)
                 return false;
 
         /* find 'N400 generator' group */
-        struct group *n400_gen = find_array_element_by_name(s->anp->groups,
+        struct group *N400_gen = find_array_element_by_name(s->anp->groups,
                 arg1);
-        if (n400_gen == NULL) {
+        if (N400_gen == NULL) {
                 eprintf("Cannot compute ERP correlates - no such group '%s'\n",
                         arg1);
                 return true;
         }
 
         /* find 'P600 generator' group */
-        struct group *p600_gen = find_array_element_by_name(s->anp->groups,
+        struct group *P600_gen = find_array_element_by_name(s->anp->groups,
                 arg2);
-        if (p600_gen == NULL) {
+        if (P600_gen == NULL) {
                 eprintf("Cannot compute ERP correlates - no such group '%s'\n",
                         arg2);
                 return true;
         }
 
-        mprintf("Computing ERP amplitudes \t [ N400 :: %s | P600 :: %s ]\n",
+        mprintf("Computing ERP estimates \t [ N400 :: %s | P600 :: %s ]\n",
                 arg1, arg2);
 
-        erp_amplitudes(s->anp, n400_gen, p600_gen);
+        erp_write_estimates(s->anp, N400_gen, P600_gen, arg3);
 
-        mprintf("Written ERP amplitudes \t [ %s.ERPs.csv ]\n",
-                s->anp->asp->name);
+        mprintf("Written ERP estimates \t [ %s ]\n", arg3);
 
         return true;
 }

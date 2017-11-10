@@ -21,7 +21,6 @@
 
 void dss_test(struct network *n);
 void dss_scores(struct network *n, struct set *set, struct item *item);
-void dss_write_scores(struct network *n, struct set *set, char *filename);
 void dss_inferences(struct network *n, struct set *set, struct item *item,
         float threshold);
 
@@ -34,14 +33,15 @@ double dss_tau_conditional(struct vector *a, struct vector *z);
 
 bool is_same_vector(struct vector *a, struct vector *b);
 
-void dss_word_information(struct network *n, struct set *s, 
-        struct item *item);
-void dss_write_word_information(struct network *n, struct set *s);
-
 struct matrix *dss_word_information_matrix(struct network *n,
         struct set *s, struct item *item, int32_t *freq_table);
 
 int32_t *frequency_table(struct set *s);
 void fuzzy_or(struct vector *a, struct vector *b);
+
+void dss_word_information(struct network *n, struct set *s, 
+        struct item *item);
+void dss_write_word_information(struct network *n, struct set *s,
+        char *filename);
 
 #endif /* DSS_H */

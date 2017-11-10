@@ -102,7 +102,7 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
 
-                /* skip backpropagtation, if there is no target */
+                /* skip backpropagation, if there is no target */
                 if (!item->targets[i]) continue;
 
                 struct group *g   = n->output;

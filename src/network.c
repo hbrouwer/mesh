@@ -441,31 +441,6 @@ void initialize_dynamic_params(struct group *g, struct network *n)
         }
 }
 
-bool save_weight_matrices(struct network *n, char *fn)
-{
-        FILE *fd;
-        if (!(fd = fopen(fn, "w")))
-                goto error_out;
-
-        switch (n->type) {
-        case ntype_ffn: /* fall through */
-        case ntype_srn:
-                save_weight_matrix(n->input, fd);
-                break;
-        case ntype_rnn:
-                save_weight_matrix(n->unfolded_net->stack[0]->input, fd);
-                break;
-        }
-
-        fclose(fd);
-
-        return true;
-
-error_out:
-        perror("[save_weight_matrices()]");
-        return false;
-}
-
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Save and load weights. Currently, the format for weights files is:
 
@@ -486,6 +461,31 @@ point weight.
 
 TODO: Adopt a less spartan file format.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+bool save_weight_matrices(struct network *n, char *filename)
+{
+        FILE *fd;
+        if (!(fd = fopen(filename, "w")))
+                goto error_out;
+
+        switch (n->type) {
+        case ntype_ffn: /* fall through */
+        case ntype_srn:
+                save_weight_matrix(n->input, fd);
+                break;
+        case ntype_rnn:
+                save_weight_matrix(n->unfolded_net->stack[0]->input, fd);
+                break;
+        }
+
+        fclose(fd);
+
+        return true;
+
+error_out:
+        perror("[save_weight_matrices()]");
+        return false;
+}
 
 void save_weight_matrix(struct group *g, FILE *fd)
 {
@@ -518,10 +518,10 @@ void save_weight_matrix(struct group *g, FILE *fd)
         return;
 }
 
-bool load_weight_matrices(struct network *n, char *fn)
+bool load_weight_matrices(struct network *n, char *filename)
 {
         FILE *fd;
-        if (!(fd = fopen(fn, "r")))
+        if (!(fd = fopen(filename, "r")))
                 goto error_out;
 
         struct network *np = NULL;

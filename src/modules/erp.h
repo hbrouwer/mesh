@@ -21,10 +21,10 @@
 #include "../set.h"
 
 void erp_contrast(struct network *n, struct group *gen,
-        struct item *control, struct item *target);
-void erp_amplitudes(struct network *n, struct group *n400_gen,
-        struct group *p600_gen);
-struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
+        struct item *ctl, struct item *tgt);
+void erp_write_estimates(struct network *n, struct group *N400_gen,
+        struct group *P600_gen, char *filename);
+struct vector *erp_estimates_for_item(struct network *n, struct group *g,
         struct item *item);
 
 #endif /* ERP_H */

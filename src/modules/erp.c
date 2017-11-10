@@ -37,66 +37,58 @@ Brouwer, H. (2014). The Electrophysiology of Language Comprehension: A
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 void erp_contrast(struct network *n, struct group *gen,
-        struct item *control, struct item *target)
+        struct item *ctl, struct item *tgt)
 {
-        struct vector *ctlav = erp_amplitudes_for_item(n, gen, control);
-        struct vector *tgtav = erp_amplitudes_for_item(n, gen, target);
+        struct vector *cv = erp_estimates_for_item(n, gen, ctl);
+        struct vector *tv = erp_estimates_for_item(n, gen, tgt);
 
-        struct matrix *effects = create_matrix(ctlav->size, tgtav->size);
+        struct matrix *effects = create_matrix(cv->size, tv->size);
         for (uint32_t r = 0; r < effects->rows; r++)
                 for (uint32_t c = 0; c < effects->cols; c++)
-                        effects->elements[r][c] = tgtav->elements[c] - ctlav->elements[r];
+                        effects->elements[r][c] = tv->elements[c]
+                                - cv->elements[r];
 
         cprintf("\n");
-        cprintf("Control: %s\n\n", control->name);
-        print_vector(ctlav);
-
+        cprintf("Control: %s\n\n", ctl->name);
+        print_vector(cv);
         cprintf("\n");
-        cprintf("Target: %s\n\n", target->name);
-        print_vector(tgtav);
-
+        cprintf("Target:  %s\n\n", tgt->name);
+        print_vector(tv);
         cprintf("\n");
         cprintf("Effect matrix (control x target)\n");
-        cprintf("(positives indicate: target > control)\n\n");
+        cprintf("(positive values indicate: target > control)\n\n");
         print_matrix(effects);
         cprintf("\n");
 
         free_matrix(effects);
-
-        free_vector(ctlav);
-        free_vector(tgtav);
+        free_vector(cv);
+        free_vector(tv);
 }
 
-void erp_amplitudes(struct network *n, struct group *n400_gen,
-        struct group *p600_gen)
+void erp_write_estimates(struct network *n, struct group *N400_gen,
+        struct group *P600_gen, char *filename)
 {
-        char *filename;
-        if (asprintf(&filename, "%s.ERPs.csv", n->asp->name) < 0)
-                goto error_out;
-
         FILE *fd;
         if (!(fd = fopen(filename, "w")))
                 goto error_out;
 
-        fprintf(fd,"ItemID,ItemName,ItemMeta,WordPos,N400,P600\n");
+        cprintf("\n");
+        fprintf(fd,"\"ItemID\",\"ItemName\",\"ItemMeta\",\"WordPos\",\"N400\",\"P600\"\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                struct item *item = n->asp->items->elements[i];
-
-                /* ERP amplitudes */
-                struct vector *n4av = erp_amplitudes_for_item(n, n400_gen, item);
-                struct vector *p6av = erp_amplitudes_for_item(n, p600_gen, item);
-                
+                struct item *item   = n->asp->items->elements[i];
+                struct vector *N400 = erp_estimates_for_item(n, N400_gen, item);
+                struct vector *P600 = erp_estimates_for_item(n, P600_gen, item);
                 for (uint32_t j = 0; j < item->num_events; j++) 
-                        fprintf(fd,"%d,\"%s\",\"%s\",%d,%f,%f\n", i, 
-                                        item->name, item->meta, j,
-                                        n4av->elements[j], p6av->elements[j]);
-
-                free_vector(n4av);
-                free_vector(p6av);
+                        fprintf(fd,"%d,\"%s\",\"%s\",%d,%f,%f\n",
+                                i, item->name, item->meta, j,
+                                N400->elements[j], P600->elements[j]);
+                pprintf("%d: %s\n", i, item->name);
+                free_vector(N400);
+                free_vector(P600);
         }
+        cprintf("\n");
 
         fclose(fd);
-        free(filename);
 
         return;
 
@@ -105,29 +97,35 @@ error_out:
         return;
 }
 
-struct vector *erp_amplitudes_for_item(struct network *n, struct group *g,
+struct vector *erp_estimates_for_item(struct network *n, struct group *g,
         struct item *item)
 {
-        struct vector *av = create_vector(item->num_events);
+        struct vector *ev = create_vector(item->num_events);
+
+        /*
+         * Previous activation vector for the specified group. At time-step
+         * t=0, we bootstrap this using the unit vector.
+         */
         struct vector *pv = create_vector(g->vector->size);
-        fill_vector_with_value(pv, 0.5);
+        fill_vector_with_value(pv, 1.0);
+        fill_vector_with_value(pv, 1.0 / euclidean_norm(pv));
 
         if (n->type == ntype_srn)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
-                /* feed activation forward */
                 if (i > 0 && n->type == ntype_srn)
                         shift_context_groups(n);
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
-
-                /* compute vector dissimilarity */
-                av->elements[i] = 1.0 - n->similarity_metric(g->vector, pv);
-
+                /*
+                 * amplitude = 1.0 - sim(g_t, g_{t-1})
+                 */
+                ev->elements[i] =
+                        1.0 - n->similarity_metric(g->vector, pv);
                 copy_vector(pv, g->vector);
         }
 
         free_vector(pv);
 
-        return av;
+        return ev;
 }
