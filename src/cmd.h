@@ -100,8 +100,6 @@ bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_write_word_information(char *cmd, char *fmt, struct session *s);
 
-bool cmd_dsys_proc_time(char *cmd, char *fmt, struct session *s);
-
 bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s);
 bool cmd_erp_write_estimates(char *cmd, char *fmt, struct session *s);
 
@@ -249,9 +247,6 @@ const static struct command cmds[] = {
                                                      &cmd_dss_inferences},
         {"dssWordInformation",      "%s \"%[^\"]\"", &cmd_dss_word_information},
         {"dssWriteWordInformation", "%s %s",         &cmd_dss_write_word_information},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"dsysProcTime",            "%s \"%[^\"]\"", &cmd_dsys_proc_time},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"erpContrast",             "%s \"%[^\"]\" \"%[^\"]\"",

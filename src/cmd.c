@@ -37,7 +37,6 @@
 #include "test.h"
 #include "train.h"
 #include "modules/dss.h"
-#include "modules/dsys.h"
 #include "modules/erp.h"
 
 /* group types */
@@ -2109,42 +2108,6 @@ bool cmd_dss_write_word_information(char *cmd, char *fmt, struct session *s)
         dss_write_word_information(s->anp, set, arg2);
 
         mprintf("Written word informativity metrics \t [ %s ]\n", arg2);
-
-        return true;
-}
-
-                /*************************
-                 **** dynamic systems ****
-                 *************************/
-
-bool cmd_dsys_proc_time(char *cmd, char *fmt, struct session *s)
-{
-        char arg1[MAX_ARG_SIZE]; /* group name */
-        char arg2[MAX_ARG_SIZE]; /* item name */
-        if (sscanf(cmd, fmt, arg1, arg2) != 2)
-                return false;
-
-        /* find group */
-        struct group *group = find_array_element_by_name(s->anp->groups,
-                arg1);
-        if (group == NULL) {
-                eprintf("Cannot test network - no such group '%s'\n",
-                        arg1);
-                return true;
-        }
-
-        /* find item */
-        struct item *item = find_array_element_by_name(s->anp->asp->items,
-                arg2);
-        if (!item) {
-                eprintf("Cannot test network - no such item '%s'\n",
-                        arg2);
-                return true;
-        }
-        
-        mprintf("Testing network '%s' with item '%s':\n", s->anp->name, arg2);
-
-        dsys_proc_time(s->anp, group, item);
 
         return true;
 }
