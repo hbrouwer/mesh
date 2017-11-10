@@ -639,85 +639,73 @@ Shift the network stack. Assume the following unfolded network:
 
 stack/n  ...  stack/1           stack/0          terminal
 
-The aim is to completely isolate stack[0], and move it into stack[n].
+The aim is to completely isolate stack/0, and move it into stack/n.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 void rnn_shift_stack(struct rnn_unfolded_network *un)
 {
         /* 
-         * Isolate the network in stack/0 by rewiring all of its recurrent
-         * terminals to their corresponding groups in stack/1.
+         * First, isolate the network in stack/0 by disconnecting it, and
+         * rewiring all of its recurrent terminals to their corresponding
+         * groups in stack/1.
+         * 
+         * Variables: g1 ~ terminal; g2 ~ stack/0, and g3 ~ stack/1.
          */
         for (uint32_t i = 0; i < un->rcr_groups->num_elements; i++) {
-                /* current recurrent group */
                 struct group *rg = un->rcr_groups->elements[i];
-                /* recurrent groups in stack/0 and stack/1 */
-                struct group *g1 = find_array_element_by_name(
+                struct group *g2 = find_array_element_by_name(  /* stack/0 */
                         un->stack[0]->groups, rg->name);
-                struct group *g2 = find_array_element_by_name(
+                struct group *g3 = find_array_element_by_name(  /* stack/1 */
                         un->stack[1]->groups, rg->name);
 
-                /* store a reference to the terminal recurrent group */
-                uint32_t j = g1->inc_projs->num_elements - 1;
-                struct projection *p1 = g1->inc_projs->elements[j];
-                struct group *g0 = p1->to;
-
-                /*
-                 * Disconnect the current recurrent group in stack/0 from
-                 * its copy in stack/1, and remove the projection gradient.
-                 */
-                rnn_free_duplicate_projection(p1);
-                g1->inc_projs->elements[j] = NULL;
-                g1->inc_projs->num_elements--;
-
-                /*
-                 * Disconnect the recurrent group in stack/0 from its copy
-                 * in stack/1, preserving the projection gradient.
-                 */
-                j = g1->out_projs->num_elements - 1;
-                free(g1->out_projs->elements[j]);
-                g1->out_projs->elements[j] = NULL;
-                g1->out_projs->num_elements--;
-
                 /* 
-                 * Copy the activation vector of the recurrent group in
-                 * stack/0 into the terminal group.
+                 * Disconnect the recurrent group in stack/0 from the
+                 * terminal recurrent group, and the recurrent group in
+                 * stack/1. Whereas we we will free the projection gradient
+                 * between stack/0 and the terminal group, we perserve the
+                 * one between stack/0 and stack/1. Finally, we copy the
+                 * activation pattern of the group in stack/0 into the
+                 * terminal group.
                  */
-                copy_vector(g0->vector, g1->vector);
+                g2->inc_projs->num_elements--;  /* stack/0 -> terminal */
+                struct projection *g2_to_g1 =
+                        g2->inc_projs->elements[g2->inc_projs->num_elements];
+                struct group *g1 = g2_to_g1->to;
+                rnn_free_duplicate_projection(g2_to_g1);
+                g2->inc_projs->elements
+                        [g2->inc_projs->num_elements] = NULL;
+                g2->out_projs->num_elements--;  /* stack0 -> stack/1 */
+                free(g2->out_projs->elements[g2->out_projs->num_elements]);
+                g2->out_projs->elements[g2->out_projs->num_elements] = NULL;
+                copy_vector(g1->vector, g2->vector);
 
                 /* 
                  * Connect the terminal recurrent group to the recurrent
                  * group in stack/1, reusing the gradients that were used
                  * for the projection between stack/0 and stack/1.
-                 *
-                 * First add an incoming projection to the recurrent group
-                 * in stack/1:
                  */
-                j = g2->inc_projs->num_elements - 1;
-                p1 = g2->inc_projs->elements[j];
-                p1->to = g0;
-                
-                /* and, add an outgoing projection to the terminal group */
-                j = g0->out_projs->num_elements - 1;
-                struct projection *p2 = g0->out_projs->elements[j];
-                p2->to = g2;
-                p2->gradients = p1->gradients;
-                p2->prev_gradients = p1->prev_gradients;
+                struct projection *g3_to_g1 =   /* stack/1 -> terminal */
+                        g3->inc_projs->elements[g3->inc_projs->num_elements - 1];
+                g3_to_g1->to = g1;
+                struct projection *g1_to_g3 =   /* terminal -> stack/1 */
+                        g1->out_projs->elements[g1->out_projs->num_elements - 1];
+                g1_to_g3->to             = g3;
+                g1_to_g3->gradients      = g3_to_g1->gradients;
+                g1_to_g3->prev_gradients = g3_to_g1->prev_gradients;
         }
 
         /*
-         * Now all recurrent groups have been rewired, and the actual stack
-         * shifting can be done. We store a reference to the network state
-         * in stack/0, and shift stack/1 into stack/0, stack/2 into stack/1,
-         * until stack/n has been shifted into stack/(n-1), upon which we
-         * place stack/0 in stack/n
+         * Secondly, perform the actual stack shifting. Store a reference to
+         * the network in stack/0, and shift stack/1 into stack/0, stack/2
+         * into stack/1 until stack/n has been shifted into stack/(n-1).
+         * Next, we move the network that used to be in stack/0 into
+         * stack/n, and connect it to the network in stack/(n-1).
          */
-        struct network *n = un->stack[0];
+        struct network *n = un->stack[0];               /* net <- stack/0 */
         for (uint32_t i = 0; i < un->stack_size - 1; i++)
-                un->stack[i] = un->stack[i + 1];
-        un->stack[un->stack_size - 1] = n;
-
-        /* connect stack/(n-1) to stack/n */
-        rnn_connect_duplicate_networks(un, un->stack[un->stack_size - 2],
-                        un->stack[un->stack_size - 1]);
+                un->stack[i] = un->stack[i + 1];        /* shift stack */
+        un->stack[un->stack_size - 1] = n;              /* stack/n <- net */
+        rnn_connect_duplicate_networks(un,
+                un->stack[un->stack_size - 2],          /* stack/(n-1) */
+                un->stack[un->stack_size - 1]);         /* stack/n */
 }
