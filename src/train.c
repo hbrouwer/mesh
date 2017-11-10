@@ -265,7 +265,7 @@ void print_training_progress(struct network *n)
 
 void print_training_summary(struct network *n)
 {
-        pprintf("\nTraining finished after %d epoch(s) -- Network error: %f\n",
+        cprintf("\nTraining finished after %d epoch(s) -- Network error: %f\n",
                         n->status->epoch,
                         n->status->error);
 }
