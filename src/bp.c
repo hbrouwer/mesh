@@ -388,16 +388,20 @@ void bp_update_projection_sd(struct network *n, struct group *g,
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Determine the scaling factor for steepest descent. If "bounded" steepest
-descent is used instead of "default" steepest descent, we scale the gradient
-term of the weight delta by the length of the gradient if this length is
-greater than 1.0. Otherwise, we simply take the product of the negative
-learning rate and the gradient by setting the scaling factor to 1.0:
+descent (Rohde, 2002) is used instead of "default" steepest descent, we
+scale the gradient term of the weight delta by the length of the gradient if
+this length is greater than 1.0. Otherwise, we simply take the product of
+the negative learning rate and the gradient by setting the scaling factor to
+1.0:
 
              | 1.0 / ||dE/dw|| , if ||dE/dw|| > 1.0
         sf = |
              | 1.0             , otherwise
            
         where sf is the scaling factor.
+
+Rohde, D. L. T. (2002). A connectionist model of sentence comprehension and
+        production. PhD thesis, Carnegie Mellon University.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 void determine_sd_scale_factor(struct network *n)
@@ -1077,7 +1081,7 @@ contrast, the learning rate is decremented by phi times its current value.
 References
 
 Jacobs, R. A. (1988). Increased Rates of Convergence Through Learning Rate
-        Adapation. Neural Networks, 1, pp. 295-307.
+        Adapation. Neural Networks, 1, 295-307.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #define DBD_BASE 0.7
