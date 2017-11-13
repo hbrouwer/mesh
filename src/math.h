@@ -55,9 +55,6 @@ double sign(double x);
 
 double normrand(double mu, double sigma);
 
-double runge_kutta4(double (*f)(double, double), double h, double xn,
-       double yn);
-
 double euclidean_norm(struct vector *v);
 
 double inner_product(struct vector *v1, struct vector *v2);

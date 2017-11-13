@@ -90,47 +90,6 @@ double normrand(double mu, double sigma)
         return rs1 * sigma + mu;
 }
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Fourth-order Runge-Kutta method for solving Ordinary Differential Equations
-(ODEs).
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-double runge_kutta4(double (*f)(double, double), double h, double xn,
-        double yn)
-{
-        /* 
-         * k1 = h * f(x_n, y_n)
-         */
-        double k1 = h * f(xn, yn);
-
-        /*
-         *                  h        k_1
-         * k2 = h * f(x_n + -, y_n + ---)
-         *                  2         2
-         */
-        double k2 = h * f(xn + (h / 2.0), yn + (k1 / 2.0));
-
-        /* 
-         *                  h        k_2
-         * k3 = h * f(x_n + -, y_n + ---)
-         *                  2         2
-         */
-        double k3 = h * f(xn + (h / 2.0), yn + (k2 / 2.0));
-
-        /*
-         * k4 = h * f(x_n + h, y_n + k3)
-         */
-        double k4 = h * f(xn + h, yn + k3);
-
-        /*
-         *               k_1   k_2   k_3   k_4
-         * y_n+1 = y_n + --- + --- + --- + ---
-         *                6     3     3     6
-         */
-        return yn + (k1 + 2 * k2 + 2 * k3 + k4) / 6.0;
-        // return yn + (k1 / 6.0) + (k2 / 3.0) + (k3 / 3.0) + (k4 / 6.0);
-}
-
 /*
  * Euclidean norm:
  *
