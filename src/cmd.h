@@ -228,9 +228,9 @@ const static struct command cmds[] = {
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"showUnits",               "%s",            &cmd_show_vector},
         {"showError",               "%s",            &cmd_show_vector},
-        {"showWeights",             "%s",            &cmd_show_matrix},
-        {"showGradients",           "%s",            &cmd_show_matrix},
-        {"showDynamicParams",       "%s",            &cmd_show_matrix},
+        {"showWeights",             "%s %s",         &cmd_show_matrix},
+        {"showGradients",           "%s %s",         &cmd_show_matrix},
+        {"showDynamicParams",       "%s %s",         &cmd_show_matrix},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"loadWeights",             "%s",            &cmd_load_weights},
