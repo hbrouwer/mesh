@@ -134,7 +134,7 @@ const static struct command cmds[] = {
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"createNetwork",           "%s %s",         &cmd_create_network},
-        {"removeNetwork",          "%s",             &cmd_remove_network},
+        {"removeNetwork",           "%s",            &cmd_remove_network},
         {"listNetworks",            NULL,            &cmd_list_networks},
         {"changeNetwork",           "%s",            &cmd_change_network},
 
@@ -190,12 +190,12 @@ const static struct command cmds[] = {
         
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"loadSet",                 "%s %s",         &cmd_load_set},
-        {"removeSet",              "%s",             &cmd_remove_set},
+        {"removeSet",               "%s",            &cmd_remove_set},
         {"listSets",                NULL,            &cmd_list_sets},
         {"changeSet",               "%s",            &cmd_change_set},
         {"listItems",               NULL,            &cmd_list_items},
         {"showItem",                "\"%[^\"]\"",    &cmd_show_item},
-        {"showItem",                "'%[^']'",      &cmd_show_item},
+        {"showItem",                "'%[^']'",       &cmd_show_item},
         {"set TrainingOrder",       "%s",            &cmd_set_training_order},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -223,8 +223,6 @@ const static struct command cmds[] = {
         {"similarityStats",         NULL,            &cmd_similarity_stats},
         {"confusionMatrix",         NULL,            &cmd_confusion_matrix},
         {"confusionStats",          NULL,            &cmd_confusion_stats},
-
-        /* weight statistics */
         {"weightStats",             NULL,            &cmd_weight_stats},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -232,7 +230,7 @@ const static struct command cmds[] = {
         {"showError",               "%s",            &cmd_show_vector},
         {"showWeights",             "%s",            &cmd_show_matrix},
         {"showGradients",           "%s",            &cmd_show_matrix},
-        {"showDynPars",             "%s",            &cmd_show_matrix},
+        {"showDynamicParams",       "%s",            &cmd_show_matrix},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"loadWeights",             "%s",            &cmd_load_weights},

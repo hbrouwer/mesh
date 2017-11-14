@@ -1836,7 +1836,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
         else if (sscanf(cmd, "showGradients %s %s", arg1, arg2) == 2)
                 type = mtype_gradients;
         /* dynamic learning parameters */
-        else if (sscanf(cmd, "showDynPars %s %s", arg1, arg2) == 2)
+        else if (sscanf(cmd, "showDynamicParams %s %s", arg1, arg2) == 2)
                 type = mtype_dyn_pars;
         else
                 return false;
