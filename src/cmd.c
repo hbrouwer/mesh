@@ -96,7 +96,7 @@ void process_command(char *cmd, struct session *s)
                  */
                 if (req_netw && !s->anp) {
                         eprintf("Cannot process command: `%s`\n", cmd);
-                        eprintf("(no active network - see `help newtorks`)\n");
+                        eprintf("(no active network - see `help networks`)\n");
                         goto out;
                 }
                 /* 
@@ -114,7 +114,7 @@ void process_command(char *cmd, struct session *s)
                  * 
                  * Each command processor returns true if the command passed
                  * to it could be parsed and executed either successfully or
-                 * unsuccesfully. It returns false, by contrast, if a
+                 * unsuccessfully. It returns false, by contrast, if a
                  * command could not be parsed.
                  */
                 if (strncmp(cmd, cmds[i].cmd_base,
