@@ -1520,7 +1520,7 @@ bool cmd_set_learning_algorithm(char *cmd, char *fmt, struct session *s)
 
 bool cmd_set_update_algorithm(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE]; /* update algortihm */
+        char arg[MAX_ARG_SIZE]; /* update algorithm */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
