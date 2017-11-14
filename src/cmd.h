@@ -140,7 +140,7 @@ const static struct command cmds[] = {
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"createGroup",             "%s %d",         &cmd_create_group},
-        {"removeGroup",            "%s",             &cmd_remove_group},
+        {"removeGroup",             "%s",            &cmd_remove_group},
         {"listGroups",              NULL,            &cmd_list_groups},
         {"attachBias",              "%s",            &cmd_attach_bias},
         {"set InputGroup",          "%s",            &cmd_set_io_group},
@@ -150,9 +150,9 @@ const static struct command cmds[] = {
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"createProjection",        "%s %s",         &cmd_create_projection},
-        {"removeProjection",       "%s %s",          &cmd_remove_projection},
+        {"removeProjection",        "%s %s",         &cmd_remove_projection},
         {"createElmanProjection",   "%s %s",         &cmd_create_elman_projection},
-        {"removeElmanProjection",  "%s %s",          &cmd_remove_elman_projection},
+        {"removeElmanProjection",   "%s %s",         &cmd_remove_elman_projection},
         {"listProjections",         NULL,            &cmd_list_projections},
         {"freezeProjection",        "%s %s",         &cmd_freeze_projection},
         {"createTunnelProjection",  "%s %d %d %s %d %d",
