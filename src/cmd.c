@@ -230,13 +230,15 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s)
         else if (strcmp(arg2, "rnn") == 0)
                 type = ntype_rnn;
         else {
-                eprintf("Cannot create network - invalid network type: '%s'\n", arg2);
+                eprintf("Cannot create network - invalid network type: '%s'\n",
+                        arg2);
                 return true;
         }
 
         /* network should not already exist */
         if (find_array_element_by_name(s->networks, arg1)) {
-                eprintf("Cannot create network - network '%s' already exists\n", arg1);
+                eprintf("Cannot create network - network '%s' already exists\n",
+                        arg1);
                 return true;
         }
         
