@@ -907,9 +907,6 @@ bool cmd_list_projections(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/*
- * TODO: Toggle frozen projections.
- */
 bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* 'from' group name */
@@ -964,6 +961,60 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
+bool cmd_unfreeze_projection(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* 'from' group name */
+        char arg2[MAX_ARG_SIZE]; /* 'to' group name */
+        if (sscanf(cmd, fmt, arg1, arg2) != 2)
+                return false;
+
+        /* find 'from' group */
+        struct group *fg = find_array_element_by_name(s->anp->groups, arg1);
+        if (fg == NULL) {
+                eprintf("Cannot unfreeze projection - no such group '%s'\n", arg1);
+                return true;
+        }
+
+        /* find 'to' group */
+        struct group *tg = find_array_element_by_name(s->anp->groups, arg2);
+        if (tg == NULL) {
+                eprintf("Cannot unfreeze projection - no such group '%s'\n", arg2);
+                return true;
+        }
+
+        /* find outgoing 'from->to' projection */
+        struct projection *fg_to_tg = NULL;
+        for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
+                if (((struct projection *)
+                        fg->out_projs->elements[i])->to == tg) {
+                        fg_to_tg = fg->out_projs->elements[i];
+                        break;
+                }
+
+        /* find incoming 'to->from' projection */
+        struct projection *tg_to_fg = NULL;
+        for (uint32_t i = 0; i < tg->inc_projs->num_elements; i++)
+                if (((struct projection *)
+                        tg->inc_projs->elements[i])->to == fg) {
+                        tg_to_fg = tg->inc_projs->elements[i];
+                        break;
+                }
+        
+        /* free projection, if it exists */
+        if (fg_to_tg && tg_to_fg) {
+                fg_to_tg->frozen = false;
+                tg_to_fg->frozen = false;
+        } else {
+                eprintf("Cannot unfreeze projection - no projection between groups '%s' and '%s')\n",
+                        arg1, arg2);
+                return true;
+        }
+
+        mprintf("Unfroze projection \t\t [ %s -> %s ]\n", arg1, arg2);
+
+        return true;
+}
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 This implements machinery for the "tunneling" of a subset of units of a
 layer, allowing for the segmentation of a single input vector into multiple
@@ -988,6 +1039,11 @@ and for the merging of several output vectors into a single vector:
         +---------+    +---------+    +---------+
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+/*
+ * TODO: 
+ * -- Check tunneling logic;
+ * -- Remove tunnel projection.
+ */
 bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* 'from' group name */
@@ -1024,8 +1080,6 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
         /*
          * The from group should not be a recurrent group, and there should
          * not already be a projection between the 'from' and 'to' group.
-         * 
-         * TODO: Check logic.
          */
         bool exists = false;
         if (fg->recurrent)
@@ -1050,11 +1104,6 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
         }
 
         /* tunnel should be within 'from' group bounds */
-        // if (arg2 < 0 
-        //         || arg2 > fg->vector->size
-        //         || arg3 < 0
-        //         || arg3 > fg->vector->size
-        //         || arg3 < arg2)
         if (arg2 > fg->vector->size || arg3 > fg->vector->size || arg3 < arg2)
         {
                 eprintf("Cannot set tunnel projection - indices [%d:%d] out of bounds\n",
@@ -1895,6 +1944,7 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
+        cprintf("\n");
         switch(type) {
         case mtype_weights:
                 cprintf("Weight matrix for projection '%s -> %s':\n\n",

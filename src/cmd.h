@@ -51,6 +51,7 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s);
 bool cmd_remove_elman_projection(char *cmd, char *fmt, struct session *s);
 bool cmd_list_projections(char *cmd, char *fmt, struct session *s);
 bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s);
+bool cmd_unfreeze_projection(char *cmd, char *fmt, struct session *s);
 bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s);
 
 bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s);
@@ -156,6 +157,7 @@ const static struct command cmds[] = {
         {"removeElmanProjection",   "%s %s",         &cmd_remove_elman_projection},
         {"listProjections",         NULL,            &cmd_list_projections},
         {"freezeProjection",        "%s %s",         &cmd_freeze_projection},
+        {"unfreezeProjection",      "%s %s",         &cmd_unfreeze_projection},
         {"createTunnelProjection",  "%s %d %d %s %d %d",
                                                      &cmd_create_tunnel_projection},
 

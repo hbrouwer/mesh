@@ -224,7 +224,6 @@ void print_cm_summary(struct matrix *cm, bool print_cm, bool pprint,
         free_vector(cols);
 }
 
-
 void cm_signal_handler(int32_t signal)
 {
         cprintf("Confusion matrix computation interrupted. Abort [y/n]");
