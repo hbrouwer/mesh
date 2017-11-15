@@ -40,7 +40,8 @@ bool cmd_create_group(char *cmd, char *fmt, struct session *s);
 bool cmd_remove_group(char *cmd, char *fmt, struct session *s); 
 bool cmd_list_groups(char *cmd, char *fmt, struct session *s);
 bool cmd_attach_bias(char *cmd, char *fmt, struct session *s);
-bool cmd_set_io_group(char *cmd, char *fmt, struct session *s);
+bool cmd_set_input_group(char *cmd, char *fmt, struct session *s);
+bool cmd_set_output_group(char *cmd, char *fmt, struct session *s);
 bool cmd_set_act_func(char *cmd, char *fmt, struct session *s);
 bool cmd_set_err_func(char *cmd, char *fmt, struct session *s);
 
@@ -143,8 +144,8 @@ const static struct command cmds[] = {
         {"removeGroup",             "%s",            &cmd_remove_group},
         {"listGroups",              NULL,            &cmd_list_groups},
         {"attachBias",              "%s",            &cmd_attach_bias},
-        {"set InputGroup",          "%s",            &cmd_set_io_group},
-        {"set OutputGroup",         "%s",            &cmd_set_io_group},
+        {"set InputGroup",          "%s",            &cmd_set_input_group},
+        {"set OutputGroup",         "%s",            &cmd_set_output_group},
         {"set ActFunc",             "%s %s",         &cmd_set_act_func},
         {"set ErrFunc",             "%s %s",         &cmd_set_err_func},
 
@@ -159,34 +160,22 @@ const static struct command cmds[] = {
                                                      &cmd_create_tunnel_projection},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"set BatchSize",           "%d",            &cmd_set_int_parameter},
-        {"set MaxEpochs",           "%d",            &cmd_set_int_parameter},
-        {"set ReportAfter",         "%d",            &cmd_set_int_parameter},
-        {"set RandomSeed",          "%d",            &cmd_set_int_parameter},
-        {"set BackTicks",           "%d",            &cmd_set_int_parameter},
 
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"set RandomMu",            "%lf",           &cmd_set_double_parameter},
-        {"set RandomSigma",         "%lf",           &cmd_set_double_parameter},
-        {"set RandomMax",           "%lf",           &cmd_set_double_parameter},
-        {"set RandomMin",           "%lf",           &cmd_set_double_parameter},
-        {"set LearningRate",        "%lf",           &cmd_set_double_parameter},
-        {"set LRScaleFactor",       "%lf",           &cmd_set_double_parameter},
-        {"set LRScaleAfter",        "%lf",           &cmd_set_double_parameter},
-        {"set Momentum",            "%lf",           &cmd_set_double_parameter},
-        {"set MNScaleFactor",       "%lf",           &cmd_set_double_parameter},
-        {"set MNScaleAfter",        "%lf",           &cmd_set_double_parameter},
-        {"set WeightDecay",         "%lf",           &cmd_set_double_parameter},
-        {"set WDScaleFactor",       "%lf",           &cmd_set_double_parameter},
-        {"set WDScaleAfter",        "%lf",           &cmd_set_double_parameter},
-        {"set ErrorThreshold",      "%lf",           &cmd_set_double_parameter},
-        {"set TargetRadius",        "%lf",           &cmd_set_double_parameter},
-        {"set ZeroErrorRadius",     "%lf",           &cmd_set_double_parameter},
-        {"set RpropInitUpdate",     "%lf",           &cmd_set_double_parameter},
-        {"set RpropEtaPlus",        "%lf",           &cmd_set_double_parameter},
-        {"set RpropEtaMinus",       "%lf",           &cmd_set_double_parameter},
-        {"set DBDRateIncrement",    "%lf",           &cmd_set_double_parameter},
-        {"set DBDRateDecrement",    "%lf",           &cmd_set_double_parameter},
+        /*
+         * Int parameters: BatchSize, MaxEpochs, ReportAfter, RandomSeed,
+         *      BackTicks;
+         */
+        {"set",                     "%s %d",         &cmd_set_int_parameter},
+
+        /*
+         * Double parameters: RandomMu, RandomSigma, RandomMin, RandomMax,
+         *      LearningRate, LRScaleFactor, LRScaleAfter, Momentum,
+         *      MNScaleFactor, MNScaleAfter, WeightDecay, WDScaleFactor,
+         *      WDScaleAfter, ErrorThreshold, TargetRadius, ZeroErrorRadius,
+         *      RpropInitUpdate, RpropEtaPlus, RpropEtaMinus,
+         *      DBDRateIncrement, DBDRateDecrement;
+         */
+        {"set",                     "%s %lf",        &cmd_set_double_parameter},
         
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"loadSet",                 "%s %s",         &cmd_load_set},
@@ -226,11 +215,16 @@ const static struct command cmds[] = {
         {"weightStats",             NULL,            &cmd_weight_stats},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"showUnits",               "%s",            &cmd_show_vector},
-        {"showError",               "%s",            &cmd_show_vector},
-        {"showWeights",             "%s %s",         &cmd_show_matrix},
-        {"showGradients",           "%s %s",         &cmd_show_matrix},
-        {"showDynamicParams",       "%s %s",         &cmd_show_matrix},
+
+        /*
+         * Vector types: units, error;
+         */
+        {"showVector",              "%s %s",         &cmd_show_vector},
+
+        /*
+         * Matrix types: weights, gradients, dynamics;
+         */
+        {"showMatrix",              "%s %s %s",      &cmd_show_matrix},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"loadWeights",             "%s",            &cmd_load_weights},
