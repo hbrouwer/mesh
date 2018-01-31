@@ -105,7 +105,7 @@ Load a set of input and target items. Currently, the expected format is:
 
 where 'name' is an identifier for the item, 'num_events' is the number of
 input (and target) events, 'meta' is item-specific meta information, and '#'
-are integet or floating point units of the input/target vectors. Note that
+are integer or floating point units of the input/target vectors. Note that
 target vectors do not need to be present for every input pattern.
 
 TODO: Adopt a less spartan file format.
