@@ -21,7 +21,7 @@ project(Mesh)
 option(FAST_EXP "Enable fast exponentional"     OFF)
 option(OPENMP   "Enable OpenMP support"         OFF)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -march=native")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -march=core2")
 
 set(Mesh_SOURCE_FILES
         src/act.c src/array.c src/bp.c src/classify.c src/cli.c src/cmd.c

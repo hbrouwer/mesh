@@ -51,7 +51,7 @@ struct matrix *confusion_matrix(struct network *n)
 
         keep_running = true;
 
-        struct matrix *cm;
+        struct matrix *cm = NULL;
         switch (n->type) {
         case ntype_ffn: /* fall through */
         case ntype_srn:

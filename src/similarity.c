@@ -51,7 +51,7 @@ struct matrix *similarity_matrix(struct network *n)
 
         keep_running = true;
 
-        struct matrix *sm;
+        struct matrix *sm = NULL;
         switch (n->type) {
         case ntype_ffn: /* fall through */
         case ntype_srn:
