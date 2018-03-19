@@ -42,6 +42,7 @@
                 /***************************
                  **** command processor ****
                  ***************************/
+
 /*
  * Match an incoming command against the base of a command in the command
  * list, and process it if possible. Within the command list, two commands
@@ -1193,6 +1194,9 @@ bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s)
                 s->anp->back_ticks = arg2;
                 mprintf("Set BPTT back ticks \t\t [ %d ]\n",
                         s->anp->back_ticks);
+        /* error: no matching variable */                        
+        } else {
+                return false;
         }
 
         return true;
@@ -1310,7 +1314,10 @@ bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s)
                 s->anp->dbd_rate_decrement = arg2;
                 mprintf("Set decrement rate (for DBD) \t [ %lf ]\n",
                         s->anp->dbd_rate_decrement);
-        }
+        /* error: no matching variable */                        
+        } else {
+                return false;
+        }        
 
         return true;
 }
