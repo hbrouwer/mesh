@@ -108,7 +108,7 @@ void print_matrix(struct matrix *m)
         for (uint32_t i = 0; i < m->rows; i++) {
                 printf("[ ");
                 for (uint32_t j = 0; j < m->cols; j++) {
-                        if (i > 0 && i < m->cols)
+                        if (j > 0 && j < m->cols)
                                 cprintf(" ,");
                         cprintf("%lf", m->elements[i][j]);
                 }
