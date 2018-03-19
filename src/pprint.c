@@ -96,6 +96,8 @@ void value_as_color(double v, enum color_scheme scheme)
         case scheme_gray_orange:
                 palette = PALETTE_GRAY_ORANGE;
                 break;
+        default:
+                palette = PALETTE_BLUE_RED;
         }
 
         if (v >= 0.90)
