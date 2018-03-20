@@ -947,7 +947,7 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
                         break;
                 }
         
-        /* free projection, if it exists */
+        /* freeze projection, if it exists */
         if (fg_to_tg && tg_to_fg) {
                 fg_to_tg->frozen = true;
                 tg_to_fg->frozen = true;
@@ -1001,7 +1001,7 @@ bool cmd_unfreeze_projection(char *cmd, char *fmt, struct session *s)
                         break;
                 }
         
-        /* free projection, if it exists */
+        /* unfreeze projection, if it exists */
         if (fg_to_tg && tg_to_fg) {
                 fg_to_tg->frozen = false;
                 tg_to_fg->frozen = false;
