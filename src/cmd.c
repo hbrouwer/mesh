@@ -1237,12 +1237,12 @@ bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s)
         /* learning rate scale factor */
         } else if (strcmp(arg1, "LRScaleFactor") == 0) {
                 s->anp->lr_scale_factor = arg2;
-                mprintf("Set LR scale factor \t [ %lf ]\n",
+                mprintf("Set LR scale factor \t\t [ %lf ]\n",
                         s->anp->lr_scale_factor);
         /* learning rate scale after */
         } else if (strcmp(arg1, "LRScaleAfter") == 0) {
                 s->anp->lr_scale_after = arg2;
-                mprintf("Set LR scale after (%%epochs) [ %lf ]\n",
+                mprintf("Set LR scale after (%%epochs) \t [ %lf ]\n",
                         s->anp->lr_scale_after);
         /* momentum */
         } else if (strcmp(arg1, "Momentum") == 0) {
