@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include "../act.h"
+#include "../error.h"
 #include "../main.h"
 #include "../math.h"
 
@@ -44,6 +45,8 @@ void dss_test(struct network *n)
         double acs = 0.0;       /* accumulated comprehension score */
         uint32_t ncs = 0;       /* number of comprehension scores */
 
+        struct vector *ov = create_vector(n->output->vector->size);
+
         cprintf("\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
@@ -57,15 +60,14 @@ void dss_test(struct network *n)
                 }
 
                 /* comprehension score */
-                struct vector *target =
-                        item->targets[item->num_events - 1];
-                double tau = dss_comprehension_score(
-                        target, n->output->vector);
+                struct vector *tv = item->targets[item->num_events - 1];
+                ov = dss_adjust_output_vector(n->output->vector, tv,
+                        n->target_radius, n->zero_error_radius);
+                double tau = dss_comprehension_score(tv, ov);
                 if (!isnan(tau)) {
                         acs += tau;
                         ncs++;
                 }
-
                 tau > 0.0 ? pprintf("\x1b[32m%s: %f\x1b[0m\n",
                                 item->name, tau)
                           : pprintf("\x1b[31m%s: %f\x1b[0m\n",
@@ -73,6 +75,8 @@ void dss_test(struct network *n)
         }
         cprintf("\nAverage comprehension score: (%f / %d =) %f\n\n",
                 acs, ncs, acs / ncs);
+
+        free_vector(ov);
 
         return;
 }
@@ -124,15 +128,15 @@ void dss_scores(struct network *n, struct set *set, struct item *item)
                         if (c > 0) {    /* print score delta */
                                 double delta = score - sm->elements[0][c - 1];
                                 cprintf("  ");
-                                delta > 0.0 ? cprintf("\x1b[32m+%.5f\x1b[0m",
+                                delta >= 0.0 ? cprintf("\x1b[32m+%.5f\x1b[0m",
                                                 delta)
-                                            : cprintf("\x1b[31m%.5f\x1b[0m",
+                                             : cprintf("\x1b[31m%.5f\x1b[0m",
                                                 delta);
                                 cprintf("  ");
                         }               /* print score */
-                        score > 0.0 ? cprintf("\x1b[42m\x1b[30m+%.5f\x1b[0m",
+                        score >= 0.0 ? cprintf("\x1b[42m\x1b[30m+%.5f\x1b[0m",
                                         score)
-                                    : cprintf("\x1b[41m\x1b[30m%.5f\x1b[0m",
+                                     : cprintf("\x1b[41m\x1b[30m%.5f\x1b[0m",
                                         score);
                 }
         } else {
@@ -153,21 +157,21 @@ void dss_scores(struct network *n, struct set *set, struct item *item)
                         if (c > 0) {    /* print score delta */
                                 double delta = score - sm->elements[r + 1][c - 1];
                                 cprintf("  ");
-                                delta > 0.0 ? cprintf("\x1b[32m+%.5f\x1b[0m",
+                                delta >= 0.0 ? cprintf("\x1b[32m+%.5f\x1b[0m",
                                                 delta)
-                                            : cprintf("\x1b[31m%.5f\x1b[0m",
+                                             : cprintf("\x1b[31m%.5f\x1b[0m",
                                                 delta);
                                 printf("  ");
                         }               /* print score */
-                        score > 0.0 ? cprintf("\x1b[42m\x1b[30m+%.5f\x1b[0m",
+                        score >= 0.0 ? cprintf("\x1b[42m\x1b[30m+%.5f\x1b[0m",
                                         score)
-                                    : cprintf("\x1b[41m\x1b[30m%.5f\x1b[0m",
+                                     : cprintf("\x1b[41m\x1b[30m%.5f\x1b[0m",
                                         score);
                         if(c == item->num_events - 1) {
                                 cprintf("  ");
-                                score > 0.0 ? cprintf("\x1b[32m%s\x1b[0m",
+                                score >= 0.0 ? cprintf("\x1b[32m%s\x1b[0m",
                                                 probe->name)
-                                            : cprintf("\x1b[31m%s\x1b[0m",
+                                             : cprintf("\x1b[31m%s\x1b[0m",
                                                 probe->name);
                         }
                 }
@@ -196,8 +200,8 @@ void dss_inferences(struct network *n, struct set *set, struct item *item,
         cprintf("Overall score: ");
         double score = sm->elements[0][c];
         if (!isnan(score))
-                score > 0.0 ? cprintf("\x1b[42m\x1b[30m+%.5f\x1b[0m\n", score)
-                            : cprintf("\x1b[41m\x1b[30m%.5f\x1b[0m\n", score);
+                score >= 0.0 ? cprintf("\x1b[42m\x1b[30m+%.5f\x1b[0m\n", score)
+                             : cprintf("\x1b[41m\x1b[30m%.5f\x1b[0m\n", score);
         else
                 cprintf("\x1b[41m\x1b[30mcomprehension score undefined: unlawful situation\x1b[0m\n");
         
@@ -208,15 +212,29 @@ void dss_inferences(struct network *n, struct set *set, struct item *item,
                 struct item *probe = set->items->elements[r - 1];
                 score = sm->elements[r][c];
                 if (fabs(score) >= fabs(threshold))
-                        score > 0.0 ? cprintf("\x1b[32m[+%.5f]: %s\x1b[0m\n",
+                        score >= 0.0 ? cprintf("\x1b[32m[+%.5f]: %s\x1b[0m\n",
                                         probe->name, score)
-                                    : cprintf("\x1b[31m[%.5f]: %s\x1b[0m\n",
+                                     : cprintf("\x1b[31m[%.5f]: %s\x1b[0m\n",
                                         probe->name, score);
         }
         
         cprintf("\n");
 
         free_matrix(sm);
+}
+
+/*
+ * Adjust DSS output vector based on target radius and zero error radius.
+ */
+struct vector *dss_adjust_output_vector(struct vector *ov, struct vector *tv,
+        double tr, double zr)
+{
+        struct vector *dv = create_vector(ov->size);
+
+        for (uint32_t i = 0; i < ov->size; i++)
+                dv->elements[i] = adjust_target(tv->elements[i], ov->elements[i], tr, zr);
+
+        return dv;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -242,6 +260,7 @@ struct matrix *dss_score_matrix(struct network *n, struct set *set,
         uint32_t rows = set->items->num_elements + 1;
         uint32_t cols = item->num_events;
         struct matrix *sm = create_matrix(rows, cols);
+        struct vector *ov = create_vector(n->output->vector->size);
         if (n->type == ntype_srn)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
@@ -254,8 +273,9 @@ struct matrix *dss_score_matrix(struct network *n, struct set *set,
                  * Compute overall comprehension score, as well as
                  * comprehension scores per probe event.
                  */
-                struct vector *ov = n->output->vector;
                 struct vector *tv = item->targets[item->num_events - 1];
+                ov = dss_adjust_output_vector(n->output->vector, tv,
+                        n->target_radius, n->zero_error_radius);                
                 sm->elements[0][i] = dss_comprehension_score(tv, ov);
                 for (uint32_t j = 0; j < set->items->num_elements; j++) {
                         struct item *probe = set->items->elements[j];
@@ -263,6 +283,7 @@ struct matrix *dss_score_matrix(struct network *n, struct set *set,
                         sm->elements[j + 1][i] = dss_comprehension_score(pv, ov);
                 }
         }
+        free_vector(ov);
 
         return sm;
 }

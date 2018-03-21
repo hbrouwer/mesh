@@ -274,4 +274,3 @@ double act_fun_softplus_deriv(struct vector *v, uint32_t i)
 {
         return 1.0 / (1.0 + EXP(-v->elements[i]));
 }
-

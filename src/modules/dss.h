@@ -24,6 +24,9 @@ void dss_scores(struct network *n, struct set *set, struct item *item);
 void dss_inferences(struct network *n, struct set *set, struct item *item,
         float threshold);
 
+struct vector *dss_adjust_output_vector(struct vector *ov, struct vector *tv,
+        double tr, double zr);
+
 struct matrix *dss_score_matrix(struct network *n, struct set *set,
         struct item *item);
 
