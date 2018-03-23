@@ -726,7 +726,6 @@ bool cmd_remove_projection(char *cmd, char *fmt, struct session *s)
                 remove_from_array(tg->inc_projs, tg_to_fg);
                 free_projection(fg_to_tg);
                 free(tg_to_fg);
-                s->anp->initialized = false;
         } else {
                 eprintf("Cannot remove projection - no projection between groups '%s' and '%s')\n",
                         arg1, arg2);
