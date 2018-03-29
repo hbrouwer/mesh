@@ -278,7 +278,11 @@ double act_fun_relu_deriv(struct vector *v, uint32_t i)
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Binary Rectified Linear Unit (ReLU) function:
 
-        f(x) = min(max(0,x), 1)
+                | 0     iff x < 0
+                |
+        f(x) =  | x     iff 0 <= x < 1
+                |
+                | 1     iff x >= 1 
 
 and its derivative:
 
