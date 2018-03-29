@@ -535,7 +535,7 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
                 g->act_fun->deriv = act_fun_logistic_deriv;
         }
         /* binary sigmoid [= logistic] function (for legacy models) */
-        if (strcmp(arg2, "binary_sigmoid") == 0) {
+        else if (strcmp(arg2, "binary_sigmoid") == 0) {
                 g->act_fun->fun   = act_fun_logistic;
                 g->act_fun->deriv = act_fun_logistic_deriv;
         }        
