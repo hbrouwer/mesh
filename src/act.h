@@ -32,8 +32,8 @@
 
 void feed_forward(struct network *n, struct group *g);
 
-double act_fun_binary_sigmoid(struct vector *v, uint32_t i);
-double act_fun_binary_sigmoid_deriv(struct vector *v, uint32_t i);
+double act_fun_logistic(struct vector *v, uint32_t i);
+double act_fun_logistic_deriv(struct vector *v, uint32_t i);
 
 double act_fun_bipolar_sigmoid(struct vector *v, uint32_t i);
 double act_fun_bipolar_sigmoid_deriv(struct vector *v, uint32_t i);
@@ -47,10 +47,16 @@ double act_fun_tanh_deriv(struct vector *v, uint32_t i);
 double act_fun_linear(struct vector *v, uint32_t i);
 double act_fun_linear_deriv(struct vector *v, uint32_t i);
 
-double act_fun_step(struct vector *v, uint32_t i);
-double act_fun_step_deriv(struct vector *v, uint32_t i);
-
 double act_fun_softplus(struct vector *v, uint32_t i);
 double act_fun_softplus_deriv(struct vector *v, uint32_t i);
+
+double act_fun_relu(struct vector *v, uint32_t i);
+double act_fun_relu_deriv(struct vector *v, uint32_t i);
+
+double act_fun_binary_relu(struct vector *v, uint32_t i);
+double act_fun_binary_relu_deriv(struct vector *v, uint32_t i);
+
+double act_fun_leaky_relu(struct vector *v, uint32_t i);
+double act_fun_leaky_relu_deriv(struct vector *v, uint32_t i);
 
 #endif /* ACT_H */

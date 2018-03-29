@@ -124,7 +124,7 @@ void feed_forward(struct network *n, struct group *g)
                  ******************************/
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Binary sigmoid (logistic) function:
+Logistic function:
 
         f(x) = 1 / (1 + e ^ (-x)) 
 
@@ -133,12 +133,12 @@ and its derivative:
         f'(x) = y * (1 - y)
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double act_fun_binary_sigmoid(struct vector *v, uint32_t i)
+double act_fun_logistic(struct vector *v, uint32_t i)
 {
         return 1.0 / (1.0 + EXP(-v->elements[i]));
 }
 
-double act_fun_binary_sigmoid_deriv(struct vector *v, uint32_t i)
+double act_fun_logistic_deriv(struct vector *v, uint32_t i)
 {
         return v->elements[i] * (1.0 - v->elements[i]);
 }
@@ -231,38 +231,13 @@ double act_fun_linear_deriv(struct vector *v, uint32_t i)
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Step function:
-        
-               | 1 , if x >= 0
-        f(x) = |
-               | 0 , otherwise
- 
-and its derivative:
- 
-        f'(x) = 1
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-double act_fun_step(struct vector *v, uint32_t i)
-{
-        if (v->elements[i] >= 0.0)
-                return 1.0;
-        else
-                return 0.0;
-}
-
-double act_fun_step_deriv(struct vector *v, uint32_t i)
-{
-        return 1.0;
-}
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Softplus function:
 
         f(x) = ln(1 + e^x)
 
 and its derivative:
 
-        f'(x) = 1 / (1 + e ^ (-x))
+        f'(x) = 1 / (1 + e ^ (-x))      [= logistic function]
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 double act_fun_softplus(struct vector *v, uint32_t i)
@@ -272,5 +247,82 @@ double act_fun_softplus(struct vector *v, uint32_t i)
 
 double act_fun_softplus_deriv(struct vector *v, uint32_t i)
 {
-        return 1.0 / (1.0 + EXP(-v->elements[i]));
+        return act_fun_logistic(v, i);
+}
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Rectified Linear Unit (ReLU) function:
+
+        f(x) = max(0,x)
+
+and its derivative:
+
+                | 1     iff x > 0
+        f'(x) = |
+                | 0     otherwise
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+double act_fun_relu(struct vector *v, uint32_t i)
+{
+        return maximum(0.0, v->elements[i]);
+}
+
+double act_fun_relu_deriv(struct vector *v, uint32_t i)
+{
+        if (v->elements[i] > 0.0)
+                return 1.0;
+        else
+                return 0.0;
+}
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Binary Rectified Linear Unit (ReLU) function:
+
+        f(x) = min(max(0,x), 1)
+
+and its derivative:
+
+                | 1     iff x > 0
+        f'(x) = |
+                | 0     otherwise
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+double act_fun_binary_relu(struct vector *v, uint32_t i)
+{
+        return minimum(act_fun_relu(v, i), 1.0);
+}
+
+double act_fun_binary_relu_deriv(struct vector *v, uint32_t i)
+{
+        return act_fun_relu_deriv(v, i);
+}
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Leaky Rectified Linear Unit (ReLU) function:
+
+                | x             iff x > 0
+        f(x) =  |
+                | 0.01x         otherwise
+
+and its derivative:
+
+                | 1             iff x > 0
+        f'(x) = |
+                | 0.01          otherwise
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+double act_fun_leaky_relu(struct vector *v, uint32_t i)
+{
+        if (v->elements[i] > 0.0)
+                return v->elements[i];
+        else
+                return 0.01 * v->elements[i];
+}
+
+double act_fun_leaky_relu_deriv(struct vector *v, uint32_t i)
+{
+        if (v->elements[i] > 0.0)
+                return 1.0;
+        else
+                return 0.01;
 }

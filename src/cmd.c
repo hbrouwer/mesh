@@ -529,11 +529,16 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        /* binary sigmoid function */
-        if (strcmp(arg2, "binary_sigmoid") == 0) {
-                g->act_fun->fun   = act_fun_binary_sigmoid;
-                g->act_fun->deriv = act_fun_binary_sigmoid_deriv;
+        /* logistic function */
+        if (strcmp(arg2, "logistic") == 0) {
+                g->act_fun->fun   = act_fun_logistic;
+                g->act_fun->deriv = act_fun_logistic_deriv;
         }
+        /* binary sigmoid [= logistic] function (for legacy models) */
+        if (strcmp(arg2, "binary_sigmoid") == 0) {
+                g->act_fun->fun   = act_fun_logistic;
+                g->act_fun->deriv = act_fun_logistic_deriv;
+        }        
         /* bipolar sigmoid function */
         else if (strcmp(arg2, "bipolar_sigmoid") == 0) {
                 g->act_fun->fun   = act_fun_bipolar_sigmoid;
@@ -554,15 +559,25 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
                 g->act_fun->fun   = act_fun_linear;
                 g->act_fun->deriv = act_fun_linear_deriv;
         }
-        /* step function */
-        else if (strcmp(arg2, "step") == 0) {
-                g->act_fun->fun   = act_fun_step;
-                g->act_fun->deriv = act_fun_step_deriv;
-        }
         /* softplus activation function */
         else if (strcmp(arg2, "softplus") == 0) {
                 g->act_fun->fun   = act_fun_softplus;
                 g->act_fun->deriv = act_fun_softplus_deriv;
+        }
+        /* relu activation function */
+        else if (strcmp(arg2, "relu") == 0) {
+                g->act_fun->fun   = act_fun_relu;
+                g->act_fun->deriv = act_fun_relu_deriv;
+        }
+        /* binary relu activation function */
+        else if (strcmp(arg2, "binary_relu") == 0) {
+                g->act_fun->fun   = act_fun_binary_relu;
+                g->act_fun->deriv = act_fun_binary_relu_deriv;
+        }        
+        /* leaky relu activation function */
+        else if (strcmp(arg2, "leaky_relu") == 0) {
+                g->act_fun->fun   = act_fun_leaky_relu;
+                g->act_fun->deriv = act_fun_leaky_relu_deriv;
         } else {
                 eprintf("Cannot set activation function - no such activation function '%s'\n", arg2);
                 return true;
