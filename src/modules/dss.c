@@ -224,17 +224,21 @@ void dss_inferences(struct network *n, struct set *set, struct item *item,
 }
 
 /*
- * Adjust DSS output vector based on target radius and zero error radius.
+ * Adjust DSS output vector based on target radius and zero error radius, and
+ * clip units to values between 0 and 1.
  */
 struct vector *dss_adjust_output_vector(struct vector *ov, struct vector *tv,
         double tr, double zr)
 {
-        struct vector *dv = create_vector(ov->size);
+        struct vector *av = create_vector(ov->size);
 
-        for (uint32_t i = 0; i < ov->size; i++)
-                dv->elements[i] = adjust_target(tv->elements[i], ov->elements[i], tr, zr);
+        for (uint32_t i = 0; i < av->size; i++) {
+                av->elements[i] = adjust_target(tv->elements[i], ov->elements[i], tr, zr);
+                av->elements[i] = minimum(av->elements[i], 1.0);
+                av->elements[i] = maximum(av->elements[i], 0.0);
+        }
 
-        return dv;
+        return av;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
