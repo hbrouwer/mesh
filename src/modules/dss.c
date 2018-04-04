@@ -830,13 +830,13 @@ void dss_write_word_information(struct network *n, struct set *s,
                 struct matrix *im =
                         dss_word_information_matrix(n, s, item, freq_table);
                 for (uint32_t j = 0; j < item->num_events; j++) {
-                        fprintf(fd, "%d,\"%s\",\"%s\",%d", i, 
-                                item->name, item->meta, j + 1);
+                        fprintf(fd, "%d,\"%s\",\"%s\",%d",
+                                i + 1, item->name, item->meta, j + 1);
                         for (uint32_t x = 0; x < im->cols; x++)
                                 fprintf(fd, ",%f", im->elements[j][x]);
                         fprintf(fd, "\n");
                 }
-                pprintf("%d: %s\n", i, item->name);
+                pprintf("%d: %s\n", i + 1, item->name);
                 free_matrix(im);
         }
         cprintf("\n");
