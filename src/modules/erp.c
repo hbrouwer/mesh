@@ -80,9 +80,9 @@ void erp_write_estimates(struct network *n, struct group *N400_gen,
                 struct vector *P600 = erp_estimates_for_item(n, P600_gen, item);
                 for (uint32_t j = 0; j < item->num_events; j++) 
                         fprintf(fd,"%d,\"%s\",\"%s\",%d,%f,%f\n",
-                                i, item->name, item->meta, j,
+                                i + 1, item->name, item->meta, j + 1,
                                 N400->elements[j], P600->elements[j]);
-                pprintf("%d: %s\n", i, item->name);
+                pprintf("%d: %s\n", i + 1, item->name);
                 free_vector(N400);
                 free_vector(P600);
         }
