@@ -10,14 +10,14 @@ extensibility in mind. It comes with support for:
 * Training algorithms: *Backpropagation* (Rumelhart et al., 1986a) and
   *Backpropagation Through Time* (Rumelhart et al., 1986b);
 
-* Weight update algorithms: *Steepest descent*, *Bounded steepest descent*
-  (Rohde, 2002), four flavours of Resilient propagation: *Rprop+*, *Rprop-*,
-  *iRprop+*, *iRprop-*, *Quickprop*, (Fahlman, 1988) and *Delta-Bar-Delta*
-  (Jacobs, 1988);
+* Weight update algorithms: *Steepest (gradient) descent*, *Bounded steepest
+  descent* (Rohde, 2002), four flavours of Resilient propagation: *Rprop+*,
+  *Rprop-*, *iRprop+*, *iRprop-*, *Quickprop*, (Fahlman, 1988) and
+  *Delta-Bar-Delta* (Jacobs, 1988);
 
-* Activation functions: *Binary sigmoid (logistic)*, *Bipolar sigmoid*,
-  *Softmax*, *Hyperbolic tangent (tanh)*, *Linear*, *Step*, and *Softplus*
-  (smooth ReLU);
+* Activation functions: *Logistic*, *Bipolar sigmoid*, *Softmax*,
+  *Hyperbolic tangent (tanh)*, *Linear*, *Recitified Linear Unit* (ReLU),
+  *Leaky ReLU*, *Binary ReLU* (bounded ReLU), and *Softplus* (smooth ReLU);
 
 * Error functions: *Sum of squares*, *Cross entropy*, and *Divergence*;
 
@@ -56,10 +56,11 @@ worthwhile.
 
 **It does what I want it to do, in the way I want it to do it**: We use Mesh
 on a daily basis to run cognitive models of human language comprehension. 
-  
-* **Maybe it is of use to someone else**:
 
+**It is completely dependency free**: You only need a C99 compiler to
+compile Mesh.
 
+**Maybe it is of use to someone else**:
 
 # References
 
