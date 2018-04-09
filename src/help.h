@@ -274,7 +274,6 @@
 "                                                                       \n" \
 "* [randomization]              Randomization algorithms, parameters    \n" \
 
-
 struct help
 {
         char *help_topic;
