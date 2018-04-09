@@ -1601,6 +1601,11 @@ bool cmd_set_update_algorithm(char *cmd, char *fmt, struct session *s)
                 s->anp->update_algorithm = bp_update_sd;
                 s->anp->sd_type = SD_DEFAULT;
         }
+        /* gradient [= steepest] descent */
+        else if (strcmp(arg, "gradient") == 0) {
+                s->anp->update_algorithm = bp_update_sd;
+                s->anp->sd_type = SD_DEFAULT;
+        }        
         /* bounded steepest descent */
         else if (strcmp(arg, "bounded") == 0) {
                 s->anp->update_algorithm = bp_update_sd;

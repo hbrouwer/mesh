@@ -42,10 +42,33 @@
 "           \\ \\-__/  Licensed under the Apache License, Version 2.0   \n" \
 "                                                                       \n" \
 
-#define TOPIC_USAGE \
-"Usage: mesh <file> [options]                                           \n" \
+#define TOPIC_ACTIVATION \
+"# Activation functions                                                 \n" \
 "                                                                       \n" \
-"       --help: show this help message;                                 \n" 
+"set ActFunc <name> <func>      Set the activation function of a group  \n" \
+"                                                                       \n" \
+"## Functions                                                           \n" \
+"                                                                       \n" \
+"* [logistic]                   Logistic (sigmoid) function             \n" \
+"* [bipolar_sigmoid]            A bipolar sigmoid function              \n" \
+"* [softmax]                    Softmax activation function             \n" \
+"* [tanh]                       Hyperbolic tangent                      \n" \
+"* [linear]                     Linear function                         \n" \
+"* [softplus]                   Smoothed rectified linear function      \n" \
+"* [relu]                       Rectified linear function               \n" \
+"* [leaky_relu]                 Leaky rectified linear function         \n" \
+"* [binary_relu]                Binary rectified linear function        \n" \
+
+#define TOPIC_ERROR \
+"# Error functions                                                      \n" \
+"                                                                       \n" \
+"set ErrFunc <name> <func>      Set the error function of a group       \n" \
+"                                                                       \n" \
+"## Functions                                                           \n" \
+"                                                                       \n" \
+"* [sum_squares]                Sum squared error                       \n" \
+"* [cross_entropy]              Cross entropy error                     \n" \
+"* [divergence]                 Divergence error                        \n" \
 
 #define TOPIC_GENERAL \
 "# Welcome to Mesh                                                      \n" \
@@ -60,14 +83,197 @@
 "Type `help` to show this information, or type `help <topic>` to show   \n" \
 "help on a specific topic. Topics include:                              \n" \
 "                                                                       \n" \
-"* networks: creating different network architectures and topologies;   \n" \
-"* training: training networks;                                         \n"
+"* [about]                      Show version and copyright information  \n" \
+"* [networks]                   Creating different network architectures\n" \
+"* [sets]                       Training and testing examples           \n" \
+"* [training]                   Training networks                       \n" \
+"* [testing]                    Testing networks                        \n" \
+"                                                                       \n" \
+"Type `loadFile <file>` to load and run script file.                    \n" \
  
+#define TOPIC_GROUPS \
+"# Groups                                                               \n" \
+"                                                                       \n" \
+"createGroup <name> <size>      Create group of specified size          \n" \
+"removeGroup <name>             Remove group from network               \n" \
+"listGroups                     List all groups of the active network   \n" \
+"attachBias <name>              Attach a bias unit to a group           \n" \
+"set InputGroup <name>          Set the input group of the network      \n" \
+"set OutputGroup <name>         Set the output group of the network     \n" \
+"set ActFunc <name> <func>      Set the activation function of a group  \n" \
+"set ErrFunc <name> <func>      Set the error function of a group       \n" \
+"                                                                       \n" \
+"## Other relevant topics                                               \n" \
+"                                                                       \n" \
+"* [projections]                Creating projections between group      \n" \
+"* [activation]                 Activation functions                    \n" \
+"* [error]                      Error functions                         \n" \
+
+#define TOPIC_LEARNING \
+"# Learning                                                             \n" \
+"                                                                       \n" \
+" set LearningAlgorithm <name>  Set specified learning algorithm        \n" \
+"                                                                       \n" \
+"## Learning algorithms and parameters                                  \n" \
+"                                                                       \n" \
+"* [bp]                         Backpropagation                         \n" \
+"    set TargetRadius <val>     Adjust target if output is within radius\n" \
+"    set ZeroErrorRadius <val>  No error if output is withing radius    \n" \
+"* [bptt]                       Backpropagation Through Time (BPTT)     \n" \
+"    set BackTicks <value>      Sets number of backward time ticks      \n" \
+"    (also see `bp`)                                                    \n" \
+"                                                                       \n" \
+"## Other relevant topics                                               \n" \
+"                                                                       \n" \
+"* [update]                     Weight update algorithms, parameters    \n" \
+
 #define TOPIC_NETWORKS \
-"# Networks                                                             \n"
+"# Networks                                                             \n" \
+"                                                                       \n" \
+"createNetwork <name> <type>    Create network of specified type        \n" \
+"                               (type = [ffn|srn|rnn])                  \n" \
+"removeNetwork <name>           Remove network from session             \n" \
+"listNetworks                   List all active networks                \n" \
+"changeNetwork <name>           Change active network                   \n" \
+"                                                                       \n" \
+"init                           Initialize network                      \n" \
+"reset                          Reset network                           \n" \
+"train                          Train network                           \n" \
+"test                           Test network on all items               \n" \
+"testItem <name>                Test network on specified item          \n" \
+"                                                                       \n" \
+"## Other relevant topics                                               \n" \
+"                                                                       \n" \
+"* [groups]                     Creating groups                         \n" \
+"* [projections]                Creating projections                    \n" \
+"* [training]                   Training networks                       \n" \
+"* [testing]                    Testing networks                        \n" \
+
+#define TOPIC_PROJECTIONS \
+"# Projections                                                          \n" \
+"                                                                       \n" \
+"createProjection <from> <to>   Create projection between groups        \n" \
+"removeProjection <from> <to>   Remove projection between groups        \n" \
+"createElmanProjection <from> <to>                                      \n" \
+"                          ---- Create Elman (copy) projection          \n" \
+"createElmanProjection <from> <to>                                      \n" \
+"                          ---- Remove Elman (copy) projection          \n" \
+"listProjections                List all projection in network          \n" \
+"freezeProjection <from> <to>   Freeze projection weights               \n" \
+"unfreezeProjection <from> <to> Unfreeze projection weights             \n" \
+"                                                                       \n" \
+"## Other relevant topics                                               \n" \
+"                                                                       \n" \
+"* [weights]                    Weight randomization, saving, loading   \n" \
+/* TODO: tunnel projections */
+
+#define TOPIC_RANDOMIZATION \
+"# Randomization                                                        \n" \
+"                                                                       \n" \
+"set RandomSeed <val>           Set seed for randomization              \n" \
+"set RandomAlgorithm <name>     Set randomization algorithm             \n" \
+"                                                                       \n" \
+"## Randomization algorithms and parameters                             \n" \
+"                                                                       \n" \
+"* [gaussian]                   Gaussian randomization                  \n" \
+"    set RandomMu <val>         Mean                                    \n" \
+"    set RandomSigma <val       Standard deviation                      \n" \
+"* [range]                      Uniform range randomization             \n" \
+"    set RandomMin <val>        Range lower bound                       \n" \
+"    set RandomMax <val>        Range upper bound                       \n" \
+"* [nguyen_widrow]              Nguyen-Widrow randomization             \n" \
+"    set RandomMin <val>        Range lower bound                       \n" \
+"    set RandomMax <val>        Range upper bound                       \n" \
+"* [fan_in]                     Fan-In randomization                    \n" \
+"* [binary]                     Binary randomization                    \n" \
+
+#define TOPIC_SETS \
+"# Example sets                                                         \n" \
+"                                                                       \n" \
+"loadSet <name> <file>          Load example set from specified file    \n" \
+"removeSet <name>               Remove set from active network          \n" \
+"listSets                       List all sets in active network         \n" \
+"changeSet <name>               Change active set                       \n" \
+"listItems                      List all example items in the active set\n" \
+"showItem <name>                Show input-target pairs for an item     \n" \
+
+#define TOPIC_TESTING \
+"# Testing                                                              \n" \
+"                                                                       \n" \
+"test                           Test network on all items               \n" \
+"testItem <name>                Test network on specified item          \n" \
 
 #define TOPIC_TRAINING \
-"# Training                                                             \n"
+"# Training                                                             \n" \
+"                                                                       \n" \
+"train                          Train network                           \n" \
+"                                                                       \n" \
+"## Training parameters                                                 \n" \
+"                                                                       \n" \
+"set BatchSize <val>            #examples after which to update weights \n" \
+"                               (default is #items in active set)       \n" \
+"set MaxEpochs <val>            Maximum number of training epochs       \n" \
+"set ErrorThreshold <val>       Stop if error drops below threshold     \n"\
+"set ReportAfter <val>          Report progress after #epochs           \n" \
+"                                                                       \n" \
+"## Other relevant topics                                               \n" \
+"                                                                       \n" \
+"* [learning]                   Learning algorithms, parameters         \n" \
+"* [update]                     Update algorithms, parameters           \n" \
+
+#define TOPIC_UPDATE \
+"# Weight updating                                                      \n" \
+"                                                                       \n" \
+"set UpdateAlgorithm <name>     Set weight update algorithm             \n" \
+"                                                                       \n" \
+"## Update algorithms and parameters                                    \n" \
+"                                                                       \n" \
+"* [steepest]                   Steepest (gradient) descent             \n" \
+"    set LearningRate <val>     Set learning rate (LR) coefficient      \n" \
+"    set LRScaleFactor <val>    Set LR scaling factor                   \n" \
+"    set LRScaleAfter <val>     Scale LR after \%epochs                 \n" \
+"    set Momentum <val>         Set momentenum (MN) coefficient         \n" \
+"    set MNScaleFactor <val>    Set MN scaling factor                   \n" \
+"    set MNScaleAfter <val>     Scale MN after \%epochs                 \n" \
+"    set WeightDecay <val>      Set weight decay (WD) coefficient       \n" \
+"    set WDScaleFactor <val>    Set WD scaling factor                   \n" \
+"    set WDScaleAfter <val>     Scale WD after \%epochs                 \n" \
+"* [bounded]                    Bounded steepest descent                \n" \
+"    (see `steepest`)                                                   \n" \
+"* [rprop+|irprop+]             (modified) Rprop (+ weight backtracking)\n" \
+"    set RpropInitUpdate <val>  Set initial update value for Rprop      \n" \
+"    set RpropEtaMinus <val>    Set Eta- for Rprop                      \n" \
+"    set RpropEtaPlus <val>     Set Eta+ for Rprop                      \n" \
+"* [rprop-|irprop-]             (modified) Rprop (- weight backtracking)\n" \
+"    (see `rprop+|irprop+` and `steepest`)                              \n" \
+"* [qprop]                      Quick propagation                       \n" \
+"    (see `steepest`)                                                   \n" \
+"* [dbd]                        Delta-Bar-Delta                         \n" \
+"    set DBDRateIncrement <val> Set Kappa for Delta-Bar-Delta           \n" \
+"    set DBDRateDecrement <val> Set Phi for Delta-Bar-Delta             \n" \
+"    (also see `steepest`)                                              \n" \
+"                                                                       \n" \
+"## Other relevant topics                                               \n" \
+"                                                                       \n" \
+"* [learning]                   Learning algorithms, parameters         \n" \
+
+#define TOPIC_USAGE \
+"Usage: mesh <file> [options]                                           \n" \
+"                                                                       \n" \
+"    --help                     Show this help message                  \n" \
+
+#define TOPIC_WEIGHTS \
+"# Weights                                                              \n" \
+"                                                                       \n" \
+"weightStats                    Show weight statistics                  \n" \
+"                                                                       \n" \
+"saveWeights <file>             Save weights to specified file          \n" \
+"loadWeights <file>             Load weights from specified file        \n" \
+"                                                                       \n" \
+"## Other relevant topics                                               \n" \
+"                                                                       \n" \
+"* [randomization]              Randomization algorithms, parameters    \n" \
+
 
 struct help
 {
@@ -79,10 +285,20 @@ const static struct help hts[] = {
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"about",               TOPIC_ABOUT},
         {"aboot",               TOPIC_ABOOT},
-        {"usage",               TOPIC_USAGE},
+        {"activation",          TOPIC_ACTIVATION},
+        {"error",               TOPIC_ERROR},
         {"general",             TOPIC_GENERAL},
+        {"groups",              TOPIC_GROUPS},
+        {"learning",            TOPIC_LEARNING},
         {"networks",            TOPIC_NETWORKS},
+        {"projections",         TOPIC_PROJECTIONS},
+        {"randomization",       TOPIC_RANDOMIZATION},
+        {"sets",                TOPIC_SETS},
+        {"testing",             TOPIC_TESTING},
         {"training",            TOPIC_TRAINING},
+        {"update",              TOPIC_UPDATE},
+        {"usage",               TOPIC_USAGE},
+        {"weights",             TOPIC_WEIGHTS},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {NULL,         NULL}
