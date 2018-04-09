@@ -1671,7 +1671,7 @@ bool cmd_set_similarity_metric(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        mprintf("Set similarity metric \t [ %s ]", arg);
+        mprintf("Set similarity metric \t [ %s ]\n", arg);
 
         return true;
 }
