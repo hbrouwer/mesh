@@ -240,6 +240,8 @@
 "testItem <name>                Test network on specified item          \n" \
 "    (see `test`)                                                       \n" \
 "                                                                       \n" \
+"recordUnits <group> <file>     Record unit activations to file         \n" \
+"                                                                       \n" \
 "## Other relevant topics                                               \n" \
 "                                                                       \n" \
 "* [classification]             Confusion matrix and statistics         \n" \
