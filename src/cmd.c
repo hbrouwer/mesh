@@ -1876,11 +1876,11 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
         enum vector_type
         {
                 vtype_units,
-                vtype_errors
+                vtype_error
         } type;
         if (strcmp(arg1, "units") == 0) {               /* units */
                 type = vtype_units;
-        } else if (strcmp(arg1, "errors") == 0) {       /* errors */
+        } else if (strcmp(arg1, "error") == 0) {        /* error */
                 type = vtype_errors;
         } else {
                 eprintf("Cannot show vector - no such vector type '%s'\n",
@@ -1902,7 +1902,7 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
                 s->pprint ? pprint_vector(g->vector, s->scheme)
                           : print_vector(g->vector);
                 break;
-        case vtype_errors:
+        case vtype_error:
                 cprintf("Error vector for '%s':\n\n", arg2);
                 s->pprint ? pprint_vector(g->error, s->scheme)
                           : print_vector(g->error);
