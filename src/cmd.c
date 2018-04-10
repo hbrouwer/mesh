@@ -2157,7 +2157,7 @@ bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s)
+bool cmd_dss_word_info(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* set name */
         char arg2[MAX_ARG_SIZE]; /* item name */
@@ -2182,12 +2182,12 @@ bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s)
         
         mprintf("Testing network '%s' with item '%s':\n", s->anp->name, arg2);
 
-        dss_word_information(s->anp, set, item);
+        dss_word_info(s->anp, set, item);
 
         return true;
 }
 
-bool cmd_dss_write_word_information(char *cmd, char *fmt, struct session *s)
+bool cmd_dss_write_word_info(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* set name */
         char arg2[MAX_ARG_SIZE]; /* filename */
@@ -2205,7 +2205,7 @@ bool cmd_dss_write_word_information(char *cmd, char *fmt, struct session *s)
         mprintf("Computing word informativity metrics \t [ %s :: %s ]\n",
                 s->anp->asp->name, arg1);
 
-        dss_write_word_information(s->anp, set, arg2);
+        dss_write_word_info(s->anp, set, arg2);
 
         mprintf("Written word informativity metrics \t [ %s ]\n", arg2);
 
@@ -2256,7 +2256,7 @@ bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_erp_write_estimates(char *cmd, char *fmt, struct session *s)
+bool cmd_erp_write_values(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* N400 generator group name */
         char arg2[MAX_ARG_SIZE]; /* P600 generator group name */
@@ -2285,7 +2285,7 @@ bool cmd_erp_write_estimates(char *cmd, char *fmt, struct session *s)
         mprintf("Computing ERP estimates \t [ N400 :: %s | P600 :: %s ]\n",
                 arg1, arg2);
 
-        erp_write_estimates(s->anp, N400_gen, P600_gen, arg3);
+        erp_write_values(s->anp, N400_gen, P600_gen, arg3);
 
         mprintf("Written ERP estimates \t [ %s ]\n", arg3);
 

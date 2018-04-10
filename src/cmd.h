@@ -98,12 +98,12 @@ bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s);
 
 bool cmd_dss_test(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_scores(char *cmd, char *fmt, struct session *s);
-bool cmd_dss_word_information(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s);
-bool cmd_dss_write_word_information(char *cmd, char *fmt, struct session *s);
+bool cmd_dss_word_info(char *cmd, char *fmt, struct session *s);
+bool cmd_dss_write_word_info(char *cmd, char *fmt, struct session *s);
 
 bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s);
-bool cmd_erp_write_estimates(char *cmd, char *fmt, struct session *s);
+bool cmd_erp_write_values(char *cmd, char *fmt, struct session *s);
 
                 /******************
                  **** commands ****
@@ -244,9 +244,9 @@ const static struct command cmds[] = {
                                                      &cmd_dss_inferences},
         {"dssInferences",           "%s '%[^']' %lf",
                                                      &cmd_dss_inferences},
-        {"dssWordInformation",      "%s \"%[^\"]\"", &cmd_dss_word_information},
-        {"dssWordInformation",      "%s '%[^']'",    &cmd_dss_word_information},
-        {"dssWriteWordInformation", "%s %s",         &cmd_dss_write_word_information},
+        {"dssWordInfo",             "%s \"%[^\"]\"", &cmd_dss_word_info},
+        {"dssWordInfo",             "%s '%[^']'",    &cmd_dss_word_info},
+        {"dssWriteWordInfo",        "%s %s",         &cmd_dss_write_word_info},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"erpContrast",             "%s \"%[^\"]\" \"%[^\"]\"",
@@ -257,7 +257,7 @@ const static struct command cmds[] = {
                                                      &cmd_erp_contrast},
         {"erpContrast",             "%s '%[^']' '%[^']'",
                                                      &cmd_erp_contrast},
-        {"erpWriteEstimates",       "%s %s %s",      &cmd_erp_write_estimates},
+        {"erpWriteValues",          "%s %s %s",      &cmd_erp_write_values},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {NULL,                      NULL,            NULL} /* tail */

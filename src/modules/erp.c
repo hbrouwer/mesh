@@ -39,8 +39,8 @@ Brouwer, H. (2014). The Electrophysiology of Language Comprehension: A
 void erp_contrast(struct network *n, struct group *gen,
         struct item *ctl, struct item *tgt)
 {
-        struct vector *cv = erp_estimates_for_item(n, gen, ctl);
-        struct vector *tv = erp_estimates_for_item(n, gen, tgt);
+        struct vector *cv = erp_values_for_item(n, gen, ctl);
+        struct vector *tv = erp_values_for_item(n, gen, tgt);
 
         struct matrix *effects = create_matrix(cv->size, tv->size);
         for (uint32_t r = 0; r < effects->rows; r++)
@@ -65,7 +65,7 @@ void erp_contrast(struct network *n, struct group *gen,
         free_vector(tv);
 }
 
-void erp_write_estimates(struct network *n, struct group *N400_gen,
+void erp_write_values(struct network *n, struct group *N400_gen,
         struct group *P600_gen, char *filename)
 {
         FILE *fd;
@@ -76,8 +76,8 @@ void erp_write_estimates(struct network *n, struct group *N400_gen,
         fprintf(fd,"\"ItemID\",\"ItemName\",\"ItemMeta\",\"WordPos\",\"N400\",\"P600\"\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item   = n->asp->items->elements[i];
-                struct vector *N400 = erp_estimates_for_item(n, N400_gen, item);
-                struct vector *P600 = erp_estimates_for_item(n, P600_gen, item);
+                struct vector *N400 = erp_values_for_item(n, N400_gen, item);
+                struct vector *P600 = erp_values_for_item(n, P600_gen, item);
                 for (uint32_t j = 0; j < item->num_events; j++) 
                         fprintf(fd,"%d,\"%s\",\"%s\",%d,%f,%f\n",
                                 i + 1, item->name, item->meta, j + 1,
@@ -97,7 +97,7 @@ error_out:
         return;
 }
 
-struct vector *erp_estimates_for_item(struct network *n, struct group *g,
+struct vector *erp_values_for_item(struct network *n, struct group *g,
         struct item *item)
 {
         struct vector *ev = create_vector(item->num_events);

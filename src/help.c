@@ -32,6 +32,6 @@ void help(char *help_topic)
                 }
         }
 
-        /* if no topic is found, show general help */
-        help("general");
+        /* if no topic is found, show welcome message */
+        help("welcome");
 }

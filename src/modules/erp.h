@@ -22,9 +22,9 @@
 
 void erp_contrast(struct network *n, struct group *gen,
         struct item *ctl, struct item *tgt);
-void erp_write_estimates(struct network *n, struct group *N400_gen,
+void erp_write_values(struct network *n, struct group *N400_gen,
         struct group *P600_gen, char *filename);
-struct vector *erp_estimates_for_item(struct network *n, struct group *g,
+struct vector *erp_values_for_item(struct network *n, struct group *g,
         struct item *item);
 
 #endif /* ERP_H */

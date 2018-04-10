@@ -463,7 +463,7 @@ Frank, S. L. and Vigliocco, G. (2011). Sentence comprehension as mental
         672-696.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-struct matrix *dss_word_information_matrix(struct network *n,
+struct matrix *dss_word_info_matrix(struct network *n,
         struct set *s, struct item *item, int32_t *freq_table)
 {
         struct matrix *im = create_matrix(item->num_events, 6);
@@ -746,11 +746,11 @@ void fuzzy_or(struct vector *a, struct vector *b)
         return;
 }
 
-void dss_word_information(struct network *n, struct set *s,
+void dss_word_info(struct network *n, struct set *s,
         struct item *item)
 {
         int32_t *freq_table = frequency_table(s);
-        struct matrix *im = dss_word_information_matrix(n, s,
+        struct matrix *im = dss_word_info_matrix(n, s,
                 item, freq_table);
         
         size_t block_size = strlen(item->name) + 1;
@@ -814,7 +814,7 @@ void dss_word_information(struct network *n, struct set *s,
         return;
 }
 
-void dss_write_word_information(struct network *n, struct set *s,
+void dss_write_word_info(struct network *n, struct set *s,
         char *filename)
 {
         FILE *fd;
@@ -828,7 +828,7 @@ void dss_write_word_information(struct network *n, struct set *s,
                 struct item *item =
                         n->asp->items->elements[i];
                 struct matrix *im =
-                        dss_word_information_matrix(n, s, item, freq_table);
+                        dss_word_info_matrix(n, s, item, freq_table);
                 for (uint32_t j = 0; j < item->num_events; j++) {
                         fprintf(fd, "%d,\"%s\",\"%s\",%d",
                                 i + 1, item->name, item->meta, j + 1);
@@ -847,6 +847,6 @@ void dss_write_word_information(struct network *n, struct set *s,
         return;
 
 error_out:
-        perror("[dss_write_word_information]");
+        perror("[dss_write_word_info]");
         return;
 }
