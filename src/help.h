@@ -119,6 +119,14 @@
 "                                                                       \n" \
 "* [update]                     Weight update algorithms, parameters    \n" \
 
+#define TOPIC_MULTI_STAGE \
+"# Multi-stage training                                                 \n" \
+"                                                                       \n" \
+"set MultiStage <group> <set>   After error is propgated for an item, a \n" \
+"                               a matching item from set will be clamped\n" \
+"                               to group, and activation fed forward    \n" \
+"set SingleStage                Disable multi-stage training            \n" \
+
 #define TOPIC_NETWORKS \
 "# Networks                                                             \n" \
 "                                                                       \n" \
@@ -248,6 +256,7 @@
 "* [error]                      Error functions                         \n" \
 "* [groups]                     Creating groups                         \n" \
 "* [learning]                   Learning algorithms, parameters         \n" \
+"* [multi-stage]                Multi-stage training                    \n" \
 "* [networks]                   Creating different network architectures\n" \
 "* [projections]                Creating projections                    \n" \
 "* [randomization]              Randomization algorithms, parameters    \n" \
@@ -284,6 +293,7 @@
 "                                                                       \n" \
 "* [learning]                   Learning algorithms, parameters         \n" \
 "* [update]                     Update algorithms, parameters           \n" \
+"* [multi-stage]                Multi-stage training                    \n" \
 
 #define TOPIC_UPDATE \
 "# Weight updating                                                      \n" \
@@ -409,6 +419,7 @@ const static struct help hts[] = {
         {"error",               TOPIC_ERROR},
         {"groups",              TOPIC_GROUPS},
         {"learning",            TOPIC_LEARNING},
+        {"multi-stage",         TOPIC_MULTI_STAGE},
         {"networks",            TOPIC_NETWORKS},
         {"projections",         TOPIC_PROJECTIONS},
         {"randomization",       TOPIC_RANDOMIZATION},
