@@ -847,6 +847,6 @@ void dss_write_word_info(struct network *n, struct set *s,
         return;
 
 error_out:
-        perror("[dss_write_word_info]");
+        perror("[dss_write_word_info()]");
         return;
 }

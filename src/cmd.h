@@ -77,6 +77,8 @@ bool cmd_train(char *cmd, char *fmt, struct session *s);
 bool cmd_test_item(char *cmd, char *fmt, struct session *s);
 bool cmd_test(char *cmd, char *fmt, struct session *s);
 
+bool cmd_record_units(char *cmd, char *fmt, struct session *s);
+
 bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s);
 bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s);
 
@@ -204,6 +206,9 @@ const static struct command cmds[] = {
         {"testItem",                "\"%[^\"]\"",    &cmd_test_item},
         {"testItem",                "'%[^']'",       &cmd_test_item},
         {"test",                    NULL,            &cmd_test},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"recordUnits",             "%s %s",         &cmd_record_units},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"set MultiStage",          "%s %s",         &cmd_set_multi_stage},

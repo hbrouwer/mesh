@@ -31,6 +31,7 @@
 #include "network.h"
 #include "pprint.h"
 #include "random.h"
+#include "record.h"
 #include "set.h"
 #include "stats.h"
 #include "similarity.h"
@@ -1750,6 +1751,29 @@ bool cmd_test(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
+bool cmd_record_units(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* group name */
+        char arg2[MAX_ARG_SIZE]; /* filename */
+        if (sscanf(cmd, fmt, arg1, arg2) != 2)
+                return false;
+
+        /* find group */
+        struct group *g = find_array_element_by_name(s->anp->groups, arg1);
+        if (g == NULL) {
+                eprintf("Cannot record units - no such group '%s'\n", arg1);
+                return true;
+        }
+
+        mprintf("Recording units of group '%s' in '%s'\n", g->name, s->anp->name);
+
+        record_units(s->anp, g, arg2);
+
+        mprintf("Written activation vectors \t [ %s ]\n", arg2);
+
+        return true;
+}
+
 /*
  * TODO: Document this.
  */
@@ -1881,7 +1905,7 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
         if (strcmp(arg1, "units") == 0) {               /* units */
                 type = vtype_units;
         } else if (strcmp(arg1, "error") == 0) {        /* error */
-                type = vtype_errors;
+                type = vtype_error;
         } else {
                 eprintf("Cannot show vector - no such vector type '%s'\n",
                         arg1);
