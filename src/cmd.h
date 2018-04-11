@@ -33,12 +33,13 @@ bool cmd_load_file(char *cmd, char *fmt, struct session *s);
 
 bool cmd_create_network(char *cmd, char *fmt, struct session *s);
 bool cmd_remove_network(char *cmd, char *fmt, struct session *s);
-bool cmd_list_networks(char *cmd, char *fmt, struct session *s);
+bool cmd_networks(char *cmd, char *fmt, struct session *s);
 bool cmd_change_network(char *cmd, char *fmt, struct session *s);
+bool cmd_inspect(char *cmd, char *fmt, struct session *s);
 
 bool cmd_create_group(char *cmd, char *fmt, struct session *s);
 bool cmd_remove_group(char *cmd, char *fmt, struct session *s); 
-bool cmd_list_groups(char *cmd, char *fmt, struct session *s);
+bool cmd_groups(char *cmd, char *fmt, struct session *s);
 bool cmd_attach_bias(char *cmd, char *fmt, struct session *s);
 bool cmd_set_input_group(char *cmd, char *fmt, struct session *s);
 bool cmd_set_output_group(char *cmd, char *fmt, struct session *s);
@@ -49,19 +50,21 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s);
 bool cmd_remove_projection(char *cmd, char *fmt, struct session *s);
 bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s);
 bool cmd_remove_elman_projection(char *cmd, char *fmt, struct session *s);
-bool cmd_list_projections(char *cmd, char *fmt, struct session *s);
+bool cmd_projections(char *cmd, char *fmt, struct session *s);
 bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s);
 bool cmd_unfreeze_projection(char *cmd, char *fmt, struct session *s);
 bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s);
+
+bool cmd_toggle_reset_contexts(char *cmd, char *fmt, struct session *s);
 
 bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s);
 bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s);
 
 bool cmd_load_set(char *cmd, char *fmt, struct session *s);
 bool cmd_remove_set(char *cmd, char *fmt, struct session *s);
-bool cmd_list_sets(char *cmd, char *fmt, struct session *s);
+bool cmd_sets(char *cmd, char *fmt, struct session *s);
 bool cmd_change_set(char *cmd, char *fmt, struct session *s);
-bool cmd_list_items(char *cmd, char *fmt, struct session *s);
+bool cmd_items(char *cmd, char *fmt, struct session *s);
 bool cmd_show_item(char *cmd, char *fmt, struct session *s);
 bool cmd_set_training_order(char *cmd, char *fmt, struct session *s);
 
@@ -139,13 +142,14 @@ const static struct command cmds[] = {
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"createNetwork",           "%s %s",         &cmd_create_network},
         {"removeNetwork",           "%s",            &cmd_remove_network},
-        {"listNetworks",            NULL,            &cmd_list_networks},
+        {"networks",                NULL,            &cmd_networks},
         {"changeNetwork",           "%s",            &cmd_change_network},
+        {"inspect",                 NULL,            &cmd_inspect},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"createGroup",             "%s %d",         &cmd_create_group},
         {"removeGroup",             "%s",            &cmd_remove_group},
-        {"listGroups",              NULL,            &cmd_list_groups},
+        {"groups",                  NULL,            &cmd_groups},
         {"attachBias",              "%s",            &cmd_attach_bias},
         {"set InputGroup",          "%s",            &cmd_set_input_group},
         {"set OutputGroup",         "%s",            &cmd_set_output_group},
@@ -157,11 +161,14 @@ const static struct command cmds[] = {
         {"removeProjection",        "%s %s",         &cmd_remove_projection},
         {"createElmanProjection",   "%s %s",         &cmd_create_elman_projection},
         {"removeElmanProjection",   "%s %s",         &cmd_remove_elman_projection},
-        {"listProjections",         NULL,            &cmd_list_projections},
+        {"projections",             NULL,            &cmd_projections},
         {"freezeProjection",        "%s %s",         &cmd_freeze_projection},
         {"unfreezeProjection",      "%s %s",         &cmd_unfreeze_projection},
         {"createTunnelProjection",  "%s %d %d %s %d %d",
                                                      &cmd_create_tunnel_projection},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"toggleResetContexts",     NULL,            &cmd_toggle_reset_contexts},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -184,9 +191,9 @@ const static struct command cmds[] = {
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"loadSet",                 "%s %s",         &cmd_load_set},
         {"removeSet",               "%s",            &cmd_remove_set},
-        {"listSets",                NULL,            &cmd_list_sets},
+        {"sets",                    NULL,            &cmd_sets},
         {"changeSet",               "%s",            &cmd_change_set},
-        {"listItems",               NULL,            &cmd_list_items},
+        {"items",                   NULL,            &cmd_items},
         {"showItem",                "\"%[^\"]\"",    &cmd_show_item},
         {"showItem",                "'%[^']'",       &cmd_show_item},
         {"set TrainingOrder",       "%s",            &cmd_set_training_order},

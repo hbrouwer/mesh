@@ -50,6 +50,8 @@ struct network *create_network(char *name, enum network_type type)
                 goto error_out;
         memset(n->status, 0, block_size);
 
+        n->reset_context_groups = true;
+
         set_network_defaults(n);
 
         return n;
@@ -61,6 +63,7 @@ error_out:
 
 void set_network_defaults(struct network *n)
 {
+        n->init_context_units = DEFAULT_INIT_CONTEXT_UNITS;
         n->random_algorithm   = DEFAULT_RANDOM_ALGORITHM;
         n->random_mu          = DEFAULT_RANDOM_MU;
         n->random_sigma       = DEFAULT_RANDOM_SIGMA;
@@ -127,6 +130,8 @@ void reset_network(struct network *n)
 {
         randomize_weight_matrices(n->input, n);
         initialize_dynamic_params(n->input, n);
+        reset_context_groups(n);
+        reset_recurrent_groups(n);
 }
 
 void free_network(struct network *n)
@@ -301,28 +306,26 @@ void shift_pointer_or_stack(struct network *n)
 
 void reset_context_groups(struct network *n)
 {
+        if (n->initialized && !n->reset_context_groups)
+                return;
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
                 for (uint32_t j = 0; j < g->ctx_groups->num_elements; j++)
-                        reset_context_group_chain(g->ctx_groups->elements[j]);
+                        reset_context_group_chain(n, g->ctx_groups->elements[j]);
         }
 }
 
-/*
- * TODO: Condition value on the activation function.
- */
-void reset_context_group_chain(struct group *g)
+void reset_context_group_chain(struct network *n, struct group *g)
 {
         for (uint32_t i = 0; i < g->ctx_groups->num_elements; i++)
-                reset_context_group_chain(g->ctx_groups->elements[i]);
-        fill_vector_with_value(g->vector, 0.5);
+                reset_context_group_chain(n, g->ctx_groups->elements[i]);
+        fill_vector_with_value(g->vector, n->init_context_units);
 }
 
-/*
- * TODO: Condition value on the activation function.
- */
 void reset_recurrent_groups(struct network *n)
 {
+        if (n->initialized && !n->reset_context_groups)
+                return;
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
                 if (!g->recurrent)
@@ -331,7 +334,8 @@ void reset_recurrent_groups(struct network *n)
                         struct projection *p = g->inc_projs->elements[j];
                         if (!p->to->recurrent)
                                 continue;
-                        fill_vector_with_value(p->to->vector, 0.5);
+                        fill_vector_with_value(p->to->vector,
+                                n->init_context_units);
                 }
         }
 }

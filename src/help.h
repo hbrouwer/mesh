@@ -85,7 +85,7 @@
 "                                                                       \n" \
 "createGroup <name> <size>      Create group of specified size          \n" \
 "removeGroup <name>             Remove group from network               \n" \
-"listGroups                     List all groups of the active network   \n" \
+"groups                         List all groups of the active network   \n" \
 "attachBias <name>              Attach a bias unit to a group           \n" \
 "set InputGroup <name>          Set the input group of the network      \n" \
 "set OutputGroup <name>         Set the output group of the network     \n" \
@@ -117,7 +117,7 @@
 "                                                                       \n" \
 "## Other relevant topics                                               \n" \
 "                                                                       \n" \
-"* [update]                     Weight update algorithms, parameters    \n" \
+"* [updating]                   Weight update algorithms, parameters    \n" \
 
 #define TOPIC_MULTI_STAGE \
 "# Multi-stage training                                                 \n" \
@@ -133,14 +133,18 @@
 "createNetwork <name> <type>    Create network of specified type        \n" \
 "                               (type = [ffn|srn|rnn])                  \n" \
 "removeNetwork <name>           Remove network from session             \n" \
-"listNetworks                   List all active networks                \n" \
+"networks                       List all active networks                \n" \
 "changeNetwork <name>           Change active network                   \n" \
+"inspect                        Show properties of active network       \n" \
 "                                                                       \n" \
 "init                           Initialize network                      \n" \
 "reset                          Reset network                           \n" \
 "train                          Train network                           \n" \
 "test                           Test network on all items               \n" \
 "testItem <name>                Test network on specified item          \n" \
+"                                                                       \n" \
+"toggleResetContexts            Toggle context resetting                \n" \
+"set InitContextUnits <val>     Activation of initial context units     \n" \
 "                                                                       \n" \
 "## Other relevant topics                                               \n" \
 "                                                                       \n" \
@@ -156,7 +160,7 @@
 "removeProjection <from> <to>   Remove projection between groups        \n" \
 "createElmanProjection <f> <t>  Create Elman (copy) projection          \n" \
 "removeElmanProjection <f> <t>  Remove Elman (copy) projection          \n" \
-"listProjections                List all projection in network          \n" \
+"projections                    List all projection in network          \n" \
 "freezeProjection <from> <to>   Freeze projection weights               \n" \
 "unfreezeProjection <from> <to> Unfreeze projection weights             \n" \
 "                                                                       \n" \
@@ -209,9 +213,9 @@
 "                                                                       \n" \
 "loadSet <name> <file>          Load example set from specified file    \n" \
 "removeSet <name>               Remove set from active network          \n" \
-"listSets                       List all sets in active network         \n" \
+"sets                           List all sets in active network         \n" \
 "changeSet <name>               Change active set                       \n" \
-"listItems                      List all example items in the active set\n" \
+"items                          List all example items in the active set\n" \
 "showItem <name>                Show input-target pairs for an item     \n" \
 
 #define TOPIC_SIMILARITY \
@@ -268,7 +272,7 @@
 "* [testing]                    Testing networks                        \n" \
 "* [topics]                     This list of all available help topics  \n" \
 "* [training]                   Training networks                       \n" \
-"* [update]                     Update algorithms, parameters           \n" \
+"* [updating]                   Update algorithms, parameters           \n" \
 "* [usage]                      Show command line usage and arguments   \n" \
 "* [weights]                    Weight randomization, saving, loading   \n" \
 "* [welcome]                    Show welcome message                    \n" \
@@ -294,10 +298,10 @@
 "## Other relevant topics                                               \n" \
 "                                                                       \n" \
 "* [learning]                   Learning algorithms, parameters         \n" \
-"* [update]                     Update algorithms, parameters           \n" \
+"* [updating]                   Update algorithms, parameters           \n" \
 "* [multi-stage]                Multi-stage training                    \n" \
 
-#define TOPIC_UPDATE \
+#define TOPIC_UPDATING \
 "# Weight updating                                                      \n" \
 "                                                                       \n" \
 "set UpdateAlgorithm <name>     Set weight update algorithm             \n" \
@@ -431,7 +435,7 @@ const static struct help hts[] = {
         {"testing",             TOPIC_TESTING},
         {"topics",              TOPIC_TOPICS},
         {"training",            TOPIC_TRAINING},
-        {"update",              TOPIC_UPDATE},
+        {"updating",            TOPIC_UPDATING},
         {"usage",               TOPIC_USAGE},
         {"weights",             TOPIC_WEIGHTS},
         {"welcome",             TOPIC_WELCOME},

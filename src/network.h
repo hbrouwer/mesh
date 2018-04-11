@@ -56,6 +56,8 @@ struct network
         struct group *output;       /* output group */
         bool initialized;           /* flags initialization status */
                                     /* randomization algorithm */
+        bool reset_context_groups;  /* flags context group resetting */
+        double init_context_units;  /* initial value of context units */
         void (*random_algorithm)(struct matrix *m, struct network *n);
         uint32_t random_seed;       /* random number generator seed */
         double random_mu;           /* mu for Gaussian random numbers */
@@ -198,7 +200,7 @@ void shift_context_group_chain(struct group *g, struct vector *v);
 void shift_pointer_or_stack(struct network *n);
 
 void reset_context_groups(struct network *n);
-void reset_context_group_chain(struct group *g);
+void reset_context_group_chain(struct network *n, struct group *g);
 void reset_recurrent_groups(struct network *n);
 void reset_ffn_error_signals(struct network *n);
 void reset_rnn_error_signals(struct network *n);

@@ -288,20 +288,20 @@ bool cmd_remove_network(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_list_networks(char *cmd, char *fmt, struct session *s)
+bool cmd_networks(char *cmd, char *fmt, struct session *s)
 {
         if (strcmp(cmd, fmt) != 0)
                 return false;
 
-        cprintf("Available networks:\n");
+        cprintf("Networks:\n");
         if (s->networks->num_elements == 0) {
                 cprintf("(no networks)\n");
         } else {
                 for (uint32_t i = 0; i < s->networks->num_elements; i++) {
                         struct network *n = s->networks->elements[i];
-                        cprintf("* %s", n->name);
+                        cprintf("* %d: %s", i + 1, n->name);
                         if (n == s->anp)
-                                cprintf(" (active network)\n");
+                                cprintf(" :: active network\n");
                         else
                                 cprintf("\n");
                 }
@@ -325,6 +325,214 @@ bool cmd_change_network(char *cmd, char *fmt, struct session *s)
         s->anp = n;
 
         mprintf("Changed to network \t [ %s ]\n", arg);
+
+        return true;
+}
+
+bool cmd_inspect(char *cmd, char *fmt, struct session *s)
+{
+        if (strcmp(cmd, fmt) != 0)
+                return false;
+
+        struct network *n = s->anp;
+
+                /*****************
+                 **** general ****
+                 *****************/
+
+        /* name */
+        cprintf("| Name: \t\t\t %s\n", n->name);
+        cprintf("| Type: \t\t\t ");
+        if (n->type == ntype_ffn)
+                cprintf("ffn");
+        if (n->type == ntype_srn)
+                cprintf("ffn");
+        if (n->type == ntype_rnn)
+                cprintf("ffn");
+        cprintf("\n");
+        cprintf("| Initialized: \t\t\t ");
+        n->initialized ? cprintf("true\n") : cprintf("false\n");
+        cprintf("| Unfolded: \t\t\t ");
+        n->unfolded_net ? cprintf("true\n") : cprintf("false\n");
+        cprintf("| Groups: \t\t\t ");
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
+                struct group *g = n->groups->elements[i];
+                if (i > 0) cprintf(", ");
+                cprintf("%s (%d)", g->name, g->vector->size);
+        }
+
+        cprintf("\n");
+        cprintf("| Input: \t\t\t ");
+        n->input != NULL
+                ? cprintf("%s (%d)\n",
+                        n->input->name, n->input->vector->size)
+                : cprintf("\n");
+        cprintf("| Output: \t\t\t ");
+        n->output != NULL
+                ? cprintf("%s (%d)\n",
+                        n->output->name, n->output->vector->size)
+                : cprintf("\n");
+        cprintf("| Sets: \t\t\t ");
+        for (uint32_t i = 0; i < n->sets->num_elements; i++) {
+                struct set *set = n->sets->elements[i];
+                if (i > 0) cprintf(", ");
+                cprintf("%s (%d)", set->name, set->items->num_elements);
+        }
+        cprintf("\n");
+
+                /******************
+                 **** contexts ****
+                 ******************/
+
+        cprintf("|\n");
+        cprintf("| Reset contexts: \t\t ");
+        n->reset_context_groups ? cprintf("true\n") : cprintf("false\n");
+        cprintf("| Init context units: \t\t %f\n", n->init_context_units);
+
+                /******************
+                 **** training ****
+                 ******************/
+
+        cprintf("|\n");
+        cprintf("| Learning algorithm: \t\t ");
+        if (n->learning_algorithm == train_network_with_bp)
+                cprintf("bp");
+        if (n->learning_algorithm == train_network_with_bptt) {
+                cprintf("bptt");
+        }
+        cprintf("\n");
+        cprintf("| Back ticks: \t\t\t %d\n", n->back_ticks);
+        cprintf("| Update algorithm: \t\t ");
+        if (n->update_algorithm == bp_update_sd
+                && n->sd_type == SD_DEFAULT)
+                cprintf("steepest");
+        if (n->update_algorithm == bp_update_sd
+                && n->sd_type == SD_BOUNDED)
+                cprintf("bounded");
+        if (n->update_algorithm == bp_update_rprop
+                && n->rp_type == RPROP_PLUS)
+                cprintf("rprop+");
+        if (n->update_algorithm == bp_update_rprop
+                && n->rp_type == RPROP_MINUS)
+                cprintf("rprop-");
+        if (n->update_algorithm == bp_update_rprop
+                && n->rp_type == IRPROP_PLUS)
+                cprintf("irprop+");
+        if (n->update_algorithm == bp_update_rprop
+                && n->rp_type == IRPROP_MINUS)
+                cprintf("irprop+");
+        if (n->update_algorithm == bp_update_qprop)
+                cprintf("qprop");
+        if (n->update_algorithm == bp_update_dbd)
+                cprintf("dbd");
+        cprintf("\n");
+        cprintf("|\n");
+        cprintf("| Learning rate (LR): \t\t %f\n",      n->learning_rate);
+        cprintf("| LR scale factor: \t\t %f\n",         n->lr_scale_factor);
+        cprintf("| LR scale after (%%epochs): \t %f\n", n->lr_scale_after);
+        cprintf("|\n");
+        cprintf("| Momentum (MN): \t\t %f\n",           n->momentum);
+        cprintf("| MN scale factor: \t\t %f\n",         n->mn_scale_factor);
+        cprintf("| MN scale after (%%epochs): \t %f\n", n->mn_scale_after);
+        cprintf("|\n");
+        cprintf("| Rprop init update: \t\t %f\n",       n->rp_init_update);
+        cprintf("| Rprop Eta-: \t\t\t %f\n",            n->rp_eta_minus);
+        cprintf("| Rprop Eta+: \t\t\t %f\n",            n->rp_eta_plus);
+        cprintf("|\n");
+        cprintf("| DBD rate increment: \t\t %f\n",      n->rp_init_update);
+        cprintf("| DBD rate decrement: \t\t %f\n",      n->rp_eta_minus);
+        cprintf("|\n");
+        cprintf("| Weight decay (WD): \t\t %f\n",       n->weight_decay);
+        cprintf("| WD scale factor: \t\t %f\n",         n->wd_scale_factor);
+        cprintf("| WD scale after (%%epochs): \t %f\n", n->wd_scale_after);
+        cprintf("|\n");
+        cprintf("| Target radius: \t\t %f\n",           n->target_radius);
+        cprintf("| Zero error radius: \t\t %f\n",       n->zero_error_radius);
+        cprintf("| Error threshold: \t\t %f\n",         n->error_threshold);
+        cprintf("|\n");
+        cprintf("| Training order: \t\t ");
+        if (n->training_order == train_ordered)
+                cprintf("ordered");
+        if (n->training_order == train_permuted)
+                cprintf("permuted");
+        if (n->training_order == train_randomized)
+                cprintf("randomized");
+        cprintf("\n");
+        cprintf("| Batch size: \t\t\t %d\n",            n->batch_size);
+        cprintf("| Maximum #epochs: \t\t %d\n",         n->max_epochs);
+        cprintf("| Report after #epochs \t\t %d\n",     n->report_after);
+        cprintf("|\n");
+        cprintf("| Multi-stage input: \t\t ");
+        n->ms_input
+                ? cprintf("%s (%d)\n",
+                        n->ms_input->name, n->ms_input->vector->size)
+                : cprintf("\n");
+        cprintf("| Multi-stage set: \t\t ");
+        n->ms_set
+                ? cprintf("%s (%d)\n",
+                        n->ms_set->name, n->ms_set->items->num_elements)
+                : cprintf("\n");
+
+                /***********************
+                 **** randomization ****
+                 ***********************/
+
+        cprintf("|\n");
+        cprintf("| Random algorithm: \t\t ");
+        if (n->random_algorithm == randomize_gaussian)
+                cprintf("gaussian");
+        if (n->random_algorithm == randomize_range)
+                cprintf("range");
+        if (n->random_algorithm == randomize_nguyen_widrow)
+                cprintf("nguyen_widrow");
+        if (n->random_algorithm == randomize_fan_in)
+                cprintf("fan_in");
+        if (n->random_algorithm == randomize_binary)
+                cprintf("binary");
+        cprintf("\n");
+        cprintf("| Random Seed: \t\t\t %d\n", n->random_seed);
+        cprintf("| Random Mu: \t\t\t %f\n",   n->random_mu);
+        cprintf("| Random Sigma: \t\t %f\n",  n->random_sigma);
+        cprintf("| Random Min: \t\t\t %f\n",  n->random_min);
+        cprintf("| Random Max: \t\t\t %f\n",  n->random_max);
+
+                /***************
+                 **** other ****
+                 ***************/
+
+        cprintf("|\n");
+        cprintf("| Similarity metric: \t\t ");
+        if (n->similarity_metric == inner_product)
+                cprintf("inner_product");
+        if (n->similarity_metric == harmonic_mean)
+                cprintf("harmonic_mean");
+        if (n->similarity_metric == cosine)
+                cprintf("cosine");
+        if (n->similarity_metric == tanimoto)
+                cprintf("tanimoto");
+        if (n->similarity_metric == dice)
+                cprintf("dice");
+        if (n->similarity_metric == pearson_correlation)
+                cprintf("pearson_correlation");
+        cprintf("\n");
+
+                /****************
+                 **** status ****
+                 ****************/
+
+        cprintf("|\n");
+        cprintf("| Epoch: \t\t\t %d\n",
+                n->status->epoch);
+        cprintf("| Error: \t\t\t %f\n",
+                n->status->error);
+        cprintf("| Previous error: \t\t %f\n",
+                n->status->prev_error);
+        cprintf("| Gradient linearity: \t\t %f\n",
+                n->status->gradient_linearity);
+        cprintf("| Last deltas length: \t\t %f\n",
+                n->status->last_deltas_length);
+        cprintf("| Gradient length: \t\t %f\n",
+                n->status->gradients_length);
 
         return true;
 }
@@ -416,22 +624,54 @@ bool cmd_remove_group(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_list_groups(char *cmd, char *fmt, struct session *s)
+bool cmd_groups(char *cmd, char *fmt, struct session *s)
 {
         if (strcmp(cmd, fmt) != 0)
                 return false;
 
-        cprintf("Available groups:\n");
+        cprintf("Groups in network '%s':\n", s->anp->name);
         if (s->anp->groups->num_elements == 0) {
                 cprintf("(no groups)\n");
         } else {
                 for (uint32_t i = 0; i < s->anp->groups->num_elements; i++) {
                         struct group *g = s->anp->groups->elements[i];
-                        cprintf("* %s :: %d", g->name, g->vector->size);
+
+                        /* name and size */
+                        cprintf("* %d: %s :: %d", i + 1, g->name, g->vector->size);
+
+                        /* activation function */
+                        if (g->act_fun->fun == act_fun_logistic)
+                                cprintf(" :: logistic");
+                        if (g->act_fun->fun == act_fun_bipolar_sigmoid)
+                                cprintf(" :: bipolar_sigmoid");
+                        if (g->act_fun->fun == act_fun_softmax)
+                                cprintf(" :: softmax");
+                        if (g->act_fun->fun == act_fun_tanh)
+                                cprintf(" :: tanh");
+                        if (g->act_fun->fun == act_fun_linear)
+                                cprintf(" :: linear");
+                        if (g->act_fun->fun == act_fun_softplus)
+                                cprintf(" :: softplus");
+                        if (g->act_fun->fun == act_fun_relu)
+                                cprintf(" :: relu");
+                        if (g->act_fun->fun == act_fun_binary_relu)
+                                cprintf(" :: binary_relu");
+                        if (g->act_fun->fun == act_fun_leaky_relu)
+                                cprintf(" :: leaky_relu");
+
+                        /* error function */
+                        if (g->err_fun->fun == error_sum_of_squares)
+                                cprintf(" :: sum_squares");
+                        if (g->err_fun->fun == error_cross_entropy)
+                                cprintf(" :: cross_entropy");
+                        if (g->err_fun->fun == error_divergence)
+                                cprintf(" :: divergence");
+
+                        /* input/output group */
                         if (g == s->anp->input)
-                                cprintf(" (input group)\n");
+                                cprintf(" :: input group\n");
                         else if (g == s->anp->output)
-                                cprintf(" (output group)\n");
+                                cprintf(" :: output group\n");
                         else
                                 cprintf("\n");
                 }
@@ -801,7 +1041,6 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s)
 
         /* add Elman projection */
         add_to_array(fg->ctx_groups, tg);
-        reset_context_groups(s->anp);
 
         mprintf("Created Elman projection \t [ %s -> %s ]\n", arg1, arg2);
 
@@ -850,7 +1089,7 @@ bool cmd_remove_elman_projection(char *cmd, char *fmt, struct session *s)
 
 }
 
-bool cmd_list_projections(char *cmd, char *fmt, struct session *s)
+bool cmd_projections(char *cmd, char *fmt, struct session *s)
 {
         if (strcmp(cmd, fmt) != 0)
                 return false;
@@ -859,25 +1098,27 @@ bool cmd_list_projections(char *cmd, char *fmt, struct session *s)
          * List incoming, recurrent, and outgoing projections for each
          * group.
          */
-        cprintf("Available projections:\n");
+        cprintf("Projections (by group) in network '%s':\n", s->anp->name);
         for (uint32_t i = 0; i < s->anp->groups->num_elements; i++) {
                 struct group *g = s->anp->groups->elements[i];
 
                 /* incoming projections */
-                cprintf("* ");
+                cprintf("* %d: ", i + 1);
                 for (uint32_t j = 0; j < g->inc_projs->num_elements; j++) {
                         struct projection *p = g->inc_projs->elements[j];
                         struct group *fg = p->to;
                         if (j > 0 && j < g->inc_projs->num_elements)
                                 cprintf(", ");
-                        cprintf("%s", fg->name, g->name);
+                        cprintf("%s (%dx%d)", fg->name,
+                                p->weights->rows, p->weights->cols);
                 }
                 
                 /* recurrent incoming projection */
                 if (g->recurrent) {
                         if (g->inc_projs->num_elements > 0)
                                 cprintf(", ");
-                        cprintf("%s", g->name);
+                        cprintf("%s (%d x %d)", g->name,
+                                g->vector->size, g->vector->size);
                 }
 
                 /* current group */
@@ -893,7 +1134,8 @@ bool cmd_list_projections(char *cmd, char *fmt, struct session *s)
                         struct group *tg = p->to;
                         if (j > 0 && j < g->out_projs->num_elements)
                                 cprintf(", ");
-                        cprintf("%s", tg->name);
+                        cprintf("%s (%dx%d)", tg->name,
+                                p->weights->rows, p->weights->cols);
                 }
 
                 /* recurrent outgoing projection */
@@ -914,7 +1156,7 @@ bool cmd_list_projections(char *cmd, char *fmt, struct session *s)
                                 struct group *cg = g->ctx_groups->elements[j];
                                 if (j > 0 && j < g->out_projs->num_elements)
                                         cprintf(", ");
-                                cprintf("%s", cg->name);
+                                cprintf("%s (copy)", cg->name);
                         }
                         cprintf("\n");
                 }
@@ -1177,6 +1419,21 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
+bool cmd_toggle_reset_contexts(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        s->anp->reset_context_groups = !s->anp->reset_context_groups;
+
+        if (s->anp->reset_context_groups)
+                mprintf("Toggled reset contexts \t [ on ]\n");
+        else
+                mprintf("Toggled reset contexts \t [ off ]\n");
+
+        return true;
+}
+
 bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* parameter */
@@ -1224,8 +1481,13 @@ bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s)
         if (sscanf(cmd, fmt, arg1, &arg2) != 2)
                 return false;
 
+        /* initial context activation */
+        if (strcmp(arg1, "InitContextUnits") == 0) {
+                s->anp->init_context_units = arg2;
+                mprintf("Set init context units \t [ %lf ]\n",
+                        s->anp->init_context_units);
         /* random mu */
-        if (strcmp(arg1, "RandomMu") == 0) {
+        } else if (strcmp(arg1, "RandomMu") == 0) {
                 s->anp->random_mu = arg2;
                 mprintf("Set random Mu \t\t [ %lf ]\n",
                         s->anp->random_mu);
@@ -1375,7 +1637,7 @@ bool cmd_load_set(char *cmd, char *fmt, struct session *s)
         add_to_array(s->anp->sets, set);
         s->anp->asp = set;
 
-        mprintf("Loaded set \t\t\t [ %s => %s :: %d ]\n", arg2, set->name,
+        mprintf("Loaded set \t\t\t [ %s => %s (%d) ]\n", arg2, set->name,
                 set->items->num_elements);
 
         return true;
@@ -1415,12 +1677,12 @@ bool cmd_remove_set(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_list_sets(char *cmd, char *fmt, struct session *s) 
+bool cmd_sets(char *cmd, char *fmt, struct session *s) 
 {
         if (strcmp(cmd, fmt) != 0)
                 return false;
 
-        cprintf("Available sets:\n");
+        cprintf("Sets in network '%s':\n", s->anp->name);
         if (s->anp->sets->num_elements == 0) {
                 cprintf("(no sets)\n");
         } else {
@@ -1428,7 +1690,7 @@ bool cmd_list_sets(char *cmd, char *fmt, struct session *s)
                         struct set *set = s->anp->sets->elements[i];
                         cprintf("* %s (%d)", set->name, set->items->num_elements);
                         if (set == s->anp->asp)
-                                cprintf(" (active set)\n");
+                                cprintf(" :: active set\n");
                         else
                                 cprintf("\n");
                 }
@@ -1456,7 +1718,7 @@ bool cmd_change_set(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_list_items(char *cmd, char *fmt, struct session *s)
+bool cmd_items(char *cmd, char *fmt, struct session *s)
 {
         if (strcmp(cmd, fmt) != 0)
                 return false;
@@ -1467,10 +1729,11 @@ bool cmd_list_items(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        cprintf("Available items in set '%s':\n", s->anp->asp->name);
+        cprintf("Items in set '%s' of network '%s':\n",
+                s->anp->asp->name, s->anp->name);
         for (uint32_t i = 0; i < s->anp->asp->items->num_elements; i++) {
                 struct item *item = s->anp->asp->items->elements[i];
-                cprintf("* \"%s\" %d \"%s\"\n",
+                cprintf("* %d: \"%s\" %d \"%s\"\n", i + 1,
                         item->name, item->num_events, item->meta);
         }
 
