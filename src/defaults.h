@@ -18,7 +18,7 @@
 #define DEFAULTS_H
 
 #define DEFAULT_RESET_CONTEXTS     true
-#define DEFAULT_INIT_CONTEXT_UNITS 0.0
+#define DEFAULT_INIT_CONTEXT_UNITS 0.5
 #define DEFAULT_PRETTY_PRINTING    true
 #define DEFAULT_COLOR_SCHEME       scheme_blue_yellow
 #define DEFAULT_RANDOM_ALGORITHM   randomize_range
