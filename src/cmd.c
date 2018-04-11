@@ -386,7 +386,7 @@ bool cmd_inspect(char *cmd, char *fmt, struct session *s)
 
         cprintf("|\n");
         cprintf("| Reset contexts: \t\t ");
-        n->reset_context_groups ? cprintf("true\n") : cprintf("false\n");
+        n->reset_contexts ? cprintf("true\n") : cprintf("false\n");
         cprintf("| Init context units: \t\t %f\n", n->init_context_units);
 
                 /******************
@@ -1424,9 +1424,9 @@ bool cmd_toggle_reset_contexts(char *cmd, char *fmt, struct session *s)
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
-        s->anp->reset_context_groups = !s->anp->reset_context_groups;
+        s->anp->reset_contexts = !s->anp->reset_contexts;
 
-        if (s->anp->reset_context_groups)
+        if (s->anp->reset_contexts)
                 mprintf("Toggled reset contexts \t [ on ]\n");
         else
                 mprintf("Toggled reset contexts \t [ off ]\n");

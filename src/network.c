@@ -50,8 +50,6 @@ struct network *create_network(char *name, enum network_type type)
                 goto error_out;
         memset(n->status, 0, block_size);
 
-        n->reset_context_groups = true;
-
         set_network_defaults(n);
 
         return n;
@@ -63,6 +61,7 @@ error_out:
 
 void set_network_defaults(struct network *n)
 {
+        n->reset_contexts     = DEFAULT_RESET_CONTEXTS;
         n->init_context_units = DEFAULT_INIT_CONTEXT_UNITS;
         n->random_algorithm   = DEFAULT_RANDOM_ALGORITHM;
         n->random_mu          = DEFAULT_RANDOM_MU;
@@ -306,7 +305,7 @@ void shift_pointer_or_stack(struct network *n)
 
 void reset_context_groups(struct network *n)
 {
-        if (n->initialized && !n->reset_context_groups)
+        if (n->initialized && !n->reset_contexts)
                 return;
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
@@ -324,7 +323,7 @@ void reset_context_group_chain(struct network *n, struct group *g)
 
 void reset_recurrent_groups(struct network *n)
 {
-        if (n->initialized && !n->reset_context_groups)
+        if (n->initialized && !n->reset_contexts)
                 return;
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];

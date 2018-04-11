@@ -56,7 +56,7 @@ struct network
         struct group *output;       /* output group */
         bool initialized;           /* flags initialization status */
                                     /* randomization algorithm */
-        bool reset_context_groups;  /* flags context group resetting */
+        bool reset_contexts;        /* flags context group resetting */
         double init_context_units;  /* initial value of context units */
         void (*random_algorithm)(struct matrix *m, struct network *n);
         uint32_t random_seed;       /* random number generator seed */
