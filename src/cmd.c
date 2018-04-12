@@ -1149,7 +1149,7 @@ bool cmd_projections(char *cmd, char *fmt, struct session *s)
 
                 /* context (Elman) groups */
                 if (g->ctx_groups->num_elements > 0) {
-                        cprintf("* [%s] => ", g->name);
+                        cprintf("* %d: [%s] => ", i + 1, g->name);
                         for (uint32_t j = 0;
                                 j < g->ctx_groups->num_elements;
                                 j++) {
@@ -1688,7 +1688,7 @@ bool cmd_sets(char *cmd, char *fmt, struct session *s)
         } else {
                 for (uint32_t i = 0; i < s->anp->sets->num_elements; i++) {
                         struct set *set = s->anp->sets->elements[i];
-                        cprintf("* %s (%d)", set->name, set->items->num_elements);
+                        cprintf("* %d: %s (%d)", i + 1, set->name, set->items->num_elements);
                         if (set == s->anp->asp)
                                 cprintf(" :: active set\n");
                         else
