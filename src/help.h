@@ -141,7 +141,8 @@
 "reset                          Reset network                           \n" \
 "train                          Train network                           \n" \
 "test                           Test network on all items               \n" \
-"testItem <name>                Test network on specified item          \n" \
+"testItem <id>                  Test network on specified item          \n" \
+"                               (id = [<name>|<number>])                \n" \
 "                                                                       \n" \
 "toggleResetContexts            Toggle context resetting                \n" \
 "set InitContextUnits <val>     Activation of initial context units     \n" \

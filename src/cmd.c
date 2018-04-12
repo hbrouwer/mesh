@@ -2002,6 +2002,26 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
+bool cmd_test_item_no(char *cmd, char *fmt, struct session *s)
+{
+        uint32_t arg; /* item number */
+        if (sscanf(cmd, fmt, &arg) != 1)
+                return false;
+        
+        /* find item */
+        if (arg == 0 || arg > s->anp->asp->items->num_elements) {
+                eprintf("Cannot test network - no such item number '%d'\n", arg);
+                return true;
+        }
+        struct item *item = s->anp->asp->items->elements[arg - 1];
+        
+        mprintf("Testing network '%s' with item '%s'\n", s->anp->name, item->name);
+
+        test_network_with_item(s->anp, item, s->pprint, s->scheme);
+
+        return true;
+}
+
 bool cmd_test(char *cmd, char *fmt, struct session *s)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)

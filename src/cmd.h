@@ -78,6 +78,7 @@ bool cmd_init(char *cmd, char *fmt, struct session *s);
 bool cmd_reset(char *cmd, char *fmt, struct session *s);
 bool cmd_train(char *cmd, char *fmt, struct session *s);
 bool cmd_test_item(char *cmd, char *fmt, struct session *s);
+bool cmd_test_item_no(char *cmd, char *fmt, struct session *s);
 bool cmd_test(char *cmd, char *fmt, struct session *s);
 
 bool cmd_record_units(char *cmd, char *fmt, struct session *s);
@@ -212,6 +213,7 @@ const static struct command cmds[] = {
         {"train",                   NULL,            &cmd_train},
         {"testItem",                "\"%[^\"]\"",    &cmd_test_item},
         {"testItem",                "'%[^']'",       &cmd_test_item},
+        {"testItemNo",              "%d",            &cmd_test_item_no},
         {"test",                    NULL,            &cmd_test},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
