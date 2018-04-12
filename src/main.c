@@ -47,8 +47,15 @@ int main(int argc, char **argv)
                 }
                 else if (argv[i] != NULL) {
                         char *cmd;
+                        char cmd_base[] = "loadFile";
+                        /*
                         if (asprintf(&cmd, "loadFile %s", argv[i]) < 0)
+                        */
+                        size_t block_size = (strlen(cmd_base) + 1 + strlen(argv[1]) + 1) * sizeof(char);
+                        if (!(cmd = malloc(block_size)))
                                 goto error_out;
+                        memset(cmd, 0, block_size);
+                        snprintf(cmd, block_size, "%s %s", cmd_base, argv[1]);
                         process_command(cmd, s);
                         free(cmd);
                 }

@@ -101,14 +101,22 @@ void process_command(char *cmd, struct session *s)
                         strlen(cmds[i].cmd_base)) == 0) {
                         bool success;
                         if (cmds[i].cmd_args != NULL) {
-                                char *cmd_args;
+                                char *fmt;
+                                /*
                                 if (asprintf(&cmd_args, "%s %s",
                                         cmds[i].cmd_base,
                                         cmds[i].cmd_args) < 0)
                                         goto error_out;
-                                success = cmds[i].cmd_proc(
-                                        cmd, cmd_args, s);
-                                free(cmd_args);
+                                        */
+                                size_t block_size = (strlen(cmds[i].cmd_base) + 1
+                                        + strlen(cmds[i].cmd_args) + 1) * sizeof(char);
+                                if (!(fmt = malloc(block_size)))
+                                        goto error_out;
+                                memset(fmt, 0, block_size);
+                                snprintf(fmt, block_size, "%s %s",
+                                        cmds[i].cmd_base, cmds[i].cmd_args);
+                                success = cmds[i].cmd_proc(cmd, fmt, s);
+                                free(fmt);
                         } else {                   
                                 success = cmds[i].cmd_proc(
                                         cmd,cmds[i].cmd_base, s);
@@ -695,8 +703,16 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct session *s)
 
         /* bias group should not already exists */
         char *arg_bias;
+        char bias_suffix[] = "_bias";
+        /*
         if (asprintf(&arg_bias, "%s_bias", arg) < 0)
                 goto error_out;
+                */
+        size_t block_size = (strlen(arg) + strlen(bias_suffix) + 1) * sizeof(char);
+        if (!(arg_bias = malloc(block_size)))
+                goto error_out;
+        memset(arg_bias, 0, block_size);
+        snprintf(arg_bias, block_size, "%s%s", arg, bias_suffix);
         if (find_array_element_by_name(s->anp->groups, arg_bias)) {
                 eprintf("Cannot attach bias group - group '%s' already exists in network '%s'\n",
                         arg_bias, s->anp->name);
