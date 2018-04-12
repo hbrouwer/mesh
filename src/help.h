@@ -24,7 +24,7 @@
 #define TOPIC_ABOUT \
 "         ______                                                        \n" \
 "    __---   )  --_  Mesh: http://hbrouwer.github.io/mesh/              \n" \
-"  --       /      -_  Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>\n" \
+"  --       /      -_  Copyright 2012-2018 Harm Brouwer <me@hbrouwer.eu>\n" \
 " /     o  (         )                                                  \n" \
 "(     o   ____  o    )  Saarland University                            \n" \
 "(    o _--     o      )  Department of Language Science and Technology \n" \
@@ -37,7 +37,7 @@
 #define TOPIC_ABOOT \
 "         ______                                                        \n" \
 "    __---   )  --_  Mesh: http://hbrouwer.github.io/mesh/              \n" \
-"  --       /      -_  Copyright 2012-2017 Harm Brouwer <me@hbrouwer.eu>\n" \
+"  --       /      -_  Copyright 2012-2018 Harm Brouwer <me@hbrouwer.eu>\n" \
 " /     \x1b[1m\x1b[5;33mo\x1b[0m  (         )                                                  \n" \
 "(     \x1b[1m\x1b[5;33mo\x1b[0m   ____  \x1b[1m\x1b[5;36mo\x1b[0m    )  Saarland University                            \n" \
 "(    \x1b[1m\x1b[5;33mo\x1b[0m _--     \x1b[1m\x1b[5;36mo\x1b[0m      )  Department of Language Science and Technology \n" \
