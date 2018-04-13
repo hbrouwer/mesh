@@ -47,6 +47,7 @@ void dss_test(struct network *n)
 
         struct vector *ov = create_vector(n->output->vector->size);
 
+        cprintf("\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
                 if (n->type == ntype_srn)

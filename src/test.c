@@ -59,6 +59,7 @@ void test_ffn_network(struct network *n, bool verbose)
         uint32_t threshold_reached = 0;
 
         /* test network on all items in the current set */
+        if (verbose) cprintf("\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 if (!keep_running) return;
                 struct item *item = n->asp->items->elements[i];
@@ -105,6 +106,7 @@ void test_rnn_network(struct network *n, bool verbose)
         uint32_t threshold_reached = 0;
 
         /* test network on all items in the current set */
+        if (verbose) cprintf("\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 if (!keep_running) return;
                 struct item *item = n->asp->items->elements[i];
