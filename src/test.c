@@ -130,7 +130,7 @@ void test_rnn_network(struct network *n, bool verbose)
 
                         double error = n->output->err_fun->fun(g, tv, tr, zr);
                         n->status->error += error;
-                        if (error < n->error_threshold)
+                        if (error <= n->error_threshold)
                                 threshold_reached++;
 
                         if (!verbose)
