@@ -141,6 +141,7 @@
 "reset                          Reset network                           \n" \
 "train                          Train network                           \n" \
 "test                           Test network on all items               \n" \
+"testVerbose                    Show error for each item                \n" \
 "testItem <id>                  Test network on specified item          \n" \
 "                               (id = [<name>|<number>])                \n" \
 "                                                                       \n" \
