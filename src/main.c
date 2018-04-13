@@ -46,11 +46,8 @@ int main(int argc, char **argv)
                         goto exit_session;
                 }
                 else if (argv[i] != NULL) {
-                        char *cmd;
                         char cmd_base[] = "loadFile";
-                        /*
-                        if (asprintf(&cmd, "loadFile %s", argv[i]) < 0)
-                        */
+                        char *cmd;
                         size_t block_size = (strlen(cmd_base) + 1 + strlen(argv[1]) + 1) * sizeof(char);
                         if (!(cmd = malloc(block_size)))
                                 goto error_out;

@@ -67,6 +67,7 @@ void process_command(char *cmd, struct session *s)
                 goto out;
         }
 
+        char fmt[MAX_FMT_SIZE];       
         bool req_netw = false; /* require network */
         bool req_init = false; /* require intialized network */
         for (uint32_t i = 0; cmds[i].cmd_base != NULL; i++) {
@@ -101,22 +102,12 @@ void process_command(char *cmd, struct session *s)
                         strlen(cmds[i].cmd_base)) == 0) {
                         bool success;
                         if (cmds[i].cmd_args != NULL) {
-                                char *fmt;
-                                /*
-                                if (asprintf(&cmd_args, "%s %s",
-                                        cmds[i].cmd_base,
-                                        cmds[i].cmd_args) < 0)
-                                        goto error_out;
-                                        */
                                 size_t block_size = (strlen(cmds[i].cmd_base) + 1
-                                        + strlen(cmds[i].cmd_args) + 1) * sizeof(char);
-                                if (!(fmt = malloc(block_size)))
-                                        goto error_out;
-                                memset(fmt, 0, block_size);
+                                         + strlen(cmds[i].cmd_args) + 1) * sizeof(char);
+                                memset(fmt, 0, MAX_FMT_SIZE);
                                 snprintf(fmt, block_size, "%s %s",
                                         cmds[i].cmd_base, cmds[i].cmd_args);
                                 success = cmds[i].cmd_proc(cmd, fmt, s);
-                                free(fmt);
                         } else {                   
                                 success = cmds[i].cmd_proc(
                                         cmd,cmds[i].cmd_base, s);
@@ -145,10 +136,6 @@ void process_command(char *cmd, struct session *s)
         }
 
 out:
-        return;
-
-error_out:
-        perror("[process_command()]");
         return;
 }
 
@@ -702,12 +689,8 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct session *s)
         }
 
         /* bias group should not already exists */
-        char *arg_bias;
         char bias_suffix[] = "_bias";
-        /*
-        if (asprintf(&arg_bias, "%s_bias", arg) < 0)
-                goto error_out;
-                */
+        char *arg_bias;
         size_t block_size = (strlen(arg) + strlen(bias_suffix) + 1) * sizeof(char);
         if (!(arg_bias = malloc(block_size)))
                 goto error_out;

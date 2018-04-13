@@ -115,6 +115,8 @@ bool cmd_erp_write_values(char *cmd, char *fmt, struct session *s);
                  **** commands ****
                  ******************/
 
+#define MAX_FMT_SIZE 32
+
 struct command
 {
         /* base command */
