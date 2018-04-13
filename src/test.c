@@ -29,7 +29,7 @@ static bool keep_running = true;
                  **** test network ****
                  **********************/
 
-void test_network(struct network *n)
+void test_network(struct network *n, bool verbose)
 {
         struct sigaction sa;
         sa.sa_handler = testing_signal_handler;
@@ -42,10 +42,10 @@ void test_network(struct network *n)
         switch (n->type) {
         case ntype_ffn: /* fall through */
         case ntype_srn:
-                test_ffn_network(n);
+                test_ffn_network(n, verbose);
                 break;
         case ntype_rnn:
-                test_rnn_network(n);
+                test_rnn_network(n, verbose);
                 break;
         }
 
@@ -53,7 +53,7 @@ void test_network(struct network *n)
         sigaction(SIGINT, &sa, NULL);
 }
 
-void test_ffn_network(struct network *n)
+void test_ffn_network(struct network *n, bool verbose)
 {
         n->status->error = 0.0;
         uint32_t threshold_reached = 0;
@@ -84,13 +84,21 @@ void test_ffn_network(struct network *n)
                         n->status->error += error;
                         if (error <= n->error_threshold)
                                 threshold_reached++;
+
+                        if (!verbose)
+                                continue;
+                        error <= n->error_threshold
+                                ? pprintf("%d: \x1b[32m%s: %f\x1b[0m\n",
+                                        i + 1, item->name, error)
+                                : pprintf("%d: \x1b[31m%s: %f\x1b[0m\n",
+                                        i + 1, item->name, error);
                 }
         }
 
         print_testing_summary(n, threshold_reached);
 }
 
-void test_rnn_network(struct network *n)
+void test_rnn_network(struct network *n, bool verbose)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
         n->status->error = 0.0;
@@ -122,6 +130,14 @@ void test_rnn_network(struct network *n)
                         n->status->error += error;
                         if (error < n->error_threshold)
                                 threshold_reached++;
+
+                        if (!verbose)
+                                continue;
+                        error <= n->error_threshold
+                                ? pprintf("%d: \x1b[32m%s: %f\x1b[0m\n",
+                                        i + 1, item->name, error)
+                                : pprintf("%d: \x1b[31m%s: %f\x1b[0m\n",
+                                        i + 1, item->name, error);
 
 next_tick:
                         shift_pointer_or_stack(n);

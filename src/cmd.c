@@ -2028,7 +2028,19 @@ bool cmd_test(char *cmd, char *fmt, struct session *s)
 
         mprintf("Testing network '%s'\n", s->anp->name);
 
-        test_network(s->anp);
+        test_network(s->anp, false);
+
+        return true;
+}
+
+bool cmd_test_verbose(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf("Testing network '%s'\n", s->anp->name);
+
+        test_network(s->anp, true);
 
         return true;
 }

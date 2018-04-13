@@ -68,10 +68,10 @@ void dss_test(struct network *n)
                         acs += tau;
                         ncs++;
                 }
-                tau > 0.0 ? pprintf("\x1b[32m%s: %f\x1b[0m\n",
-                                item->name, tau)
-                          : pprintf("\x1b[31m%s: %f\x1b[0m\n",
-                                item->name, tau);
+                tau > 0.0 ? pprintf("%d: \x1b[32m%s: %f\x1b[0m\n",
+                                i + 1, item->name, tau)
+                          : pprintf("%d: \x1b[31m%s: %f\x1b[0m\n",
+                                i + 1, item->name, tau);
         }
         cprintf("\nAverage comprehension score: (%f / %d =) %f\n\n",
                 acs, ncs, acs / ncs);

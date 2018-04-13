@@ -24,9 +24,9 @@
 #include "session.h"
 #include "set.h"
 
-void test_network(struct network *n);
-void test_ffn_network(struct network *n);
-void test_rnn_network(struct network *n);
+void test_network(struct network *n, bool verbose);
+void test_ffn_network(struct network *n, bool verbose);
+void test_rnn_network(struct network *n, bool verbose);
 
 void test_network_with_item(struct network *n, struct item *item,
         bool pprint, enum color_scheme scheme);
