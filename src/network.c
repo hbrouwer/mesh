@@ -68,6 +68,8 @@ void set_network_defaults(struct network *n)
         n->random_sigma       = DEFAULT_RANDOM_SIGMA;
         n->random_min         = DEFAULT_RANDOM_MIN;
         n->random_max         = DEFAULT_RANDOM_MAX;
+        n->learning_algorithm = DEFAULT_LEARNING_ALGORITHM;
+        n->update_algorithm   = DEFAULT_UPDATE_ALGORITHM;
         n->learning_rate      = DEFAULT_LEARNING_RATE;
         n->lr_scale_factor    = DEFAULT_LR_SCALE_FACTOR;
         n->lr_scale_after     = DEFAULT_LR_SCALE_AFTER;

@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+#include <math.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 
 #include "act.h"
+#include "error.h"
 #include "main.h"
 #include "pprint.h"
 #include "test.h"
@@ -277,13 +279,16 @@ void print_testing_summary(struct network *n, uint32_t tr)
 {
         cprintf("\n");
         cprintf("Number of items: \t\t %d\n",
-                        n->asp->items->num_elements);
+                n->asp->items->num_elements);
         cprintf("Total error: \t\t\t %lf\n",
-                        n->status->error);
+                n->status->error);
         cprintf("Error per example: \t\t %lf\n",
-                        n->status->error / n->asp->items->num_elements);
+                n->status->error / n->asp->items->num_elements);
+        if (n->output->err_fun->fun == error_sum_of_squares)
+                cprintf("Root Mean Square (RMS) error: \t %lf\n",
+                        sqrt((2.0 * n->status->error) / n->asp->items->num_elements));
         cprintf("# Items reached threshold: \t %d (%.2lf%%)\n",
-                        tr, ((double)tr / n->asp->items->num_elements) * 100.0);
+                tr, ((double)tr / n->asp->items->num_elements) * 100.0);
         cprintf("\n");
 }
 

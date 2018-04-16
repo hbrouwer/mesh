@@ -656,7 +656,7 @@ bool cmd_groups(char *cmd, char *fmt, struct session *s)
 
                         /* error function */
                         if (g->err_fun->fun == error_sum_of_squares)
-                                cprintf(" :: sum_squares");
+                                cprintf(" :: sum_of_squares");
                         if (g->err_fun->fun == error_cross_entropy)
                                 cprintf(" :: cross_entropy");
                         if (g->err_fun->fun == error_divergence)
@@ -843,10 +843,15 @@ bool cmd_set_err_func(char *cmd, char *fmt, struct session *s)
         }
 
         /* sum of squares */
-        if (strcmp(arg2, "sum_squares") == 0) {
+        if (strcmp(arg2, "sum_of_squares") == 0) {
                 g->err_fun->fun   = error_sum_of_squares;
                 g->err_fun->deriv = error_sum_of_squares_deriv;
         }
+        /* sum of squares */
+        else if (strcmp(arg2, "sum_squares") == 0) {
+                g->err_fun->fun   = error_sum_of_squares;
+                g->err_fun->deriv = error_sum_of_squares_deriv;
+        }        
         /* cross-entropy */
         else if (strcmp(arg2, "cross_entropy") == 0) {
                 g->err_fun->fun   = error_cross_entropy;
@@ -1974,6 +1979,11 @@ bool cmd_train(char *cmd, char *fmt, struct session *s)
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
+        if (!s->anp->asp) {
+                eprintf("Cannot train network - no active set\n");
+                return true;
+        }
+
         mprintf("Training network '%s'\n", s->anp->name);
 
         train_network(s->anp);
@@ -1986,6 +1996,11 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s)
         char arg[MAX_ARG_SIZE]; /* item name */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
+
+        if (!s->anp->asp) {
+                eprintf("Cannot test network - no active set\n");
+                return true;
+        }
 
         /* find item */
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg);
@@ -2007,6 +2022,11 @@ bool cmd_test_item_no(char *cmd, char *fmt, struct session *s)
         if (sscanf(cmd, fmt, &arg) != 1)
                 return false;
         
+        if (!s->anp->asp) {
+                eprintf("Cannot test network - no active set\n");
+                return true;
+        }
+
         /* find item */
         if (arg == 0 || arg > s->anp->asp->items->num_elements) {
                 eprintf("Cannot test network - no such item number '%d'\n", arg);
@@ -2026,6 +2046,11 @@ bool cmd_test(char *cmd, char *fmt, struct session *s)
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
 
+        if (!s->anp->asp) {
+                eprintf("Cannot test network - no active set\n");
+                return true;
+        }
+
         mprintf("Testing network '%s'\n", s->anp->name);
 
         test_network(s->anp, false);
@@ -2037,6 +2062,11 @@ bool cmd_test_verbose(char *cmd, char *fmt, struct session *s)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
+
+        if (!s->anp->asp) {
+                eprintf("Cannot test network - no active set\n");
+                return true;
+        }
 
         mprintf("Testing network '%s'\n", s->anp->name);
 
