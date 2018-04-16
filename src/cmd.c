@@ -68,14 +68,15 @@ void process_command(char *cmd, struct session *s)
         }
 
         char fmt[MAX_FMT_SIZE];       
-        bool req_netw = false; /* require network */
+        bool req_anp  = false; /* require network */
         bool req_init = false; /* require intialized network */
+        bool req_asp  = false; /* require active set */
         for (uint32_t i = 0; cmds[i].cmd_base != NULL; i++) {
                 /* 
                  * Skip commands that require an active network if
                  * necessary.
                  */
-                if (req_netw && !s->anp) {
+                if (req_anp && !s->anp) {
                         eprintf("Cannot process command: `%s`\n", cmd);
                         eprintf("(no active network - see `help networks`)\n");
                         goto out;
@@ -87,6 +88,15 @@ void process_command(char *cmd, struct session *s)
                 else if (req_init && !s->anp->initialized) {
                         eprintf("Cannot process command: `%s`\n", cmd);
                         eprintf("(uninitialized network - use `init` command to initialize)\n");
+                        goto out;
+                }
+                /*
+                 * Skip commands that require an active example set if
+                 * necessary.
+                 */
+                else if (req_asp && !s->anp->asp) {
+                        eprintf("Cannot process command: `%s`\n", cmd);
+                        eprintf("(no active set - see `help sets`)\n");
                         goto out;
                 }
                 /*
@@ -120,13 +130,23 @@ void process_command(char *cmd, struct session *s)
                  * network.
                  */
                 else if (strcmp("createNetwork", cmds[i].cmd_base) == 0)
-                        req_netw = true;
+                        req_anp = true;
                 /* 
-                 * All commands following this `init` require an initialized
+                 * All commands following `init` require an initialized
                  * network.
                  */
+                /*
                 else if (strcmp("init", cmds[i].cmd_base) == 0)
                         req_init = true;
+                        */
+                /* 
+                 * All commands following `init` require an initialized
+                 * network, and active set.
+                 */
+                else if (strcmp("init", cmds[i].cmd_base) == 0) {
+                        req_init = true;
+                        req_asp  = true;
+                }
         }
 
         /* invalid command */
@@ -1438,6 +1458,58 @@ bool cmd_toggle_reset_contexts(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
+bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        s->pprint = !s->pprint;
+        
+        if (s->pprint)
+                mprintf("Toggled pretty printing \t [ on ]\n");
+        else
+                mprintf("Toggled pretty printing \t [ off ]\n");
+
+        return true;
+}
+
+bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s)
+{
+        char arg[MAX_ARG_SIZE]; /* color scheme */
+        if (sscanf(cmd, fmt, arg) != 1)
+                return false;
+
+        /* blue and red */
+        if (strcmp(arg, "blue_red") == 0)
+                s->scheme = scheme_blue_red;
+        /* blue and yellow */
+        else if (strcmp(arg, "blue_yellow") == 0)
+                s->scheme = scheme_blue_yellow;
+        /* grayscale */
+        else if (strcmp(arg, "grayscale") == 0)
+                s->scheme = scheme_grayscale;
+        /* spacepigs */
+        else if (strcmp(arg, "spacepigs") == 0)
+                s->scheme = scheme_spacepigs;
+        /* moody blues */
+        else if (strcmp(arg, "moody_blues") == 0)
+                s->scheme = scheme_moody_blues;
+        /* for John */
+        else if (strcmp(arg, "for_john") == 0)
+                s->scheme = scheme_for_john;
+        /* gray and orange */
+        else if (strcmp(arg, "gray_orange") == 0)
+                s->scheme = scheme_gray_orange;
+        else {
+                eprintf("Cannot set color scheme - no such scheme '%s'\n", arg);
+                return true;
+        }
+
+        mprintf("Set color scheme \t\t [ %s ]\n", arg);
+
+        return true;
+}
+
 bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* parameter */
@@ -1603,208 +1675,6 @@ bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_load_set(char *cmd, char *fmt, struct session *s)
-{
-        char arg1[MAX_ARG_SIZE]; /* set name */
-        char arg2[MAX_ARG_SIZE]; /* set filename */
-        if (sscanf(cmd, fmt, arg1, arg2) != 2)
-                return false;
-
-        /* input group size should be known */
-        if (!s->anp->input) {
-                eprintf("Cannot load set - input group size unknown\n");
-                return true;
-        }
-        
-        /* output group size should be known */
-        if (!s->anp->output) {
-                eprintf("Cannot load set - output group size unknown\n");
-                return true;
-        }
-
-        /* set should not already exist */
-        if (find_array_element_by_name(s->anp->sets, arg1)) {
-                eprintf("Cannot load set - set '%s' already exists\n", arg1);
-                return true;
-        }
-
-        /* load set, if it exists */
-        struct set *set = load_set(arg1, arg2,
-                s->anp->input->vector->size,
-                s->anp->output->vector->size);
-        if (!set) {
-                eprintf("Cannot load set - no such file '%s'\n", arg2);
-                return true;
-        }
-        
-        /* add set to active network */
-        add_to_array(s->anp->sets, set);
-        s->anp->asp = set;
-
-        mprintf("Loaded set \t\t\t [ %s => %s (%d) ]\n", arg2, set->name,
-                set->items->num_elements);
-
-        return true;
-}
-
-bool cmd_remove_set(char *cmd, char *fmt, struct session *s)
-{
-        char arg[MAX_ARG_SIZE]; /* set name */
-        if (sscanf(cmd, fmt, arg) != 1)
-                return false;
-
-        /* find set */
-        struct set *set = find_array_element_by_name(s->anp->sets, arg);
-        if (!set) {
-                eprintf("Cannot change to set - no such set '%s'\n", arg);
-                return true;
-        }
-
-        /*
-         * If the set to be removed is the active set, try finding another
-         * active set.
-         */
-        if (set == s->anp->asp) {
-                s->anp->asp = NULL;
-                for (uint32_t i = 0; i < s->anp->sets->num_elements; i++)
-                        if (s->anp->sets->elements[i] != NULL
-                                && s->anp->sets->elements[i] != set)
-                                s->anp->asp = s->anp->sets->elements[i];
-        }
-
-        /* remove set */
-        remove_from_array(s->anp->sets, set);
-        free_set(set);
-
-        mprintf("Removed set \t\t [ %s ]\n", arg);
-
-        return true;
-}
-
-bool cmd_sets(char *cmd, char *fmt, struct session *s) 
-{
-        if (strcmp(cmd, fmt) != 0)
-                return false;
-
-        cprintf("Sets in network '%s':\n", s->anp->name);
-        if (s->anp->sets->num_elements == 0) {
-                cprintf("(no sets)\n");
-        } else {
-                for (uint32_t i = 0; i < s->anp->sets->num_elements; i++) {
-                        struct set *set = s->anp->sets->elements[i];
-                        cprintf("* %d: %s (%d)", i + 1, set->name, set->items->num_elements);
-                        if (set == s->anp->asp)
-                                cprintf(" :: active set\n");
-                        else
-                                cprintf("\n");
-                }
-        }
-
-        return true;
-}
-
-bool cmd_change_set(char *cmd, char *fmt, struct session *s)
-{
-        char arg[MAX_ARG_SIZE]; /* set name */
-        if (sscanf(cmd, fmt, arg) != 1)
-                return false;
-
-        /* find set */
-        struct set *set = find_array_element_by_name(s->anp->sets, arg);
-        if (!set) {
-                eprintf("Cannot change to set - no such set '%s'\n", arg);
-                return true;
-        }
-        s->anp->asp = set;
-
-        mprintf("Changed to set \t\t [ %s ]\n", arg);
-
-        return true;
-}
-
-bool cmd_items(char *cmd, char *fmt, struct session *s)
-{
-        if (strcmp(cmd, fmt) != 0)
-                return false;
-
-        /* there should be an active set */
-        if (!s->anp->asp) {
-                eprintf("Cannot list items - no active set\n");
-                return true;
-        }
-
-        cprintf("Items in set '%s' of network '%s':\n",
-                s->anp->asp->name, s->anp->name);
-        for (uint32_t i = 0; i < s->anp->asp->items->num_elements; i++) {
-                struct item *item = s->anp->asp->items->elements[i];
-                cprintf("* %d: \"%s\" %d \"%s\"\n", i + 1,
-                        item->name, item->num_events, item->meta);
-        }
-
-        return true;
-}
-
-bool cmd_show_item(char *cmd, char *fmt, struct session *s)
-{
-        char arg[MAX_ARG_SIZE]; /* item name */
-        if (sscanf(cmd, fmt, arg) != 1)
-                return false;
-
-        /* find item */
-        struct item *item = find_array_element_by_name(s->anp->asp->items, arg);
-        if (!item) {
-                eprintf("Cannot show item - no such item '%s'\n", arg);
-                return true;
-        }
-
-        cprintf("\n");
-        cprintf("Name:   \"%s\"\n", item->name);
-        cprintf("Meta:   \"%s\"\n", item->meta);
-        cprintf("Events: %d\n", item->num_events);
-        cprintf("\n");
-        cprintf("(E: Event; I: Input; T: Target)\n");
-        for (uint32_t i = 0; i < item->num_events; i++) {
-                cprintf("\n");
-                cprintf("E: %d\n", i + 1);
-                cprintf("I: ");
-                s->pprint ? pprint_vector(item->inputs[i], s->scheme)
-                          : print_vector(item->inputs[i]);
-                if (item->targets[i]) {
-                        cprintf("T: ");
-                        s->pprint ? pprint_vector(item->targets[i], s->scheme)
-                                  : print_vector(item->targets[i]);
-                }
-        }
-        cprintf("\n");
-
-        return true;
-}
-
-bool cmd_set_training_order(char *cmd, char *fmt, struct session *s)
-{
-        char arg[MAX_ARG_SIZE];
-        if (sscanf(cmd, fmt, arg) != 1)
-                return false;
-
-        /* ordered */
-        if (strcmp(arg, "ordered") == 0)
-                s->anp->training_order = train_ordered;
-        /* permuted */
-        else if (strcmp(arg, "permuted") == 0)    
-                s->anp->training_order = train_permuted;
-        /* randomized */
-        else if (strcmp(arg, "randomized") == 0)
-                s->anp->training_order = train_randomized;
-        else {
-                eprintf("Invalid training order '%s'\n", arg);
-                return true;
-        }
-
-        mprintf("Set training order \t\t [ %s ]\n", arg);
-
-        return true;
-}
-
 bool cmd_set_random_algorithm(char *cmd, char *fmt, struct session *s)
 {
         char arg[MAX_ARG_SIZE]; /* training order */
@@ -1949,254 +1819,27 @@ bool cmd_set_similarity_metric(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_init(char *cmd, char *fmt, struct session *s)
+bool cmd_set_training_order(char *cmd, char *fmt, struct session *s)
 {
-        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
-                return false;
-
-        init_network(s->anp);
-
-        if (s->anp->initialized)
-                mprintf("Initialized network \t\t [ %s ]\n", s->anp->name);
-
-        return true;
-}
-
-bool cmd_reset(char *cmd, char *fmt, struct session *s)
-{
-        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
-                return false;
-
-        reset_network(s->anp);
-
-        mprintf("Reset network '%s'\n", s->anp->name);
-
-        return true;
-}
-
-bool cmd_train(char *cmd, char *fmt, struct session *s)
-{
-        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
-                return false;
-
-        if (!s->anp->asp) {
-                eprintf("Cannot train network - no active set\n");
-                return true;
-        }
-
-        mprintf("Training network '%s'\n", s->anp->name);
-
-        train_network(s->anp);
-
-        return true;
-}
-
-bool cmd_test_item(char *cmd, char *fmt, struct session *s)
-{
-        char arg[MAX_ARG_SIZE]; /* item name */
+        char arg[MAX_ARG_SIZE];
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
-        if (!s->anp->asp) {
-                eprintf("Cannot test network - no active set\n");
+        /* ordered */
+        if (strcmp(arg, "ordered") == 0)
+                s->anp->training_order = train_ordered;
+        /* permuted */
+        else if (strcmp(arg, "permuted") == 0)    
+                s->anp->training_order = train_permuted;
+        /* randomized */
+        else if (strcmp(arg, "randomized") == 0)
+                s->anp->training_order = train_randomized;
+        else {
+                eprintf("Invalid training order '%s'\n", arg);
                 return true;
         }
 
-        /* find item */
-        struct item *item = find_array_element_by_name(s->anp->asp->items, arg);
-        if (!item) {
-                eprintf("Cannot test network - no such item '%s'\n", arg);
-                return true;
-        }
-
-        mprintf("Testing network '%s' with item '%s'\n", s->anp->name, arg);
-
-        test_network_with_item(s->anp, item, s->pprint, s->scheme);
-
-        return true;
-}
-
-bool cmd_test_item_no(char *cmd, char *fmt, struct session *s)
-{
-        uint32_t arg; /* item number */
-        if (sscanf(cmd, fmt, &arg) != 1)
-                return false;
-        
-        if (!s->anp->asp) {
-                eprintf("Cannot test network - no active set\n");
-                return true;
-        }
-
-        /* find item */
-        if (arg == 0 || arg > s->anp->asp->items->num_elements) {
-                eprintf("Cannot test network - no such item number '%d'\n", arg);
-                return true;
-        }
-        struct item *item = s->anp->asp->items->elements[arg - 1];
-        
-        mprintf("Testing network '%s' with item '%s'\n", s->anp->name, item->name);
-
-        test_network_with_item(s->anp, item, s->pprint, s->scheme);
-
-        return true;
-}
-
-bool cmd_test(char *cmd, char *fmt, struct session *s)
-{
-        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
-                return false;
-
-        if (!s->anp->asp) {
-                eprintf("Cannot test network - no active set\n");
-                return true;
-        }
-
-        mprintf("Testing network '%s'\n", s->anp->name);
-
-        test_network(s->anp, false);
-
-        return true;
-}
-
-bool cmd_test_verbose(char *cmd, char *fmt, struct session *s)
-{
-        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
-                return false;
-
-        if (!s->anp->asp) {
-                eprintf("Cannot test network - no active set\n");
-                return true;
-        }
-
-        mprintf("Testing network '%s'\n", s->anp->name);
-
-        test_network(s->anp, true);
-
-        return true;
-}
-
-bool cmd_record_units(char *cmd, char *fmt, struct session *s)
-{
-        char arg1[MAX_ARG_SIZE]; /* group name */
-        char arg2[MAX_ARG_SIZE]; /* filename */
-        if (sscanf(cmd, fmt, arg1, arg2) != 2)
-                return false;
-
-        /* find group */
-        struct group *g = find_array_element_by_name(s->anp->groups, arg1);
-        if (g == NULL) {
-                eprintf("Cannot record units - no such group '%s'\n", arg1);
-                return true;
-        }
-
-        mprintf("Recording units of group '%s' in '%s'\n", g->name, s->anp->name);
-
-        record_units(s->anp, g, arg2);
-
-        mprintf("Written activation vectors \t [ %s ]\n", arg2);
-
-        return true;
-}
-
-/*
- * TODO: Document this.
- */
-bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s)
-{
-        char arg1[MAX_ARG_SIZE]; /* multi-stage input group name */
-        char arg2[MAX_ARG_SIZE]; /* multi-stage input set name */
-        if (sscanf(cmd, fmt, arg1, arg2) != 2)
-                return false;
-
-        /* find multi-stage input group */
-        struct group *g = find_array_element_by_name(s->anp->groups, arg1);
-        if (g == NULL) {
-                eprintf("Cannot set multi-stage training-no such group '%s'\n",
-                        arg1);
-                return true;
-        }
-
-        /* find multi-stage input set */
-        struct set *set = find_array_element_by_name(s->anp->sets, arg2);
-        if (!set) {
-                eprintf("Cannot set multi-stage training - no such set '%s'\n",
-                        arg2);
-                return true;
-        }
-
-        s->anp->ms_input = g;
-        s->anp->ms_set   = set;
-
-        mprintf("Set multi-stage training \t [ %s --> %s :: %s ==> %s ]\n", 
-                s->anp->input->name, s->anp->ms_input->name,
-                s->anp->ms_set->name, s->anp->output->name);
-
-        return true;
-}
-
-bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s)
-{
-        s->anp->ms_input = NULL;
-        s->anp->ms_set   = NULL;
-
-        mprintf("Set single-stage training \t [ %s --> %s ]\n", 
-                s->anp->input->name, s->anp->output->name);
-        
-        return true;
-}
-
-bool cmd_similarity_matrix(char *cmd, char *fmt, struct session *s)
-{
-        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
-                return false;
-
-        mprintf("Computing similarity matrix for network '%s'\n", s->anp->name);
-
-        struct matrix *sm = similarity_matrix(s->anp);
-        print_sm_summary(s->anp, sm, true, s->pprint, s->scheme);
-        free_matrix(sm);
-
-        return true;
-}
-
-bool cmd_similarity_stats(char *cmd, char *fmt, struct session *s)
-{
-        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
-                return false;
-
-        mprintf("Computing similarity matrix for network '%s'\n", s->anp->name);
-
-        struct matrix *sm = similarity_matrix(s->anp);
-        print_sm_summary(s->anp, sm, false, s->pprint, s->scheme);
-        free_matrix(sm);
-
-        return true;
-}
-
-bool cmd_confusion_matrix(char *cmd, char *fmt, struct session *s)
-{
-        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
-                return false;
-
-        mprintf("Computing confusion matrix for network '%s'\n", s->anp->name);
-
-        struct matrix *cm = confusion_matrix(s->anp);
-        print_cm_summary(cm, true, s->pprint, s->scheme);
-        free_matrix(cm);
-
-        return true;
-}
-
-bool cmd_confusion_stats(char *cmd, char *fmt, struct session *s)
-{
-        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
-                return false;
-
-        mprintf("Computing confusion matrix for network '%s'\n", s->anp->name);
-
-        struct matrix *cm = confusion_matrix(s->anp);
-        print_cm_summary(cm, false,  s->pprint, s->scheme);
-        free_matrix(cm);
+        mprintf("Set training order \t\t [ %s ]\n", arg);
 
         return true;
 }
@@ -2372,54 +2015,406 @@ bool cmd_load_weights(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s)
+bool cmd_load_set(char *cmd, char *fmt, struct session *s)
 {
-        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+        char arg1[MAX_ARG_SIZE]; /* set name */
+        char arg2[MAX_ARG_SIZE]; /* set filename */
+        if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
 
-        s->pprint = !s->pprint;
+        /* input group size should be known */
+        if (!s->anp->input) {
+                eprintf("Cannot load set - input group size unknown\n");
+                return true;
+        }
         
-        if (s->pprint)
-                mprintf("Toggled pretty printing \t [ on ]\n");
-        else
-                mprintf("Toggled pretty printing \t [ off ]\n");
+        /* output group size should be known */
+        if (!s->anp->output) {
+                eprintf("Cannot load set - output group size unknown\n");
+                return true;
+        }
+
+        /* set should not already exist */
+        if (find_array_element_by_name(s->anp->sets, arg1)) {
+                eprintf("Cannot load set - set '%s' already exists\n", arg1);
+                return true;
+        }
+
+        /* load set, if it exists */
+        struct set *set = load_set(arg1, arg2,
+                s->anp->input->vector->size,
+                s->anp->output->vector->size);
+        if (!set) {
+                eprintf("Cannot load set - no such file '%s'\n", arg2);
+                return true;
+        }
+        
+        /* add set to active network */
+        add_to_array(s->anp->sets, set);
+        s->anp->asp = set;
+
+        mprintf("Loaded set \t\t\t [ %s => %s (%d) ]\n", arg2, set->name,
+                set->items->num_elements);
 
         return true;
 }
 
-bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s)
+bool cmd_remove_set(char *cmd, char *fmt, struct session *s)
 {
-        char arg[MAX_ARG_SIZE]; /* color scheme */
+        char arg[MAX_ARG_SIZE]; /* set name */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
 
-        /* blue and red */
-        if (strcmp(arg, "blue_red") == 0)
-                s->scheme = scheme_blue_red;
-        /* blue and yellow */
-        else if (strcmp(arg, "blue_yellow") == 0)
-                s->scheme = scheme_blue_yellow;
-        /* grayscale */
-        else if (strcmp(arg, "grayscale") == 0)
-                s->scheme = scheme_grayscale;
-        /* spacepigs */
-        else if (strcmp(arg, "spacepigs") == 0)
-                s->scheme = scheme_spacepigs;
-        /* moody blues */
-        else if (strcmp(arg, "moody_blues") == 0)
-                s->scheme = scheme_moody_blues;
-        /* for John */
-        else if (strcmp(arg, "for_john") == 0)
-                s->scheme = scheme_for_john;
-        /* gray and orange */
-        else if (strcmp(arg, "gray_orange") == 0)
-                s->scheme = scheme_gray_orange;
-        else {
-                eprintf("Cannot set color scheme - no such scheme '%s'\n", arg);
+        /* find set */
+        struct set *set = find_array_element_by_name(s->anp->sets, arg);
+        if (!set) {
+                eprintf("Cannot change to set - no such set '%s'\n", arg);
                 return true;
         }
 
-        mprintf("Set color scheme \t\t [ %s ]\n", arg);
+        /*
+         * If the set to be removed is the active set, try finding another
+         * active set.
+         */
+        if (set == s->anp->asp) {
+                s->anp->asp = NULL;
+                for (uint32_t i = 0; i < s->anp->sets->num_elements; i++)
+                        if (s->anp->sets->elements[i] != NULL
+                                && s->anp->sets->elements[i] != set)
+                                s->anp->asp = s->anp->sets->elements[i];
+        }
+
+        /* remove set */
+        remove_from_array(s->anp->sets, set);
+        free_set(set);
+
+        mprintf("Removed set \t\t [ %s ]\n", arg);
+
+        return true;
+}
+
+bool cmd_sets(char *cmd, char *fmt, struct session *s) 
+{
+        if (strcmp(cmd, fmt) != 0)
+                return false;
+
+        cprintf("Sets in network '%s':\n", s->anp->name);
+        if (s->anp->sets->num_elements == 0) {
+                cprintf("(no sets)\n");
+        } else {
+                for (uint32_t i = 0; i < s->anp->sets->num_elements; i++) {
+                        struct set *set = s->anp->sets->elements[i];
+                        cprintf("* %d: %s (%d)", i + 1, set->name, set->items->num_elements);
+                        if (set == s->anp->asp)
+                                cprintf(" :: active set\n");
+                        else
+                                cprintf("\n");
+                }
+        }
+
+        return true;
+}
+
+bool cmd_change_set(char *cmd, char *fmt, struct session *s)
+{
+        char arg[MAX_ARG_SIZE]; /* set name */
+        if (sscanf(cmd, fmt, arg) != 1)
+                return false;
+
+        /* find set */
+        struct set *set = find_array_element_by_name(s->anp->sets, arg);
+        if (!set) {
+                eprintf("Cannot change to set - no such set '%s'\n", arg);
+                return true;
+        }
+        s->anp->asp = set;
+
+        mprintf("Changed to set \t\t [ %s ]\n", arg);
+
+        return true;
+}
+
+bool cmd_init(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        init_network(s->anp);
+
+        if (s->anp->initialized)
+                mprintf("Initialized network \t\t [ %s ]\n", s->anp->name);
+
+        return true;
+}
+
+bool cmd_reset(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        reset_network(s->anp);
+
+        mprintf("Reset network '%s'\n", s->anp->name);
+
+        return true;
+}
+
+bool cmd_train(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf("Training network '%s'\n", s->anp->name);
+
+        train_network(s->anp);
+
+        return true;
+}
+
+bool cmd_test_item(char *cmd, char *fmt, struct session *s)
+{
+        char arg[MAX_ARG_SIZE]; /* item name */
+        if (sscanf(cmd, fmt, arg) != 1)
+                return false;
+
+        /* find item */
+        struct item *item = find_array_element_by_name(s->anp->asp->items, arg);
+        if (!item) {
+                eprintf("Cannot test network - no such item '%s'\n", arg);
+                return true;
+        }
+
+        mprintf("Testing network '%s' with item '%s'\n", s->anp->name, arg);
+
+        test_network_with_item(s->anp, item, s->pprint, s->scheme);
+
+        return true;
+}
+
+bool cmd_test_item_no(char *cmd, char *fmt, struct session *s)
+{
+        uint32_t arg; /* item number */
+        if (sscanf(cmd, fmt, &arg) != 1)
+                return false;
+
+        /* find item */
+        if (arg == 0 || arg > s->anp->asp->items->num_elements) {
+                eprintf("Cannot test network - no such item number '%d'\n", arg);
+                return true;
+        }
+        struct item *item = s->anp->asp->items->elements[arg - 1];
+        
+        mprintf("Testing network '%s' with item '%s'\n", s->anp->name, item->name);
+
+        test_network_with_item(s->anp, item, s->pprint, s->scheme);
+
+        return true;
+}
+
+bool cmd_test(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf("Testing network '%s'\n", s->anp->name);
+
+        test_network(s->anp, false);
+
+        return true;
+}
+
+bool cmd_test_verbose(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf("Testing network '%s'\n", s->anp->name);
+
+        test_network(s->anp, true);
+
+        return true;
+}
+
+bool cmd_items(char *cmd, char *fmt, struct session *s)
+{
+        if (strcmp(cmd, fmt) != 0)
+                return false;
+
+        /* there should be an active set */
+        if (!s->anp->asp) {
+                eprintf("Cannot list items - no active set\n");
+                return true;
+        }
+
+        cprintf("Items in set '%s' of network '%s':\n",
+                s->anp->asp->name, s->anp->name);
+        for (uint32_t i = 0; i < s->anp->asp->items->num_elements; i++) {
+                struct item *item = s->anp->asp->items->elements[i];
+                cprintf("* %d: \"%s\" %d \"%s\"\n", i + 1,
+                        item->name, item->num_events, item->meta);
+        }
+
+        return true;
+}
+
+bool cmd_show_item(char *cmd, char *fmt, struct session *s)
+{
+        char arg[MAX_ARG_SIZE]; /* item name */
+        if (sscanf(cmd, fmt, arg) != 1)
+                return false;
+
+        /* find item */
+        struct item *item = find_array_element_by_name(s->anp->asp->items, arg);
+        if (!item) {
+                eprintf("Cannot show item - no such item '%s'\n", arg);
+                return true;
+        }
+
+        cprintf("\n");
+        cprintf("Name:   \"%s\"\n", item->name);
+        cprintf("Meta:   \"%s\"\n", item->meta);
+        cprintf("Events: %d\n", item->num_events);
+        cprintf("\n");
+        cprintf("(E: Event; I: Input; T: Target)\n");
+        for (uint32_t i = 0; i < item->num_events; i++) {
+                cprintf("\n");
+                cprintf("E: %d\n", i + 1);
+                cprintf("I: ");
+                s->pprint ? pprint_vector(item->inputs[i], s->scheme)
+                          : print_vector(item->inputs[i]);
+                if (item->targets[i]) {
+                        cprintf("T: ");
+                        s->pprint ? pprint_vector(item->targets[i], s->scheme)
+                                  : print_vector(item->targets[i]);
+                }
+        }
+        cprintf("\n");
+
+        return true;
+}
+ 
+bool cmd_record_units(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* group name */
+        char arg2[MAX_ARG_SIZE]; /* filename */
+        if (sscanf(cmd, fmt, arg1, arg2) != 2)
+                return false;
+
+        /* find group */
+        struct group *g = find_array_element_by_name(s->anp->groups, arg1);
+        if (g == NULL) {
+                eprintf("Cannot record units - no such group '%s'\n", arg1);
+                return true;
+        }
+
+        mprintf("Recording units of group '%s' in '%s'\n", g->name, s->anp->name);
+
+        record_units(s->anp, g, arg2);
+
+        mprintf("Written activation vectors \t [ %s ]\n", arg2);
+
+        return true;
+}
+
+/*
+ * TODO: Document this.
+ */
+bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* multi-stage input group name */
+        char arg2[MAX_ARG_SIZE]; /* multi-stage input set name */
+        if (sscanf(cmd, fmt, arg1, arg2) != 2)
+                return false;
+
+        /* find multi-stage input group */
+        struct group *g = find_array_element_by_name(s->anp->groups, arg1);
+        if (g == NULL) {
+                eprintf("Cannot set multi-stage training-no such group '%s'\n",
+                        arg1);
+                return true;
+        }
+
+        /* find multi-stage input set */
+        struct set *set = find_array_element_by_name(s->anp->sets, arg2);
+        if (!set) {
+                eprintf("Cannot set multi-stage training - no such set '%s'\n",
+                        arg2);
+                return true;
+        }
+
+        s->anp->ms_input = g;
+        s->anp->ms_set   = set;
+
+        mprintf("Set multi-stage training \t [ %s --> %s :: %s ==> %s ]\n", 
+                s->anp->input->name, s->anp->ms_input->name,
+                s->anp->ms_set->name, s->anp->output->name);
+
+        return true;
+}
+
+bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s)
+{
+        s->anp->ms_input = NULL;
+        s->anp->ms_set   = NULL;
+
+        mprintf("Set single-stage training \t [ %s --> %s ]\n", 
+                s->anp->input->name, s->anp->output->name);
+        
+        return true;
+}
+
+bool cmd_similarity_matrix(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf("Computing similarity matrix for network '%s'\n", s->anp->name);
+
+        struct matrix *sm = similarity_matrix(s->anp);
+        print_sm_summary(s->anp, sm, true, s->pprint, s->scheme);
+        free_matrix(sm);
+
+        return true;
+}
+
+bool cmd_similarity_stats(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf("Computing similarity matrix for network '%s'\n", s->anp->name);
+
+        struct matrix *sm = similarity_matrix(s->anp);
+        print_sm_summary(s->anp, sm, false, s->pprint, s->scheme);
+        free_matrix(sm);
+
+        return true;
+}
+
+bool cmd_confusion_matrix(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf("Computing confusion matrix for network '%s'\n", s->anp->name);
+
+        struct matrix *cm = confusion_matrix(s->anp);
+        print_cm_summary(cm, true, s->pprint, s->scheme);
+        free_matrix(cm);
+
+        return true;
+}
+
+bool cmd_confusion_stats(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+
+        mprintf("Computing confusion matrix for network '%s'\n", s->anp->name);
+
+        struct matrix *cm = confusion_matrix(s->anp);
+        print_cm_summary(cm, false,  s->pprint, s->scheme);
+        free_matrix(cm);
 
         return true;
 }

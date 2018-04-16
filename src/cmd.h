@@ -175,6 +175,10 @@ const static struct command cmds[] = {
         {"toggleResetContexts",     NULL,            &cmd_toggle_reset_contexts},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"togglePrettyPrinting",    NULL,            &cmd_toggle_pretty_printing},
+        {"set ColorScheme",         "%s",            &cmd_set_color_scheme},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
         /*
          * Int parameters: BatchSize, MaxEpochs, ReportAfter, RandomSeed,
@@ -193,16 +197,6 @@ const static struct command cmds[] = {
         {"set",                     "%s %lf",        &cmd_set_double_parameter},
         
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"loadSet",                 "%s %s",         &cmd_load_set},
-        {"removeSet",               "%s",            &cmd_remove_set},
-        {"sets",                    NULL,            &cmd_sets},
-        {"changeSet",               "%s",            &cmd_change_set},
-        {"items",                   NULL,            &cmd_items},
-        {"showItem",                "\"%[^\"]\"",    &cmd_show_item},
-        {"showItem",                "'%[^']'",       &cmd_show_item},
-        {"set TrainingOrder",       "%s",            &cmd_set_training_order},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"set RandomAlgorithm",     "%s"  ,          &cmd_set_random_algorithm},
         {"set LearningAlgorithm",   "%s",            &cmd_set_learning_algorithm},
         {"set UpdateAlgorithm",     "%s",            &cmd_set_update_algorithm},
@@ -211,30 +205,10 @@ const static struct command cmds[] = {
         {"set SimilarityMetric",    "%s",            &cmd_set_similarity_metric},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"init",                    NULL,            &cmd_init},
-        {"reset",                   NULL,            &cmd_reset},
-        {"train",                   NULL,            &cmd_train},
-        {"testItem",                "\"%[^\"]\"",    &cmd_test_item},
-        {"testItem",                "'%[^']'",       &cmd_test_item},
-        {"testItemNo",              "%d",            &cmd_test_item_no},
-        {"test",                    NULL,            &cmd_test},
-        {"testVerbose",             NULL,            &cmd_test_verbose},
+        {"set TrainingOrder",       "%s",            &cmd_set_training_order},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"recordUnits",             "%s %s",         &cmd_record_units},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"set MultiStage",          "%s %s",         &cmd_set_multi_stage},
-        {"set SingleStage",         NULL,            &cmd_set_single_stage},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"similarityMatrix",        NULL,            &cmd_similarity_matrix},
-        {"similarityStats",         NULL,            &cmd_similarity_stats},
-        {"confusionMatrix",         NULL,            &cmd_confusion_matrix},
-        {"confusionStats",          NULL,            &cmd_confusion_stats},
         {"weightStats",             NULL,            &cmd_weight_stats},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
         /*
          * Vector types: units, error;
@@ -251,8 +225,38 @@ const static struct command cmds[] = {
         {"saveWeights",             "%s",            &cmd_save_weights},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"togglePrettyPrinting",    NULL,            &cmd_toggle_pretty_printing},
-        {"set ColorScheme",         "%s",            &cmd_set_color_scheme},
+        {"loadSet",                 "%s %s",         &cmd_load_set},
+        {"removeSet",               "%s",            &cmd_remove_set},
+        {"sets",                    NULL,            &cmd_sets},
+        {"changeSet",               "%s",            &cmd_change_set},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"init",                    NULL,            &cmd_init},
+        {"reset",                   NULL,            &cmd_reset},
+        {"train",                   NULL,            &cmd_train},
+        {"testItem",                "\"%[^\"]\"",    &cmd_test_item},
+        {"testItem",                "'%[^']'",       &cmd_test_item},
+        {"testItemNo",              "%d",            &cmd_test_item_no},
+        {"test",                    NULL,            &cmd_test},
+        {"testVerbose",             NULL,            &cmd_test_verbose},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"items",                   NULL,            &cmd_items},
+        {"showItem",                "\"%[^\"]\"",    &cmd_show_item},
+        {"showItem",                "'%[^']'",       &cmd_show_item},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"recordUnits",             "%s %s",         &cmd_record_units},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"set MultiStage",          "%s %s",         &cmd_set_multi_stage},
+        {"set SingleStage",         NULL,            &cmd_set_single_stage},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"similarityMatrix",        NULL,            &cmd_similarity_matrix},
+        {"similarityStats",         NULL,            &cmd_similarity_stats},
+        {"confusionMatrix",         NULL,            &cmd_confusion_matrix},
+        {"confusionStats",          NULL,            &cmd_confusion_stats},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"dssTest",                 NULL,            &cmd_dss_test},
