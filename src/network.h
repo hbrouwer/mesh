@@ -199,6 +199,7 @@ void shift_context_groups(struct network *n);
 void shift_context_group_chain(struct group *g, struct vector *v);
 void shift_pointer_or_stack(struct network *n);
 
+void reset_stack_pointer(struct network *n);
 void reset_context_groups(struct network *n);
 void reset_context_group_chain(struct network *n, struct group *g);
 void reset_recurrent_groups(struct network *n);

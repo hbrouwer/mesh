@@ -223,7 +223,6 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
         bool pprint, enum color_scheme scheme)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
-        un->sp = 0;
         n->status->error = 0.0;
         
         cprintf("\n");
@@ -233,6 +232,7 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
         cprintf("\n");
         cprintf("(E: Event; I: Input; T: Target; O: Output)\n");
 
+        reset_stack_pointer(n);
         reset_recurrent_groups(un->stack[un->sp]);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 copy_vector(

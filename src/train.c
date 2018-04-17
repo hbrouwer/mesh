@@ -193,8 +193,8 @@ void train_network_with_bptt(struct network *n)
 void train_rnn_network_with_item(struct network *n, struct item *item)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
-        un->sp = 0;
-
+        
+        reset_stack_pointer(n);
         reset_recurrent_groups(un->stack[un->sp]);
         reset_rnn_error_signals(n);
         for (uint32_t i = 0; i < item->num_events; i++) {

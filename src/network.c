@@ -305,10 +305,28 @@ void shift_pointer_or_stack(struct network *n)
                 rnn_shift_stack(un);
 }
 
-void reset_context_groups(struct network *n)
+void reset_stack_pointer(struct network *n)
 {
+        /*
+         * If context groups should not be reset, we want to keep the cycle
+         * running, so we do not reset the stack pointer.
+         * 
+         * TODO: Validate this logic!
+         */
         if (n->initialized && !n->reset_contexts)
                 return;
+        n->unfolded_net->sp = 0;
+}
+
+void reset_context_groups(struct network *n)
+{
+        /*
+         * If context groups should not be reset, shift the context groups.
+         */
+        if (n->initialized && !n->reset_contexts) {
+                shift_context_groups(n);
+                return;
+        }
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
                 for (uint32_t j = 0; j < g->ctx_groups->num_elements; j++)
@@ -325,8 +343,16 @@ void reset_context_group_chain(struct network *n, struct group *g)
 
 void reset_recurrent_groups(struct network *n)
 {
-        if (n->initialized && !n->reset_contexts)
+        /*
+         * If context groups should not be reset, shift the pointer or the
+         * stack.
+         *
+         * TODO: Validate this logic!
+         */
+        if (n->initialized && !n->reset_contexts) {
+                shift_pointer_or_stack(n);
                 return;
+        }
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
                 if (!g->recurrent)
