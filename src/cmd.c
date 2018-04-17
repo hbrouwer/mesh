@@ -68,7 +68,7 @@ void process_command(char *cmd, struct session *s)
         }
 
         char fmt[MAX_FMT_SIZE];       
-        bool req_anp  = false; /* require network */
+        bool req_anp  = false; /* require active network */
         bool req_init = false; /* require intialized network */
         bool req_asp  = false; /* require active set */
         for (uint32_t i = 0; cmds[i].cmd_base != NULL; i++) {
@@ -85,7 +85,7 @@ void process_command(char *cmd, struct session *s)
                  * Skip commands that require an initialized network if
                  * necessary.
                  */
-                else if (req_init && !s->anp->initialized) {
+                if (req_init && !s->anp->initialized) {
                         eprintf("Cannot process command: `%s`\n", cmd);
                         eprintf("(uninitialized network - use `init` command to initialize)\n");
                         goto out;
@@ -94,7 +94,7 @@ void process_command(char *cmd, struct session *s)
                  * Skip commands that require an active example set if
                  * necessary.
                  */
-                else if (req_asp && !s->anp->asp) {
+                if (req_asp && !s->anp->asp) {
                         eprintf("Cannot process command: `%s`\n", cmd);
                         eprintf("(no active set - see `help sets`)\n");
                         goto out;
@@ -129,19 +129,12 @@ void process_command(char *cmd, struct session *s)
                  * All commands following `createNetwork` require an active
                  * network.
                  */
-                else if (strcmp("createNetwork", cmds[i].cmd_base) == 0)
+                else if (strcmp("createNetwork", cmds[i].cmd_base) == 0) {
                         req_anp = true;
+                }
                 /* 
                  * All commands following `init` require an initialized
-                 * network.
-                 */
-                /*
-                else if (strcmp("init", cmds[i].cmd_base) == 0)
-                        req_init = true;
-                        */
-                /* 
-                 * All commands following `init` require an initialized
-                 * network, and active set.
+                 * network, and an active example set.
                  */
                 else if (strcmp("init", cmds[i].cmd_base) == 0) {
                         req_init = true;
@@ -1856,6 +1849,34 @@ bool cmd_weight_stats(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
+bool cmd_save_weights(char *cmd, char *fmt, struct session *s)
+{
+        char arg[MAX_ARG_SIZE]; /* filename */
+        if (sscanf(cmd, fmt, arg) != 1)
+                return false;
+
+        if (save_weight_matrices(s->anp, arg))
+                mprintf("Saved weights \t\t [ %s ]\n", arg);
+        else
+                eprintf("Cannot save weights to file '%s'\n", arg);
+
+        return true;
+}
+
+bool cmd_load_weights(char *cmd, char *fmt, struct session *s)
+{
+        char arg[MAX_ARG_SIZE]; /* filename */
+        if (sscanf(cmd, fmt, arg) != 1)
+                return false;
+
+        if (load_weight_matrices(s->anp, arg))
+                mprintf("Loaded weights \t\t [ %s ]\n", arg);
+        else
+                eprintf("Cannot load weights from file '%s'\n", arg);
+
+        return true;
+}
+
 bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* vector type */
@@ -1987,34 +2008,6 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_save_weights(char *cmd, char *fmt, struct session *s)
-{
-        char arg[MAX_ARG_SIZE]; /* filename */
-        if (sscanf(cmd, fmt, arg) != 1)
-                return false;
-
-        if (save_weight_matrices(s->anp, arg))
-                mprintf("Saved weights \t\t [ %s ]\n", arg);
-        else
-                eprintf("Cannot save weights to file '%s'\n", arg);
-
-        return true;
-}
-
-bool cmd_load_weights(char *cmd, char *fmt, struct session *s)
-{
-        char arg[MAX_ARG_SIZE]; /* filename */
-        if (sscanf(cmd, fmt, arg) != 1)
-                return false;
-
-        if (load_weight_matrices(s->anp, arg))
-                mprintf("Loaded weights \t\t [ %s ]\n", arg);
-        else
-                eprintf("Cannot load weights from file '%s'\n", arg);
-
-        return true;
-}
-
 bool cmd_load_set(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* set name */
@@ -2093,7 +2086,7 @@ bool cmd_remove_set(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_sets(char *cmd, char *fmt, struct session *s) 
+bool cmd_sets(char *cmd, char *fmt, struct session *s)
 {
         if (strcmp(cmd, fmt) != 0)
                 return false;

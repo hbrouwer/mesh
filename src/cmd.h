@@ -38,7 +38,7 @@ bool cmd_change_network(char *cmd, char *fmt, struct session *s);
 bool cmd_inspect(char *cmd, char *fmt, struct session *s);
 
 bool cmd_create_group(char *cmd, char *fmt, struct session *s);
-bool cmd_remove_group(char *cmd, char *fmt, struct session *s); 
+bool cmd_remove_group(char *cmd, char *fmt, struct session *s);
 bool cmd_groups(char *cmd, char *fmt, struct session *s);
 bool cmd_attach_bias(char *cmd, char *fmt, struct session *s);
 bool cmd_set_input_group(char *cmd, char *fmt, struct session *s);
@@ -57,22 +57,32 @@ bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s);
 
 bool cmd_toggle_reset_contexts(char *cmd, char *fmt, struct session *s);
 
+bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s);
+bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s);
+
 bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s);
 bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s);
-
-bool cmd_load_set(char *cmd, char *fmt, struct session *s);
-bool cmd_remove_set(char *cmd, char *fmt, struct session *s);
-bool cmd_sets(char *cmd, char *fmt, struct session *s);
-bool cmd_change_set(char *cmd, char *fmt, struct session *s);
-bool cmd_items(char *cmd, char *fmt, struct session *s);
-bool cmd_show_item(char *cmd, char *fmt, struct session *s);
-bool cmd_set_training_order(char *cmd, char *fmt, struct session *s);
 
 bool cmd_set_random_algorithm(char *cmd, char *fmt, struct session *s);
 bool cmd_set_learning_algorithm(char *cmd, char *fmt, struct session *s);
 bool cmd_set_update_algorithm(char *cmd, char *fmt, struct session *s);
 
 bool cmd_set_similarity_metric(char *cmd, char *fmt, struct session *s);
+
+bool cmd_set_training_order(char *cmd, char *fmt, struct session *s);
+
+bool cmd_weight_stats(char *cmd, char *fmt, struct session *s);
+
+bool cmd_save_weights(char *cmd, char *fmt, struct session *s);
+bool cmd_load_weights(char *cmd, char *fmt, struct session *s);
+
+bool cmd_show_vector(char *cmd, char *fmt, struct session *s);
+bool cmd_show_matrix(char *cmd, char *fmt, struct session *s);
+
+bool cmd_load_set(char *cmd, char *fmt, struct session *s);
+bool cmd_remove_set(char *cmd, char *fmt, struct session *s);
+bool cmd_sets(char *cmd, char *fmt, struct session *s);
+bool cmd_change_set(char *cmd, char *fmt, struct session *s);
 
 bool cmd_init(char *cmd, char *fmt, struct session *s);
 bool cmd_reset(char *cmd, char *fmt, struct session *s);
@@ -81,6 +91,9 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s);
 bool cmd_test_item_no(char *cmd, char *fmt, struct session *s);
 bool cmd_test(char *cmd, char *fmt, struct session *s);
 bool cmd_test_verbose(char *cmd, char *fmt, struct session *s);
+
+bool cmd_items(char *cmd, char *fmt, struct session *s);
+bool cmd_show_item(char *cmd, char *fmt, struct session *s);
 
 bool cmd_record_units(char *cmd, char *fmt, struct session *s);
 
@@ -91,17 +104,6 @@ bool cmd_similarity_matrix(char *cmd, char *fmt, struct session *s);
 bool cmd_similarity_stats(char *cmd, char *fmt, struct session *s);
 bool cmd_confusion_matrix(char *cmd, char *fmt, struct session *s);
 bool cmd_confusion_stats(char *cmd, char *fmt, struct session *s);
-
-bool cmd_weight_stats(char *cmd, char *fmt, struct session *s);
-
-bool cmd_show_vector(char *cmd, char *fmt, struct session *s);
-bool cmd_show_matrix(char *cmd, char *fmt, struct session *s);
-
-bool cmd_save_weights(char *cmd, char *fmt, struct session *s);
-bool cmd_load_weights(char *cmd, char *fmt, struct session *s);
-
-bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s);
-bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s);
 
 bool cmd_dss_test(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_scores(char *cmd, char *fmt, struct session *s);
@@ -210,6 +212,10 @@ const static struct command cmds[] = {
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"weightStats",             NULL,            &cmd_weight_stats},
 
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"saveWeights",             "%s",            &cmd_save_weights},
+        {"loadWeights",             "%s",            &cmd_load_weights},
+
         /*
          * Vector types: units, error;
          */
@@ -219,10 +225,6 @@ const static struct command cmds[] = {
          * Matrix types: weights, gradients, dynamics;
          */
         {"showMatrix",              "%s %s %s",      &cmd_show_matrix},
-
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"loadWeights",             "%s",            &cmd_load_weights},
-        {"saveWeights",             "%s",            &cmd_save_weights},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"loadSet",                 "%s %s",         &cmd_load_set},
