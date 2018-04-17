@@ -528,6 +528,7 @@ bool cmd_inspect(char *cmd, char *fmt, struct session *s)
                  **** status ****
                  ****************/
 
+        /*
         cprintf("|\n");
         cprintf("| Epoch: \t\t\t %d\n",
                 n->status->epoch);
@@ -541,6 +542,7 @@ bool cmd_inspect(char *cmd, char *fmt, struct session *s)
                 n->status->last_deltas_length);
         cprintf("| Gradient length: \t\t %f\n",
                 n->status->gradients_length);
+        */
 
         return true;
 }
