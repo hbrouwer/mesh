@@ -189,12 +189,13 @@ const static struct command cmds[] = {
         {"set",                     "%s %d",         &cmd_set_int_parameter},
 
         /*
-         * Double parameters: RandomMu, RandomSigma, RandomMin, RandomMax,
-         *      LearningRate, LRScaleFactor, LRScaleAfter, Momentum,
-         *      MNScaleFactor, MNScaleAfter, WeightDecay, WDScaleFactor,
-         *      WDScaleAfter, ErrorThreshold, TargetRadius, ZeroErrorRadius,
-         *      RpropInitUpdate, RpropEtaPlus, RpropEtaMinus,
-         *      DBDRateIncrement, DBDRateDecrement;
+         * Double parameters: InitContextUnits, RandomMu, RandomSigma,
+         *      RandomMin, RandomMax, LearningRate, LRScaleFactor,
+         *      LRScaleAfter, Momentum, MNScaleFactor, MNScaleAfter,
+         *      WeightDecay, WDScaleFactor, WDScaleAfter, ErrorThreshold,
+         *      TargetRadius, ZeroErrorRadius, RpropInitUpdate,
+         *      RpropEtaPlus, RpropEtaMinus, DBDRateIncrement,
+         *      DBDRateDecrement;
          */
         {"set",                     "%s %lf",        &cmd_set_double_parameter},
         

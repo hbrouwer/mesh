@@ -20,8 +20,8 @@
 #include "network.h"
 #include "vector.h"
 
-#define LARGE_VALUE 1e10
-#define SMALL_VALUE 1e-10
+#define LARGE_VALUE 1e8
+#define SMALL_VALUE 1e-8
 
 double adjust_target(double y, double d, double tr, double zr);
 
