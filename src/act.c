@@ -330,3 +330,33 @@ double act_fun_leaky_relu_deriv(struct vector *v, uint32_t i)
         else
                 return 0.01;
 }
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Exponentional Linear Unit (ELU) function:
+
+                | x                     iff x >= 0
+        f(x) =  |
+                | 1.0(e ^ x - 1)        otherwise
+
+and its derivative:
+
+                | 1                     iff x >= 0
+        f'(x) = |
+                | y + 1.0               otherwise
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+double act_fun_elu(struct vector *v, uint32_t i)
+{
+        if (v->elements[i] >= 0.0)
+                return v->elements[i];
+        else
+                return 1.0 * (EXP(v->elements[i]) - 1.0);
+}
+
+double act_fun_elu_deriv(struct vector *v, uint32_t i)
+{
+        if (v->elements[i] >= 0.0)
+                return 1.0;
+        else
+                return v->elements[i] + 1.0;
+}

@@ -59,4 +59,7 @@ double act_fun_binary_relu_deriv(struct vector *v, uint32_t i);
 double act_fun_leaky_relu(struct vector *v, uint32_t i);
 double act_fun_leaky_relu_deriv(struct vector *v, uint32_t i);
 
+double act_fun_elu(struct vector *v, uint32_t i);
+double act_fun_elu_deriv(struct vector *v, uint32_t i);
+
 #endif /* ACT_H */

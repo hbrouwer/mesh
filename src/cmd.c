@@ -668,6 +668,8 @@ bool cmd_groups(char *cmd, char *fmt, struct session *s)
                                 cprintf(" :: binary_relu");
                         if (g->act_fun->fun == act_fun_leaky_relu)
                                 cprintf(" :: leaky_relu");
+                        if (g->act_fun->fun == act_fun_elu)
+                                cprintf(" :: elu");
 
                         /* error function */
                         if (g->err_fun->fun == error_sum_of_squares)
@@ -833,6 +835,11 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
         else if (strcmp(arg2, "leaky_relu") == 0) {
                 g->act_fun->fun   = act_fun_leaky_relu;
                 g->act_fun->deriv = act_fun_leaky_relu_deriv;
+        }
+        /* elu activation function */
+        else if (strcmp(arg2, "elu") == 0) {
+                g->act_fun->fun   = act_fun_elu;
+                g->act_fun->deriv = act_fun_elu_deriv;
         } else {
                 eprintf("Cannot set activation function - no such activation function '%s'\n", arg2);
                 return true;
