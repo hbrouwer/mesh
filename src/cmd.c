@@ -1697,7 +1697,7 @@ bool cmd_set_group_double_parameter(char *cmd, char *fmt, struct session *s)
         /* ReLU Alpha */
         if (strcmp(arg1, "ReLUAlpha") == 0) {
                 g->relu_alpha = arg3;
-                mprintf("Set ReLU alpha \t [ %s :: %lf ]\n",
+                mprintf("Set ReLU alpha \t\t [ %s :: %lf ]\n",
                         arg2, g->relu_alpha);
         /* error: no matching variable */
         } else {
