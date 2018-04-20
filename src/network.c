@@ -173,16 +173,17 @@ struct group *create_group(char *name, uint32_t size, bool bias,
                 goto error_out;
         memset(g->err_fun, 0, sizeof(struct err_fun));
 
-        g->vector       = create_vector(size);
-        g->error        = create_vector(size);
-        g->inc_projs    = create_array(atype_projs);
-        g->out_projs    = create_array(atype_projs);
-        g->ctx_groups   = create_array(atype_groups);
-        g->bias         = bias;
-        g->recurrent    = recurrent;
+        g->vector        = create_vector(size);
+        g->error         = create_vector(size);
+        g->inc_projs     = create_array(atype_projs);
+        g->out_projs     = create_array(atype_projs);
+        g->ctx_groups    = create_array(atype_groups);
+        g->bias          = bias;
+        g->recurrent     = recurrent;
 
-        g->relu_alpha   = DEFAULT_RELU_ALPHA;
-        g->logistic_fsc = DEFAULT_LOGISTIC_FSC;
+        g->relu_alpha    = DEFAULT_RELU_ALPHA;
+        g->logistic_fsc  = DEFAULT_LOGISTIC_FSC;
+        g->logistic_gain = DEFAULT_LOGISTIC_GAIN;
 
         /* bias nodes have activation 1.0 */
         if(g->bias)

@@ -651,8 +651,8 @@ bool cmd_groups(char *cmd, char *fmt, struct session *s)
 
                         /* activation function */
                         if (g->act_fun->fun == act_fun_logistic)
-                                cprintf(" :: logistic (fsc = %f)",
-                                        g->logistic_fsc);
+                                cprintf(" :: logistic (fsc = %f; gain = %f)",
+                                        g->logistic_fsc, g->logistic_gain);
                         if (g->act_fun->fun == act_fun_bipolar_sigmoid)
                                 cprintf(" :: bipolar_sigmoid");
                         if (g->act_fun->fun == act_fun_softmax)
@@ -1705,6 +1705,11 @@ bool cmd_set_group_double_parameter(char *cmd, char *fmt, struct session *s)
                 g->logistic_fsc = arg3;
                 mprintf("Set Logistic FSC \t\t [ %s :: %lf ]\n",
                         arg2, g->logistic_fsc);
+        /* Logistic gain */
+        } else if (strcmp(arg1, "LogisticGain") == 0) {
+                g->logistic_gain = arg3;
+                mprintf("Set Logistic gain \t\t [ %s :: %lf ]\n",
+                        arg2, g->logistic_gain);                        
         /* error: no matching variable */
         } else {
                 return false;

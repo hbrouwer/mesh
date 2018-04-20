@@ -50,5 +50,6 @@
 #define DEFAULT_SIMILARITY_METRIC  cosine
 #define DEFAULT_RELU_ALPHA         0.1
 #define DEFAULT_LOGISTIC_FSC       0.1
+#define DEFAULT_LOGISTIC_GAIN      1.0
 
 #endif /* DEFAULTS_H */

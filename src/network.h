@@ -122,6 +122,7 @@ struct group
         bool recurrent;             /* flags recurrent group */
         double relu_alpha;          /* alpha parameter for ReLUs */
         double logistic_fsc;        /* flat spot correction */
+        double logistic_gain;       /* gain coefficient */
 };
 
                 /********************

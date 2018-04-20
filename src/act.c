@@ -126,11 +126,13 @@ void feed_forward(struct network *n, struct group *g)
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Logistic function:
 
-        f(x) = 1 / (1 + e ^ (-x)) 
+        f(x) = 1 / (1 + e ^ (-(g * x)))
 
 and its derivative:
 
-        f'(x) = y * (1 - y)
+        f'(x) = g * y * (1 - y)
+
+where g is a gain parameter
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -147,13 +149,13 @@ Fahlman, S. E. (1988). An empirical study of learning speed in back-
 
 double act_fun_logistic(struct group *g, uint32_t i)
 {
-        return 1.0 / (1.0 + EXP(-g->vector->elements[i]));
+        return 1.0 / (1.0 + EXP(-(g->logistic_gain * g->vector->elements[i])));
 }
 
 double act_fun_logistic_deriv(struct group *g, uint32_t i)
 {
-        return g->vector->elements[i]
-                * (1.0 - g->vector->elements[i])
+        return g->logistic_gain
+                * g->vector->elements[i] * (1.0 - g->vector->elements[i])
                 + g->logistic_fsc;
 }
 

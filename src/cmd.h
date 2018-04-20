@@ -201,7 +201,7 @@ const static struct command cmds[] = {
         {"set",                     "%s %lf",        &cmd_set_double_parameter},
 
         /* 
-         * Group double parameters: ReLUAlpha, LogisticFSC;
+         * Group double parameters: ReLUAlpha, LogisticFSC, LogisticGain;
          */
         {"set",                     "%s %s %lf",     &cmd_set_group_double_parameter},
 
