@@ -133,6 +133,18 @@ and its derivative:
         f'(x) = y * (1 - y)
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Flat spot correction. 
+
+A small value (e.g., 0.1) is added to the derivative f'(x_j) of the logistic
+activation function to avoid that it approaches zero when y_j is near 1.0 or
+0.0. See:
+
+Fahlman, S. E. (1988). An empirical study of learning speed in back-
+        propagation networks. Technical report CMU-CS-88-162. School of
+        Computer Science, Carnegie Mellon University, Pittsburgh, PA 15213.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double act_fun_logistic(struct group *g, uint32_t i)
 {
         return 1.0 / (1.0 + EXP(-g->vector->elements[i]));
@@ -142,7 +154,7 @@ double act_fun_logistic_deriv(struct group *g, uint32_t i)
 {
         return g->vector->elements[i]
                 * (1.0 - g->vector->elements[i])
-                + FLAT_SPOT_CORRECTION;
+                + g->logistic_fsc;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

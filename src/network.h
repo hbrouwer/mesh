@@ -121,6 +121,7 @@ struct group
         bool bias;                  /* flags bias group */
         bool recurrent;             /* flags recurrent group */
         double relu_alpha;          /* alpha parameter for ReLUs */
+        double logistic_fsc;        /* flat spot correction */
 };
 
                 /********************

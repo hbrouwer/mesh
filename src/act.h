@@ -29,18 +29,6 @@
 #define EXP(x) exp(x)
 #endif /* FAST_EXP */
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Flat spot correction constant. This constant is added to the derivative
-f'(x_j) of the sigmoid activation function to avoid that it approaches zero
-when y_j is near 1.0 or 0.0. See:
-
-Fahlman, S. E. (1988). An empirical study of learning speed in back-
-        propagation networks. Technical report CMU-CS-88-162. School of
-        Computer Science, Carnegie Mellon University, Pittsburgh, PA 15213.
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-#define FLAT_SPOT_CORRECTION 0.1
-
 void feed_forward(struct network *n, struct group *g);
 
 double act_fun_logistic(struct group *g, uint32_t i);

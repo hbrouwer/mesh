@@ -49,5 +49,6 @@
 #define DEFAULT_DBD_RATE_DECREMENT 0.9
 #define DEFAULT_SIMILARITY_METRIC  cosine
 #define DEFAULT_RELU_ALPHA         0.1
+#define DEFAULT_LOGISTIC_FSC       0.1
 
 #endif /* DEFAULTS_H */
