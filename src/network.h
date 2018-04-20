@@ -120,6 +120,7 @@ struct group
         struct array *ctx_groups;   /* array of context groups */
         bool bias;                  /* flags bias group */
         bool recurrent;             /* flags recurrent group */
+        double relu_alpha;          /* alpha parameter for ReLUs */
 };
 
                 /********************
@@ -148,10 +149,9 @@ struct projection
 struct act_fun 
 {
                                     /* activation function  */
-        double (*fun)(struct vector *, uint32_t);
+        double (*fun)(struct group *g, uint32_t i);
                                     /* activation function derivative */
-        double (*deriv)(struct vector *, uint32_t);
-        struct vector *lookup;      /* activation lookup vector */
+        double (*deriv)(struct group *g, uint32_t i);
 };
 
                 /************************

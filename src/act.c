@@ -97,13 +97,13 @@ void feed_forward(struct network *n, struct group *g)
                          * y_j = f(x_j)
                          */
                         if (rg->act_fun->fun != act_fun_softmax)
-                                rg->vector->elements[j] = rg->act_fun->fun(rg->vector, j);
+                                rg->vector->elements[j] = rg->act_fun->fun(rg, j);
                 }
 
                 /* apply softmax activation function (if required) */
                 if (rg->act_fun->fun == act_fun_softmax)
                         for (uint32_t j = 0; j < rg->vector->size; j++)
-                                rg->vector->elements[j] = rg->act_fun->fun(rg->vector, j);
+                                rg->vector->elements[j] = rg->act_fun->fun(rg, j);
         }
 
         /* 
@@ -133,14 +133,16 @@ and its derivative:
         f'(x) = y * (1 - y)
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double act_fun_logistic(struct vector *v, uint32_t i)
+double act_fun_logistic(struct group *g, uint32_t i)
 {
-        return 1.0 / (1.0 + EXP(-v->elements[i]));
+        return 1.0 / (1.0 + EXP(-g->vector->elements[i]));
 }
 
-double act_fun_logistic_deriv(struct vector *v, uint32_t i)
+double act_fun_logistic_deriv(struct group *g, uint32_t i)
 {
-        return v->elements[i] * (1.0 - v->elements[i]);
+        return g->vector->elements[i]
+                * (1.0 - g->vector->elements[i])
+                + FLAT_SPOT_CORRECTION;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -153,14 +155,14 @@ and its derivative:
         f'(x) = 0.5 * (1 + y) * (1 - y)
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double act_fun_bipolar_sigmoid(struct vector *v, uint32_t i)
+double act_fun_bipolar_sigmoid(struct group *g, uint32_t i)
 {
-        return (-1.0) + 2.0 / (1.0 + EXP(-v->elements[i]));
+        return (-1.0) + 2.0 / (1.0 + EXP(-g->vector->elements[i]));
 }
 
-double act_fun_bipolar_sigmoid_deriv(struct vector *v, uint32_t i)
+double act_fun_bipolar_sigmoid_deriv(struct group *g, uint32_t i)
 {
-        return 0.5 * (1.0 + v->elements[i]) * (1.0 - v->elements[i]);
+        return 0.5 * (1.0 + g->vector->elements[i]) * (1.0 - g->vector->elements[i]);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -173,19 +175,19 @@ and its derivative:
         f'(x) = 1
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double act_fun_softmax(struct vector *v, uint32_t i)
+double act_fun_softmax(struct group *g, uint32_t i)
 {
         static double sum;
         if (i == 0) {
                 sum = 0.0;
-                for (uint32_t j = 0; j < v->size; j++)
-                        sum += EXP(v->elements[j]);
+                for (uint32_t j = 0; j < g->vector->size; j++)
+                        sum += EXP(g->vector->elements[j]);
         }
 
-        return EXP(v->elements[i]) / sum;
+        return EXP(g->vector->elements[i]) / sum;
 }
 
-double act_fun_softmax_deriv(struct vector *v, uint32_t i)
+double act_fun_softmax_deriv(struct group *g, uint32_t i)
 {
         return 1.0;
 }
@@ -200,14 +202,14 @@ and its derivative:
         f'(x) = 1 - y ^ 2
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double act_fun_tanh(struct vector *v, uint32_t i)
+double act_fun_tanh(struct group *g, uint32_t i)
 {
-        return tanh(v->elements[i]);
+        return tanh(g->vector->elements[i]);
 }
 
-double act_fun_tanh_deriv(struct vector *v, uint32_t i)
+double act_fun_tanh_deriv(struct group *g, uint32_t i)
 {
-        return 1.0 - pow(v->elements[i], 2.0);
+        return 1.0 - pow(g->vector->elements[i], 2.0);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -220,12 +222,12 @@ and its derivative:
         f'(x) = 1
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double act_fun_linear(struct vector *v, uint32_t i)
+double act_fun_linear(struct group *g, uint32_t i)
 {
-        return v->elements[i];
+        return g->vector->elements[i];
 }
 
-double act_fun_linear_deriv(struct vector *v, uint32_t i)
+double act_fun_linear_deriv(struct group *g, uint32_t i)
 {
         return 1.0;
 }
@@ -240,14 +242,14 @@ and its derivative:
         f'(x) = 1 / (1 + e ^ (-x))      [= logistic function]
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double act_fun_softplus(struct vector *v, uint32_t i)
+double act_fun_softplus(struct group *g, uint32_t i)
 {
-        return log(1.0 + EXP(v->elements[i]));
+        return log(1.0 + EXP(g->vector->elements[i]));
 }
 
-double act_fun_softplus_deriv(struct vector *v, uint32_t i)
+double act_fun_softplus_deriv(struct group *g, uint32_t i)
 {
-        return act_fun_logistic(v, i);
+        return act_fun_logistic(g, i);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -262,14 +264,14 @@ and its derivative:
                 | 0     otherwise
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double act_fun_relu(struct vector *v, uint32_t i)
+double act_fun_relu(struct group *g, uint32_t i)
 {
-        return maximum(0.0, v->elements[i]);
+        return maximum(0.0, g->vector->elements[i]);
 }
 
-double act_fun_relu_deriv(struct vector *v, uint32_t i)
+double act_fun_relu_deriv(struct group *g, uint32_t i)
 {
-        if (v->elements[i] > 0.0)
+        if (g->vector->elements[i] > 0.0)
                 return 1.0;
         else
                 return 0.0;
@@ -291,14 +293,14 @@ and its derivative:
                 | 0     otherwise
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double act_fun_binary_relu(struct vector *v, uint32_t i)
+double act_fun_binary_relu(struct group *g, uint32_t i)
 {
-        return minimum(act_fun_relu(v, i), 1.0);
+        return minimum(act_fun_relu(g, i), 1.0);
 }
 
-double act_fun_binary_relu_deriv(struct vector *v, uint32_t i)
+double act_fun_binary_relu_deriv(struct group *g, uint32_t i)
 {
-        return act_fun_relu_deriv(v, i);
+        return act_fun_relu_deriv(g, i);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -306,57 +308,57 @@ Leaky Rectified Linear Unit (ReLU) function:
 
                 | x             iff x > 0
         f(x) =  |
-                | 0.01x         otherwise
+                | alpha * x     otherwise
 
 and its derivative:
 
                 | 1             iff x > 0
         f'(x) = |
-                | 0.01          otherwise
+                | alpha         otherwise
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double act_fun_leaky_relu(struct vector *v, uint32_t i)
+double act_fun_leaky_relu(struct group *g, uint32_t i)
 {
-        if (v->elements[i] > 0.0)
-                return v->elements[i];
+        if (g->vector->elements[i] > 0.0)
+                return g->vector->elements[i];
         else
-                return 0.01 * v->elements[i];
+                return g->relu_alpha * g->vector->elements[i];
 }
 
-double act_fun_leaky_relu_deriv(struct vector *v, uint32_t i)
+double act_fun_leaky_relu_deriv(struct group *g, uint32_t i)
 {
-        if (v->elements[i] > 0.0)
+        if (g->vector->elements[i] > 0.0)
                 return 1.0;
         else
-                return 0.01;
+                return g->relu_alpha;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Exponentional Linear Unit (ELU) function:
+Exponential Linear Unit (ELU) function:
 
                 | x                     iff x >= 0
         f(x) =  |
-                | 1.0(e ^ x - 1)        otherwise
+                | alpha(e ^ x - 1)      otherwise
 
 and its derivative:
 
                 | 1                     iff x >= 0
         f'(x) = |
-                | y + 1.0               otherwise
+                | y + alpha             otherwise
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double act_fun_elu(struct vector *v, uint32_t i)
+double act_fun_elu(struct group *g, uint32_t i)
 {
-        if (v->elements[i] >= 0.0)
-                return v->elements[i];
+        if (g->vector->elements[i] >= 0.0)
+                return g->vector->elements[i];
         else
-                return 1.0 * (EXP(v->elements[i]) - 1.0);
+                return g->relu_alpha * (EXP(g->vector->elements[i]) - 1.0);
 }
 
-double act_fun_elu_deriv(struct vector *v, uint32_t i)
+double act_fun_elu_deriv(struct group *g, uint32_t i)
 {
-        if (v->elements[i] >= 0.0)
+        if (g->vector->elements[i] >= 0.0)
                 return 1.0;
         else
-                return v->elements[i] + 1.0;
+                return g->vector->elements[i] + g->relu_alpha;
 }

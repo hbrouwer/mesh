@@ -667,9 +667,11 @@ bool cmd_groups(char *cmd, char *fmt, struct session *s)
                         if (g->act_fun->fun == act_fun_binary_relu)
                                 cprintf(" :: binary_relu");
                         if (g->act_fun->fun == act_fun_leaky_relu)
-                                cprintf(" :: leaky_relu");
+                                cprintf(" :: leaky_relu (alpha = %f)",
+                                        g->relu_alpha);
                         if (g->act_fun->fun == act_fun_elu)
-                                cprintf(" :: elu");
+                                cprintf(" :: elu (alpha = %f)",
+                                        g->relu_alpha);
 
                         /* error function */
                         if (g->err_fun->fun == error_sum_of_squares)
@@ -1673,6 +1675,35 @@ bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s)
         } else {
                 return false;
         }        
+
+        return true;
+}
+
+bool cmd_set_group_double_parameter(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* parameter */
+        char arg2[MAX_ARG_SIZE]; /* group */
+        double arg3;             /* value */
+        if (sscanf(cmd, fmt, arg1, arg2, &arg3) != 3)
+                return false;
+
+        /* find group */
+        struct group *g = find_array_element_by_name(s->anp->groups, arg2);
+        if (g == NULL) {
+                eprintf("Cannot set parameter '%s' - no such group '%s'\n", arg1, arg2);
+                return true;
+        }
+
+        /* ReLU Alpha */
+        if (strcmp(arg1, "ReLUAlpha") == 0) {
+                g->relu_alpha = arg3;
+                mprintf("Set ReLU alpha \t [ %s :: %lf ]\n",
+                        arg2, g->relu_alpha);
+        /* error: no matching variable */
+        } else {
+                return false;
+        }  
+
 
         return true;
 }

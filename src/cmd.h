@@ -62,6 +62,7 @@ bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s);
 
 bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s);
 bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s);
+bool cmd_set_group_double_parameter(char *cmd, char *fmt, struct session *s);
 
 bool cmd_set_random_algorithm(char *cmd, char *fmt, struct session *s);
 bool cmd_set_learning_algorithm(char *cmd, char *fmt, struct session *s);
@@ -198,7 +199,10 @@ const static struct command cmds[] = {
          *      DBDRateDecrement;
          */
         {"set",                     "%s %lf",        &cmd_set_double_parameter},
-        
+
+        /* group double */
+        {"set",                     "%s %s %lf",     &cmd_set_group_double_parameter},
+
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"set RandomAlgorithm",     "%s"  ,          &cmd_set_random_algorithm},
         {"set LearningAlgorithm",   "%s",            &cmd_set_learning_algorithm},

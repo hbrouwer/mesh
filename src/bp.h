@@ -27,18 +27,6 @@
 
 #include "network.h"
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Flat spot correction constant. This constant is added to the derivative
-f'(x_j) of the sigmoid activation function to avoid that it approaches zero
-when y_j is near 1.0 or 0.0. See:
-
-Fahlman, S. E. (1988). An empirical study of learning speed in back-
-        propagation networks. Technical report CMU-CS-88-162. School of
-        Computer Science, Carnegie Mellon University, Pittsburgh, PA 15213.
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-#define BP_FLAT_SPOT_CORRECTION 0.1
-
 /* backpropagation */
 void bp_output_error(struct group *g, struct vector *t, double tr,
         double zr);

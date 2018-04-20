@@ -21,7 +21,6 @@
 
 #include "math.h"
 #include "network.h"
-#include "vector.h"
 
 /* use fast_exp() or exp() */
 #ifdef FAST_EXP
@@ -30,36 +29,48 @@
 #define EXP(x) exp(x)
 #endif /* FAST_EXP */
 
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Flat spot correction constant. This constant is added to the derivative
+f'(x_j) of the sigmoid activation function to avoid that it approaches zero
+when y_j is near 1.0 or 0.0. See:
+
+Fahlman, S. E. (1988). An empirical study of learning speed in back-
+        propagation networks. Technical report CMU-CS-88-162. School of
+        Computer Science, Carnegie Mellon University, Pittsburgh, PA 15213.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+#define FLAT_SPOT_CORRECTION 0.1
+
 void feed_forward(struct network *n, struct group *g);
 
-double act_fun_logistic(struct vector *v, uint32_t i);
-double act_fun_logistic_deriv(struct vector *v, uint32_t i);
+double act_fun_logistic(struct group *g, uint32_t i);
+double act_fun_logistic_deriv(struct group *g, uint32_t i);
 
-double act_fun_bipolar_sigmoid(struct vector *v, uint32_t i);
-double act_fun_bipolar_sigmoid_deriv(struct vector *v, uint32_t i);
+double act_fun_bipolar_sigmoid(struct group *g, uint32_t i);
+double act_fun_bipolar_sigmoid_deriv(struct group *g, uint32_t i);
 
-double act_fun_softmax(struct vector *v, uint32_t i);
-double act_fun_softmax_deriv(struct vector *v, uint32_t i);
+double act_fun_softmax(struct group *g, uint32_t i);
+double act_fun_softmax_deriv(struct group *g, uint32_t i);
 
-double act_fun_tanh(struct vector *v, uint32_t i);
-double act_fun_tanh_deriv(struct vector *v, uint32_t i);
+double act_fun_tanh(struct group *g, uint32_t i);
+double act_fun_tanh_deriv(struct group *g, uint32_t i);
 
-double act_fun_linear(struct vector *v, uint32_t i);
-double act_fun_linear_deriv(struct vector *v, uint32_t i);
+double act_fun_linear(struct group *g, uint32_t i);
+double act_fun_linear_deriv(struct group *g, uint32_t i);
 
-double act_fun_softplus(struct vector *v, uint32_t i);
-double act_fun_softplus_deriv(struct vector *v, uint32_t i);
+double act_fun_softplus(struct group *g, uint32_t i);
+double act_fun_softplus_deriv(struct group *g, uint32_t i);
 
-double act_fun_relu(struct vector *v, uint32_t i);
-double act_fun_relu_deriv(struct vector *v, uint32_t i);
+double act_fun_relu(struct group *g, uint32_t i);
+double act_fun_relu_deriv(struct group *g, uint32_t i);
 
-double act_fun_binary_relu(struct vector *v, uint32_t i);
-double act_fun_binary_relu_deriv(struct vector *v, uint32_t i);
+double act_fun_binary_relu(struct group *g, uint32_t i);
+double act_fun_binary_relu_deriv(struct group *g, uint32_t i);
 
-double act_fun_leaky_relu(struct vector *v, uint32_t i);
-double act_fun_leaky_relu_deriv(struct vector *v, uint32_t i);
+double act_fun_leaky_relu(struct group *g, uint32_t i);
+double act_fun_leaky_relu_deriv(struct group *g, uint32_t i);
 
-double act_fun_elu(struct vector *v, uint32_t i);
-double act_fun_elu_deriv(struct vector *v, uint32_t i);
+double act_fun_elu(struct group *g, uint32_t i);
+double act_fun_elu_deriv(struct group *g, uint32_t i);
 
 #endif /* ACT_H */

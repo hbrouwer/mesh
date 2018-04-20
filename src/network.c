@@ -181,6 +181,8 @@ struct group *create_group(char *name, uint32_t size, bool bias,
         g->bias       = bias;
         g->recurrent  = recurrent;
 
+        g->relu_alpha = DEFAULT_RELU_ALPHA;
+
         /* bias nodes have activation 1.0 */
         if(g->bias)
                 g->vector->elements[0] = 1.0;
@@ -244,15 +246,13 @@ void free_group(struct group *g)
         free(g->name);
         free_vector(g->vector);
         free_vector(g->error);
-        if (g->act_fun->lookup)
-                free_vector(g->act_fun->lookup);
         free(g->act_fun);
         free(g->err_fun);
-        for (uint32_t j = 0; j < g->inc_projs->num_elements; j++)
-                free_projection(g->inc_projs->elements[j]);
+        for (uint32_t i = 0; i < g->inc_projs->num_elements; i++)
+                free_projection(g->inc_projs->elements[i]);
         free_array(g->inc_projs);
-        for (uint32_t j = 0; j < g->out_projs->num_elements; j++)
-                free(g->out_projs->elements[j]);
+        for (uint32_t i = 0; i < g->out_projs->num_elements; i++)
+                free(g->out_projs->elements[i]);
         free_array(g->out_projs);
         free_array(g->ctx_groups);
         free(g);
