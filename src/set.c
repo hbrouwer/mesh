@@ -171,7 +171,7 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
                          * size as the input vector of the active network.
                          */
                         if (strcmp(tokens, "Input") != 0)
-                                goto error_out;
+                                goto error_format;
                         inputs[i] = create_vector(input_size);
                         for (uint32_t j = 0; j < input_size; j++) {
                                 /* error: vector too short */
@@ -190,6 +190,8 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
                          */
                         if ((tokens = strtok(NULL, " ")) == NULL)
                                 continue;
+                        if (strcmp(tokens, "Target") != 0)
+                                goto error_format;
                         targets[i] = create_vector(output_size);
                         for (uint32_t j = 0; j < output_size; j++) {
                                 /* error: vector too short */
@@ -212,6 +214,12 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
         }
         fclose(fd);
 
+        /* set is emtpy */
+        if (s->items->num_elements == 0) {
+                free_set(s);
+                goto error_format;
+        }
+
         /* item order equals read order */
         size_t block_size = s->items->num_elements * sizeof(uint32_t);
         if (!(s->order = malloc(block_size)))
@@ -224,6 +232,9 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
 error_file:
         eprintf("Cannot load set - no such file '%s'\n", filename);
         return NULL;
+error_format:
+        eprintf("Cannot load set - file has incorrect format\n");
+        return NULL;        
 error_input_vector:
         eprintf("Cannot load set - input vector of incorrect size\n");
         return NULL;

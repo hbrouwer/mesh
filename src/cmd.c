@@ -2088,8 +2088,10 @@ bool cmd_load_set(char *cmd, char *fmt, struct session *s)
         struct set *set = load_set(arg1, arg2,
                 s->anp->input->vector->size,
                 s->anp->output->vector->size);
-        if (!set)
+        if (!set) {
+                eprintf("Failed to load let '%s'\n", arg2);
                 return true;
+        }
         
         /* add set to active network */
         add_to_array(s->anp->sets, set);
