@@ -82,7 +82,7 @@ and its derivative:
         se' = y_i - d_i
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double error_sum_of_squares(struct group *g, struct vector *t, double tr,
+double err_fun_sum_of_squares(struct group *g, struct vector *t, double tr,
         double zr)
 {
         double se = 0.0;
@@ -100,7 +100,7 @@ double error_sum_of_squares(struct group *g, struct vector *t, double tr,
         return 0.5 * se;
 }
 
-void error_sum_of_squares_deriv(struct group *g, struct vector *t, double tr,
+void err_fun_sum_of_squares_deriv(struct group *g, struct vector *t, double tr,
         double zr)
 {
 #ifdef _OPENMP
@@ -135,7 +135,7 @@ Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
      University, Department of Computer Science).
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double error_cross_entropy(struct group *g, struct vector *t, double tr,
+double err_fun_cross_entropy(struct group *g, struct vector *t, double tr,
         double zr)
 {
         double ce = 0.0;
@@ -226,7 +226,7 @@ double error_cross_entropy(struct group *g, struct vector *t, double tr,
         return ce;
 }
 
-void error_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
+void err_fun_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
         double zr)
 {
 #ifdef _OPENMP
@@ -319,7 +319,7 @@ Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
      University, Department of Computer Science).
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double error_divergence(struct group *g, struct vector *t, double tr,
+double err_fun_divergence(struct group *g, struct vector *t, double tr,
         double zr)
 {
         double de = 0.0;
@@ -362,7 +362,7 @@ double error_divergence(struct group *g, struct vector *t, double tr,
         return de;
 }
 
-void error_divergence_deriv(struct group *g, struct vector *t, double tr,
+void err_fun_divergence_deriv(struct group *g, struct vector *t, double tr,
         double zr)
 {
 #ifdef _OPENMP

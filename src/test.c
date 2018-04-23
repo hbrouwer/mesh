@@ -284,7 +284,7 @@ void print_testing_summary(struct network *n, uint32_t tr)
                 n->status->error);
         cprintf("Error per example: \t\t %lf\n",
                 n->status->error / n->asp->items->num_elements);
-        if (n->output->err_fun->fun == error_sum_of_squares)
+        if (n->output->err_fun->fun == err_fun_sum_of_squares)
                 cprintf("Root Mean Square (RMS) error: \t %lf\n",
                         sqrt((2.0 * n->status->error) / n->asp->items->num_elements));
         cprintf("# Items reached threshold: \t %d (%.2lf%%)\n",

@@ -675,11 +675,11 @@ bool cmd_groups(char *cmd, char *fmt, struct session *s)
                                         g->relu_alpha);
 
                         /* error function */
-                        if (g->err_fun->fun == error_sum_of_squares)
+                        if (g->err_fun->fun == err_fun_sum_of_squares)
                                 cprintf(" :: sum_of_squares");
-                        if (g->err_fun->fun == error_cross_entropy)
+                        if (g->err_fun->fun == err_fun_cross_entropy)
                                 cprintf(" :: cross_entropy");
-                        if (g->err_fun->fun == error_divergence)
+                        if (g->err_fun->fun == err_fun_divergence)
                                 cprintf(" :: divergence");
 
                         /* input/output group */
@@ -869,23 +869,23 @@ bool cmd_set_err_func(char *cmd, char *fmt, struct session *s)
 
         /* sum of squares */
         if (strcmp(arg2, "sum_of_squares") == 0) {
-                g->err_fun->fun   = error_sum_of_squares;
-                g->err_fun->deriv = error_sum_of_squares_deriv;
+                g->err_fun->fun   = err_fun_sum_of_squares;
+                g->err_fun->deriv = err_fun_sum_of_squares_deriv;
         }
         /* sum of squares */
         else if (strcmp(arg2, "sum_squares") == 0) {
-                g->err_fun->fun   = error_sum_of_squares;
-                g->err_fun->deriv = error_sum_of_squares_deriv;
+                g->err_fun->fun   = err_fun_sum_of_squares;
+                g->err_fun->deriv = err_fun_sum_of_squares_deriv;
         }        
         /* cross-entropy */
         else if (strcmp(arg2, "cross_entropy") == 0) {
-                g->err_fun->fun   = error_cross_entropy;
-                g->err_fun->deriv = error_cross_entropy_deriv;
+                g->err_fun->fun   = err_fun_cross_entropy;
+                g->err_fun->deriv = err_fun_cross_entropy_deriv;
         }
         /* divergence */
         else if (strcmp(arg2, "divergence") == 0) {
-                g->err_fun->fun   = error_divergence;
-                g->err_fun->deriv = error_divergence_deriv;
+                g->err_fun->fun   = err_fun_divergence;
+                g->err_fun->deriv = err_fun_divergence_deriv;
         } else {
                 eprintf("Cannot set error function - no such error function '%s'\n", arg2);
                 return true;
