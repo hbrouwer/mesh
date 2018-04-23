@@ -214,7 +214,7 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
         }
         fclose(fd);
 
-        /* set is emtpy */
+        /* error: emtpy set */
         if (s->items->num_elements == 0) {
                 free_set(s);
                 goto error_format;
