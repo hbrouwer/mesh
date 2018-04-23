@@ -118,7 +118,7 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
 
         FILE *fd;
         if (!(fd = fopen(filename, "r")))
-                goto error_out;
+                goto error_file;
         char buf[MAX_BUF_SIZE];
         while (fgets(buf, sizeof(buf), fd)) { 
                 char arg1[MAX_BUF_SIZE];        /* item name */
@@ -174,11 +174,13 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
                                 goto error_out;
                         inputs[i] = create_vector(input_size);
                         for (uint32_t j = 0; j < input_size; j++) {
+                                /* error: vector too short */
                                 if (!(tokens = strtok(NULL, " ")))
-                                        goto error_out;
+                                        goto error_input_vector;
+                                /* error: non-numeric unit */                                
                                 if (sscanf(tokens, "%lf",
                                         &inputs[i]->elements[j]) != 1)
-                                        goto error_out;
+                                        goto error_input_vector;
                         }
                 
                         /* 
@@ -190,11 +192,17 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
                                 continue;
                         targets[i] = create_vector(output_size);
                         for (uint32_t j = 0; j < output_size; j++) {
+                                /* error: vector too short */
                                 if (!(tokens = strtok(NULL, " ")))
-                                        goto error_out;
+                                        goto error_target_vector;
+                                /* error: non-numeric unit */
                                 if (sscanf(tokens, "%lf",
                                         &targets[i]->elements[j]) != 1)
-                                        goto error_out;
+                                        goto error_target_vector;
+                                /* error: vector too long */
+                                if (j == output_size - 1
+                                        && strtok(NULL, " ") != NULL)
+                                        goto error_target_vector;
                         }
                 }
 
@@ -213,6 +221,15 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
 
         return s;
 
+error_file:
+        eprintf("Cannot load set - no such file '%s'\n", filename);
+        return NULL;
+error_input_vector:
+        eprintf("Cannot load set - input vector of incorrect size\n");
+        return NULL;
+error_target_vector:
+        eprintf("Cannot load set - target vector of incorrect size\n");
+        return NULL;
 error_out:
         perror("[load_set()]");
         return NULL;
