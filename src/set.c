@@ -211,7 +211,6 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
         memset(s->order, 0, block_size);
         order_set(s);
 
-
         return s;
 
 error_out:
