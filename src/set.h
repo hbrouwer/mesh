@@ -17,6 +17,7 @@
 #ifndef SET_H
 #define SET_H
 
+#include <stdio.h>
 #include <stdint.h>
 
 #include "array.h"
@@ -49,6 +50,9 @@ void free_item(struct item *item);
 
 struct set *load_set(char *name, char *filename, uint32_t input_size,
         uint32_t output_size);
+struct set *load_set_nf(char *name, char *filename, uint32_t input_size,
+        uint32_t output_size);
+struct item *load_item(FILE *fd, uint32_t input_dims, uint32_t output_dims);
 
 void order_set(struct set *s);
 void permute_set(struct set *s);

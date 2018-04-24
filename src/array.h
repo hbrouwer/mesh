@@ -28,7 +28,8 @@ enum array_type
         atype_groups,
         atype_projs,
         atype_sets,
-        atype_items
+        atype_items,
+        atype_vectors
 };
 
 struct array

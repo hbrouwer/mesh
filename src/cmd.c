@@ -2103,6 +2103,50 @@ bool cmd_load_set(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
+bool cmd_load_set_nf(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* set name */
+        char arg2[MAX_ARG_SIZE]; /* set filename */
+        if (sscanf(cmd, fmt, arg1, arg2) != 2)
+                return false;
+
+        /* input group size should be known */
+        if (!s->anp->input) {
+                eprintf("Cannot load set - input group size unknown\n");
+                return true;
+        }
+        
+        /* output group size should be known */
+        if (!s->anp->output) {
+                eprintf("Cannot load set - output group size unknown\n");
+                return true;
+        }
+
+        /* set should not already exist */
+        if (find_array_element_by_name(s->anp->sets, arg1)) {
+                eprintf("Cannot load set - set '%s' already exists\n", arg1);
+                return true;
+        }
+
+        /* load set, if it exists */
+        struct set *set = load_set_nf(arg1, arg2,
+                s->anp->input->vector->size,
+                s->anp->output->vector->size);
+        if (!set) {
+                eprintf("Failed to load let '%s'\n", arg2);
+                return true;
+        }
+        
+        /* add set to active network */
+        add_to_array(s->anp->sets, set);
+        s->anp->asp = set;
+
+        mprintf("Loaded set \t\t\t [ %s => %s (%d) ]\n", arg2, set->name,
+                set->items->num_elements);
+
+        return true;
+}
+
 bool cmd_remove_set(char *cmd, char *fmt, struct session *s)
 {
         char arg[MAX_ARG_SIZE]; /* set name */

@@ -111,6 +111,8 @@ void free_array(struct array *a)
 
 /*
  * Note: Projections are not addressable by name.
+ * 
+ * Note: Items can have names that are not set.
  */
 void *find_array_element_by_name(struct array *a, char *name)
 {
@@ -136,7 +138,7 @@ void *find_array_element_by_name(struct array *a, char *name)
                 }
                 else if (a->type == atype_items) {
                         struct item *item = (struct item *)e;
-                        if (strcmp(item->name, name) == 0)
+                        if (item->name && strcmp(item->name, name) == 0)
                                 return e;
                 }
         }
