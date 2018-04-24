@@ -362,9 +362,18 @@ struct item *load_item(FILE *fd, uint32_t input_dims, uint32_t output_dims)
         struct array *targets = create_array(atype_vectors);
 
         char buf[MAX_BUF_SIZE];
+        char arg[MAX_BUF_SIZE];
         while (fgets(buf, sizeof(buf), fd)) {
                 buf[strlen(buf) - 1] = '\0';
-                char arg[MAX_BUF_SIZE];
+                /* comment or blank line */
+                switch (buf[0]) {
+                case '%':       /* verbose comment */
+                        cprintf("\x1b[1m\x1b[36m%s\x1b[0m\n", buf);
+                        continue;
+                case '#':       /* silent comment */
+                case '\0':      /* blank line */
+                        continue;
+                }
 
                 /* item name */
                 if (sscanf(buf, "Name \"%[^\"]\"", arg) == 1) {
