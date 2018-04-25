@@ -80,8 +80,8 @@ bool cmd_load_weights(char *cmd, char *fmt, struct session *s);
 bool cmd_show_vector(char *cmd, char *fmt, struct session *s);
 bool cmd_show_matrix(char *cmd, char *fmt, struct session *s);
 
+bool cmd_load_legacy_set(char *cmd, char *fmt, struct session *s);
 bool cmd_load_set(char *cmd, char *fmt, struct session *s);
-bool cmd_load_set_nf(char *cmd, char *fmt, struct session *s);
 bool cmd_remove_set(char *cmd, char *fmt, struct session *s);
 bool cmd_sets(char *cmd, char *fmt, struct session *s);
 bool cmd_change_set(char *cmd, char *fmt, struct session *s);
@@ -235,7 +235,7 @@ const static struct command cmds[] = {
         {"showMatrix",              "%s %s %s",      &cmd_show_matrix},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"loadSetNF",               "%s %s",         &cmd_load_set_nf},
+        {"loadLegacySet",           "%s %s",         &cmd_load_legacy_set},
         {"loadSet",                 "%s %s",         &cmd_load_set},
         {"removeSet",               "%s",            &cmd_remove_set},
         {"sets",                    NULL,            &cmd_sets},

@@ -52,7 +52,7 @@ void free_set(struct set *s)
         free(s);
 }
 
-struct item *create_item(char *name, uint32_t num_events, char *meta,
+struct item *create_item(char *name, char *meta, uint32_t num_events,
         struct vector **inputs, struct vector **targets)
 {
         struct item *item;
@@ -86,6 +86,10 @@ void free_item(struct item *item)
         free(item);
 }
 
+                /***********************
+                 **** legacy format ****
+                 ***********************/
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Load a set of input and target items. Currently, the expected format is:
 
@@ -110,7 +114,7 @@ target vectors do not need to be present for every input pattern.
 TODO: Adopt a less spartan file format.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-struct set *load_set(char *name, char *filename, uint32_t input_size,
+struct set *load_legacy_set(char *name, char *filename, uint32_t input_size,
         uint32_t output_size)
 {
         struct set *s = create_set(name);
@@ -208,7 +212,7 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
                 }
 
                 /* create an item, and add it to the set */
-                item = create_item(name, num_events, meta, inputs, targets);
+                item = create_item(name, meta, num_events, inputs, targets);
                 add_to_array(s->items, item);
         }
         fclose(fd);
@@ -245,6 +249,10 @@ error_out:
         return NULL;
 }
 
+                /********************
+                 **** new format ****
+                 ********************/
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Load a set of input and target items. The expected format is:
 
@@ -275,17 +283,15 @@ Load a set of input and target items. The expected format is:
 where 'name' is an identifier for the item, 'meta' is item-specific meta
 information, and '#' are integer or floating point units of the input/target
 vectors. Note that target vectors do not need to be present for every input
-pattern. The optional "Dimensions I T" specification can be used to override
+pattern. The optional "Dimensions I O" specification can be used to override
 the dimensions derived from the model (input and output group size).
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-struct set *load_set_nf(char *name, char *filename, uint32_t input_size,
+struct set *load_set(char *name, char *filename, uint32_t input_size,
         uint32_t output_size)
 {
         struct set *s = create_set(name);
-
-        uint32_t input_dims;
-        uint32_t output_dims;
+        uint32_t input_dims, output_dims;
 
         FILE *fd;
         if (!(fd = fopen(filename, "r")))
@@ -304,7 +310,11 @@ struct set *load_set_nf(char *name, char *filename, uint32_t input_size,
                         continue;
                 }
 
-                /* dimensions specification */
+                /*
+                 * If the first non-comment or non-blank line is a
+                 * dimensions specification, use specified dimensions,
+                 * otherwise use those derived from the model.
+                 */
                 if (fline) {
                         if (sscanf(buf, "Dimensions %d %d",
                                 &input_dims, &output_dims) != 2) {
@@ -316,7 +326,7 @@ struct set *load_set_nf(char *name, char *filename, uint32_t input_size,
                         fline = false;
                 }
 
-                /* item */
+                /* load item */
                 if (strcmp(buf, "BeginItem") == 0) {
                         struct item *item = load_item(fd, input_dims, output_dims);
                         if (item == NULL)
@@ -361,8 +371,8 @@ struct item *load_item(FILE *fd, uint32_t input_dims, uint32_t output_dims)
         struct array *inputs  = create_array(atype_vectors);
         struct array *targets = create_array(atype_vectors);
 
-        char buf[MAX_BUF_SIZE];
-        char arg[MAX_BUF_SIZE];
+        char buf[MAX_BUF_SIZE]; /* line buffer */
+        char arg[MAX_BUF_SIZE]; /* argument buffer */
         while (fgets(buf, sizeof(buf), fd)) {
                 buf[strlen(buf) - 1] = '\0';
                 /* comment or blank line */
@@ -375,7 +385,7 @@ struct item *load_item(FILE *fd, uint32_t input_dims, uint32_t output_dims)
                         continue;
                 }
 
-                /* item name */
+                /* name */
                 if (sscanf(buf, "Name \"%[^\"]\"", arg) == 1) {
                         size_t block_size = ((strlen(arg) + 1) * sizeof(char));
                         if (!(name = malloc(block_size)))
@@ -384,7 +394,7 @@ struct item *load_item(FILE *fd, uint32_t input_dims, uint32_t output_dims)
                         strncpy(name, arg, strlen(arg));
                 }
 
-                /* meta info */
+                /* meta */
                 if (sscanf(buf, "Meta \"%[^\"]\"", arg) == 1) {
                         size_t block_size = ((strlen(arg) + 1) * sizeof(char));
                         if (!(meta = malloc(block_size)))
@@ -397,16 +407,17 @@ struct item *load_item(FILE *fd, uint32_t input_dims, uint32_t output_dims)
                 if (strcmp(buf, "EndItem") == 0)
                         break;
 
-                /* next line if not an input pattern */
+                /* 
+                 * Skip to next line if current one is not an input-target
+                 * pattern, otherwise parse the pattern.
+                 */
                 char *tokens = strtok(buf, " ");
                 if (strcmp(tokens, "Input") != 0)
                         continue;
-                
                 struct vector *input  = create_vector(input_dims);
                 struct vector *target = create_vector(output_dims);
                 add_to_array(inputs, input);
                 add_to_array(targets, target);
-                
                 for (uint32_t i = 0; i < input_dims; i++) {
                         /* error: vector too short */
                         if (!(tokens = strtok(NULL, " ")))
@@ -415,13 +426,14 @@ struct item *load_item(FILE *fd, uint32_t input_dims, uint32_t output_dims)
                         if (sscanf(tokens, "%lf", &input->elements[i]) != 1)
                                 goto error_input_vector;
                 }
-                
-                /* next line if there is no target pattern */
+                /*
+                 * Skip to next line if there is no target pattern for this
+                 * input.
+                 */
                 if ((tokens = strtok(NULL, " ")) == NULL)
                         continue;
                 if (strcmp(tokens, "Target") != 0)
                         continue;
-
                 for (uint32_t i = 0; i < output_dims; i++) {
                         /* error: vector too short */
                         if (!(tokens = strtok(NULL, " ")))
@@ -435,37 +447,35 @@ struct item *load_item(FILE *fd, uint32_t input_dims, uint32_t output_dims)
                 }
         }
 
-        /* error: empty set */
+        /* error: empty item */
         if (inputs->num_elements == 0)
                 goto error_format;
 
-        /* input vectors */
+        /*
+         * Copy input and target vectors to fixed size arrays, and free the
+         * dynamic array structures.
+         */
         uint32_t num_events = inputs->num_elements;
-        struct vector **input_vecs;
+        struct vector **input_vecs, **target_vecs;
         size_t block_size = num_events * sizeof(struct vector *);
         if (!(input_vecs = malloc(block_size)))
                 goto error_out;
         memset(input_vecs, 0, block_size);
-        for (uint32_t i = 0; i < num_events; i++) {
-                input_vecs[i] = create_vector(input_dims);
-                copy_vector(input_vecs[i], inputs->elements[i]);
-                free_vector(inputs->elements[i]);
-        }
-        free_array(inputs);
-
-        /* target vectors */
-        struct vector **target_vecs;
         if (!(target_vecs = malloc(block_size)))
                 goto error_out;
         memset(target_vecs, 0, block_size);
         for (uint32_t i = 0; i < num_events; i++) {
-                target_vecs[i] = create_vector(output_dims);
-                copy_vector(target_vecs[i], targets->elements[i]);
-                free_vector(targets->elements[i]);
+                input_vecs[i]  = inputs->elements[i];
+                target_vecs[i] = targets->elements[i];
         }
+        free_array(inputs);
         free_array(targets);
 
-        return create_item(name, num_events, meta, input_vecs, target_vecs);
+        /* create item */
+        struct item *item = create_item(name, meta, num_events,
+                input_vecs, target_vecs);
+
+        return item;
 
 error_input_vector:
         eprintf("Cannot load set - input vector of incorrect size\n");
