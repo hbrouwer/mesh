@@ -90,13 +90,13 @@ bool cmd_init(char *cmd, char *fmt, struct session *s);
 bool cmd_reset(char *cmd, char *fmt, struct session *s);
 bool cmd_train(char *cmd, char *fmt, struct session *s);
 bool cmd_test_item(char *cmd, char *fmt, struct session *s);
-bool cmd_test_item_no(char *cmd, char *fmt, struct session *s);
+bool cmd_test_item_num(char *cmd, char *fmt, struct session *s);
 bool cmd_test(char *cmd, char *fmt, struct session *s);
 bool cmd_test_verbose(char *cmd, char *fmt, struct session *s);
 
 bool cmd_items(char *cmd, char *fmt, struct session *s);
 bool cmd_show_item(char *cmd, char *fmt, struct session *s);
-bool cmd_show_item_no(char *cmd, char *fmt, struct session *s);
+bool cmd_show_item_num(char *cmd, char *fmt, struct session *s);
 
 bool cmd_record_units(char *cmd, char *fmt, struct session *s);
 
@@ -248,7 +248,7 @@ const static struct command cmds[] = {
         {"train",                   NULL,            &cmd_train},
         {"testItem",                "\"%[^\"]\"",    &cmd_test_item},
         {"testItem",                "'%[^']'",       &cmd_test_item},
-        {"testItemNo",              "%d",            &cmd_test_item_no},
+        {"testItem",                "%d",            &cmd_test_item_num},
         {"test",                    NULL,            &cmd_test},
         {"testVerbose",             NULL,            &cmd_test_verbose},
 
@@ -256,7 +256,7 @@ const static struct command cmds[] = {
         {"items",                   NULL,            &cmd_items},
         {"showItem",                "\"%[^\"]\"",    &cmd_show_item},
         {"showItem",                "'%[^']'",       &cmd_show_item},
-        {"showItemNo",              "%d",            &cmd_show_item_no},
+        {"showItem",                "%d",            &cmd_show_item_num},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"recordUnits",             "%s %s",         &cmd_record_units},

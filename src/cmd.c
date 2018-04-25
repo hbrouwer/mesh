@@ -2262,10 +2262,10 @@ bool cmd_train(char *cmd, char *fmt, struct session *s)
 bool cmd_test_item(char *cmd, char *fmt, struct session *s)
 {
         char arg[MAX_ARG_SIZE]; /* item name */
-        uint32_t arg2;
         if (sscanf(cmd, fmt, arg) != 1)
-                if (sscanf(cmd, fmt, &arg2) != 1)
-                        return false;
+                return false;
+        
+        printf("%s\n", arg);
 
         /* find item */
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg);
@@ -2281,7 +2281,7 @@ bool cmd_test_item(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_test_item_no(char *cmd, char *fmt, struct session *s)
+bool cmd_test_item_num(char *cmd, char *fmt, struct session *s)
 {
         uint32_t arg; /* item number */
         if (sscanf(cmd, fmt, &arg) != 1)
@@ -2365,7 +2365,7 @@ bool cmd_show_item(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-bool cmd_show_item_no(char *cmd, char *fmt, struct session *s)
+bool cmd_show_item_num(char *cmd, char *fmt, struct session *s)
 {
         uint32_t arg; /* item number */
         if (sscanf(cmd, fmt, &arg) != 1)
