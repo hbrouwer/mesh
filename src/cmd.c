@@ -2262,8 +2262,10 @@ bool cmd_train(char *cmd, char *fmt, struct session *s)
 bool cmd_test_item(char *cmd, char *fmt, struct session *s)
 {
         char arg[MAX_ARG_SIZE]; /* item name */
+        uint32_t arg2;
         if (sscanf(cmd, fmt, arg) != 1)
-                return false;
+                if (sscanf(cmd, fmt, &arg2) != 1)
+                        return false;
 
         /* find item */
         struct item *item = find_array_element_by_name(s->anp->asp->items, arg);
@@ -2338,8 +2340,8 @@ bool cmd_items(char *cmd, char *fmt, struct session *s)
                 s->anp->asp->name, s->anp->name);
         for (uint32_t i = 0; i < s->anp->asp->items->num_elements; i++) {
                 struct item *item = s->anp->asp->items->elements[i];
-                cprintf("* %d: \"%s\" %d \"%s\"\n", i + 1,
-                        item->name, item->num_events, item->meta);
+                cprintf("* %d: \"%s\" \"%s\" (%d events)\n", i + 1,
+                        item->name, item->meta, item->num_events);
         }
 
         return true;
@@ -2358,29 +2360,29 @@ bool cmd_show_item(char *cmd, char *fmt, struct session *s)
                 return true;
         }
 
-        cprintf("\n");
-        cprintf("Name:   \"%s\"\n", item->name);
-        cprintf("Meta:   \"%s\"\n", item->meta);
-        cprintf("Events: %d\n", item->num_events);
-        cprintf("\n");
-        cprintf("(E: Event; I: Input; T: Target)\n");
-        for (uint32_t i = 0; i < item->num_events; i++) {
-                cprintf("\n");
-                cprintf("E: %d\n", i + 1);
-                cprintf("I: ");
-                s->pprint ? pprint_vector(item->inputs[i], s->scheme)
-                          : print_vector(item->inputs[i]);
-                if (item->targets[i]) {
-                        cprintf("T: ");
-                        s->pprint ? pprint_vector(item->targets[i], s->scheme)
-                                  : print_vector(item->targets[i]);
-                }
-        }
-        cprintf("\n");
+        print_item(item, s->pprint, s->scheme);
 
         return true;
 }
- 
+
+bool cmd_show_item_no(char *cmd, char *fmt, struct session *s)
+{
+        uint32_t arg; /* item number */
+        if (sscanf(cmd, fmt, &arg) != 1)
+                return false;
+
+        /* find item */
+        if (arg == 0 || arg > s->anp->asp->items->num_elements) {
+                eprintf("Cannot show item - no such item number '%d'\n", arg);
+                return true;
+        }
+        struct item *item = s->anp->asp->items->elements[arg - 1];
+
+        print_item(item, s->pprint, s->scheme);
+
+        return true;
+}
+
 bool cmd_record_units(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* group name */

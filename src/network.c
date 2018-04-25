@@ -524,8 +524,7 @@ void save_weight_matrix(struct group *g, FILE *fd)
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
                 fprintf(fd, "Projection %s %s\n",
-                        ip->to->name,
-                        g->name);     
+                        ip->to->name, g->name);     
                 for (uint32_t r = 0; r < ip->weights->rows; r++) {
                         for (uint32_t c = 0; c < ip->weights->cols; c++) {
                                 fprintf(fd, "%f",

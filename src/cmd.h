@@ -96,6 +96,7 @@ bool cmd_test_verbose(char *cmd, char *fmt, struct session *s);
 
 bool cmd_items(char *cmd, char *fmt, struct session *s);
 bool cmd_show_item(char *cmd, char *fmt, struct session *s);
+bool cmd_show_item_no(char *cmd, char *fmt, struct session *s);
 
 bool cmd_record_units(char *cmd, char *fmt, struct session *s);
 
@@ -255,6 +256,7 @@ const static struct command cmds[] = {
         {"items",                   NULL,            &cmd_items},
         {"showItem",                "\"%[^\"]\"",    &cmd_show_item},
         {"showItem",                "'%[^']'",       &cmd_show_item},
+        {"showItemNo",              "%d",            &cmd_show_item_no},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"recordUnits",             "%s %s",         &cmd_record_units},

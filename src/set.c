@@ -86,6 +86,29 @@ void free_item(struct item *item)
         free(item);
 }
 
+void print_item(struct item *item, bool pprint, enum color_scheme scheme)
+{
+        cprintf("\n");
+        cprintf("Name:   \"%s\"\n", item->name);
+        cprintf("Meta:   \"%s\"\n", item->meta);
+        cprintf("Events: %d\n", item->num_events);
+        cprintf("\n");
+        cprintf("(E: Event; I: Input; T: Target)\n");
+        for (uint32_t i = 0; i < item->num_events; i++) {
+                cprintf("\n");
+                cprintf("E: %d\n", i + 1);
+                cprintf("I: ");
+                pprint ? pprint_vector(item->inputs[i], scheme)
+                       : print_vector(item->inputs[i]);
+                if (item->targets[i]) {
+                        cprintf("T: ");
+                        pprint ? pprint_vector(item->targets[i], scheme)
+                               : print_vector(item->targets[i]);
+                }
+        }
+        cprintf("\n");
+}
+
                 /***********************
                  **** legacy format ****
                  ***********************/
@@ -452,7 +475,7 @@ struct item *load_item(FILE *fd, uint32_t input_dims, uint32_t output_dims)
                 goto error_format;
 
         /*
-         * Copy input and target vectors to fixed size arrays, and free the
+         * Move input and target vectors to fixed size arrays, and free the
          * dynamic array structures.
          */
         uint32_t num_events = inputs->num_elements;
@@ -490,6 +513,10 @@ error_out:
         perror("[load_item()]");
         return NULL;
 }
+
+                /******************
+                 **** ordering ****
+                 ******************/
 
 void order_set(struct set *s)
 {
