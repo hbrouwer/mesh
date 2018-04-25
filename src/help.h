@@ -92,6 +92,10 @@
 "set ActFunc <name> <func>      Set the activation function of a group  \n" \
 "set ErrFunc <name> <func>      Set the error function of a group       \n" \
 "                                                                       \n" \
+"set ReLUAlpha <name> <val>     Set alpha coeff. for Leaky ReLU and ELU \n" \
+"set LogisicFSC <name> <val>    Set logistic flat spot correction       \n" \
+"set LogisicGain <name> <val>   Set logistic gain coefficient           \n" \
+"                                                                       \n" \
 "showVector <type>              Show group vector                       \n" \
 "                               (type = [units|error])                  \n" \
 "                                                                       \n" \
@@ -218,7 +222,8 @@
 "sets                           List all sets in active network         \n" \
 "changeSet <name>               Change active set                       \n" \
 "items                          List all example items in the active set\n" \
-"showItem <name>                Show input-target pairs for an item     \n" \
+"showItem <id>                  Show input-target pairs for an item     \n" \
+"                               (id = [<name>|<number>])                \n" \
 
 #define TOPIC_SIMILARITY \
 "# Output-Target vector similarity                                      \n" \
