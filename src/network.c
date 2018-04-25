@@ -475,15 +475,15 @@ void initialize_dynamic_params(struct group *g, struct network *n)
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Save and load weights. Currently, the format for weights files is:
+Save and load weights. The format for weights files is:
 
-        from_group -> to_group
+        Projection from_group to_group
         # # # # # # # # #
         # # # # # # # # #
         # # # # # # # # #
         [...]
 
-        from_group -> to_group
+        Projection from_group to_group
         # # # #
         # # # #
         [...]
@@ -491,8 +491,6 @@ Save and load weights. Currently, the format for weights files is:
 where each line of '#'s denotes the weights of one unit of the 'from_group'
 to each of the units of the 'to_group', and where each '#' is a floating
 point weight.
-
-TODO: Adopt a less spartan file format.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 bool save_weight_matrices(struct network *n, char *filename)
@@ -525,9 +523,9 @@ void save_weight_matrix(struct group *g, FILE *fd)
         /* incoming projections */
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
-                fprintf(fd, "%s -> %s\n",
+                fprintf(fd, "Projection %s %s\n",
                         ip->to->name,
-                        g->name);
+                        g->name);     
                 for (uint32_t r = 0; r < ip->weights->rows; r++) {
                         for (uint32_t c = 0; c < ip->weights->cols; c++) {
                                 fprintf(fd, "%f",
@@ -537,6 +535,7 @@ void save_weight_matrix(struct group *g, FILE *fd)
                         }
                         fprintf(fd, "\n");
                 }
+                fprintf(fd, "\n");
                 mprintf("... wrote weights for projection '%s -> %s'\n",
                         ip->to->name, g->name);
         }
@@ -570,11 +569,25 @@ bool load_weight_matrices(struct network *n, char *filename)
 
         char buf[MAX_BUF_SIZE];
         while (fgets(buf, sizeof(buf), fd)) {
+                buf[strlen(buf) - 1] = '\0';
+                /* comment or blank line */
+                switch (buf[0]) {
+                case '%':       /* verbose comment */
+                        cprintf("\x1b[1m\x1b[36m%s\x1b[0m\n", buf);
+                        continue;
+                case '#':       /* silent comment */
+                case '\0':      /* blank line */
+                        continue;
+                }
                 char arg1[MAX_ARG_SIZE]; /* 'from' group name */
                 char arg2[MAX_ARG_SIZE]; /* 'to' group name */
 
-                if (sscanf(buf, "%s -> %s", arg1, arg2) != 2)
-                        continue;
+                if (sscanf(buf, "Projection %s %s", arg1, arg2) != 2)
+                        /*
+                         * XXX: Legacy format ...
+                         */
+                        if (sscanf(buf, "%s -> %s", arg1, arg2) != 2)
+                                continue;
 
                 /* find 'from' group */
                 struct group *fg;
