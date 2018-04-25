@@ -78,7 +78,7 @@ void process_command(char *cmd, struct session *s)
                  */
                 if (req_anp && !s->anp) {
                         eprintf("Cannot process command: `%s`\n", cmd);
-                        eprintf("(no active network - see `help networks`)\n");
+                        eprintf("No active network - see `help networks`\n");
                         goto out;
                 }
                 /* 
@@ -87,17 +87,33 @@ void process_command(char *cmd, struct session *s)
                  */
                 if (req_init && !s->anp->initialized) {
                         eprintf("Cannot process command: `%s`\n", cmd);
-                        eprintf("(uninitialized network - use `init` command to initialize)\n");
+                        eprintf("Uninitialized network - use `init` command to initialize\n");
                         goto out;
                 }
                 /*
                  * Skip commands that require an active example set if
-                 * necessary.
+                 * necessary. Also, an active example set needs to have the
+                 * same dimensionality as the network.
                  */
-                if (req_asp && !s->anp->asp) {
-                        eprintf("Cannot process command: `%s`\n", cmd);
-                        eprintf("(no active set - see `help sets`)\n");
-                        goto out;
+                if (req_asp) {
+                        if (!s->anp->asp) {
+                                eprintf("Cannot process command: `%s`\n", cmd);
+                                eprintf("No active set - see `help sets`\n");
+                                goto out;
+                        }
+                        struct item *item = s->anp->asp->items->elements[0];
+                        if (s->anp->input->vector->size != item->inputs[0]->size) {
+                                eprintf("Cannot process command: `%s`\n", cmd);
+                                eprintf("Input dimensionality mismatch: model (%d) != set (%d)\n",
+                                        s->anp->input->vector->size, item->inputs[0]->size);
+                                goto out;
+                        }
+                        if (s->anp->output->vector->size != item->targets[0]->size) {
+                                eprintf("Cannot process command: `%s`\n", cmd);
+                                eprintf("Output dimensionality mismatch: model (%d) != set (%d)\n",
+                                        s->anp->input->vector->size, item->inputs[0]->size);
+                                goto out;
+                        }
                 }
                 /*
                  * If a command has arguments, we pass its processor its
@@ -145,7 +161,7 @@ void process_command(char *cmd, struct session *s)
         /* invalid command */
         if (strlen(cmd) > 1) {
                 eprintf("No such command: `%s`\n", cmd); 
-                eprintf("(type `help` for help)\n");
+                eprintf("Type `help` for help\n");
         }
 
 out:
