@@ -197,7 +197,7 @@ struct group *create_group(char *name, uint32_t size, bool bias,
 struct group *attach_bias_group(struct network *n, struct group *g);
 void free_group(struct group *g);
 void free_groups(struct array *gs);
-void add_group(struct array *groups, struct group *g);
+void add_group(struct network *n, struct group *g);
 void remove_group(struct network *n, struct group *g);
 void print_groups(struct network *n);
 

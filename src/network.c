@@ -419,7 +419,7 @@ struct group *attach_bias_group(struct network *n, struct group *g)
         bg->err_fun->deriv = g->err_fun->deriv;
 
         /* add bias group to the network */
-        add_group(n->groups, bg);
+        add_group(n, bg);
 
         struct matrix *weights = create_matrix(
                 bg->vector->size, g->vector->size);
@@ -472,9 +472,9 @@ void free_groups(struct array *gs)
                 free_group(gs->elements[i]);
 }
 
-void add_group(struct array *groups, struct group *g)
+void add_group(struct network *n, struct group *g)
 {
-        add_to_array(groups, g);
+        add_to_array(n->groups, g);
 }
 
 void remove_group(struct network *n, struct group *g)

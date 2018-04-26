@@ -286,7 +286,7 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
 {
         /* duplicate groups */
         struct group *dg = rnn_duplicate_group(g);
-        add_group(dn->groups, dg);
+        add_group(dn, dg);
 
         /* set input and output groups */
         if (n->input == g)  dn->input  = dg;
@@ -304,7 +304,7 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
 
                 /* duplicate bias group */
                 struct group *dbg = rnn_duplicate_group(bg);
-                add_group(dn->groups, dbg);
+                add_group(dn, dbg);
 
                 /*
                  * Duplicate the projection between the bias group and its
@@ -437,7 +437,7 @@ struct array *rnn_recurrent_groups(struct network *n)
 void rnn_collect_recurrent_groups(struct group *g, struct array *gs)
 {
         if (g->recurrent)
-                add_group(gs, g);
+                add_to_array(gs, g);
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++)
                 rnn_collect_recurrent_groups(((struct projection *)
                         g->out_projs->elements[i])->to, gs);
