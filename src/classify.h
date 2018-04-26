@@ -27,7 +27,7 @@ struct matrix *confusion_matrix(struct network *n);
 struct matrix *ffn_network_cm(struct network *n);
 struct matrix *rnn_network_cm(struct network *n);
 
-void print_cm_summary(struct matrix *cm, bool print_cm, bool pprint,
+void print_cm_summary(struct network *n, bool print_cm, bool pprint,
         enum color_scheme scheme);
 
 void cm_signal_handler(int32_t signal);

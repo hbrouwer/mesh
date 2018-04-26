@@ -22,6 +22,7 @@
 #include "act.h"
 #include "bp.h"
 #include "defaults.h"
+#include "error.h"
 #include "main.h"
 #include "math.h"
 #include "network.h"
@@ -148,6 +149,209 @@ void free_network(struct network *n)
         free(n);
 }
 
+void inspect_network(struct network *n)
+{
+               /*****************
+                 **** general ****
+                 *****************/
+
+        /* name */
+        cprintf("| Name: \t\t\t %s\n", n->name);
+        cprintf("| Type: \t\t\t ");
+        if (n->type == ntype_ffn)
+                cprintf("ffn");
+        if (n->type == ntype_srn)
+                cprintf("ffn");
+        if (n->type == ntype_rnn)
+                cprintf("ffn");
+        cprintf("\n");
+        cprintf("| Initialized: \t\t\t ");
+        n->initialized ? cprintf("true\n") : cprintf("false\n");
+        cprintf("| Unfolded: \t\t\t ");
+        n->unfolded_net ? cprintf("true\n") : cprintf("false\n");
+        cprintf("| Groups: \t\t\t ");
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
+                struct group *g = n->groups->elements[i];
+                if (i > 0) cprintf(", ");
+                cprintf("%s (%d)", g->name, g->vector->size);
+        }
+
+        cprintf("\n");
+        cprintf("| Input: \t\t\t ");
+        n->input != NULL
+                ? cprintf("%s (%d)\n",
+                        n->input->name, n->input->vector->size)
+                : cprintf("\n");
+        cprintf("| Output: \t\t\t ");
+        n->output != NULL
+                ? cprintf("%s (%d)\n",
+                        n->output->name, n->output->vector->size)
+                : cprintf("\n");
+        cprintf("| Sets: \t\t\t ");
+        for (uint32_t i = 0; i < n->sets->num_elements; i++) {
+                struct set *set = n->sets->elements[i];
+                if (i > 0) cprintf(", ");
+                cprintf("%s (%d)", set->name, set->items->num_elements);
+        }
+        cprintf("\n");
+
+                /******************
+                 **** contexts ****
+                 ******************/
+
+        cprintf("|\n");
+        cprintf("| Reset contexts: \t\t ");
+        n->reset_contexts ? cprintf("true\n") : cprintf("false\n");
+        cprintf("| Init context units: \t\t %f\n", n->init_context_units);
+
+                /******************
+                 **** training ****
+                 ******************/
+
+        cprintf("|\n");
+        cprintf("| Learning algorithm: \t\t ");
+        if (n->learning_algorithm == train_network_with_bp)
+                cprintf("bp");
+        if (n->learning_algorithm == train_network_with_bptt) {
+                cprintf("bptt");
+        }
+        cprintf("\n");
+        cprintf("| Back ticks: \t\t\t %d\n", n->back_ticks);
+        cprintf("| Update algorithm: \t\t ");
+        if (n->update_algorithm == bp_update_sd
+                && n->sd_type == SD_DEFAULT)
+                cprintf("steepest");
+        if (n->update_algorithm == bp_update_sd
+                && n->sd_type == SD_BOUNDED)
+                cprintf("bounded");
+        if (n->update_algorithm == bp_update_rprop
+                && n->rp_type == RPROP_PLUS)
+                cprintf("rprop+");
+        if (n->update_algorithm == bp_update_rprop
+                && n->rp_type == RPROP_MINUS)
+                cprintf("rprop-");
+        if (n->update_algorithm == bp_update_rprop
+                && n->rp_type == IRPROP_PLUS)
+                cprintf("irprop+");
+        if (n->update_algorithm == bp_update_rprop
+                && n->rp_type == IRPROP_MINUS)
+                cprintf("irprop+");
+        if (n->update_algorithm == bp_update_qprop)
+                cprintf("qprop");
+        if (n->update_algorithm == bp_update_dbd)
+                cprintf("dbd");
+        cprintf("\n");
+        cprintf("|\n");
+        cprintf("| Learning rate (LR): \t\t %f\n",      n->learning_rate);
+        cprintf("| LR scale factor: \t\t %f\n",         n->lr_scale_factor);
+        cprintf("| LR scale after (%%epochs): \t %f\n", n->lr_scale_after);
+        cprintf("|\n");
+        cprintf("| Momentum (MN): \t\t %f\n",           n->momentum);
+        cprintf("| MN scale factor: \t\t %f\n",         n->mn_scale_factor);
+        cprintf("| MN scale after (%%epochs): \t %f\n", n->mn_scale_after);
+        cprintf("|\n");
+        cprintf("| Rprop init update: \t\t %f\n",       n->rp_init_update);
+        cprintf("| Rprop Eta-: \t\t\t %f\n",            n->rp_eta_minus);
+        cprintf("| Rprop Eta+: \t\t\t %f\n",            n->rp_eta_plus);
+        cprintf("|\n");
+        cprintf("| DBD rate increment: \t\t %f\n",      n->rp_init_update);
+        cprintf("| DBD rate decrement: \t\t %f\n",      n->rp_eta_minus);
+        cprintf("|\n");
+        cprintf("| Weight decay (WD): \t\t %f\n",       n->weight_decay);
+        cprintf("| WD scale factor: \t\t %f\n",         n->wd_scale_factor);
+        cprintf("| WD scale after (%%epochs): \t %f\n", n->wd_scale_after);
+        cprintf("|\n");
+        cprintf("| Target radius: \t\t %f\n",           n->target_radius);
+        cprintf("| Zero error radius: \t\t %f\n",       n->zero_error_radius);
+        cprintf("| Error threshold: \t\t %f\n",         n->error_threshold);
+        cprintf("|\n");
+        cprintf("| Training order: \t\t ");
+        if (n->training_order == train_ordered)
+                cprintf("ordered");
+        if (n->training_order == train_permuted)
+                cprintf("permuted");
+        if (n->training_order == train_randomized)
+                cprintf("randomized");
+        cprintf("\n");
+        cprintf("| Batch size: \t\t\t %d\n",            n->batch_size);
+        cprintf("| Maximum #epochs: \t\t %d\n",         n->max_epochs);
+        cprintf("| Report after #epochs \t\t %d\n",     n->report_after);
+        cprintf("|\n");
+        cprintf("| Multi-stage input: \t\t ");
+        n->ms_input
+                ? cprintf("%s (%d)\n",
+                        n->ms_input->name, n->ms_input->vector->size)
+                : cprintf("\n");
+        cprintf("| Multi-stage set: \t\t ");
+        n->ms_set
+                ? cprintf("%s (%d)\n",
+                        n->ms_set->name, n->ms_set->items->num_elements)
+                : cprintf("\n");
+
+                /***********************
+                 **** randomization ****
+                 ***********************/
+
+        cprintf("|\n");
+        cprintf("| Random algorithm: \t\t ");
+        if (n->random_algorithm == randomize_gaussian)
+                cprintf("gaussian");
+        if (n->random_algorithm == randomize_range)
+                cprintf("range");
+        if (n->random_algorithm == randomize_nguyen_widrow)
+                cprintf("nguyen_widrow");
+        if (n->random_algorithm == randomize_fan_in)
+                cprintf("fan_in");
+        if (n->random_algorithm == randomize_binary)
+                cprintf("binary");
+        cprintf("\n");
+        cprintf("| Random Seed: \t\t\t %d\n", n->random_seed);
+        cprintf("| Random Mu: \t\t\t %f\n",   n->random_mu);
+        cprintf("| Random Sigma: \t\t %f\n",  n->random_sigma);
+        cprintf("| Random Min: \t\t\t %f\n",  n->random_min);
+        cprintf("| Random Max: \t\t\t %f\n",  n->random_max);
+
+                /***************
+                 **** other ****
+                 ***************/
+
+        cprintf("|\n");
+        cprintf("| Similarity metric: \t\t ");
+        if (n->similarity_metric == inner_product)
+                cprintf("inner_product");
+        if (n->similarity_metric == harmonic_mean)
+                cprintf("harmonic_mean");
+        if (n->similarity_metric == cosine)
+                cprintf("cosine");
+        if (n->similarity_metric == tanimoto)
+                cprintf("tanimoto");
+        if (n->similarity_metric == dice)
+                cprintf("dice");
+        if (n->similarity_metric == pearson_correlation)
+                cprintf("pearson_correlation");
+        cprintf("\n");
+
+                /****************
+                 **** status ****
+                 ****************/
+
+        /*
+        cprintf("|\n");
+        cprintf("| Epoch: \t\t\t %d\n",
+                n->status->epoch);
+        cprintf("| Error: \t\t\t %f\n",
+                n->status->error);
+        cprintf("| Previous error: \t\t %f\n",
+                n->status->prev_error);
+        cprintf("| Gradient linearity: \t\t %f\n",
+                n->status->gradient_linearity);
+        cprintf("| Last deltas length: \t\t %f\n",
+                n->status->last_deltas_length);
+        cprintf("| Gradient length: \t\t %f\n",
+                n->status->gradients_length);
+        */
+}
+
 struct group *create_group(char *name, uint32_t size, bool bias,
         bool recurrent)
 {
@@ -204,6 +408,8 @@ struct group *attach_bias_group(struct network *n, struct group *g)
                 goto error_out;
         memset(bgn, 0, sizeof(block_size));
         sprintf(bgn, "%s_bias", g->name);
+        if (find_array_element_by_name(n->groups, bgn))
+                return NULL;
         struct group *bg = create_group(bgn, 1, true, false);
         free(bgn);
 
@@ -264,6 +470,110 @@ void free_groups(struct array *gs)
 {
         for (uint32_t i = 0; i < gs->num_elements; i++)
                 free_group(gs->elements[i]);
+}
+
+void add_group(struct network *n, struct group *g)
+{
+        add_to_array(n->groups, g);
+}
+
+void remove_group(struct network *n, struct group *g)
+{
+        /* remove outgoing projections from a group g' to group g */
+        for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
+                struct projection *p = g->inc_projs->elements[i];
+                struct group *fg = p->to;
+                for (uint32_t j = 0; j < fg->out_projs->num_elements; j++) {
+                        struct projection *op = fg->out_projs->elements[j];
+                        if (op->to == g) {
+                                remove_from_array(fg->out_projs, op);
+                                break;
+                        }
+                }
+        }
+
+        /* remove incoming projections to group g from a group g' */
+        for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
+                struct projection *p = g->out_projs->elements[i];
+                struct group *tg = p->to;
+                for (uint32_t j = 0; j < tg->inc_projs->num_elements; j++) {
+                        struct projection *ip = tg->inc_projs->elements[j];
+                        if (ip->to == g) {
+                                remove_from_array(tg->inc_projs, ip);
+                                break;
+                        }
+                }
+        }
+
+        /* remove Elman projections from a group g' to group g */
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
+                struct group *fg = n->groups->elements[i];
+                for (uint32_t j = 0; j < fg->ctx_groups->num_elements; j++) {
+                        if (fg->ctx_groups->elements[j] == g) {
+                                remove_from_array(fg->ctx_groups, g);
+                                break;
+                        }
+                }
+        }
+
+        /* remove group */
+        remove_from_array(n->groups, g);
+        free_group(g);
+}
+
+void print_groups(struct network *n)
+{
+        if (n->groups->num_elements == 0) {
+                cprintf("(no groups)\n");
+                return;
+        }
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
+                struct group *g = n->groups->elements[i];
+
+                /* name and size */
+                cprintf("* %d: %s :: %d", i + 1, g->name, g->vector->size);
+
+                /* activation function */
+                if (g->act_fun->fun == act_fun_logistic)
+                        cprintf(" :: logistic (fsc = %f; gain = %f)",
+                                g->logistic_fsc, g->logistic_gain);
+                if (g->act_fun->fun == act_fun_bipolar_sigmoid)
+                        cprintf(" :: bipolar_sigmoid");
+                if (g->act_fun->fun == act_fun_softmax)
+                        cprintf(" :: softmax");
+                if (g->act_fun->fun == act_fun_tanh)
+                        cprintf(" :: tanh");
+                if (g->act_fun->fun == act_fun_linear)
+                        cprintf(" :: linear");
+                if (g->act_fun->fun == act_fun_softplus)
+                        cprintf(" :: softplus");
+                if (g->act_fun->fun == act_fun_relu)
+                        cprintf(" :: relu");
+                if (g->act_fun->fun == act_fun_binary_relu)
+                        cprintf(" :: binary_relu");
+                if (g->act_fun->fun == act_fun_leaky_relu)
+                        cprintf(" :: leaky_relu (alpha = %f)",
+                                g->relu_alpha);
+                if (g->act_fun->fun == act_fun_elu)
+                        cprintf(" :: elu (alpha = %f)",
+                                g->relu_alpha);
+
+                /* error function */
+                if (g->err_fun->fun == err_fun_sum_of_squares)
+                        cprintf(" :: sum_of_squares");
+                if (g->err_fun->fun == err_fun_cross_entropy)
+                        cprintf(" :: cross_entropy");
+                if (g->err_fun->fun == err_fun_divergence)
+                        cprintf(" :: divergence");
+
+                /* input/output group */
+                if (g == n->input)
+                        cprintf(" :: input group\n");
+                else if (g == n->output)
+                        cprintf(" :: output group\n");
+                else
+                        cprintf("\n");
+        }       
 }
 
 void shift_context_groups(struct network *n)
@@ -433,10 +743,222 @@ void free_projection(struct projection *p)
         free(p);
 }
 
+void add_projection(struct array *projs, struct projection *p)
+{
+        add_to_array(projs, p);
+}
+
+void add_bidirectional_projection(struct group *fg, struct group *tg)
+{
+        if (fg == tg) {
+                fg->recurrent = true;
+                return;
+        }
+        /* weight matrix */
+        struct matrix *weights = create_matrix(
+                fg->vector->size, tg->vector->size);
+        /* gradients matrix */
+        struct matrix *gradients = create_matrix(
+                fg->vector->size, tg->vector->size);
+        /* previous gradients matrix */
+        struct matrix *prev_gradients = create_matrix(
+                fg->vector->size, tg->vector->size);
+        /* previous weight deltas matrix */
+        struct matrix *prev_deltas = create_matrix(
+                fg->vector->size, tg->vector->size);
+        /* dynamic learning parameters matrix */
+        struct matrix *dynamic_params = create_matrix(
+                fg->vector->size, tg->vector->size);
+        /* add projections */
+        struct projection *op = create_projection(tg, weights,
+                gradients, prev_gradients, prev_deltas, dynamic_params);
+        struct projection *ip = create_projection(fg, weights,
+                gradients, prev_gradients, prev_deltas, dynamic_params);
+        add_projection(fg->out_projs, op);
+        add_projection(tg->inc_projs, ip);
+}
+
+void remove_projection(struct array *projs, struct projection *p)
+{
+        remove_from_array(projs, p);
+}
+
+void remove_bidirectional_projection(
+        struct group *fg,
+        struct projection *fg_to_tg,
+        struct group *tg,
+        struct projection *tg_to_fg)
+{
+        remove_projection(fg->out_projs, fg_to_tg);
+        remove_projection(tg->inc_projs, tg_to_fg);
+        free_projection(fg_to_tg);
+        free(tg_to_fg);
+}
+
+struct projection *find_projection(struct array *projs, struct group *g)
+{
+        struct projection *p = NULL;
+        for (uint32_t i = 0; i < projs->num_elements; i++) {
+                p = projs->elements[i];
+                if (p->to == g)
+                        break;
+        }
+        return p;
+}
+
+void add_elman_projection(struct group *fg, struct group *tg)
+{
+        add_to_array(fg->ctx_groups, tg);
+}
+
+void remove_elman_projection(struct group *fg, struct group *tg)
+{
+        remove_from_array(fg->ctx_groups, tg);
+}
+
+bool find_elman_projection(struct group *fg, struct group *tg)
+{
+        for (uint32_t i = 0; i < fg->ctx_groups->num_elements; i++)
+                if (fg->ctx_groups->elements[i] == tg)
+                        return true;
+        return false;
+}
+
+void print_projections(struct network *n)
+{
+        if (n->groups->num_elements == 0) {
+                cprintf("(no groups)\n");
+                return;
+        }
+        /*
+         * List incoming, recurrent, and outgoing projections for each
+         * group.
+         */
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
+                struct group *g = n->groups->elements[i];
+
+                /* incoming projections */
+                cprintf("* %d: ", i + 1);
+                for (uint32_t j = 0; j < g->inc_projs->num_elements; j++) {
+                        struct projection *p = g->inc_projs->elements[j];
+                        struct group *fg = p->to;
+                        if (j > 0 && j < g->inc_projs->num_elements)
+                                cprintf(", ");
+                        cprintf("%s (%dx%d)", fg->name,
+                                p->weights->rows, p->weights->cols);
+                }
+                
+                /* recurrent incoming projection */
+                if (g->recurrent) {
+                        if (g->inc_projs->num_elements > 0)
+                                cprintf(", ");
+                        cprintf("%s (%d x %d)", g->name,
+                                g->vector->size, g->vector->size);
+                }
+
+                /* current group */
+                if (g->recurrent || g->inc_projs->num_elements > 0)
+                        cprintf(" -> ", g->name);
+                cprintf("[%s]", g->name);
+                if (g->recurrent || g->out_projs->num_elements > 0)
+                        cprintf(" -> ", g->name);
+
+                /* outgoing projections */
+                for (uint32_t j = 0; j < g->out_projs->num_elements; j++) {
+                        struct projection *p = g->out_projs->elements[j];
+                        struct group *tg = p->to;
+                        if (j > 0 && j < g->out_projs->num_elements)
+                                cprintf(", ");
+                        cprintf("%s (%dx%d)", tg->name,
+                                p->weights->rows, p->weights->cols);
+                }
+
+                /* recurrent outgoing projection */
+                if (g->recurrent) {
+                        if (g->out_projs->num_elements > 0)
+                                cprintf(", ");
+                        cprintf("%s", g->name);
+                }
+
+                cprintf("\n");
+
+                /* context (Elman) groups */
+                if (g->ctx_groups->num_elements > 0) {
+                        cprintf("* %d: [%s] => ", i + 1, g->name);
+                        for (uint32_t j = 0;
+                                j < g->ctx_groups->num_elements;
+                                j++) {
+                                struct group *cg = g->ctx_groups->elements[j];
+                                if (j > 0 && j < g->out_projs->num_elements)
+                                        cprintf(", ");
+                                cprintf("%s (copy)", cg->name);
+                        }
+                        cprintf("\n");
+                }
+        }     
+}
+
+
+void freeze_projection(struct projection *fg_to_tg,
+        struct projection *tg_to_fg)
+{
+        fg_to_tg->frozen = true;
+        tg_to_fg->frozen = true;
+}
+
+void unfreeze_projection(struct projection *fg_to_tg,
+        struct projection *tg_to_fg)
+{
+        fg_to_tg->frozen = false;
+        tg_to_fg->frozen = false;
+}
+
 void free_sets(struct array *sets)
 {
         for (uint32_t i = 0; i < sets->num_elements; i++)
                 free_set(sets->elements[i]);
+}
+
+void add_set(struct network *n, struct set *set)
+{
+        add_to_array(n->sets, set);
+        n->asp = set;
+}
+
+void remove_set(struct network *n, struct set *set)
+{
+        /*
+         * If the set to be removed is the active set, try finding another
+         * active set.
+         */
+        if (set == n->asp) {
+                n->asp = NULL;
+                for (uint32_t i = 0; i < n->sets->num_elements; i++)
+                        if (n->sets->elements[i] != NULL
+                                && n->sets->elements[i] != set)
+                                n->asp = n->sets->elements[i];
+        }
+
+        /* remove set */
+        remove_from_array(n->sets, set);
+        free_set(set);
+}
+
+void print_sets(struct network *n)
+{
+        if (n->sets->num_elements == 0) {
+                cprintf("(no sets)\n");
+                return;
+        }
+
+        for (uint32_t i = 0; i < n->sets->num_elements; i++) {
+                struct set *set = n->sets->elements[i];
+                cprintf("* %d: %s (%d)", i + 1, set->name, set->items->num_elements);
+                if (set == n->asp)
+                        cprintf(" :: active set\n");
+                else
+                        cprintf("\n");
+        }     
 }
 
 void randomize_weight_matrices(struct group *g, struct network *n)

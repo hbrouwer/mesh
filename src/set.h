@@ -48,6 +48,7 @@ void free_set(struct set *s);
 struct item *create_item(char *name, char *meta, uint32_t num_events,
         struct vector **inputs, struct vector **targets);
 void free_item(struct item *item);
+void print_items(struct set *set);
 void print_item(struct item *item, bool pprint, enum color_scheme scheme);
 
 struct set *load_legacy_set(char *name, char *filename, uint32_t input_size,

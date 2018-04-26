@@ -98,11 +98,12 @@ void collect_mean_dependent_ws(struct weight_stats *ws, struct group *g)
         }
 }
 
-void print_weight_statistics(struct network *n, struct weight_stats *ws)
+void print_weight_statistics(struct network *n)
 {
+        struct weight_stats *ws = create_weight_statistics(n);
         cprintf("\n");
-        cprintf("Weight statistics for network '%s'\n\n", n->name);
-
+        cprintf("Weight statistics for network '%s'\n", n->name);
+        cprintf("\n");
         cprintf("Number of weights: \t %d\n", ws->num_weights);
         cprintf("Cost: \t\t\t %f\n", ws->cost);
         cprintf("Mean: \t\t\t %f\n", ws->mean);
@@ -111,6 +112,6 @@ void print_weight_statistics(struct network *n, struct weight_stats *ws)
         cprintf("Variance: \t\t %f\n", ws->variance);
         cprintf("Minimum: \t\t %f\n", ws->minimum);
         cprintf("Maximum: \t\t %f\n", ws->maximum);
-        
         cprintf("\n");
+        free_weight_statistics(ws);
 }

@@ -145,9 +145,11 @@ out:
         return cm;
 }
 
-void print_cm_summary(struct matrix *cm, bool print_cm, bool pprint,
+void print_cm_summary(struct network *n, bool print_cm, bool pprint,
         enum color_scheme scheme)
 {       
+        struct matrix *cm = confusion_matrix(n);
+
         if (print_cm) {
                 cprintf("\nConfusion matrix (actual x predicted):\n\n");
                 pprint ? pprint_matrix(cm, scheme) : print_matrix(cm);
@@ -222,6 +224,8 @@ void print_cm_summary(struct matrix *cm, bool print_cm, bool pprint,
         
         free_vector(rows);
         free_vector(cols);
+
+        free_matrix(cm);
 }
 
 void cm_signal_handler(int32_t signal)

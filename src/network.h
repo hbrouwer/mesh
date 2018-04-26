@@ -190,12 +190,16 @@ void set_network_defaults(struct network *n);
 void init_network(struct network *n);
 void reset_network(struct network *n);
 void free_network(struct network *n);
+void inspect_network(struct network *n);
 
 struct group *create_group(char *name, uint32_t size, bool bias,
         bool recurrent);
 struct group *attach_bias_group(struct network *n, struct group *g);
 void free_group(struct group *g);
 void free_groups(struct array *gs);
+void add_group(struct network *n, struct group *g);
+void remove_group(struct network *n, struct group *g);
+void print_groups(struct network *n);
 
 void shift_context_groups(struct network *n);
 void shift_context_group_chain(struct group *g, struct vector *v);
@@ -216,8 +220,28 @@ struct projection *create_projection(
         struct matrix *prev_deltas,
         struct matrix *dynamic_params);
 void free_projection(struct projection *p);
+void add_projection(struct array *projs, struct projection *p);
+void add_bidirectional_projection(struct group *fg, struct group *tg);
+void remove_projection(struct array *projs, struct projection *p);
+void remove_bidirectional_projection(
+        struct group *fg,
+        struct projection *fg_to_tg,
+        struct group *tg,
+        struct projection *tg_to_fg);
+struct projection *find_projection(struct array *projs, struct group *g);
+void add_elman_projection(struct group *fg, struct group *tg);
+void remove_elman_projection(struct group *fg, struct group *tg);
+bool find_elman_projection(struct group *fg, struct group *tg);
+void print_projections(struct network *n);
+void freeze_projection(struct projection *fg_to_tg,
+        struct projection *tg_to_fg);
+void unfreeze_projection(struct projection *fg_to_tg,
+        struct projection *tg_to_fg);
 
 void free_sets(struct array *sets);
+void add_set(struct network *n, struct set *set);
+void remove_set(struct network *n, struct set *set);
+void print_sets(struct network *n);
 
 void randomize_weight_matrices(struct group *g, struct network *n);
 void initialize_dynamic_params(struct group *g, struct network *n);

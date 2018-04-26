@@ -34,4 +34,8 @@ struct session
 struct session *create_session();
 void free_session(struct session *s);
 
+void add_network(struct session *s, struct network *n);
+void remove_network(struct session *s, struct network *n);
+void print_networks(struct session *s);
+
 #endif /* SESSION_H */

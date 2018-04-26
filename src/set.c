@@ -86,6 +86,15 @@ void free_item(struct item *item)
         free(item);
 }
 
+void print_items(struct set *set)
+{
+        for (uint32_t i = 0; i < set->items->num_elements; i++) {
+                struct item *item = set->items->elements[i];
+                cprintf("* %d: \"%s\" \"%s\" (%d events)\n", i + 1,
+                        item->name, item->meta, item->num_events);
+        }   
+}
+
 void print_item(struct item *item, bool pprint, enum color_scheme scheme)
 {
         cprintf("\n");

@@ -155,9 +155,11 @@ out:
         return sm;
 }
 
-void print_sm_summary(struct network *n, struct matrix *sm, bool print_sm,
-        bool pprint, enum color_scheme scheme)
+void print_sm_summary(struct network *n, bool print_sm, bool pprint,
+        enum color_scheme scheme)
 {
+        struct matrix *sm = similarity_matrix(n);
+        
         if (print_sm) {
                 cprintf("\nOutput-target similarity matrix:\n\n");
                 pprint ? pprint_matrix(sm, scheme) : print_matrix(sm);
@@ -196,6 +198,8 @@ void print_sm_summary(struct network *n, struct matrix *sm, bool print_sm,
         cprintf("# Items reached threshold: \t %d (%.2lf%%)\n",
                         tr, ((double)tr / n->asp->items->num_elements) * 100.0);
         cprintf("\n");
+        
+        free_matrix(sm);
 }
 
 void sm_signal_handler(int32_t signal)

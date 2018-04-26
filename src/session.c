@@ -19,6 +19,7 @@
 #include <string.h>
 
 #include "defaults.h"
+#include "main.h"
 #include "network.h"
 #include "session.h"
 
@@ -46,4 +47,39 @@ void free_session(struct session *s)
                 free_network(s->networks->elements[i]);
         free_array(s->networks);
         free(s);
+}
+
+void add_network(struct session *s, struct network *n)
+{
+        add_to_array(s->networks, n);
+        s->anp = n;
+}
+
+void remove_network(struct session *s, struct network *n)
+{
+        /*
+         * If the network to be removed is the active network, try finding
+         * another active network.
+         */
+        if (n == s->anp) {
+                s->anp = NULL;
+                for (uint32_t i = 0; i < s->networks->num_elements; i++) {
+                        struct network *anp = s->networks->elements[i];
+                        if (anp != NULL && anp != n)
+                                s->anp = anp;
+                }
+        }
+        /* remove network */
+        remove_from_array(s->networks, n);
+        free_network(n);
+}
+
+void print_networks(struct session *s)
+{
+        for (uint32_t i = 0; i < s->networks->num_elements; i++) {
+                struct network *n = s->networks->elements[i];
+                cprintf("* %d: %s", i + 1, n->name);
+                n == s->anp ? cprintf(" :: active network\n")
+                            : cprintf("\n");
+        }       
 }
