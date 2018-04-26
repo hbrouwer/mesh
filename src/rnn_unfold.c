@@ -286,7 +286,7 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
 {
         /* duplicate groups */
         struct group *dg = rnn_duplicate_group(g);
-        add_to_array(dn->groups, dg);
+        add_group(dn->groups, dg);
 
         /* set input and output groups */
         if (n->input == g)  dn->input  = dg;
@@ -304,7 +304,7 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
 
                 /* duplicate bias group */
                 struct group *dbg = rnn_duplicate_group(bg);
-                add_to_array(dn->groups, dbg);
+                add_group(dn->groups, dbg);
 
                 /*
                  * Duplicate the projection between the bias group and its
@@ -437,7 +437,7 @@ struct array *rnn_recurrent_groups(struct network *n)
 void rnn_collect_recurrent_groups(struct group *g, struct array *gs)
 {
         if (g->recurrent)
-                add_to_array(gs, g);
+                add_group(gs, g);
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++)
                 rnn_collect_recurrent_groups(((struct projection *)
                         g->out_projs->elements[i])->to, gs);
@@ -474,14 +474,14 @@ void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
                                 prev_gradients, un->rcr_prev_deltas[i],
                                 un->rcr_dynamic_params[i]);
                 op->recurrent = true;
-                add_to_array(fg->out_projs, op);
+                add_projection(fg->out_projs, op);
                 /* add outgoing projection to 'to' group */
                 struct projection *ip =
                         create_projection(fg, un->rcr_weights[i], gradients,
                                 prev_gradients, un->rcr_prev_deltas[i],
                                 un->rcr_dynamic_params[i]);
                 ip->recurrent = true;
-                add_to_array(tg->inc_projs, ip);
+                add_projection(tg->inc_projs, ip);
         }
 }
 
@@ -544,14 +544,14 @@ void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,
                                 prev_gradients, un->rcr_prev_deltas[i],
                                 un->rcr_dynamic_params[i]);
                 op->recurrent = true;
-                add_to_array(fg->out_projs, op);
+                add_projection(fg->out_projs, op);
                 /* add outgoing projection to 'to' group */
                 struct projection *ip =
                         create_projection(fg, un->rcr_weights[i], gradients,
                                 prev_gradients, un->rcr_prev_deltas[i],
                                 un->rcr_dynamic_params[i]);
                 ip->recurrent = true;
-                add_to_array(tg->inc_projs, ip);
+                add_projection(tg->inc_projs, ip);
         }
 }
 

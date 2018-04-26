@@ -324,7 +324,7 @@ bool cmd_create_group(char *cmd, char *fmt, struct session *s)
                 return true;
         }
         struct group *g = create_group(arg1, arg2, false, false);
-        add_group(s->anp, g);
+        add_group(s->anp->groups, g);
         mprintf("Created group \t\t [ %s :: %d ]\n", arg1, arg2);
         return true;
 }

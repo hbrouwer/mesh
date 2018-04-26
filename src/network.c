@@ -419,7 +419,7 @@ struct group *attach_bias_group(struct network *n, struct group *g)
         bg->err_fun->deriv = g->err_fun->deriv;
 
         /* add bias group to the network */
-        add_to_array(n->groups, bg);
+        add_group(n->groups, bg);
 
         struct matrix *weights = create_matrix(
                 bg->vector->size, g->vector->size);
@@ -436,11 +436,11 @@ struct group *attach_bias_group(struct network *n, struct group *g)
         struct projection *op = create_projection(g, weights,
                 gradients, prev_gradients, prev_deltas, dynamic_params);
         op->recurrent = false;
-        add_to_array(bg->out_projs, op);
+        add_projection(bg->out_projs, op);
         struct projection *ip = create_projection(bg, weights,
                 gradients, prev_gradients, prev_deltas, dynamic_params);
         ip->recurrent = false;
-        add_to_array(g->inc_projs, ip);
+        add_projection(g->inc_projs, ip);
 
         return bg;
 
@@ -472,9 +472,9 @@ void free_groups(struct array *gs)
                 free_group(gs->elements[i]);
 }
 
-void add_group(struct network *n, struct group *g)
+void add_group(struct array *groups, struct group *g)
 {
-        add_to_array(n->groups, g);
+        add_to_array(groups, g);
 }
 
 void remove_group(struct network *n, struct group *g)
@@ -486,7 +486,7 @@ void remove_group(struct network *n, struct group *g)
                 for (uint32_t j = 0; j < fg->out_projs->num_elements; j++) {
                         struct projection *op = fg->out_projs->elements[j];
                         if (op->to == g) {
-                                remove_from_array(fg->out_projs, op);
+                                remove_projection(fg->out_projs, op);
                                 break;
                         }
                 }
@@ -499,7 +499,7 @@ void remove_group(struct network *n, struct group *g)
                 for (uint32_t j = 0; j < tg->inc_projs->num_elements; j++) {
                         struct projection *ip = tg->inc_projs->elements[j];
                         if (ip->to == g) {
-                                remove_from_array(tg->inc_projs, ip);
+                                remove_projection(tg->inc_projs, ip);
                                 break;
                         }
                 }
@@ -510,7 +510,7 @@ void remove_group(struct network *n, struct group *g)
                 struct group *fg = n->groups->elements[i];
                 for (uint32_t j = 0; j < fg->ctx_groups->num_elements; j++) {
                         if (fg->ctx_groups->elements[j] == g) {
-                                remove_from_array(fg->ctx_groups, g);
+                                remove_elman_projection(fg, g);
                                 break;
                         }
                 }
