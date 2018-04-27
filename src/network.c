@@ -797,13 +797,12 @@ void remove_bidirectional_projection(
 
 struct projection *find_projection(struct array *projs, struct group *g)
 {
-        struct projection *p = NULL;
         for (uint32_t i = 0; i < projs->num_elements; i++) {
-                p = projs->elements[i];
+                struct projection *p = projs->elements[i];
                 if (p->to == g)
-                        break;
+                        return p;
         }
-        return p;
+        return NULL;
 }
 
 void add_elman_projection(struct group *fg, struct group *tg)

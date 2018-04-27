@@ -537,8 +537,11 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
                 return true;
         }
         /* projection should not already exist */
-        if ((fg == tg && fg->recurrent) || find_projection(fg->out_projs, tg))
+        if ((fg == tg && fg->recurrent) || find_projection(fg->out_projs, tg)) {
+        
                 eprintf("Cannot create projection - projection '%s -> %s' already exists\n", arg1, arg2);
+                return true;
+        }
         add_bidirectional_projection(fg, tg);
         mprintf("Created projection \t\t [ %s -> %s ]\n", arg1, arg2);
         return true;
@@ -606,8 +609,7 @@ bool cmd_create_elman_projection(char *cmd, char *fmt, struct session *s)
         }
         /* Elman projection should not already exist */
         if (find_elman_projection(fg, tg)) {
-                eprintf("Cannot set Elman-projection - Elman-projection '%s -> %s' already exists\n",
-                                arg1, arg2);
+                eprintf("Cannot set Elman-projection - Elman-projection '%s -> %s' already exists\n", arg1, arg2);
                 return true;
         }
         /* add Elman projection */
