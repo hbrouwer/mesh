@@ -269,7 +269,7 @@ error_file:
         return NULL;
 error_format:
         eprintf("Cannot load set - file has incorrect format\n");
-        return NULL;        
+        return NULL; 
 error_input_vector:
         eprintf("Cannot load set - input vector of incorrect size\n");
         return NULL;
