@@ -362,7 +362,7 @@ struct set *load_set(char *name, char *filename, uint32_t input_size,
                 if (strcmp(buf, "BeginItem") == 0) {
                         struct item *item = load_item(fd, input_dims, output_dims);
                         if (item == NULL)
-                                goto error_format;
+                                return NULL; /* error handled in load_item() */
                         add_to_array(s->items, item);
                 }
         }

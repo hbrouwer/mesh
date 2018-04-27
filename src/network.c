@@ -999,26 +999,29 @@ void initialize_dynamic_params(struct group *g, struct network *n)
 Save and load weights. The format for weights files is:
 
         Projection from_group to_group
+        [Dimensions F T]
         # # # # # # # # #
         # # # # # # # # #
         # # # # # # # # #
         [...]
 
         Projection from_group to_group
+        [Dimensions F T]
         # # # #
         # # # #
         [...]
 
 where each line of '#'s denotes the weights of one unit of the 'from_group'
 to each of the units of the 'to_group', and where each '#' is a floating
-point weight.
+point weight. The Dimensions F G statement is an optional specification of
+the size of the 'from_group' and the 'to_group', respectively.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 bool save_weight_matrices(struct network *n, char *filename)
 {
         FILE *fd;
         if (!(fd = fopen(filename, "w")))
-                goto error_out;
+                goto error_file;
 
         switch (n->type) {
         case ntype_ffn: /* fall through */
@@ -1034,8 +1037,8 @@ bool save_weight_matrices(struct network *n, char *filename)
 
         return true;
 
-error_out:
-        perror("[save_weight_matrices()]");
+error_file:
+        eprintf("Cannot save weights - unable to write file '%s'\n", filename);
         return false;
 }
 
@@ -1044,12 +1047,12 @@ void save_weight_matrix(struct group *g, FILE *fd)
         /* incoming projections */
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
-                fprintf(fd, "Projection %s %s\n",
-                        ip->to->name, g->name);     
+                fprintf(fd, "Projection %s %s\n", ip->to->name, g->name);
+                fprintf(fd, "Dimensions %d %d\n",
+                        ip->to->vector->size, g->vector->size);  
                 for (uint32_t r = 0; r < ip->weights->rows; r++) {
                         for (uint32_t c = 0; c < ip->weights->cols; c++) {
-                                fprintf(fd, "%f",
-                                        ip->weights->elements[r][c]);
+                                fprintf(fd, "%f", ip->weights->elements[r][c]);
                                 if (c < ip->weights->cols - 1)
                                         fprintf(fd, " ");
                         }
@@ -1074,7 +1077,7 @@ bool load_weight_matrices(struct network *n, char *filename)
 {
         FILE *fd;
         if (!(fd = fopen(filename, "r")))
-                goto error_out;
+                goto error_file;
 
         struct network *np = NULL;
         switch (n->type) {
@@ -1086,7 +1089,6 @@ bool load_weight_matrices(struct network *n, char *filename)
                 np = n->unfolded_net->stack[0];
                 break;
         }
-
         char buf[MAX_BUF_SIZE];
         while (fgets(buf, sizeof(buf), fd)) {
                 buf[strlen(buf) - 1] = '\0';
@@ -1099,67 +1101,93 @@ bool load_weight_matrices(struct network *n, char *filename)
                 case '\0':      /* blank line */
                         continue;
                 }
+                /* 
+                 * Read projection specification, which we are expecting at
+                 * this point. If it is not there, we ran into a
+                 * dimensionality mismatch problem.
+                 */
                 char arg1[MAX_ARG_SIZE]; /* 'from' group name */
                 char arg2[MAX_ARG_SIZE]; /* 'to' group name */
-
                 if (sscanf(buf, "Projection %s %s", arg1, arg2) != 2)
                         /*
                          * XXX: Legacy format ...
                          */
                         if (sscanf(buf, "%s -> %s", arg1, arg2) != 2)
-                                continue;
-
+                                goto error_dimensionality;
                 /* find 'from' group */
                 struct group *fg;
                 if ((fg = find_array_element_by_name(np->groups, arg1)) == NULL) {
                         eprintf("Cannot load weights - no such group '%s'\n", arg1);
-                        continue;
+                        return false;
                 }
-
                 /* find 'to' group */
                 struct group *tg;
                 if ((tg = find_array_element_by_name(np->groups, arg2)) == NULL) {
                         eprintf("Cannot load weights - no such group '%s'\n", arg2);
-                        continue;
+                        return false;
                 }
-
-                /* find outgoing 'from->to' projection */
-                struct projection *fg_to_tg = NULL;
-                for (uint32_t i = 0; i < fg->out_projs->num_elements; i++) {
-                        if (((struct projection *)fg->out_projs->elements[i])->to == tg) {
-                                fg_to_tg = (struct projection *)fg->out_projs->elements[i];
-                                break;
-                        }
-                }
-
                 /* projection should exist */
+                struct projection *fg_to_tg = find_projection(fg->out_projs, tg);
                 if (!fg_to_tg) {
-                        eprintf("Cannot load weights - no projection between groups '%s' and '%s'\n",
-                                arg1, arg2);
-                        return true;
+                        eprintf("Cannot load weights - no projection between groups '%s' and '%s'\n", arg1, arg2);
+                        return false;
                 }
-
+                /*
+                 * Read the next line, which may be an optional dimensions
+                 * specification, or the first row of weights.
+                */
+                if (!fgets(buf, sizeof(buf), fd))
+                        goto error_format;
+                uint32_t arg3; /* 'from' group size */
+                uint32_t arg4; /* 'to' group size */
+                /* 
+                 * Check for dimension specification, and in case it is
+                 * present, verify the dimensionality.
+                 */
+                if (sscanf(buf, "Dimensions %d %d", &arg3, &arg4) == 2) {
+                        /* check dimensionality */
+                        if (fg->vector->size != arg3 || tg->vector->size != arg4)
+                                goto error_dimensionality;
+                        /* read first row of weights */
+                        if (!fgets(buf, sizeof(buf), fd))
+                                goto error_format;
+                }
                 /* read the matrix values */
                 for (uint32_t r = 0; r < fg_to_tg->weights->rows; r++) {
+                        /* error: expected another row */
+                        /*
                         if (!fgets(buf, sizeof(buf), fd))
-                                goto error_out;
+                                goto error_dimensionality;
+                                */
                         char *tokens = strtok(buf, " ");
                         for (uint32_t c = 0; c < fg_to_tg->weights->cols; c++) {
-                                if (!sscanf(tokens, "%lf", &fg_to_tg->weights->elements[r][c]))
-                                        goto error_out;
+                                /* error: expected another column */
+                                if (!tokens)
+                                        goto error_dimensionality;
+                                /* error: non-numeric weight */
+                                if (sscanf(tokens, "%lf", &fg_to_tg->weights->elements[r][c]) != 1)
+                                        goto error_dimensionality;
                                 tokens = strtok(NULL, " ");
+                                /* error: expected no more columns */
+                                if (c == fg_to_tg->weights->cols - 1 && tokens)
+                                        goto error_dimensionality;
                         }
+                        /* error: expected another row */
+                        if (r < fg_to_tg->weights->rows - 1 && !fgets(buf, sizeof(buf), fd))
+                                goto error_dimensionality;
                 }
-
-                mprintf("... read weights for projection '%s -> %s'\n",
-                        arg1, arg2);
+                mprintf("... read weights for projection '%s -> %s'\n", arg1, arg2);
         }
-
         fclose(fd);
-
         return true;
 
-error_out:
-        perror("[load_weight_matrices()]");
+error_file:
+        eprintf("Cannot load weights - no such file '%s'\n", filename);
+        return false;
+error_format:
+        eprintf("Cannot load weights - file has incorrect format\n");
+        return false;
+error_dimensionality:
+        eprintf("Cannot load weights - dimensionality mismatch\n");
         return false;
 }

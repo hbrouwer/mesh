@@ -1286,8 +1286,6 @@ bool cmd_load_weights(char *cmd, char *fmt, struct session *s)
                 return false;
         if (load_weight_matrices(s->anp, arg))
                 mprintf("Loaded weights \t\t [ %s ]\n", arg);
-        else
-                eprintf("Cannot load weights from file '%s'\n", arg);
         return true;
 }
 
