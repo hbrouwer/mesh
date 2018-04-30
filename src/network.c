@@ -1113,7 +1113,8 @@ bool load_weight_matrices(struct network *n, char *filename)
                          * XXX: Legacy format ...
                          */
                         if (sscanf(buf, "%s -> %s", arg1, arg2) != 2)
-                                goto error_dimensionality;
+                                /* error: expected no more rows */
+                                goto error_projecting_group;
                 /* find 'from' group */
                 struct group *fg;
                 if ((fg = find_array_element_by_name(np->groups, arg1)) == NULL) {
@@ -1145,9 +1146,12 @@ bool load_weight_matrices(struct network *n, char *filename)
                  * present, verify the dimensionality.
                  */
                 if (sscanf(buf, "Dimensions %d %d", &arg3, &arg4) == 2) {
-                        /* check dimensionality */
-                        if (fg->vector->size != arg3 || tg->vector->size != arg4)
-                                goto error_dimensionality;
+                        /* error: projecting group of incorrect size */
+                        if (fg->vector->size != arg3) 
+                                goto error_projecting_group;
+                        /* error: receiving group of incorrect size */
+                        if (tg->vector->size != arg4)
+                                goto error_receiving_group;
                         /* read first row of weights */
                         if (!fgets(buf, sizeof(buf), fd))
                                 goto error_format;
@@ -1163,18 +1167,18 @@ bool load_weight_matrices(struct network *n, char *filename)
                         for (uint32_t c = 0; c < fg_to_tg->weights->cols; c++) {
                                 /* error: expected another column */
                                 if (!tokens)
-                                        goto error_dimensionality;
-                                /* error: non-numeric weight */
+                                        goto error_receiving_group;
+                                /* error: non-numeric input */
                                 if (sscanf(tokens, "%lf", &fg_to_tg->weights->elements[r][c]) != 1)
-                                        goto error_dimensionality;
+                                        goto error_projecting_group;
                                 tokens = strtok(NULL, " ");
                                 /* error: expected no more columns */
                                 if (c == fg_to_tg->weights->cols - 1 && tokens)
-                                        goto error_dimensionality;
+                                        goto error_receiving_group;
                         }
                         /* error: expected another row */
                         if (r < fg_to_tg->weights->rows - 1 && !fgets(buf, sizeof(buf), fd))
-                                goto error_dimensionality;
+                                goto error_projecting_group;
                 }
                 mprintf("... read weights for projection '%s -> %s'\n", arg1, arg2);
         }
@@ -1187,7 +1191,10 @@ error_file:
 error_format:
         eprintf("Cannot load weights - file has incorrect format\n");
         return false;
-error_dimensionality:
-        eprintf("Cannot load weights - dimensionality mismatch\n");
+error_projecting_group:
+        eprintf("Cannot load weights - projecting group of incorrect size\n");
+        return false;
+error_receiving_group:
+        eprintf("Cannot load weights - receiving group of incorrect size\n");
         return false;
 }

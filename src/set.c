@@ -470,7 +470,7 @@ struct item *load_item(FILE *fd, uint32_t input_dims, uint32_t output_dims)
                         /* error: vector too short */
                         if (!(tokens = strtok(NULL, " ")))
                                 goto error_target_vector;
-                        /* error: non-numeric unit */
+                        /* error: non-numeric input */
                         if (sscanf(tokens, "%lf", &target->elements[i]) != 1)
                                 goto error_target_vector;
                         /* error: vector too long */
