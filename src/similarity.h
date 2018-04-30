@@ -27,6 +27,9 @@ struct matrix *similarity_matrix(struct network *n);
 struct matrix *ffn_network_sm(struct network *n);
 struct matrix *rnn_network_sm(struct network *n);
 
+void similarity_scores(struct network *n, struct group *output,
+        uint32_t item_num, struct matrix *sm);
+
 void print_sm_summary(struct network *n, bool print_sm, bool pprint,
         enum color_scheme scheme);
 

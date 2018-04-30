@@ -63,7 +63,8 @@ void test_ffn_network(struct network *n, bool verbose)
         /* test network on all items in the current set */
         if (verbose) cprintf("\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                if (!keep_running) return;
+                if (!keep_running)
+                        return;
                 struct item *item = n->asp->items->elements[i];
 
                 if (n->type == ntype_srn)
@@ -110,7 +111,8 @@ void test_rnn_network(struct network *n, bool verbose)
         /* test network on all items in the current set */
         if (verbose) cprintf("\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                if (!keep_running) return;
+                if (!keep_running)
+                        return;
                 struct item *item = n->asp->items->elements[i];
 
                 reset_recurrent_groups(un->stack[un->sp]);

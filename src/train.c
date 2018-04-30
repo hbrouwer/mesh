@@ -64,7 +64,8 @@ void train_network_with_bp(struct network *n)
 
                 /* train network on one batch */
                 for (uint32_t i = 0; i < n->batch_size; i++) {
-                        if (!keep_running) return;
+                        if (!keep_running)
+                                return;
                 
                         /* select next item */
                         uint32_t item_idx = n->asp->order[item_itr++];
@@ -103,7 +104,8 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
                 feed_forward(n, n->input);
 
                 /* skip backpropagation, if there is no target */
-                if (!item->targets[i]) continue;
+                if (!item->targets[i])
+                        continue;
 
                 struct group *g   = n->output;
                 struct vector *tv = item->targets[i];
@@ -129,11 +131,9 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
                  */
                 if (n->ms_input) {
                         struct item *ms_item = find_array_element_by_name(
-                                        n->ms_set->items,
-                                        item->name);
+                                        n->ms_set->items, item->name);
                         if (ms_item) {
-                                copy_vector(
-                                        n->ms_input->vector,
+                                copy_vector(n->ms_input->vector,
                                         ms_item->inputs[i]);
                                 feed_forward(n, n->ms_input);       
                         } else {
@@ -154,7 +154,8 @@ void train_network_with_bptt(struct network *n)
 {
         uint32_t item_itr = 0;
         for (uint32_t epoch = 1; epoch <= n->max_epochs; epoch++) {
-                if (!keep_running) return;
+                if (!keep_running)
+                        return;
 
                 n->status->epoch      = epoch;
                 n->status->prev_error = n->status->error;
@@ -206,7 +207,8 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
                         un->stack[un->sp]->input);
 
                 /* skip backpropagation, if there is no target */             
-                if (!item->targets[i]) goto next_tick;
+                if (!item->targets[i])
+                        goto next_tick;
 
                 struct group *g   = un->stack[un->sp]->output;
                 struct vector *tv = item->targets[i];

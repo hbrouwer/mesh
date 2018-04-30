@@ -73,7 +73,8 @@ struct matrix *ffn_network_cm(struct network *n)
         struct matrix *cm = create_matrix(d, d);
 
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                if (!keep_running) goto out;
+                if (!keep_running)
+                        goto out;
                 struct item *item = n->asp->items->elements[i];
 
                 if (n->type == ntype_srn)
@@ -81,9 +82,7 @@ struct matrix *ffn_network_cm(struct network *n)
                 for (uint32_t j = 0; j < item->num_events; j++) {
                         if (j > 0 && n->type == ntype_srn)
                                 shift_context_groups(n);
-                        copy_vector(
-                                n->input->vector,
-                                item->inputs[j]);
+                        copy_vector(n->input->vector, item->inputs[j]);
                         feed_forward(n, n->input);
                         
                         /* only classify last event */
@@ -91,12 +90,7 @@ struct matrix *ffn_network_cm(struct network *n)
                                 continue;
                         struct vector *ov = n->output->vector;
                         struct vector *tv = item->targets[j];
-                        uint32_t t = 0, o = 0;
-                        for (uint32_t x = 0; x < ov->size; x++) {
-                                if (tv->elements[x] > tv->elements[t]) t = x;
-                                if (ov->elements[x] > ov->elements[o]) o = x;
-                        }
-                        cm->elements[t][o]++;
+                        classify(ov, tv, cm);
                 }
         }
 
@@ -112,7 +106,8 @@ struct matrix *rnn_network_cm(struct network *n)
         struct matrix *cm = create_matrix(d, d);
 
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                if (!keep_running) goto out;
+                if (!keep_running)
+                        goto out;
                 struct item *item = n->asp->items->elements[i];
 
                 reset_recurrent_groups(un->stack[un->sp]);
@@ -129,12 +124,7 @@ struct matrix *rnn_network_cm(struct network *n)
                                 goto next_tick;
                         struct vector *ov = un->stack[un->sp]->output->vector;
                         struct vector *tv = item->targets[j];
-                        uint32_t t = 0, o = 0;
-                        for (uint32_t x = 0; x < ov->size; x++) {
-                                if (tv->elements[x] > tv->elements[t]) t = x;
-                                if (ov->elements[x] > ov->elements[o]) o = x;
-                        }
-                        cm->elements[t][o]++;
+                        classify(ov, tv, cm);
 
 next_tick:
                         shift_pointer_or_stack(n);
@@ -143,6 +133,16 @@ next_tick:
 
 out:
         return cm;
+}
+
+void classify(struct vector *ov, struct vector *tv, struct matrix *cm)
+{
+        uint32_t t = 0, o = 0;
+        for (uint32_t x = 0; x < ov->size; x++) {
+                if (tv->elements[x] > tv->elements[t]) t = x;
+                if (ov->elements[x] > ov->elements[o]) o = x;
+        }
+        cm->elements[t][o]++;
 }
 
 void print_cm_summary(struct network *n, bool print_cm, bool pprint,
@@ -155,11 +155,6 @@ void print_cm_summary(struct network *n, bool print_cm, bool pprint,
                 pprint ? pprint_matrix(cm, scheme) : print_matrix(cm);
         }
 
-        double num_correct   = 0.0;
-        double num_incorrect = 0.0;
-        double precision     = 0.0;
-        double recall        = 0.0;
-
         /* compute row and column totals */
         struct vector *rows = create_vector(cm->rows);
         struct vector *cols = create_vector(cm->cols);
@@ -170,6 +165,11 @@ void print_cm_summary(struct network *n, bool print_cm, bool pprint,
                 }
         }
 
+        double num_correct   = 0.0;
+        double num_incorrect = 0.0;
+        double precision     = 0.0;
+        double recall        = 0.0;
+
         /*
          * precision = #correct / column total
          *              
@@ -177,17 +177,20 @@ void print_cm_summary(struct network *n, bool print_cm, bool pprint,
          */
         for (uint32_t r = 0; r < cm->rows; r++) {
                 for (uint32_t c = 0; c < cm->cols; c++) {
-                        if (r == c) {   /* correctly classified */
-                                num_correct += cm->elements[r][c];
-                                if (cols->elements[c] > 0) 
-                                        precision += cm->elements[r][c]
-                                                / cols->elements[c];
-                                if (rows->elements[r] > 0)
-                                        recall += cm->elements[r][c]
-                                                / rows->elements[r];
-                        } else {        /* incorrectly classified */
+                        /* incorrectly classified */
+                        if (r != c) {
                                 num_incorrect += cm->elements[r][c];
+                                continue;
                         }
+
+                        /* correctly classified */
+                        num_correct += cm->elements[r][c];
+                        if (cols->elements[c] > 0) 
+                                precision += cm->elements[r][c]
+                                        / cols->elements[c];
+                        if (rows->elements[r] > 0)
+                                recall += cm->elements[r][c]
+                                        / rows->elements[r];
                 }
         }
         precision /= cols->size;
@@ -201,7 +204,7 @@ void print_cm_summary(struct network *n, bool print_cm, bool pprint,
         double fscore = 2.0 * ((precision * recall) / (precision + recall));
 
         /*     
-         *                    #correct
+         *                   #correct
          * accuracy = ---------------------
          *            #correct + #incorrect
          */
@@ -213,6 +216,7 @@ void print_cm_summary(struct network *n, bool print_cm, bool pprint,
          */
         double error_rate = num_incorrect / (num_correct + num_incorrect);
 
+        cprintf("\n");
         cprintf("\nClassification statistics:\n");
         cprintf("\n");
         cprintf("Accurracy: \t %f\n",   accuracy);
@@ -224,7 +228,6 @@ void print_cm_summary(struct network *n, bool print_cm, bool pprint,
         
         free_vector(rows);
         free_vector(cols);
-
         free_matrix(cm);
 }
 
