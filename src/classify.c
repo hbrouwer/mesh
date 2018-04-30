@@ -88,9 +88,7 @@ struct matrix *ffn_network_cm(struct network *n)
                         /* only classify last event */
                         if (!(item->targets[j] && j == item->num_events - 1))
                                 continue;
-                        struct vector *ov = n->output->vector;
-                        struct vector *tv = item->targets[j];
-                        classify(ov, tv, cm);
+                        classify(n->output->vector, item->targets[j], cm);
                 }
         }
 
@@ -122,9 +120,8 @@ struct matrix *rnn_network_cm(struct network *n)
                         /* only classify last event */
                         if (!(item->targets[j] && j == item->num_events - 1))
                                 goto next_tick;
-                        struct vector *ov = un->stack[un->sp]->output->vector;
-                        struct vector *tv = item->targets[j];
-                        classify(ov, tv, cm);
+                        classify(un->stack[un->sp]->output->vector,
+                                item->targets[j], cm);
 
 next_tick:
                         shift_pointer_or_stack(n);
@@ -182,7 +179,6 @@ void print_cm_summary(struct network *n, bool print_cm, bool pprint,
                                 num_incorrect += cm->elements[r][c];
                                 continue;
                         }
-
                         /* correctly classified */
                         num_correct += cm->elements[r][c];
                         if (cols->elements[c] > 0) 
@@ -217,7 +213,7 @@ void print_cm_summary(struct network *n, bool print_cm, bool pprint,
         double error_rate = num_incorrect / (num_correct + num_incorrect);
 
         cprintf("\n");
-        cprintf("\nClassification statistics:\n");
+        cprintf("Classification statistics:\n");
         cprintf("\n");
         cprintf("Accurracy: \t %f\n",   accuracy);
         cprintf("Error rate: \t %f\n",  error_rate);
