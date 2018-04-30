@@ -954,7 +954,6 @@ void initialize_dynamic_params(struct group *g, struct network *n)
                 v = n->rp_init_update;
         if (n->update_algorithm == bp_update_dbd)
                 v = n->learning_rate;
-
         /* incoming projections */
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
