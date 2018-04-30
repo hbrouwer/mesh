@@ -861,15 +861,13 @@ void print_projections(struct network *n)
                                 cprintf(", ");
                         cprintf("%s", g->name);
                 }
-
                 cprintf("\n");
 
                 /* context (Elman) groups */
                 if (g->ctx_groups->num_elements > 0) {
                         cprintf("* %d: [%s] => ", i + 1, g->name);
                         for (uint32_t j = 0;
-                                j < g->ctx_groups->num_elements;
-                                j++) {
+                                j < g->ctx_groups->num_elements; j++) {
                                 struct group *cg = g->ctx_groups->elements[j];
                                 if (j > 0 && j < g->out_projs->num_elements)
                                         cprintf(", ");
