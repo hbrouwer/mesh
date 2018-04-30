@@ -492,7 +492,6 @@ void remove_group(struct network *n, struct group *g)
                 struct projection *ip = find_projection(tg->inc_projs, g);
                 remove_projection(tg->inc_projs, ip);
         }
-
         /* remove Elman projections from a group g' to group g */
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *fg = n->groups->elements[i];
@@ -818,7 +817,6 @@ void print_projections(struct network *n)
          */
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
-
                 /* incoming projections */
                 cprintf("* %d: ", i + 1);
                 for (uint32_t j = 0; j < g->inc_projs->num_elements; j++) {
@@ -829,7 +827,6 @@ void print_projections(struct network *n)
                         cprintf("%s (%dx%d)", fg->name,
                                 p->weights->rows, p->weights->cols);
                 }
-                
                 /* recurrent incoming projection */
                 if (g->recurrent) {
                         if (g->inc_projs->num_elements > 0)
@@ -837,14 +834,12 @@ void print_projections(struct network *n)
                         cprintf("%s (%d x %d)", g->name,
                                 g->vector->size, g->vector->size);
                 }
-
                 /* current group */
                 if (g->recurrent || g->inc_projs->num_elements > 0)
                         cprintf(" -> ", g->name);
                 cprintf("[%s]", g->name);
                 if (g->recurrent || g->out_projs->num_elements > 0)
                         cprintf(" -> ", g->name);
-
                 /* outgoing projections */
                 for (uint32_t j = 0; j < g->out_projs->num_elements; j++) {
                         struct projection *p = g->out_projs->elements[j];
@@ -854,7 +849,6 @@ void print_projections(struct network *n)
                         cprintf("%s (%dx%d)", tg->name,
                                 p->weights->rows, p->weights->cols);
                 }
-
                 /* recurrent outgoing projection */
                 if (g->recurrent) {
                         if (g->out_projs->num_elements > 0)
@@ -862,7 +856,6 @@ void print_projections(struct network *n)
                         cprintf("%s", g->name);
                 }
                 cprintf("\n");
-
                 /* context (Elman) groups */
                 if (g->ctx_groups->num_elements > 0) {
                         cprintf("* %d: [%s] => ", i + 1, g->name);
