@@ -920,7 +920,6 @@ void remove_set(struct network *n, struct set *set)
                                 && n->sets->elements[i] != set)
                                 n->asp = n->sets->elements[i];
         }
-
         /* remove set */
         remove_from_array(n->sets, set);
         free_set(set);
