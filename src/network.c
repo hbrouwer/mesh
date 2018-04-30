@@ -151,7 +151,7 @@ void free_network(struct network *n)
 
 void inspect_network(struct network *n)
 {
-               /*****************
+                /*****************
                  **** general ****
                  *****************/
 
@@ -949,7 +949,6 @@ void print_sets(struct network *n)
                 cprintf("(no sets)\n");
                 return;
         }
-
         for (uint32_t i = 0; i < n->sets->num_elements; i++) {
                 struct set *set = n->sets->elements[i];
                 cprintf("* %d: %s (%d)", i + 1, set->name, set->items->num_elements);
