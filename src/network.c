@@ -417,29 +417,8 @@ struct group *attach_bias_group(struct network *n, struct group *g)
         bg->err_fun->fun   = g->err_fun->fun;
         bg->err_fun->deriv = g->err_fun->deriv;
 
-        /* add bias group to the network */
         add_group(n, bg);
-
-        struct matrix *weights = create_matrix(
-                bg->vector->size, g->vector->size);
-        struct matrix *gradients = create_matrix(
-                bg->vector->size, g->vector->size);
-        struct matrix *prev_gradients = create_matrix(
-                bg->vector->size, g->vector->size);
-        struct matrix *prev_deltas = create_matrix(
-                bg->vector->size, g->vector->size);
-        struct matrix *dynamic_params = create_matrix(
-                bg->vector->size, g->vector->size);
-
-        /* add incoming and outgoing projections */
-        struct projection *op = create_projection(g, weights,
-                gradients, prev_gradients, prev_deltas, dynamic_params);
-        op->recurrent = false;
-        add_projection(bg->out_projs, op);
-        struct projection *ip = create_projection(bg, weights,
-                gradients, prev_gradients, prev_deltas, dynamic_params);
-        ip->recurrent = false;
-        add_projection(g->inc_projs, ip);
+        add_bidirectional_projection(bg, g);
 
         return bg;
 
