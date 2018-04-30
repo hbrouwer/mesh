@@ -1074,8 +1074,8 @@ bool load_weight_matrices(struct network *n, char *filename)
                 }
                 /* 
                  * Read projection specification, which we are expecting at
-                 * this point. If it is not there, we ran into a
-                 * dimensionality mismatch problem.
+                 * this point. If it is not there, we ran into a file format
+                 * or a dimensionality mismatch problem.
                  */
                 char arg1[MAX_ARG_SIZE]; /* 'from' group name */
                 char arg2[MAX_ARG_SIZE]; /* 'to' group name */
