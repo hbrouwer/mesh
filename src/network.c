@@ -175,7 +175,6 @@ void inspect_network(struct network *n)
                 if (i > 0) cprintf(", ");
                 cprintf("%s (%d)", g->name, g->vector->size);
         }
-
         cprintf("\n");
         cprintf("| Input: \t\t\t ");
         n->input != NULL
