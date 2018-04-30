@@ -1158,11 +1158,6 @@ bool load_weight_matrices(struct network *n, char *filename)
                 }
                 /* read the matrix values */
                 for (uint32_t r = 0; r < fg_to_tg->weights->rows; r++) {
-                        /* error: expected another row */
-                        /*
-                        if (!fgets(buf, sizeof(buf), fd))
-                                goto error_dimensionality;
-                                */
                         char *tokens = strtok(buf, " ");
                         for (uint32_t c = 0; c < fg_to_tg->weights->cols; c++) {
                                 /* error: expected another column */
@@ -1170,7 +1165,7 @@ bool load_weight_matrices(struct network *n, char *filename)
                                         goto error_receiving_group;
                                 /* error: non-numeric input */
                                 if (sscanf(tokens, "%lf", &fg_to_tg->weights->elements[r][c]) != 1)
-                                        goto error_projecting_group;
+                                        goto error_format;
                                 tokens = strtok(NULL, " ");
                                 /* error: expected no more columns */
                                 if (c == fg_to_tg->weights->cols - 1 && tokens)

@@ -232,7 +232,6 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s)
         char arg2[MAX_ARG_SIZE]; /* network type */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
-
         enum network_type type = 0;
         /* feed forward network */
         if      (strcmp(arg2, "ffn") == 0) type = ntype_ffn;
@@ -244,18 +243,15 @@ bool cmd_create_network(char *cmd, char *fmt, struct session *s)
                 eprintf("Cannot create network - invalid network type: '%s'\n", arg2);
                 return true;
         }
-
         /* network should not already exist */
         if (find_array_element_by_name(s->networks, arg1)) {
                 eprintf("Cannot create network - network '%s' already exists\n", arg1);
                 return true;
         }
-        
         /* create network, and set as active */
         struct network *n = create_network(arg1, type);
         add_network(s, n);
         mprintf("Created network \t\t [ %s :: %s ]\n", arg1, arg2);
-
         return true;
 }
 
@@ -334,7 +330,6 @@ bool cmd_remove_group(char *cmd, char *fmt, struct session *s)
         char arg[MAX_ARG_SIZE]; /* group name */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
-
         /* find group */
         struct group *g = find_array_element_by_name(s->anp->groups, arg);
         if (g == NULL) {
@@ -359,7 +354,6 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct session *s)
         char arg[MAX_ARG_SIZE]; /* group name */
         if (sscanf(cmd, fmt, arg) != 1)
                 return false;
-        
         /* find group */
         struct group *g = find_array_element_by_name(s->anp->groups, arg);
         if (g == NULL) {
@@ -369,7 +363,6 @@ bool cmd_attach_bias(char *cmd, char *fmt, struct session *s)
         struct group *bg = attach_bias_group(s->anp, g);
         bg ? mprintf("Attached bias to group \t [ %s -> %s ]\n", bg->name, g->name)
            : eprintf("Cannot attach bias group - bias already exists\n");
-
         return true;
 }
 
@@ -718,139 +711,6 @@ bool cmd_unfreeze_projection(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-This implements machinery for the "tunneling" of a subset of units of a
-layer, allowing for the segmentation of a single input vector into multiple
-ones:
-
-        +---------+    +---------+    +---------+
-        | output1 |    | output2 |    | output3 |
-        +---------+    +---------+    +---------+
-                 \          |           /
-             +---------+---------+---------+
-             |         : input0  :         |
-             +---------+---------+---------+
-
-and for the merging of several output vectors into a single vector:
-
-             +---------+---------+---------+
-             |         : output0 :         |
-             +---------+---------+---------+
-                 /          |           \
-        +---------+    +---------+    +---------+
-        | output1 |    | output2 |    | output3 |
-        +---------+    +---------+    +---------+
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-/*
- * TODO: 
- * -- Rewrite this
- * -- Check tunneling logic;
- * -- Remove tunnel projection.
- */
-bool cmd_create_tunnel_projection(char *cmd, char *fmt, struct session *s)
-{
-        char arg1[MAX_ARG_SIZE]; /* 'from' group name */
-        uint32_t arg2;           /* 'from' group start unit */
-        uint32_t arg3;           /* 'from' group end unit */
-        char arg4[MAX_ARG_SIZE]; /* 'to' group name */
-        uint32_t arg5;           /* 'to' group start unit */
-        uint32_t arg6;           /* 'to' group start unit */
-        if (sscanf(cmd, fmt,
-                arg1, &arg2, &arg3,
-                arg4, &arg5, &arg6) != 6)
-                return false;
-        /* find 'from' group */
-        struct group *fg = find_array_element_by_name(s->anp->groups, arg1);
-        if (fg == NULL) {
-                eprintf("Cannot set tunnel projection - no such group '%s'\n", arg1);
-                return true;
-        }
-        /* find 'to' group */
-        struct group *tg = find_array_element_by_name(s->anp->groups, arg4);
-        if (tg == NULL) {
-                eprintf("Cannot set tunnel projection - no such group '%s'\n", arg4);
-                return true;
-        }
-        /* 'from' and 'to' should be the same group */
-        if (fg == tg) {
-                eprintf("Cannot set recurrent tunnel projection\n");
-                return true;
-        }
-        /*
-         * The from group should not be a recurrent group, and there should
-         * not already be a projection between the 'from' and 'to' group.
-         */
-        bool exists = false;
-        if (fg->recurrent)
-                exists = true;
-        for (uint32_t i = 0; i < fg->out_projs->num_elements; i++)
-                if (((struct projection *)
-                        fg->out_projs->elements[i])->to == tg) {
-                        exists = true;
-                        break;
-                }
-        if (exists) {
-                eprintf("Cannot set tunnel projection - projection '%s -> %s' already exists\n",
-                        arg1, arg4);
-                return true;
-        }
-        /* 'from' and 'to' ranges should not mismatch */
-        if (arg3 - arg2 != arg6 - arg5) {
-                eprintf("Cannot set tunnel projection - indices [%d:%d] and [%d:%d] cover differ ranges\n",
-                        arg2, arg3, arg5, arg6);
-                return true;
-        }
-        /* tunnel should be within 'from' group bounds */
-        if (arg2 > fg->vector->size || arg3 > fg->vector->size || arg3 < arg2)
-        {
-                eprintf("Cannot set tunnel projection - indices [%d:%d] out of bounds\n",
-                        arg2, arg3);
-                return true;
-        }
-        /* tunnel should be within 'to' group bounds */
-        if (arg5 > tg->vector->size || arg6 > tg->vector->size || arg6 < arg5)
-        {
-                eprintf("Cannot set tunnel projection - indices [%d:%d] out of bounds\n",
-                        arg5, arg6);
-                return true;
-        }
-        /* weight matrix */
-        struct matrix *weights = create_matrix(
-                fg->vector->size, tg->vector->size);
-        /* gradients matrix */
-        struct matrix *gradients = create_matrix(
-                fg->vector->size, tg->vector->size);
-        /* previous gradients matrix */
-        struct matrix *prev_gradients = create_matrix(
-                fg->vector->size, tg->vector->size);
-        /* previous weight deltas matrix */
-        struct matrix *prev_deltas = create_matrix(
-                fg->vector->size, tg->vector->size);
-        /* dynamic learning parameters matrix */
-        struct matrix *dynamic_params = create_matrix(
-                fg->vector->size, tg->vector->size);
-        /* add projections */
-        struct projection *op = create_projection(tg, weights,
-                gradients, prev_gradients, prev_deltas, dynamic_params);
-        struct projection *ip = create_projection(fg, weights,
-                gradients, prev_gradients, prev_deltas, dynamic_params);
-        /* freeze projections */
-        op->frozen = true;
-        ip->frozen = true;
-        /* add projections */
-        add_to_array(fg->out_projs, op);
-        add_to_array(tg->inc_projs, ip);
-        /* setup weights for tunneling */
-        for (uint32_t r = arg2 - 1, c = arg5 - 1;
-                r < arg3 && c < arg6;
-                r++, c++) 
-                weights->elements[r][c] = 1.0;
-        mprintf("Created tunnel projection \t [ %s [%d:%d] -> %s [%d:%d] ]\n",
-                arg1, arg2, arg3, arg4, arg5, arg6);
-        return true;
-}
-
 bool cmd_toggle_reset_contexts(char *cmd, char *fmt, struct session *s)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
@@ -1083,17 +943,17 @@ bool cmd_set_group_double_parameter(char *cmd, char *fmt, struct session *s)
                 eprintf("Cannot set parameter '%s' - no such group '%s'\n", arg1, arg2);
                 return true;
         }
-        /* ReLU Alpha */
+        /* ReLU alpha */
         if        (strcmp(arg1, "ReLUAlpha") == 0) {
                 g->relu_alpha = arg3;
                 mprintf("Set ReLU alpha \t\t [ %s :: %lf ]\n",
                         arg2, g->relu_alpha);
-        /* Logistic FSC (Flat Spot Correction) */
+        /* logistic FSC (Flat Spot Correction) */
         } else if (strcmp(arg1, "LogisticFSC") == 0) {
                 g->logistic_fsc = arg3;
                 mprintf("Set Logistic FSC \t\t [ %s :: %lf ]\n",
                         arg2, g->logistic_fsc);
-        /* Logistic gain */
+        /* logistic gain */
         } else if (strcmp(arg1, "LogisticGain") == 0) {
                 g->logistic_gain = arg3;
                 mprintf("Set Logistic gain \t\t [ %s :: %lf ]\n",
