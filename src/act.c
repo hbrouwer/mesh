@@ -50,14 +50,13 @@ void feed_forward(struct network *n, struct group *g)
          */
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
-
                 /*
                  * During BPTT, we want activation to propagate only through
                  * the network of the current timestep.
                  */
                 if (op->recurrent)
                         continue;
-
+                
                 /*
                  * Compute net input for the units in each group that the
                  * current group projects to.
@@ -176,7 +175,8 @@ double act_fun_bipolar_sigmoid(struct group *g, uint32_t i)
 
 double act_fun_bipolar_sigmoid_deriv(struct group *g, uint32_t i)
 {
-        return 0.5 * (1.0 + g->vector->elements[i]) * (1.0 - g->vector->elements[i]);
+        return 0.5 * (1.0 + g->vector->elements[i])
+                * (1.0 - g->vector->elements[i]);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -197,7 +197,6 @@ double act_fun_softmax(struct group *g, uint32_t i)
                 for (uint32_t j = 0; j < g->vector->size; j++)
                         sum += EXP(g->vector->elements[j]);
         }
-
         return EXP(g->vector->elements[i]) / sum;
 }
 

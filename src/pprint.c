@@ -21,10 +21,8 @@ void pprint_vector(struct vector *v, enum color_scheme scheme)
 {
         double min = vector_minimum(v);
         double max = vector_maximum(v);
-
         if (min > 0.0)
                 min = 0.0;
-
         for (uint32_t i = 0; i < v->size; i++) {
                 double sv = scale_value(v->elements[i], min, max);
                 value_as_color(sv, scheme);
@@ -36,10 +34,8 @@ void pprint_matrix(struct matrix *m, enum color_scheme scheme)
 {
         double min = matrix_minimum(m);
         double max = matrix_maximum(m);
-
         if (min > 0.0)
                 min = 0.0;
-
         for (uint32_t i = 0; i < m->rows; i++) {
                 for (uint32_t j = 0; j < m->cols; j++) {
                         double sv = scale_value(m->elements[i][j], min, max);
