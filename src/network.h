@@ -249,5 +249,6 @@ void initialize_dynamic_params(struct group *g, struct network *n);
 bool save_weight_matrices(struct network *n, char *filename);
 void save_weight_matrix(struct group *g, FILE *fd);
 bool load_weight_matrices(struct network *n, char *filename);
+bool load_weight_matrix(FILE *fd, struct matrix *weights);
 
 #endif /* NETWORK_H */

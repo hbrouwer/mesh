@@ -1085,7 +1085,7 @@ bool load_weight_matrices(struct network *n, char *filename)
                          */
                         if (sscanf(buf, "%s -> %s", arg1, arg2) != 2)
                                 /* error: expected no more rows */
-                                goto error_projecting_group;
+                                goto error_format;
                 /* find 'from' group */
                 struct group *fg;
                 if ((fg = find_array_element_by_name(np->groups, arg1)) == NULL) {
@@ -1104,49 +1104,11 @@ bool load_weight_matrices(struct network *n, char *filename)
                         eprintf("Cannot load weights - no projection between groups '%s' and '%s'\n", arg1, arg2);
                         return false;
                 }
-                /*
-                 * Read the next line, which may be an optional dimensions
-                 * specification, or the first row of weights.
-                */
-                if (!fgets(buf, sizeof(buf), fd))
-                        goto error_format;
-                uint32_t arg3; /* 'from' group size */
-                uint32_t arg4; /* 'to' group size */
-                /* 
-                 * Check for dimension specification, and in case it is
-                 * present, verify the dimensionality.
-                 */
-                if (sscanf(buf, "Dimensions %d %d", &arg3, &arg4) == 2) {
-                        /* error: projecting group of incorrect size */
-                        if (fg->vector->size != arg3) 
-                                goto error_projecting_group;
-                        /* error: receiving group of incorrect size */
-                        if (tg->vector->size != arg4)
-                                goto error_receiving_group;
-                        /* read first row of weights */
-                        if (!fgets(buf, sizeof(buf), fd))
-                                goto error_format;
-                }
-                /* read the matrix values */
-                for (uint32_t r = 0; r < fg_to_tg->weights->rows; r++) {
-                        char *tokens = strtok(buf, " ");
-                        for (uint32_t c = 0; c < fg_to_tg->weights->cols; c++) {
-                                /* error: expected another column */
-                                if (!tokens)
-                                        goto error_receiving_group;
-                                /* error: non-numeric input */
-                                if (sscanf(tokens, "%lf", &fg_to_tg->weights->elements[r][c]) != 1)
-                                        goto error_format;
-                                tokens = strtok(NULL, " ");
-                                /* error: expected no more columns */
-                                if (c == fg_to_tg->weights->cols - 1 && tokens)
-                                        goto error_receiving_group;
-                        }
-                        /* error: expected another row */
-                        if (r < fg_to_tg->weights->rows - 1 && !fgets(buf, sizeof(buf), fd))
-                                goto error_projecting_group;
-                }
-                mprintf("... read weights for projection '%s -> %s'\n", arg1, arg2);
+                /* read weight matrix */
+                if (load_weight_matrix(fd, fg_to_tg->weights))
+                        mprintf("... read weights for projection '%s -> %s'\n", arg1, arg2);
+                else
+                        return false;
         }
         fclose(fd);
         return true;
@@ -1157,10 +1119,62 @@ error_file:
 error_format:
         eprintf("Cannot load weights - file has incorrect format\n");
         return false;
+}
+
+bool load_weight_matrix(FILE *fd, struct matrix *weights)
+{
+        char buf[MAX_BUF_SIZE];
+        /*
+         * Read the next line, which may be an optional dimensions
+         * specification, or the first row of weights.
+         */
+        if (!fgets(buf, sizeof(buf), fd))
+                goto error_format;
+        uint32_t arg1; /* 'from' group size */
+        uint32_t arg2; /* 'to' group size */
+        /* 
+         * Check for dimension specification, and in case it is
+         * present, verify the dimensionality.
+         */
+        if (sscanf(buf, "Dimensions %d %d", &arg1, &arg2) == 2) {
+                /* error: projecting group of incorrect size */
+                if (weights->rows != arg1) 
+                        goto error_projecting_group;
+                /* error: receiving group of incorrect size */
+                if (weights->cols != arg2)
+                        goto error_receiving_group;
+                /* read first row of weights */
+                if (!fgets(buf, sizeof(buf), fd))
+                        goto error_format;
+        }
+        /* read the matrix values */
+        for (uint32_t r = 0; r < weights->rows; r++) {
+                char *tokens = strtok(buf, " ");
+                for (uint32_t c = 0; c < weights->cols; c++) {
+                        /* error: expected another column */
+                        if (!tokens)
+                                goto error_receiving_group;
+                        /* error: non-numeric input */
+                        if (sscanf(tokens, "%lf", &weights->elements[r][c]) != 1)
+                                goto error_format;
+                        tokens = strtok(NULL, " ");
+                        /* error: expected no more columns */
+                        if (c == weights->cols - 1 && tokens)
+                                goto error_receiving_group;
+                }
+                /* error: expected another row */
+                if (r < weights->rows - 1 && !fgets(buf, sizeof(buf), fd))
+                        goto error_projecting_group;
+        }
+        return true;
+
+error_format:
+        eprintf("Cannot load weights - file has incorrect format\n");
+        return false;
 error_projecting_group:
         eprintf("Cannot load weights - projecting group of incorrect size\n");
         return false;
 error_receiving_group:
         eprintf("Cannot load weights - receiving group of incorrect size\n");
-        return false;
+        return false;            
 }
