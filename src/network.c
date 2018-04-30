@@ -480,41 +480,25 @@ void remove_group(struct network *n, struct group *g)
 {
         /* remove outgoing projections from a group g' to group g */
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
-                struct projection *p = g->inc_projs->elements[i];
-                struct group *fg = p->to;
-                for (uint32_t j = 0; j < fg->out_projs->num_elements; j++) {
-                        struct projection *op = fg->out_projs->elements[j];
-                        if (op->to == g) {
-                                remove_projection(fg->out_projs, op);
-                                break;
-                        }
-                }
+                struct projection *ip = g->inc_projs->elements[i];
+                struct group *fg = ip->to;
+                struct projection *op = find_projection(fg->out_projs, g);
+                remove_projection(fg->out_projs, op);
         }
-
-        /* remove incoming projections to group g from a group g' */
+        /* remove incoming projections to a group g' from g */
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
-                struct projection *p = g->out_projs->elements[i];
-                struct group *tg = p->to;
-                for (uint32_t j = 0; j < tg->inc_projs->num_elements; j++) {
-                        struct projection *ip = tg->inc_projs->elements[j];
-                        if (ip->to == g) {
-                                remove_projection(tg->inc_projs, ip);
-                                break;
-                        }
-                }
+                struct projection *op = g->out_projs->elements[i];
+                struct group *tg = op->to;
+                struct projection *ip = find_projection(tg->inc_projs, g);
+                remove_projection(tg->inc_projs, ip);
         }
 
         /* remove Elman projections from a group g' to group g */
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *fg = n->groups->elements[i];
-                for (uint32_t j = 0; j < fg->ctx_groups->num_elements; j++) {
-                        if (fg->ctx_groups->elements[j] == g) {
-                                remove_elman_projection(fg, g);
-                                break;
-                        }
-                }
+                if (find_elman_projection(fg, g))
+                        remove_elman_projection(fg, g);
         }
-
         /* remove group */
         remove_from_array(n->groups, g);
         free_group(g);
