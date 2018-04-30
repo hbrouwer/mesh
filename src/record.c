@@ -82,6 +82,7 @@ void record_ffn_units(struct network *n, struct group *g, FILE *fd)
                                 shift_context_groups(n);
                         copy_vector(n->input->vector, item->inputs[j]);
                         feed_forward(n, n->input);
+                        
                         fprintf(fd, "%d,\"%s\",\"%s\",%d,%s",
                                 i + 1, item->name, item->meta, j + 1, g->name);
                         for (uint32_t u = 0; u < g->vector->size; u++)
