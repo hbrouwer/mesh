@@ -41,7 +41,7 @@ void rnn_free_unfolded_network(struct rnn_unfolded_network *un);
  * TODO: Write a function that updates the unfolded structure with any
  * changes made to the base structure.
  */
-// void rnn_update_unfolded_network(struct network *n);
+void rnn_update_unfolded_network(struct network *n);
 
 struct group *rnn_duplicate_group(struct group *g);
 struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
