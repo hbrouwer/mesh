@@ -84,6 +84,7 @@
 "# Groups                                                               \n" \
 "                                                                       \n" \
 "createGroup <name> <size>      Create group of specified size          \n" \
+"createBiasGroup <name>         Create a bias group                     \n" \
 "removeGroup <name>             Remove group from network               \n" \
 "groups                         List all groups of the active network   \n" \
 "attachBias <name>              Attach a bias unit to a group           \n" \

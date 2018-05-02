@@ -38,6 +38,7 @@ bool cmd_change_network(char *cmd, char *fmt, struct session *s);
 bool cmd_inspect(char *cmd, char *fmt, struct session *s);
 
 bool cmd_create_group(char *cmd, char *fmt, struct session *s);
+bool cmd_create_bias_group(char *cmd, char *fmt, struct session *s);
 bool cmd_remove_group(char *cmd, char *fmt, struct session *s);
 bool cmd_groups(char *cmd, char *fmt, struct session *s);
 bool cmd_attach_bias(char *cmd, char *fmt, struct session *s);
@@ -156,6 +157,7 @@ const static struct command cmds[] = {
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"createGroup",             "%s %d",         &cmd_create_group},
+        {"createBiasGroup",         "%s",            &cmd_create_bias_group},
         {"removeGroup",             "%s",            &cmd_remove_group},
         {"groups",                  NULL,            &cmd_groups},
         {"attachBias",              "%s",            &cmd_attach_bias},

@@ -325,6 +325,22 @@ bool cmd_create_group(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
+bool cmd_create_bias_group(char *cmd, char *fmt, struct session *s)
+{
+        char arg[MAX_ARG_SIZE]; /* group name */
+        if (sscanf(cmd, fmt, arg) != 1)
+                return false;
+        /* group should not already exist */
+        if (find_array_element_by_name(s->anp->groups, arg)) {
+                eprintf("Cannot create group - group '%s' already exists\n", arg);
+                return true;
+        }
+        struct group *bg = create_bias_group(arg);
+        add_group(s->anp, bg);
+        mprintf("Created bias group \t\t [ %s ]\n", arg);
+        return true;        
+}
+
 bool cmd_remove_group(char *cmd, char *fmt, struct session *s)
 {
         char arg[MAX_ARG_SIZE]; /* group name */

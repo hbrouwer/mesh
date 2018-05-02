@@ -194,6 +194,7 @@ void inspect_network(struct network *n);
 
 struct group *create_group(char *name, uint32_t size, bool bias,
         bool recurrent);
+struct group *create_bias_group(char *name);
 struct group *attach_bias_group(struct network *n, struct group *g);
 void free_group(struct group *g);
 void free_groups(struct array *gs);

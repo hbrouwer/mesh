@@ -399,6 +399,11 @@ error_out:
         return NULL;
 }
 
+struct group *create_bias_group(char *name)
+{
+        return create_group(name, 1, true, false);
+}
+
 struct group *attach_bias_group(struct network *n, struct group *g)
 {
         char *bgn;
@@ -412,10 +417,12 @@ struct group *attach_bias_group(struct network *n, struct group *g)
         struct group *bg = create_group(bgn, 1, true, false);
         free(bgn);
 
+        /*
         bg->act_fun->fun   = g->act_fun->fun;
         bg->act_fun->deriv = g->act_fun->deriv;
         bg->err_fun->fun   = g->err_fun->fun;
         bg->err_fun->deriv = g->err_fun->deriv;
+        */
 
         add_group(n, bg);
         add_bidirectional_projection(bg, g);
@@ -527,13 +534,17 @@ void print_groups(struct network *n)
                 if (g->err_fun->fun == err_fun_divergence)
                         cprintf(" :: divergence");
 
+                /* bias */
+                if (g->bias)
+                        cprintf(" :: bias group");
+
                 /* input/output group */
                 if (g == n->input)
                         cprintf(" :: input group\n");
                 else if (g == n->output)
                         cprintf(" :: output group\n");
                 else
-                        cprintf("\n");
+                        cprintf("\n");                        
         }       
 }
 
