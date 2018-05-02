@@ -264,7 +264,7 @@ struct group *rnn_duplicate_group(struct group *g)
         dg->err_fun->fun   = g->err_fun->fun;
         dg->err_fun->deriv = g->err_fun->deriv;
 
-        /* inncoming and outgoing projections */
+        /* incoming and outgoing projections */
         dg->inc_projs = create_array(atype_projs);
         dg->inc_projs->num_elements = g->inc_projs->num_elements;
         dg->out_projs = create_array(atype_projs);
@@ -277,6 +277,11 @@ struct group *rnn_duplicate_group(struct group *g)
          */
         dg->bias          = g->bias;
         dg->recurrent     = g->recurrent;
+        /*
+         * WARNING: Right now these parameters are problematic, as changes
+         * after unfolding will not get propagated into the unfolded network
+         * structure...
+         */
         dg->relu_alpha    = g->relu_alpha;
         dg->logistic_fsc  = g->logistic_fsc;
         dg->logistic_gain = g->logistic_gain;
