@@ -51,7 +51,7 @@ struct network
 {
         char *name;                 /* network name */
         enum network_type type;     /* network type */
-        struct array *groups;       /* array if groups in the network */
+        struct array *groups;       /* array of groups in the network */
         struct group *input;        /* input group */
         struct group *output;       /* output group */
         bool initialized;           /* flags initialization status */
