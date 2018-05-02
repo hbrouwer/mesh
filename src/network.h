@@ -133,7 +133,6 @@ struct projection
 {
         struct group *to;           /* group projected to */
         struct matrix *weights;     /* projection weights */
-        bool frozen;                /* flags frozen weights */
         struct matrix *gradients;   /* gradients */
                                     /* previous gradients */
         struct matrix *prev_gradients;
@@ -141,6 +140,7 @@ struct projection
         struct matrix *prev_deltas;
                                     /* update values (Rprop) or LRs (DBD) */
         struct matrix *dynamic_params;
+        bool frozen;                /* flags frozen weights */
         bool recurrent;             /* flags recurrent projections (BPTT) */
 };
 

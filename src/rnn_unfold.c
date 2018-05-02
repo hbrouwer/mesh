@@ -270,9 +270,16 @@ struct group *rnn_duplicate_group(struct group *g)
         dg->out_projs = create_array(atype_projs);
         dg->out_projs->num_elements = g->out_projs->num_elements;
 
-        /* flags */
-        dg->bias      = g->bias;
-        dg->recurrent = g->recurrent;
+        /* 
+         * Flags and parameters.
+         * 
+         * NOTE: Keep this up to date with group structure.
+         */
+        dg->bias          = g->bias;
+        dg->recurrent     = g->recurrent;
+        dg->relu_alpha    = g->relu_alpha;
+        dg->logistic_fsc  = g->logistic_fsc;
+        dg->logistic_gain = g->logistic_gain;
 
         return dg;
 
