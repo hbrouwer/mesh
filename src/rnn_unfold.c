@@ -175,6 +175,58 @@ error_out:
         return NULL;
 }
 
+/*
+ * TODO: Test this...
+ */
+void rnn_update_unfolded_network(struct network *n)
+{
+        struct rnn_unfolded_network *un = n->unfolded_net;
+        for (uint32_t i = 0; i < un->stack_size; i++) {
+                struct network *dn = un->stack[i];
+
+                /* store unique values */
+                struct array *groups = dn->groups;
+                struct group *input  = dn->input;
+                struct group *output = dn->output;
+
+                /* copy base network parameters into duplicate */
+                memcpy(dn, n, sizeof(struct network));
+
+                /* restore unique values */
+                dn->groups = groups;
+                dn->input  = input;
+                dn->output = output;
+
+                for (uint32_t j = 0; j < dn->groups->num_elements; j++) {
+                        struct group *dg = dn->groups->elements[j];
+                        struct group *g  = dn->groups->elements[j];
+
+                        /* copy variables parameters */
+                        dg->relu_alpha    = g->relu_alpha;
+                        dg->logistic_fsc  = g->logistic_fsc;
+                        dg->logistic_gain = g->logistic_gain;
+
+                        /* incoming projections */
+                        for (uint32_t x = 0; x < dg->inc_projs->num_elements; x++) {
+                                struct projection *dp = dg->inc_projs->elements[x];
+                                struct projection *p  = g->inc_projs->elements[x];
+
+                                /* copy variable parameters */
+                                dp->frozen = p->frozen;
+                        }
+
+                        /* outgoing projections */
+                        for (uint32_t x = 0; x < dg->out_projs->num_elements; x++) {
+                                struct projection *dp = dg->out_projs->elements[x];
+                                struct projection *p  = g->out_projs->elements[x];
+
+                                /* copy variable parameters */
+                                dp->frozen = p->frozen;
+                        }
+                }
+        }
+}
+
 void rnn_free_unfolded_network(struct rnn_unfolded_network *un)
 {
         /* detach terminal recurrent groups */
@@ -240,29 +292,38 @@ struct group *rnn_duplicate_group(struct group *g)
         if (!(dg = malloc(sizeof(struct group))))
                 goto error_out;
         memset(dg, 0, sizeof(struct group));
+        /*
         size_t block_size = (strlen(g->name) + 1) * sizeof(char);
         if (!(dg->name = malloc(block_size)))
                 goto error_out;
         memset(dg->name, 0, block_size);
         strncpy(dg->name, g->name, strlen(g->name));
+        */
+        dg->name = g->name;
 
         /* unit and error vectors */
         dg->vector = create_vector(g->vector->size);
         dg->error  = create_vector(g->vector->size);
 
         /* activation function */
+        dg->act_fun = g->act_fun;
+        /*
         if (!(dg->act_fun = malloc(sizeof(struct act_fun))))
                 goto error_out;
         memset(dg->act_fun, 0, sizeof(struct act_fun));
         dg->act_fun->fun   = g->act_fun->fun;
         dg->act_fun->deriv = g->act_fun->deriv;
+        */
 
         /* error function */
+        dg->err_fun = g->err_fun;
+        /*
         if (!(dg->err_fun = malloc(sizeof(struct err_fun))))
                 goto error_out;
         memset(dg->err_fun, 0, sizeof(struct err_fun));
         dg->err_fun->fun   = g->err_fun->fun;
         dg->err_fun->deriv = g->err_fun->deriv;
+        */
 
         /* incoming and outgoing projections */
         dg->inc_projs = create_array(atype_projs);
@@ -399,9 +460,9 @@ void rnn_free_duplicate_groups(struct group *dg)
 
         free_vector(dg->vector);
         free_vector(dg->error);
-        free(dg->act_fun);
-        free(dg->err_fun);
-        free(dg->name);
+        // free(dg->act_fun);
+        // free(dg->err_fun);
+        // free(dg->name);
         free(dg);
 }
 
