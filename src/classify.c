@@ -52,7 +52,7 @@ struct matrix *confusion_matrix(struct network *n)
         keep_running = true;
 
         struct matrix *cm = NULL;
-        switch (n->type) {
+        switch (n->flags->type) {
         case ntype_ffn: /* fall through */
         case ntype_srn:
                 cm = ffn_network_cm(n);
@@ -77,10 +77,10 @@ struct matrix *ffn_network_cm(struct network *n)
                         goto out;
                 struct item *item = n->asp->items->elements[i];
 
-                if (n->type == ntype_srn)
+                if (n->flags->type == ntype_srn)
                         reset_context_groups(n);
                 for (uint32_t j = 0; j < item->num_events; j++) {
-                        if (j > 0 && n->type == ntype_srn)
+                        if (j > 0 && n->flags->type == ntype_srn)
                                 shift_context_groups(n);
                         copy_vector(n->input->vector, item->inputs[j]);
                         feed_forward(n, n->input);

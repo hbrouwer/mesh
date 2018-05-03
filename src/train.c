@@ -54,7 +54,7 @@ void train_network(struct network *n)
 void train_network_with_bp(struct network *n)
 {
         uint32_t item_itr = 0;
-        for (uint32_t epoch = 1; epoch <= n->max_epochs; epoch++) {
+        for (uint32_t epoch = 1; epoch <= n->pars->max_epochs; epoch++) {
                 n->status->epoch      = epoch;
                 n->status->prev_error = n->status->error;
                 n->status->error      = 0.0;
@@ -63,7 +63,7 @@ void train_network_with_bp(struct network *n)
                 if (item_itr == 0) reorder_training_set(n);
 
                 /* train network on one batch */
-                for (uint32_t i = 0; i < n->batch_size; i++) {
+                for (uint32_t i = 0; i < n->pars->batch_size; i++) {
                         if (!keep_running)
                                 return;
                 
@@ -78,7 +78,7 @@ void train_network_with_bp(struct network *n)
                 }
 
                 /* stop training, if threshold was reached */
-                if (n->status->error < n->error_threshold) {
+                if (n->status->error < n->pars->error_threshold) {
                         print_training_summary(n);
                         break;
                 }
@@ -95,10 +95,10 @@ void train_network_with_bp(struct network *n)
 
 void train_ffn_network_with_item(struct network *n, struct item *item)
 {
-        if (n->type == ntype_srn)
+        if (n->flags->type == ntype_srn)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
-                if (i > 0 && n->type == ntype_srn)
+                if (i > 0 && n->flags->type == ntype_srn)
                         shift_context_groups(n);
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);
@@ -109,8 +109,8 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
 
                 struct group *g   = n->output;
                 struct vector *tv = item->targets[i];
-                double tr         = n->target_radius;
-                double zr         = n->zero_error_radius;
+                double tr         = n->pars->target_radius;
+                double zr         = n->pars->zero_error_radius;
 
                 /* backpropagate error */
                 reset_ffn_error_signals(n);
@@ -120,7 +120,7 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
                 /* update network error at the last event */
                 if (i == item->num_events - 1) {
                         double error = n->output->err_fun->fun(g, tv, tr, zr);
-                        error /= n->batch_size;
+                        error /= n->pars->batch_size;
                         n->status->error += error;
                 }
 
@@ -153,7 +153,7 @@ void train_ffn_network_with_item(struct network *n, struct item *item)
 void train_network_with_bptt(struct network *n)
 {
         uint32_t item_itr = 0;
-        for (uint32_t epoch = 1; epoch <= n->max_epochs; epoch++) {
+        for (uint32_t epoch = 1; epoch <= n->pars->max_epochs; epoch++) {
                 if (!keep_running)
                         return;
 
@@ -174,7 +174,7 @@ void train_network_with_bptt(struct network *n)
                 train_rnn_network_with_item(n, item);
 
                 /* stop training, if threshold was reached */ 
-                if (n->status->error < n->error_threshold) {
+                if (n->status->error < n->pars->error_threshold) {
                         print_training_summary(n);
                         break;
                 }
@@ -212,8 +212,8 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
 
                 struct group *g   = un->stack[un->sp]->output;
                 struct vector *tv = item->targets[i];
-                double tr         = n->target_radius;
-                double zr         = n->zero_error_radius;
+                double tr         = n->pars->target_radius;
+                double zr         = n->pars->zero_error_radius;
 
                 /* compute error for current item */
                 bp_output_error(g, tv, tr, zr);
@@ -242,7 +242,7 @@ next_tick:
 
 void reorder_training_set(struct network *n)
 {
-        switch (n->training_order) {
+        switch (n->flags->training_order) {
         case train_ordered:
                 order_set(n->asp);
                 break;
@@ -257,7 +257,8 @@ void reorder_training_set(struct network *n)
 
 void print_training_progress(struct network *n)
 {
-        if (n->status->epoch == 1 || n->status->epoch % n->report_after == 0)
+        if (n->status->epoch == 1 || 
+                n->status->epoch % n->pars->report_after == 0)
                 pprintf("%.4d \t\t %lf \t %lf \t %lf\n",
                         n->status->epoch,
                         n->status->error,
@@ -274,34 +275,34 @@ void print_training_summary(struct network *n)
 
 void scale_learning_rate(struct network *n)
 {
-        uint32_t sa = n->lr_scale_after * n->max_epochs;
+        uint32_t sa = n->pars->lr_scale_after * n->pars->max_epochs;
         if (sa > 0 && n->status->epoch % sa == 0) {
-                double lr = n->learning_rate;
-                n->learning_rate *= n->lr_scale_factor;
+                double lr = n->pars->learning_rate;
+                n->pars->learning_rate *= n->pars->lr_scale_factor;
                 mprintf("Scaled learning rate ... \t ( %lf => %lf )\n",
-                        lr, n->learning_rate);
+                        lr, n->pars->learning_rate);
         }
 }
 
 void scale_momentum(struct network *n)
 {
-        uint32_t sa = n->mn_scale_after * n->max_epochs;
+        uint32_t sa = n->pars->mn_scale_after * n->pars->max_epochs;
         if (sa > 0 && n->status->epoch % sa == 0) {
-                double mn = n->momentum;
-                n->momentum *= n->mn_scale_factor;
+                double mn = n->pars->momentum;
+                n->pars->momentum *= n->pars->mn_scale_factor;
                 mprintf("Scaled momentum ... \t ( %lf => %lf )\n",
-                        mn, n->momentum);
+                        mn, n->pars->momentum);
         }
 }
 
 void scale_weight_decay(struct network *n)
 {
-        uint32_t sa = n->wd_scale_after * n->max_epochs;
+        uint32_t sa = n->pars->wd_scale_after * n->pars->max_epochs;
         if (sa > 0 && n->status->epoch % sa == 0) {
-                double wd = n->weight_decay;
-                n->weight_decay *= n->wd_scale_factor;
+                double wd = n->pars->weight_decay;
+                n->pars->weight_decay *= n->pars->wd_scale_factor;
                 mprintf("Scaled weight decay ... \t ( %lf => %lf)\n",
-                        wd, n->weight_decay);
+                        wd, n->pars->weight_decay);
         }
 }
 

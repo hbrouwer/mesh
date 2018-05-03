@@ -213,9 +213,9 @@ void bp_update_sd(struct network *n)
         n->status->gradients_length   = 0.0;
 
         /* determine the scaling factor for steepest descent */
-        if (n->sd_type == SD_DEFAULT)
-                n->sd_scale_factor = 1.0;
-        if (n->sd_type == SD_BOUNDED)
+        if (n->flags->sd_type == SD_DEFAULT)
+                n->pars->sd_scale_factor = 1.0;
+        if (n->flags->sd_type == SD_BOUNDED)
                 determine_sd_scale_factor(n);
 
         bp_update_inc_projs_sd(n, n->output);
@@ -243,7 +243,7 @@ void bp_update_inc_projs_sd(struct network *n, struct group *g)
                 /*
                  * Adjust weights if projection is not frozen.
                  */
-                if (!p->frozen)
+                if (!p->flags->frozen)
                         bp_update_projection_sd(n, g, p);
                 
                 /*
@@ -257,7 +257,7 @@ void bp_update_inc_projs_sd(struct network *n, struct group *g)
                  * During BPTT, we want to only adjust weights in the
                  * network of the current timestep.
                  */
-                if (p->recurrent)
+                if (p->flags->recurrent)
                         continue;
 
                 bp_update_inc_projs_sd(n, p->to);
@@ -296,8 +296,8 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                          * gradient term is scaled by the length of the
                          * gradient.
                          */
-                        weight_delta += -n->learning_rate
-                                * n->sd_scale_factor
+                        weight_delta += -n->pars->learning_rate
+                                * n->pars->sd_scale_factor
                                 * p->gradients->elements[i][j];
 
                         /*
@@ -305,7 +305,7 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                          *
                          * Dw_ij = Dw_ij + a * Dw_ij(t-1)
                          */
-                        weight_delta += n->momentum
+                        weight_delta += n->pars->momentum
                                 * p->prev_deltas->elements[i][j];
                         
                         /*
@@ -313,7 +313,7 @@ void bp_update_projection_sd(struct network *n, struct group *g,
                          *
                          * Dw_ij = Dw_ij - d * w_ij
                          */
-                        weight_delta -= n->weight_decay 
+                        weight_delta -= n->pars->weight_decay 
                                 * p->weights->elements[i][j];
 
                         /*
@@ -397,7 +397,7 @@ Rohde, D. L. T. (2002). A connectionist model of sentence comprehension and
 void determine_sd_scale_factor(struct network *n)
 {
         /* reset scaling factor */
-        n->sd_scale_factor = 0.0;
+        n->pars->sd_scale_factor = 0.0;
 
         /* 
          * Resursively compute the sum of squares of the individual weight
@@ -406,10 +406,10 @@ void determine_sd_scale_factor(struct network *n)
         determine_gradient_ssq(n, n->output);
 
         /* determine the scaling factor */
-        if (n->sd_scale_factor > 1.0)
-                n->sd_scale_factor = 1.0 / sqrt(n->sd_scale_factor);
+        if (n->pars->sd_scale_factor > 1.0)
+                n->pars->sd_scale_factor = 1.0 / sqrt(n->pars->sd_scale_factor);
         else
-                n->sd_scale_factor = 1.0;
+                n->pars->sd_scale_factor = 1.0;
 }
 
 /*
@@ -437,7 +437,7 @@ void determine_gradient_ssq(struct network *n, struct group *g)
         }
 
         /* add local scale factor to global scale factor */
-        n->sd_scale_factor += sd_scale_factor;
+        n->pars->sd_scale_factor += sd_scale_factor;
 }
 
                 /***********************************
@@ -549,7 +549,7 @@ void bp_update_inc_projs_rprop(struct network *n, struct group *g)
                 /*
                  * Adjust weights if projection is not frozen.
                  */
-                if (!p->frozen)
+                if (!p->flags->frozen)
                         bp_update_projection_rprop(n, g, p);
                 
                 /*
@@ -563,7 +563,7 @@ void bp_update_inc_projs_rprop(struct network *n, struct group *g)
                  * During BPTT, we want to only adjust weights in the
                  * network of the current timestep.
                  */
-                if (p->recurrent)
+                if (p->flags->recurrent)
                         continue;
 
                 bp_update_inc_projs_rprop(n, p->to);
@@ -598,7 +598,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                          *
                          * Dw_ij = Dw_ij - d * w_ij
                          */
-                        weight_delta -= n->weight_decay 
+                        weight_delta -= n->pars->weight_decay 
                                 * p->weights->elements[i][j];
 
                         /*
@@ -613,7 +613,8 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  * Bind update value u_ij to u_max.
                                  */
                                 p->dynamic_params->elements[i][j] = minimum(
-                                        p->dynamic_params->elements[i][j] * n->rp_eta_plus,
+                                        p->dynamic_params->elements[i][j]
+                                        * n->pars->rp_eta_plus,
                                         RP_MAX_STEP_SIZE);
 
                                 /*
@@ -639,20 +640,21 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  * Bind update value u_ij to u_min.
                                  */
                                 p->dynamic_params->elements[i][j] = maximum(
-                                        p->dynamic_params->elements[i][j] * n->rp_eta_minus,
+                                        p->dynamic_params->elements[i][j]
+                                        * n->pars->rp_eta_minus,
                                         RP_MIN_STEP_SIZE);
 
                                 /*
                                  * Perform weight backtracking for RPROP+.
                                  */
-                                if (n->rp_type == RPROP_PLUS)
+                                if (n->flags->rp_type == RPROP_PLUS)
                                         p->weights->elements[i][j] -=
                                                 p->prev_deltas->elements[i][j];
 
                                 /*
                                  * Perform weight backtracking for iRPROP+.
                                  */
-                                if (n->rp_type == IRPROP_PLUS)
+                                if (n->flags->rp_type == IRPROP_PLUS)
                                         if (n->status->error > n->status->prev_error)
                                                 p->weights->elements[i][j] -=
                                                         p->prev_deltas->elements[i][j];
@@ -661,7 +663,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  * Set dE/dw_ij(t) to 0 for all Rprop
                                  * flavours except RPROP-.
                                  */
-                                if (n->rp_type != RPROP_MINUS)
+                                if (n->flags->rp_type != RPROP_MINUS)
                                         p->gradients->elements[i][j] = 0.0;
 
                                 /* 
@@ -672,7 +674,7 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
                                  *
                                  * w_ij = w_ij + Dw_ij
                                  */
-                                if (n->rp_type == RPROP_MINUS || n->rp_type == IRPROP_MINUS) {
+                                if (n->flags->rp_type == RPROP_MINUS || n->flags->rp_type == IRPROP_MINUS) {
                                         weight_delta += -sign(p->gradients->elements[i][j]) *
                                                 p->dynamic_params->elements[i][j];
                                         p->weights->elements[i][j] += weight_delta;
@@ -820,7 +822,7 @@ void bp_update_inc_projs_qprop(struct network *n, struct group *g)
                 /*
                  * Adjust weights if projection is not frozen.
                  */
-                if (!p->frozen)
+                if (!p->flags->frozen)
                         bp_update_projection_qprop(n, g, p);
                 
                 /*
@@ -834,7 +836,7 @@ void bp_update_inc_projs_qprop(struct network *n, struct group *g)
                  * During BPTT, we want to only adjust weights in the
                  * network of the current timestep.
                  */
-                if (p->recurrent)
+                if (p->flags->recurrent)
                         continue;
 
                 bp_update_inc_projs_qprop(n, p->to);
@@ -880,7 +882,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                  * Dw_ij(t) = -epislon * dE/dw_ij
                                  */ 
                                 if (p->gradients->elements[i][j] < 0.0)
-                                        weight_delta += -n->learning_rate
+                                        weight_delta += -n->pars->learning_rate
                                                 * p->gradients->elements[i][j];
                                 
                                 /*
@@ -923,7 +925,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                  * Dw_ij(t) = -epislon * dE/dw_ij
                                  */
                                 if (p->gradients->elements[i][j] > 0.0)
-                                        weight_delta += -n->learning_rate
+                                        weight_delta += -n->pars->learning_rate
                                                 * p->gradients->elements[i][j];
 
                                 /*
@@ -965,7 +967,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                  *
                                  * Dw_ij = -epislon * dE/dw_ij
                                  */
-                                weight_delta += -n->learning_rate
+                                weight_delta += -n->pars->learning_rate
                                         * p->gradients->elements[i][j];
 
                                 /*
@@ -973,7 +975,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                                  *
                                  * Dw_ij = Dw_ij + a * Dw_ij(t-1)
                                  */
-                                weight_delta += n->momentum
+                                weight_delta += n->pars->momentum
                                         * p->prev_deltas->elements[i][j];
                         }
 
@@ -982,7 +984,7 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
                          *
                          * Dw_ij = Dw_ij - d * w_ij
                          */
-                        weight_delta -= n->weight_decay 
+                        weight_delta -= n->pars->weight_decay 
                                 * p->weights->elements[i][j];
 
                         /*
@@ -1115,7 +1117,7 @@ void bp_update_inc_projs_dbd(struct network *n, struct group *g)
                 /*
                  * Adjust weights if projection is not frozen.
                  */
-                if (!p->frozen)
+                if (!p->flags->frozen)
                         bp_update_projection_dbd(n, g, p);
                 
                 /*
@@ -1127,7 +1129,7 @@ void bp_update_inc_projs_dbd(struct network *n, struct group *g)
                  * During BPTT, we want to only adjust weights in the
                  * network of the current timestep.
                  */
-                if (p->recurrent)
+                if (p->flags->recurrent)
                         continue;
 
                 bp_update_inc_projs_dbd(n, p->to);
@@ -1176,7 +1178,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                          *
                          * Dw_ij = Dw_ij + a * Dw_ij(t-1)
                          */
-                        weight_delta += n->momentum
+                        weight_delta += n->pars->momentum
                                 * p->prev_deltas->elements[i][j];
                         
                         /*
@@ -1184,7 +1186,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                          *
                          * Dw_ij = Dw_ij - d * w_ij
                          */
-                        weight_delta -= n->weight_decay 
+                        weight_delta -= n->pars->weight_decay 
                                 * p->weights->elements[i][j];
 
                         /*
@@ -1252,7 +1254,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                                 /*
                                  * De_ij = kappa
                                  */
-                                lr_delta = n->dbd_rate_increment;
+                                lr_delta = n->pars->dbd_rate_increment;
 
                         /*
                          * Current gradient and average of past gradients
@@ -1265,7 +1267,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                                 /*
                                  * De_ij = -phi * e_ij(t)
                                  */
-                                lr_delta = -n->dbd_rate_decrement
+                                lr_delta = -n->pars->dbd_rate_decrement
                                         * p->dynamic_params->elements[i][j];
                         }
 

@@ -42,9 +42,16 @@ struct network *create_network(char *name, enum network_type type)
         memset(n->name, 0, block_size);
         strncpy(n->name, name, strlen(name));
 
-        n->type   = type;
-        n->groups = create_array(atype_groups);
-        n->sets   = create_array(atype_sets);
+        if (!(n->flags = malloc(sizeof(struct network_flags))))
+                goto error_out;
+        memset(n->flags, 0, sizeof(struct network_flags));
+        if (!(n->pars = malloc(sizeof(struct network_params))))
+                goto error_out;
+        memset(n->pars, 0, sizeof(struct network_params));
+
+        n->flags->type = type;
+        n->groups      = create_array(atype_groups);
+        n->sets        = create_array(atype_sets);
 
         block_size = sizeof(struct status);
         if (!(n->status = malloc(block_size)))
@@ -62,40 +69,40 @@ error_out:
 
 void set_network_defaults(struct network *n)
 {
-        n->reset_contexts     = DEFAULT_RESET_CONTEXTS;
-        n->init_context_units = DEFAULT_INIT_CONTEXT_UNITS;
-        n->random_algorithm   = DEFAULT_RANDOM_ALGORITHM;
-        n->random_mu          = DEFAULT_RANDOM_MU;
-        n->random_sigma       = DEFAULT_RANDOM_SIGMA;
-        n->random_min         = DEFAULT_RANDOM_MIN;
-        n->random_max         = DEFAULT_RANDOM_MAX;
-        n->learning_algorithm = DEFAULT_LEARNING_ALGORITHM;
-        n->update_algorithm   = DEFAULT_UPDATE_ALGORITHM;
-        n->learning_rate      = DEFAULT_LEARNING_RATE;
-        n->lr_scale_factor    = DEFAULT_LR_SCALE_FACTOR;
-        n->lr_scale_after     = DEFAULT_LR_SCALE_AFTER;
-        n->momentum           = DEFAULT_MOMENTUM;
-        n->mn_scale_factor    = DEFAULT_MN_SCALE_FACTOR;
-        n->mn_scale_after     = DEFAULT_MN_SCALE_AFTER;
-        n->weight_decay       = DEFAULT_WEIGHT_DECAY;
-        n->wd_scale_factor    = DEFAULT_WD_SCALE_FACTOR;
-        n->wd_scale_after     = DEFAULT_WD_SCALE_AFTER;
-        n->target_radius      = DEFAULT_TARGET_RADIUS;
-        n->zero_error_radius  = DEFAULT_ZERO_ERROR_RADIUS;
-        n->error_threshold    = DEFAULT_ERROR_THRESHOLD;
-        n->max_epochs         = DEFAULT_MAX_EPOCHS;
-        n->report_after       = DEFAULT_REPORT_AFTER;
-        n->rp_init_update     = DEFAULT_RP_INIT_UPDATE;
-        n->rp_eta_plus        = DEFAULT_RP_ETA_PLUS;
-        n->rp_eta_minus       = DEFAULT_RP_ETA_MINUS;
-        n->dbd_rate_increment = DEFAULT_DBD_RATE_INCREMENT;
-        n->dbd_rate_decrement = DEFAULT_DBD_RATE_DECREMENT;
-        n->similarity_metric  = DEFAULT_SIMILARITY_METRIC;
+        n->flags->reset_contexts    = DEFAULT_RESET_CONTEXTS;
+        n->pars->init_context_units = DEFAULT_INIT_CONTEXT_UNITS;
+        n->random_algorithm         = DEFAULT_RANDOM_ALGORITHM;
+        n->pars->random_mu          = DEFAULT_RANDOM_MU;
+        n->pars->random_sigma       = DEFAULT_RANDOM_SIGMA;
+        n->pars->random_min         = DEFAULT_RANDOM_MIN;
+        n->pars->random_max         = DEFAULT_RANDOM_MAX;
+        n->learning_algorithm       = DEFAULT_LEARNING_ALGORITHM;
+        n->update_algorithm         = DEFAULT_UPDATE_ALGORITHM;
+        n->pars->learning_rate      = DEFAULT_LEARNING_RATE;
+        n->pars->lr_scale_factor    = DEFAULT_LR_SCALE_FACTOR;
+        n->pars->lr_scale_after     = DEFAULT_LR_SCALE_AFTER;
+        n->pars->momentum           = DEFAULT_MOMENTUM;
+        n->pars->mn_scale_factor    = DEFAULT_MN_SCALE_FACTOR;
+        n->pars->mn_scale_after     = DEFAULT_MN_SCALE_AFTER;
+        n->pars->weight_decay       = DEFAULT_WEIGHT_DECAY;
+        n->pars->wd_scale_factor    = DEFAULT_WD_SCALE_FACTOR;
+        n->pars->wd_scale_after     = DEFAULT_WD_SCALE_AFTER;
+        n->pars->target_radius      = DEFAULT_TARGET_RADIUS;
+        n->pars->zero_error_radius  = DEFAULT_ZERO_ERROR_RADIUS;
+        n->pars->error_threshold    = DEFAULT_ERROR_THRESHOLD;
+        n->pars->max_epochs         = DEFAULT_MAX_EPOCHS;
+        n->pars->report_after       = DEFAULT_REPORT_AFTER;
+        n->pars->rp_init_update     = DEFAULT_RP_INIT_UPDATE;
+        n->pars->rp_eta_plus        = DEFAULT_RP_ETA_PLUS;
+        n->pars->rp_eta_minus       = DEFAULT_RP_ETA_MINUS;
+        n->pars->dbd_rate_increment = DEFAULT_DBD_RATE_INCREMENT;
+        n->pars->dbd_rate_decrement = DEFAULT_DBD_RATE_DECREMENT;
+        n->similarity_metric        = DEFAULT_SIMILARITY_METRIC;
 }
 
 void init_network(struct network *n)
 {
-        n->initialized = false;
+        n->flags->initialized = false;
 
         /*
          * Verify network sanity.
@@ -108,24 +115,27 @@ void init_network(struct network *n)
         /*
          * Randomize weights, and initialize dynamic learning parameters.
          */
-        srand(n->random_seed);
+        srand(n->pars->random_seed);
         reset_network(n);
 
         /* 
          * If batch size is zero, set it to the number of items in the
          * active set.
          */
-        if (n->batch_size == 0 && n->asp)
-                n->batch_size = n->asp->items->num_elements;
+        if (n->pars->batch_size == 0 && n->asp)
+                n->pars->batch_size = n->asp->items->num_elements;
 
         /* 
          * If a recurrent neural network will be trained with
          * backpropagation through time, unfold it.
          */
-        if (n->learning_algorithm == train_network_with_bptt)
+        if (n->learning_algorithm == train_network_with_bptt) {
+                if(n->unfolded_net)
+                        rnn_free_unfolded_network(n->unfolded_net);
                 n->unfolded_net = rnn_init_unfolded_network(n);
+        }
 
-        n->initialized = true;
+        n->flags->initialized = true;
 }
 
 void reset_network(struct network *n)
@@ -146,6 +156,8 @@ void free_network(struct network *n)
         free_array(n->groups);
         free_sets(n->sets);
         free_array(n->sets);
+        free(n->flags);
+        free(n->pars);
         free(n);
 }
 
@@ -158,15 +170,15 @@ void inspect_network(struct network *n)
         /* name */
         cprintf("| Name: \t\t\t %s\n", n->name);
         cprintf("| Type: \t\t\t ");
-        if (n->type == ntype_ffn)
+        if (n->flags->type == ntype_ffn)
                 cprintf("ffn");
-        if (n->type == ntype_srn)
+        if (n->flags->type == ntype_srn)
                 cprintf("ffn");
-        if (n->type == ntype_rnn)
+        if (n->flags->type == ntype_rnn)
                 cprintf("ffn");
         cprintf("\n");
         cprintf("| Initialized: \t\t\t ");
-        n->initialized ? cprintf("true\n") : cprintf("false\n");
+        n->flags->initialized ? cprintf("true\n") : cprintf("false\n");
         cprintf("| Unfolded: \t\t\t ");
         n->unfolded_net ? cprintf("true\n") : cprintf("false\n");
         cprintf("| Groups: \t\t\t ");
@@ -200,8 +212,8 @@ void inspect_network(struct network *n)
 
         cprintf("|\n");
         cprintf("| Reset contexts: \t\t ");
-        n->reset_contexts ? cprintf("true\n") : cprintf("false\n");
-        cprintf("| Init context units: \t\t %f\n", n->init_context_units);
+        n->flags->reset_contexts ? cprintf("true\n") : cprintf("false\n");
+        cprintf("| Init context units: \t\t %f\n", n->pars->init_context_units);
 
                 /******************
                  **** training ****
@@ -215,25 +227,25 @@ void inspect_network(struct network *n)
                 cprintf("bptt");
         }
         cprintf("\n");
-        cprintf("| Back ticks: \t\t\t %d\n", n->back_ticks);
+        cprintf("| Back ticks: \t\t\t %d\n", n->pars->back_ticks);
         cprintf("| Update algorithm: \t\t ");
         if (n->update_algorithm == bp_update_sd
-                && n->sd_type == SD_DEFAULT)
+                && n->flags->sd_type == SD_DEFAULT)
                 cprintf("steepest");
         if (n->update_algorithm == bp_update_sd
-                && n->sd_type == SD_BOUNDED)
+                && n->flags->sd_type == SD_BOUNDED)
                 cprintf("bounded");
         if (n->update_algorithm == bp_update_rprop
-                && n->rp_type == RPROP_PLUS)
+                && n->flags->rp_type == RPROP_PLUS)
                 cprintf("rprop+");
         if (n->update_algorithm == bp_update_rprop
-                && n->rp_type == RPROP_MINUS)
+                && n->flags->rp_type == RPROP_MINUS)
                 cprintf("rprop-");
         if (n->update_algorithm == bp_update_rprop
-                && n->rp_type == IRPROP_PLUS)
+                && n->flags->rp_type == IRPROP_PLUS)
                 cprintf("irprop+");
         if (n->update_algorithm == bp_update_rprop
-                && n->rp_type == IRPROP_MINUS)
+                && n->flags->rp_type == IRPROP_MINUS)
                 cprintf("irprop+");
         if (n->update_algorithm == bp_update_qprop)
                 cprintf("qprop");
@@ -241,40 +253,40 @@ void inspect_network(struct network *n)
                 cprintf("dbd");
         cprintf("\n");
         cprintf("|\n");
-        cprintf("| Learning rate (LR): \t\t %f\n",      n->learning_rate);
-        cprintf("| LR scale factor: \t\t %f\n",         n->lr_scale_factor);
-        cprintf("| LR scale after (%%epochs): \t %f\n", n->lr_scale_after);
+        cprintf("| Learning rate (LR): \t\t %f\n",      n->pars->learning_rate);
+        cprintf("| LR scale factor: \t\t %f\n",         n->pars->lr_scale_factor);
+        cprintf("| LR scale after (%%epochs): \t %f\n", n->pars->lr_scale_after);
         cprintf("|\n");
-        cprintf("| Momentum (MN): \t\t %f\n",           n->momentum);
-        cprintf("| MN scale factor: \t\t %f\n",         n->mn_scale_factor);
-        cprintf("| MN scale after (%%epochs): \t %f\n", n->mn_scale_after);
+        cprintf("| Momentum (MN): \t\t %f\n",           n->pars->momentum);
+        cprintf("| MN scale factor: \t\t %f\n",         n->pars->mn_scale_factor);
+        cprintf("| MN scale after (%%epochs): \t %f\n", n->pars->mn_scale_after);
         cprintf("|\n");
-        cprintf("| Rprop init update: \t\t %f\n",       n->rp_init_update);
-        cprintf("| Rprop Eta-: \t\t\t %f\n",            n->rp_eta_minus);
-        cprintf("| Rprop Eta+: \t\t\t %f\n",            n->rp_eta_plus);
+        cprintf("| Rprop init update: \t\t %f\n",       n->pars->rp_init_update);
+        cprintf("| Rprop Eta-: \t\t\t %f\n",            n->pars->rp_eta_minus);
+        cprintf("| Rprop Eta+: \t\t\t %f\n",            n->pars->rp_eta_plus);
         cprintf("|\n");
-        cprintf("| DBD rate increment: \t\t %f\n",      n->rp_init_update);
-        cprintf("| DBD rate decrement: \t\t %f\n",      n->rp_eta_minus);
+        cprintf("| DBD rate increment: \t\t %f\n",      n->pars->rp_init_update);
+        cprintf("| DBD rate decrement: \t\t %f\n",      n->pars->rp_eta_minus);
         cprintf("|\n");
-        cprintf("| Weight decay (WD): \t\t %f\n",       n->weight_decay);
-        cprintf("| WD scale factor: \t\t %f\n",         n->wd_scale_factor);
-        cprintf("| WD scale after (%%epochs): \t %f\n", n->wd_scale_after);
+        cprintf("| Weight decay (WD): \t\t %f\n",       n->pars->weight_decay);
+        cprintf("| WD scale factor: \t\t %f\n",         n->pars->wd_scale_factor);
+        cprintf("| WD scale after (%%epochs): \t %f\n", n->pars->wd_scale_after);
         cprintf("|\n");
-        cprintf("| Target radius: \t\t %f\n",           n->target_radius);
-        cprintf("| Zero error radius: \t\t %f\n",       n->zero_error_radius);
-        cprintf("| Error threshold: \t\t %f\n",         n->error_threshold);
+        cprintf("| Target radius: \t\t %f\n",           n->pars->target_radius);
+        cprintf("| Zero error radius: \t\t %f\n",       n->pars->zero_error_radius);
+        cprintf("| Error threshold: \t\t %f\n",         n->pars->error_threshold);
         cprintf("|\n");
         cprintf("| Training order: \t\t ");
-        if (n->training_order == train_ordered)
+        if (n->flags->training_order == train_ordered)
                 cprintf("ordered");
-        if (n->training_order == train_permuted)
+        if (n->flags->training_order == train_permuted)
                 cprintf("permuted");
-        if (n->training_order == train_randomized)
+        if (n->flags->training_order == train_randomized)
                 cprintf("randomized");
         cprintf("\n");
-        cprintf("| Batch size: \t\t\t %d\n",            n->batch_size);
-        cprintf("| Maximum #epochs: \t\t %d\n",         n->max_epochs);
-        cprintf("| Report after #epochs \t\t %d\n",     n->report_after);
+        cprintf("| Batch size: \t\t\t %d\n",            n->pars->batch_size);
+        cprintf("| Maximum #epochs: \t\t %d\n",         n->pars->max_epochs);
+        cprintf("| Report after #epochs \t\t %d\n",     n->pars->report_after);
         cprintf("|\n");
         cprintf("| Multi-stage input: \t\t ");
         n->ms_input
@@ -304,11 +316,11 @@ void inspect_network(struct network *n)
         if (n->random_algorithm == randomize_binary)
                 cprintf("binary");
         cprintf("\n");
-        cprintf("| Random Seed: \t\t\t %d\n", n->random_seed);
-        cprintf("| Random Mu: \t\t\t %f\n",   n->random_mu);
-        cprintf("| Random Sigma: \t\t %f\n",  n->random_sigma);
-        cprintf("| Random Min: \t\t\t %f\n",  n->random_min);
-        cprintf("| Random Max: \t\t\t %f\n",  n->random_max);
+        cprintf("| Random Seed: \t\t\t %d\n", n->pars->random_seed);
+        cprintf("| Random Mu: \t\t\t %f\n",   n->pars->random_mu);
+        cprintf("| Random Sigma: \t\t %f\n",  n->pars->random_sigma);
+        cprintf("| Random Min: \t\t\t %f\n",  n->pars->random_min);
+        cprintf("| Random Max: \t\t\t %f\n",  n->pars->random_max);
 
                 /***************
                  **** other ****
@@ -376,20 +388,28 @@ struct group *create_group(char *name, uint32_t size, bool bias,
                 goto error_out;
         memset(g->err_fun, 0, sizeof(struct err_fun));
 
-        g->vector        = create_vector(size);
-        g->error         = create_vector(size);
-        g->inc_projs     = create_array(atype_projs);
-        g->out_projs     = create_array(atype_projs);
-        g->ctx_groups    = create_array(atype_groups);
-        g->bias          = bias;
-        g->recurrent     = recurrent;
+        if(!(g->flags = malloc(sizeof(struct group_flags))))
+                goto error_out;
+        memset(g->flags, 0, sizeof(struct  group_flags));
+        if(!(g->pars = malloc(sizeof(struct group_params))))
+                goto error_out;
+        memset(g->pars, 0, sizeof(struct  group_params));
 
-        g->relu_alpha    = DEFAULT_RELU_ALPHA;
-        g->logistic_fsc  = DEFAULT_LOGISTIC_FSC;
-        g->logistic_gain = DEFAULT_LOGISTIC_GAIN;
+        g->vector              = create_vector(size);
+        g->error               = create_vector(size);
+        g->inc_projs           = create_array(atype_projs);
+        g->out_projs           = create_array(atype_projs);
+        g->ctx_groups          = create_array(atype_groups);
+
+        g->flags->bias         = bias;
+        g->flags->recurrent    = recurrent;
+
+        g->pars->relu_alpha    = DEFAULT_RELU_ALPHA;
+        g->pars->logistic_fsc  = DEFAULT_LOGISTIC_FSC;
+        g->pars->logistic_gain = DEFAULT_LOGISTIC_GAIN;
 
         /* bias nodes have activation 1.0 */
-        if(g->bias)
+        if(g->flags->bias)
                 g->vector->elements[0] = 1.0;
 
         return g;
@@ -417,13 +437,6 @@ struct group *attach_bias_group(struct network *n, struct group *g)
         struct group *bg = create_group(bgn, 1, true, false);
         free(bgn);
 
-        /*
-        bg->act_fun->fun   = g->act_fun->fun;
-        bg->act_fun->deriv = g->act_fun->deriv;
-        bg->err_fun->fun   = g->err_fun->fun;
-        bg->err_fun->deriv = g->err_fun->deriv;
-        */
-
         add_group(n, bg);
         add_bidirectional_projection(bg, g);
 
@@ -448,6 +461,8 @@ void free_group(struct group *g)
                 free(g->out_projs->elements[i]);
         free_array(g->out_projs);
         free_array(g->ctx_groups);
+        free(g->flags);
+        free(g->pars);
         free(g);
 }
 
@@ -504,7 +519,8 @@ void print_groups(struct network *n)
                 /* activation function */
                 if (g->act_fun->fun == act_fun_logistic)
                         cprintf(" :: logistic (fsc = %f; gain = %f)",
-                                g->logistic_fsc, g->logistic_gain);
+                                g->pars->logistic_fsc,
+                                g->pars->logistic_gain);
                 if (g->act_fun->fun == act_fun_bipolar_sigmoid)
                         cprintf(" :: bipolar_sigmoid");
                 if (g->act_fun->fun == act_fun_softmax)
@@ -521,10 +537,10 @@ void print_groups(struct network *n)
                         cprintf(" :: binary_relu");
                 if (g->act_fun->fun == act_fun_leaky_relu)
                         cprintf(" :: leaky_relu (alpha = %f)",
-                                g->relu_alpha);
+                                g->pars->relu_alpha);
                 if (g->act_fun->fun == act_fun_elu)
                         cprintf(" :: elu (alpha = %f)",
-                                g->relu_alpha);
+                                g->pars->relu_alpha);
 
                 /* error function */
                 if (g->err_fun->fun == err_fun_sum_of_squares)
@@ -535,7 +551,7 @@ void print_groups(struct network *n)
                         cprintf(" :: divergence");
 
                 /* bias */
-                if (g->bias)
+                if (g->flags->bias)
                         cprintf(" :: bias group");
 
                 /* input/output group */
@@ -597,7 +613,7 @@ void reset_stack_pointer(struct network *n)
          * 
          * TODO: Validate this logic!
          */
-        if (n->initialized && !n->reset_contexts)
+        if (n->flags->initialized && !n->flags->reset_contexts)
                 return;
         n->unfolded_net->sp = 0;
 }
@@ -607,7 +623,7 @@ void reset_context_groups(struct network *n)
         /*
          * If context groups should not be reset, shift the context groups.
          */
-        if (n->initialized && !n->reset_contexts) {
+        if (n->flags->initialized && !n->flags->reset_contexts) {
                 shift_context_groups(n);
                 return;
         }
@@ -622,7 +638,7 @@ void reset_context_group_chain(struct network *n, struct group *g)
 {
         for (uint32_t i = 0; i < g->ctx_groups->num_elements; i++)
                 reset_context_group_chain(n, g->ctx_groups->elements[i]);
-        fill_vector_with_value(g->vector, n->init_context_units);
+        fill_vector_with_value(g->vector, n->pars->init_context_units);
 }
 
 void reset_recurrent_groups(struct network *n)
@@ -633,20 +649,20 @@ void reset_recurrent_groups(struct network *n)
          *
          * TODO: Validate this logic!
          */
-        if (n->initialized && !n->reset_contexts) {
+        if (n->flags->initialized && !n->flags->reset_contexts) {
                 shift_pointer_or_stack(n);
                 return;
         }
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
-                if (!g->recurrent)
+                if (!g->flags->recurrent)
                         continue;
                 for (uint32_t j = 0; j < g->inc_projs->num_elements; j++) {
                         struct projection *p = g->inc_projs->elements[j];
-                        if (!p->to->recurrent)
+                        if (!p->to->flags->recurrent)
                                 continue;
                         fill_vector_with_value(p->to->vector,
-                                n->init_context_units);
+                                n->pars->init_context_units);
                 }
         }
 }
@@ -668,10 +684,10 @@ void reset_rnn_error_signals(struct network *n)
                         struct group *g = sn->groups->elements[j];
                         zero_out_vector(g->error);
                         /* reset error vector of "terminal" group */
-                        if (i > 0 || !g->recurrent) continue;
+                        if (i > 0 || !g->flags->recurrent) continue;
                         for (uint32_t x = 0; x < g->inc_projs->num_elements; x++) {
                                 struct projection *p = g->inc_projs->elements[x];
-                                if (p->to->recurrent)
+                                if (p->to->flags->recurrent)
                                         zero_out_vector(p->to->error);
                         }
                 }
@@ -684,7 +700,8 @@ struct projection *create_projection(
         struct matrix *gradients,
         struct matrix *prev_gradients,
         struct matrix *prev_deltas,
-        struct matrix *dynamic_params)
+        struct matrix *dynamic_params,
+        struct projection_flags *flags)
 {
         struct projection *p;
         if (!(p = malloc(sizeof(struct projection))))
@@ -697,6 +714,7 @@ struct projection *create_projection(
         p->prev_gradients = prev_gradients;
         p->prev_deltas    = prev_deltas;
         p->dynamic_params = dynamic_params;
+        p->flags          = flags;
 
         return p;
 
@@ -712,6 +730,7 @@ void free_projection(struct projection *p)
         free_matrix(p->prev_gradients);
         free_matrix(p->prev_deltas);
         free_matrix(p->dynamic_params);
+        free(p->flags);
         free(p);
 }
 
@@ -723,7 +742,7 @@ void add_projection(struct array *projs, struct projection *p)
 void add_bidirectional_projection(struct group *fg, struct group *tg)
 {
         if (fg == tg) {
-                fg->recurrent = true;
+                fg->flags->recurrent = true;
                 return;
         }
         /* weight matrix */
@@ -741,13 +760,24 @@ void add_bidirectional_projection(struct group *fg, struct group *tg)
         /* dynamic learning parameters matrix */
         struct matrix *dynamic_params = create_matrix(
                 fg->vector->size, tg->vector->size);
+        /* flags */
+        struct projection_flags *flags;
+        if (!(flags = malloc(sizeof(struct projection_flags))))
+                goto error_out;
+        memset(flags, 0, sizeof(struct projection_flags));
         /* add projections */
-        struct projection *op = create_projection(tg, weights,
-                gradients, prev_gradients, prev_deltas, dynamic_params);
-        struct projection *ip = create_projection(fg, weights,
-                gradients, prev_gradients, prev_deltas, dynamic_params);
+        struct projection *op = create_projection(tg, weights, gradients,
+                prev_gradients, prev_deltas, dynamic_params, flags);
+        struct projection *ip = create_projection(fg, weights, gradients,
+                prev_gradients, prev_deltas, dynamic_params, flags);
         add_projection(fg->out_projs, op);
         add_projection(tg->inc_projs, ip);
+
+        return;
+
+error_out:
+        perror("[add_bidirectional_projection()]");
+        return;
 }
 
 void remove_projection(struct array *projs, struct projection *p)
@@ -818,17 +848,17 @@ void print_projections(struct network *n)
                                 p->weights->rows, p->weights->cols);
                 }
                 /* recurrent incoming projection */
-                if (g->recurrent) {
+                if (g->flags->recurrent) {
                         if (g->inc_projs->num_elements > 0)
                                 cprintf(", ");
                         cprintf("%s (%d x %d)", g->name,
                                 g->vector->size, g->vector->size);
                 }
                 /* current group */
-                if (g->recurrent || g->inc_projs->num_elements > 0)
+                if (g->flags->recurrent || g->inc_projs->num_elements > 0)
                         cprintf(" -> ", g->name);
                 cprintf("[%s]", g->name);
-                if (g->recurrent || g->out_projs->num_elements > 0)
+                if (g->flags->recurrent || g->out_projs->num_elements > 0)
                         cprintf(" -> ", g->name);
                 /* outgoing projections */
                 for (uint32_t j = 0; j < g->out_projs->num_elements; j++) {
@@ -840,7 +870,7 @@ void print_projections(struct network *n)
                                 p->weights->rows, p->weights->cols);
                 }
                 /* recurrent outgoing projection */
-                if (g->recurrent) {
+                if (g->flags->recurrent) {
                         if (g->out_projs->num_elements > 0)
                                 cprintf(", ");
                         cprintf("%s", g->name);
@@ -862,18 +892,14 @@ void print_projections(struct network *n)
 }
 
 
-void freeze_projection(struct projection *fg_to_tg,
-        struct projection *tg_to_fg)
+void freeze_projection(struct projection *p)
 {
-        fg_to_tg->frozen = true;
-        tg_to_fg->frozen = true;
+        p->flags->frozen = true;
 }
 
-void unfreeze_projection(struct projection *fg_to_tg,
-        struct projection *tg_to_fg)
+void unfreeze_projection(struct projection *p)
 {
-        fg_to_tg->frozen = false;
-        tg_to_fg->frozen = false;
+        p->flags->frozen = false;
 }
 
 void free_sets(struct array *sets)
@@ -927,7 +953,7 @@ void randomize_weight_matrices(struct group *g, struct network *n)
         /* incoming projections */
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
-                if (ip->frozen) continue;
+                if (ip->flags->frozen) continue;
                 n->random_algorithm(ip->weights, n);
         }
         /* outgoing projections */
@@ -941,9 +967,9 @@ void initialize_dynamic_params(struct group *g, struct network *n)
 {
         double v = 0.0;
         if (n->update_algorithm == bp_update_rprop)
-                v = n->rp_init_update;
+                v = n->pars->rp_init_update;
         if (n->update_algorithm == bp_update_dbd)
-                v = n->learning_rate;
+                v = n->pars->learning_rate;
         /* incoming projections */
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
@@ -984,7 +1010,7 @@ bool save_weight_matrices(struct network *n, char *filename)
         if (!(fd = fopen(filename, "w")))
                 goto error_file;
 
-        switch (n->type) {
+        switch (n->flags->type) {
         case ntype_ffn: /* fall through */
         case ntype_srn:
                 save_weight_matrix(n->input, fd);
@@ -1026,7 +1052,7 @@ void save_weight_matrix(struct group *g, FILE *fd)
         /* outgoing projections */
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
-                if (op->recurrent)
+                if (op->flags->recurrent)
                         continue;
                 save_weight_matrix(op->to, fd);
         }
@@ -1041,7 +1067,7 @@ bool load_weight_matrices(struct network *n, char *filename)
                 goto error_file;
 
         struct network *np = NULL;
-        switch (n->type) {
+        switch (n->flags->type) {
         case ntype_ffn: /* fall through */
         case ntype_srn:
                 np = n;

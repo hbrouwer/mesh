@@ -29,7 +29,7 @@ void randomize_gaussian(struct matrix *m, struct network *n)
         for (uint32_t i = 0; i < m->rows; i++)
                 for (uint32_t j = 0; j < m->cols; j++)
                         m->elements[i][j] = normrand(
-                                n->random_mu, n->random_sigma);
+                                n->pars->random_mu, n->pars->random_sigma);
 }
 
 /*
@@ -40,8 +40,8 @@ void randomize_range(struct matrix *m, struct network *n)
         for (uint32_t i = 0; i < m->rows; i++)
                 for (uint32_t j = 0; j < m->cols; j++)
                         m->elements[i][j] = ((double)rand() / RAND_MAX)
-                                * (n->random_max - n->random_min)
-                                + n->random_min;
+                                * (n->pars->random_max - n->pars->random_min)
+                                + n->pars->random_min;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -117,16 +117,16 @@ void randomize_fan_in(struct matrix *m, struct network *n)
         /*
          * Randomize weights in the range [-1,1].
          */
-        double random_min = n->random_min;
-        double random_max = n->random_max;
+        double random_min = n->pars->random_min;
+        double random_max = n->pars->random_max;
 
-        n->random_min = -1.0;
-        n->random_max = 1.0;
+        n->pars->random_min = -1.0;
+        n->pars->random_max = 1.0;
 
         randomize_range(m, n);
 
-        n->random_min = random_min;
-        n->random_max = random_max;
+        n->pars->random_min = random_min;
+        n->pars->random_max = random_max;
 
         /*
          * Compute weights:
@@ -137,9 +137,10 @@ void randomize_fan_in(struct matrix *m, struct network *n)
          */
         for (uint32_t i = 0; i < m->rows; i++)
                 for (uint32_t j = 0; j < m->cols; j++)
-                        m->elements[i][j] = (n->random_min / m->cols)
+                        m->elements[i][j] = (n->pars->random_min / m->cols)
                                 + m->elements[i][j]
-                                * ((n->random_max - n->random_min) / m->cols);
+                                * ((n->pars->random_max - n->pars->random_min)
+                                / m->cols);
 }
 
 /*

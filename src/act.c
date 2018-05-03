@@ -54,7 +54,7 @@ void feed_forward(struct network *n, struct group *g)
                  * During BPTT, we want activation to propagate only through
                  * the network of the current timestep.
                  */
-                if (op->recurrent)
+                if (op->flags->recurrent)
                         continue;
                 
                 /*
@@ -113,7 +113,7 @@ void feed_forward(struct network *n, struct group *g)
          */
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
-                if (!op->recurrent)
+                if (!op->flags->recurrent)
                         feed_forward(n, op->to);
         }
 }
@@ -148,14 +148,15 @@ Fahlman, S. E. (1988). An empirical study of learning speed in back-
 
 double act_fun_logistic(struct group *g, uint32_t i)
 {
-        return 1.0 / (1.0 + EXP(-(g->logistic_gain * g->vector->elements[i])));
+        return 1.0 / (1.0 + EXP(-(g->pars->logistic_gain
+                * g->vector->elements[i])));
 }
 
 double act_fun_logistic_deriv(struct group *g, uint32_t i)
 {
-        return g->logistic_gain
+        return g->pars->logistic_gain
                 * g->vector->elements[i] * (1.0 - g->vector->elements[i])
-                + g->logistic_fsc;
+                + g->pars->logistic_fsc;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -335,7 +336,7 @@ double act_fun_leaky_relu(struct group *g, uint32_t i)
         if (g->vector->elements[i] > 0.0)
                 return g->vector->elements[i];
         else
-                return g->relu_alpha * g->vector->elements[i];
+                return g->pars->relu_alpha * g->vector->elements[i];
 }
 
 double act_fun_leaky_relu_deriv(struct group *g, uint32_t i)
@@ -343,7 +344,7 @@ double act_fun_leaky_relu_deriv(struct group *g, uint32_t i)
         if (g->vector->elements[i] > 0.0)
                 return 1.0;
         else
-                return g->relu_alpha;
+                return g->pars->relu_alpha;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -365,7 +366,8 @@ double act_fun_elu(struct group *g, uint32_t i)
         if (g->vector->elements[i] >= 0.0)
                 return g->vector->elements[i];
         else
-                return g->relu_alpha * (EXP(g->vector->elements[i]) - 1.0);
+                return g->pars->relu_alpha
+                        * (EXP(g->vector->elements[i]) - 1.0);
 }
 
 double act_fun_elu_deriv(struct group *g, uint32_t i)
@@ -373,5 +375,5 @@ double act_fun_elu_deriv(struct group *g, uint32_t i)
         if (g->vector->elements[i] >= 0.0)
                 return 1.0;
         else
-                return g->vector->elements[i] + g->relu_alpha;
+                return g->vector->elements[i] + g->pars->relu_alpha;
 }

@@ -110,10 +110,10 @@ struct vector *erp_values_for_item(struct network *n, struct group *g,
         fill_vector_with_value(pv, 1.0);
         fill_vector_with_value(pv, 1.0 / euclidean_norm(pv));
 
-        if (n->type == ntype_srn)
+        if (n->flags->type == ntype_srn)
                 reset_context_groups(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
-                if (i > 0 && n->type == ntype_srn)
+                if (i > 0 && n->flags->type == ntype_srn)
                         shift_context_groups(n);
                 copy_vector(n->input->vector, item->inputs[i]);
                 feed_forward(n, n->input);

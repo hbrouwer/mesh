@@ -52,7 +52,7 @@ struct matrix *similarity_matrix(struct network *n)
         keep_running = true;
 
         struct matrix *sm = NULL;
-        switch (n->type) {
+        switch (n->flags->type) {
         case ntype_ffn: /* fall through */
         case ntype_srn:
                 sm = ffn_network_sm(n);
@@ -78,10 +78,10 @@ struct matrix *ffn_network_sm(struct network *n)
                         goto out;
                  struct item *item = n->asp->items->elements[i];
 
-                if (n->type == ntype_srn)
+                if (n->flags->type == ntype_srn)
                         reset_context_groups(n);
                 for (uint32_t j = 0; j < item->num_events; j++) {
-                        if (j > 0 && n->type == ntype_srn)
+                        if (j > 0 && n->flags->type == ntype_srn)
                                 shift_context_groups(n);
                         copy_vector(n->input->vector, item->inputs[j]);
                         feed_forward(n, n->input);

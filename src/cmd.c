@@ -85,7 +85,7 @@ void process_command(char *cmd, struct session *s)
                  * Skip commands that require an initialized network if
                  * necessary.
                  */
-                if (req_init && !s->anp->initialized) {
+                if (req_init && !s->anp->flags->initialized) {
                         eprintf("Cannot process command: `%s`\n", cmd);
                         eprintf("Uninitialized network - use `init` command to initialize\n");
                         goto out;
@@ -546,7 +546,7 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
                 return true;
         }
         /* projection should not already exist */
-        if ((fg == tg && fg->recurrent) || find_projection(fg->out_projs, tg)) {
+        if ((fg == tg && fg->flags->recurrent) || find_projection(fg->out_projs, tg)) {
         
                 eprintf("Cannot create projection - projection '%s -> %s' already exists\n", arg1, arg2);
                 return true;
@@ -685,13 +685,12 @@ bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
         }
         /* freeze projection, if it exists */
         struct projection *fg_to_tg = find_projection(fg->out_projs, tg);
-        struct projection *tg_to_fg = find_projection(tg->inc_projs, fg);
-        if (!fg_to_tg || !tg_to_fg) {
+        if (!fg_to_tg) {
                 eprintf("Cannot freeze projection - no projection between groups '%s' and '%s')\n",
                         arg1, arg2);
                 return true;
         }
-        freeze_projection(fg_to_tg, tg_to_fg);
+        freeze_projection(fg_to_tg);
         mprintf("Froze projection \t\t [ %s -> %s ]\n", arg1, arg2);
         return true;
 }
@@ -716,13 +715,12 @@ bool cmd_unfreeze_projection(char *cmd, char *fmt, struct session *s)
         }
         /* unfreeze projection, if it exists */
         struct projection *fg_to_tg = find_projection(fg->out_projs, tg);
-        struct projection *tg_to_fg = find_projection(tg->inc_projs, fg);
-        if (!fg_to_tg || !tg_to_fg) {
+        if (!fg_to_tg) {
                 eprintf("Cannot unfreeze projection - no projection between groups '%s' and '%s')\n",
                         arg1, arg2);
                 return true;
         }
-        unfreeze_projection(fg_to_tg, tg_to_fg);
+        unfreeze_projection(fg_to_tg);
         mprintf("Unfroze projection \t\t [ %s -> %s ]\n", arg1, arg2);
         return true;
 }
@@ -731,8 +729,8 @@ bool cmd_toggle_reset_contexts(char *cmd, char *fmt, struct session *s)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
-        s->anp->reset_contexts = !s->anp->reset_contexts;
-        if (s->anp->reset_contexts)
+        s->anp->flags->reset_contexts = !s->anp->flags->reset_contexts;
+        if (s->anp->flags->reset_contexts)
                 mprintf("Toggled reset contexts \t [ on ]\n");
         else
                 mprintf("Toggled reset contexts \t [ off ]\n");
@@ -793,29 +791,29 @@ bool cmd_set_int_parameter(char *cmd, char *fmt, struct session *s)
                 return false;
         /* batch size */
         if        (strcmp(arg1, "BatchSize") == 0) {
-                s->anp->batch_size = arg2;
+                s->anp->pars->batch_size = arg2;
                 mprintf("Set batch size \t\t [ %d ]\n",
-                        s->anp->batch_size);
+                        s->anp->pars->batch_size);
         /* max number of epochs */
         } else if (strcmp(arg1, "MaxEpochs") == 0) {
-                s->anp->max_epochs = arg2;
+                s->anp->pars->max_epochs = arg2;
                 mprintf("Set maximum #epochs \t\t [ %d ]\n",
-                        s->anp->max_epochs);
+                        s->anp->pars->max_epochs);
         /* report after */
         } else if (strcmp(arg1, "ReportAfter") == 0) {
-                s->anp->report_after = arg2;
+                s->anp->pars->report_after = arg2;
                 mprintf("Set report after (#epochs) \t [ %d ]\n",
-                        s->anp->report_after);
+                        s->anp->pars->report_after);
         /* random seed */
         } else if (strcmp(arg1, "RandomSeed") == 0) {
-                s->anp->random_seed = arg2;
+                s->anp->pars->random_seed = arg2;
                 mprintf("Set random seed \t\t [ %d ]\n",
-                        s->anp->random_seed);
+                        s->anp->pars->random_seed);
         /* number of back ticks */
         } else if (strcmp(arg1, "BackTicks") == 0) {
-                s->anp->back_ticks = arg2;
+                s->anp->pars->back_ticks = arg2;
                 mprintf("Set BPTT back ticks \t\t [ %d ]\n",
-                        s->anp->back_ticks);
+                        s->anp->pars->back_ticks);
         /* error: no matching variable */                        
         } else {
                 return false;
@@ -831,114 +829,114 @@ bool cmd_set_double_parameter(char *cmd, char *fmt, struct session *s)
                 return false;
         /* initial context activation */
         if        (strcmp(arg1, "InitContextUnits") == 0) {
-                s->anp->init_context_units = arg2;
+                s->anp->pars->init_context_units = arg2;
                 mprintf("Set init context units \t [ %lf ]\n",
-                        s->anp->init_context_units);
+                        s->anp->pars->init_context_units);
         /* random mu */
         } else if (strcmp(arg1, "RandomMu") == 0) {
-                s->anp->random_mu = arg2;
+                s->anp->pars->random_mu = arg2;
                 mprintf("Set random Mu \t\t [ %lf ]\n",
-                        s->anp->random_mu);
+                        s->anp->pars->random_mu);
         /* random sigma */
         } else if (strcmp(arg1, "RandomSigma") == 0) {
-                s->anp->random_sigma = arg2;
+                s->anp->pars->random_sigma = arg2;
                 mprintf("Set random Sigma \t\t [ %lf ]\n",
-                        s->anp->random_sigma);
+                        s->anp->pars->random_sigma);
         /* random minimum */
         } else if (strcmp(arg1, "RandomMin") == 0) {
-                s->anp->random_min = arg2;
+                s->anp->pars->random_min = arg2;
                 mprintf("Set random minimum \t\t [ %lf ]\n",
-                        s->anp->random_min);
+                        s->anp->pars->random_min);
         /* random maximum */
         } else if (strcmp(arg1, "RandomMax") == 0) {
-                s->anp->random_max = arg2;
+                s->anp->pars->random_max = arg2;
                 mprintf("Set random maximum \t\t [ %lf ]\n",
-                        s->anp->random_max);
+                        s->anp->pars->random_max);
         /* learning rate */
         } else if (strcmp(arg1, "LearningRate") == 0) {
-                s->anp->learning_rate = arg2;
+                s->anp->pars->learning_rate = arg2;
                 mprintf("Set learning rate \t\t [ %lf ]\n",
-                        s->anp->learning_rate);
+                        s->anp->pars->learning_rate);
         /* learning rate scale factor */
         } else if (strcmp(arg1, "LRScaleFactor") == 0) {
-                s->anp->lr_scale_factor = arg2;
+                s->anp->pars->lr_scale_factor = arg2;
                 mprintf("Set LR scale factor \t\t [ %lf ]\n",
-                        s->anp->lr_scale_factor);
+                        s->anp->pars->lr_scale_factor);
         /* learning rate scale after */
         } else if (strcmp(arg1, "LRScaleAfter") == 0) {
-                s->anp->lr_scale_after = arg2;
+                s->anp->pars->lr_scale_after = arg2;
                 mprintf("Set LR scale after (%%epochs) \t [ %lf ]\n",
-                        s->anp->lr_scale_after);
+                        s->anp->pars->lr_scale_after);
         /* momentum */
         } else if (strcmp(arg1, "Momentum") == 0) {
-                s->anp->momentum = arg2;
+                s->anp->pars->momentum = arg2;
                 mprintf("Set momentum \t\t\t [ %lf ]\n",
-                        s->anp->momentum);
+                        s->anp->pars->momentum);
         /* momentum scale factor */
         } else if (strcmp(arg1, "MNScaleFactor") == 0) {
-                s->anp->mn_scale_factor = arg2;
+                s->anp->pars->mn_scale_factor = arg2;
                 mprintf("Set MN scale factor \t [ %lf ]\n",
-                        s->anp->mn_scale_factor);
+                        s->anp->pars->mn_scale_factor);
         /* momentum scale after */
         } else if (strcmp(arg1, "MNScaleAfter") == 0) {
-                s->anp->mn_scale_after = arg2;
+                s->anp->pars->mn_scale_after = arg2;
                 mprintf("Set MN scale after (%%epochs) [ %lf ]\n",
-                        s->anp->mn_scale_after);
+                        s->anp->pars->mn_scale_after);
         /* weight decay */
         } else if (strcmp(arg1, "WeightDecay") == 0) {
-                s->anp->weight_decay = arg2;
+                s->anp->pars->weight_decay = arg2;
                 mprintf("Set weight decay \t\t [ %lf ]\n",
-                        s->anp->weight_decay);
+                        s->anp->pars->weight_decay);
         /* weight decay scale factor */
         } else if (strcmp(arg1, "WDScaleFactor") == 0) {
-                s->anp->wd_scale_factor = arg2;
+                s->anp->pars->wd_scale_factor = arg2;
                 mprintf("Set WD scale factor \t [ %lf ]\n",
-                        s->anp->wd_scale_factor);
+                        s->anp->pars->wd_scale_factor);
         /* weight decay scale after */
         } else if (strcmp(arg1, "WDScaleAfter") == 0) {
-                s->anp->wd_scale_after = arg2;
+                s->anp->pars->wd_scale_after = arg2;
                 mprintf("Set WD scale after (%%epochs) [ %lf ]\n",
-                        s->anp->wd_scale_after);
+                        s->anp->pars->wd_scale_after);
         /* error threshold */
         } else if (strcmp(arg1, "ErrorThreshold") == 0) {
-                s->anp->error_threshold = arg2;
+                s->anp->pars->error_threshold = arg2;
                 mprintf("Set error threshold \t\t [ %lf ]\n",
-                        s->anp->error_threshold);
+                        s->anp->pars->error_threshold);
         /* target radius */
         } else if (strcmp(arg1, "TargetRadius") == 0) {
-                s->anp->target_radius = arg2;
+                s->anp->pars->target_radius = arg2;
                 mprintf("Set target radius \t\t [ %lf ]\n",
-                        s->anp->target_radius);
+                        s->anp->pars->target_radius);
         /* zero error radius */
         } else if (strcmp(arg1, "ZeroErrorRadius") == 0) {
-                s->anp->zero_error_radius = arg2;
+                s->anp->pars->zero_error_radius = arg2;
                 mprintf("Set zero-error radius \t [ %lf ]\n",
-                        s->anp->zero_error_radius);
+                        s->anp->pars->zero_error_radius);
         /* rprop initial update value */
         } else if (strcmp(arg1, "RpropInitUpdate") == 0) {
-                s->anp->rp_init_update = arg2;
+                s->anp->pars->rp_init_update = arg2;
                 mprintf("Set init update (for Rprop)  [ %lf ]\n",
-                        s->anp->rp_init_update);
+                        s->anp->pars->rp_init_update);
         /* rprop eta plus */
         } else if (strcmp(arg1, "RpropEtaPlus") == 0) {
-                s->anp->rp_eta_plus = arg2;
+                s->anp->pars->rp_eta_plus = arg2;
                 mprintf("Set Eta+ (for Rprop) \t [ %lf ]\n",
-                        s->anp->rp_eta_plus);
+                        s->anp->pars->rp_eta_plus);
         /* rprop eta minus */
         } else if (strcmp(arg1, "RpropEtaMinus") == 0) {
-                s->anp->rp_eta_minus = arg2;
+                s->anp->pars->rp_eta_minus = arg2;
                 mprintf("Set Eta- (for Rprop) \t [ %lf ]\n",
-                        s->anp->rp_eta_minus);
+                        s->anp->pars->rp_eta_minus);
         /* delta-bar-delta increment rate */
         } else if (strcmp(arg1, "DBDRateIncrement") == 0) {
-                s->anp->dbd_rate_increment = arg2;
+                s->anp->pars->dbd_rate_increment = arg2;
                 mprintf("Set increment rate (for DBD) \t [ %lf ]\n",
-                        s->anp->dbd_rate_increment);
+                        s->anp->pars->dbd_rate_increment);
         /* delta-bar-delta decrement rate */
         } else if (strcmp(arg1, "DBDRateDecrement") == 0) {
-                s->anp->dbd_rate_decrement = arg2;
+                s->anp->pars->dbd_rate_decrement = arg2;
                 mprintf("Set decrement rate (for DBD) \t [ %lf ]\n",
-                        s->anp->dbd_rate_decrement);
+                        s->anp->pars->dbd_rate_decrement);
         /* error: no matching variable */                        
         } else {
                 return false;
@@ -961,19 +959,19 @@ bool cmd_set_group_double_parameter(char *cmd, char *fmt, struct session *s)
         }
         /* ReLU alpha */
         if        (strcmp(arg1, "ReLUAlpha") == 0) {
-                g->relu_alpha = arg3;
+                g->pars->relu_alpha = arg3;
                 mprintf("Set ReLU alpha \t\t [ %s :: %lf ]\n",
-                        arg2, g->relu_alpha);
+                        arg2, g->pars->relu_alpha);
         /* logistic FSC (Flat Spot Correction) */
         } else if (strcmp(arg1, "LogisticFSC") == 0) {
-                g->logistic_fsc = arg3;
+                g->pars->logistic_fsc = arg3;
                 mprintf("Set Logistic FSC \t\t [ %s :: %lf ]\n",
-                        arg2, g->logistic_fsc);
+                        arg2, g->pars->logistic_fsc);
         /* logistic gain */
         } else if (strcmp(arg1, "LogisticGain") == 0) {
-                g->logistic_gain = arg3;
+                g->pars->logistic_gain = arg3;
                 mprintf("Set Logistic gain \t\t [ %s :: %lf ]\n",
-                        arg2, g->logistic_gain);                        
+                        arg2, g->pars->logistic_gain);                        
         /* error: no matching variable */
         } else {
                 return false;
@@ -1036,37 +1034,37 @@ bool cmd_set_update_algorithm(char *cmd, char *fmt, struct session *s)
         /* steepest descent */
         if      (strcmp(arg, "steepest") == 0) {
                 s->anp->update_algorithm = bp_update_sd;
-                s->anp->sd_type = SD_DEFAULT;
+                s->anp->flags->sd_type = SD_DEFAULT;
         }
         /* gradient [= steepest] descent */
         else if (strcmp(arg, "gradient") == 0) {
                 s->anp->update_algorithm = bp_update_sd;
-                s->anp->sd_type = SD_DEFAULT;
+                s->anp->flags->sd_type = SD_DEFAULT;
         }        
         /* bounded steepest descent */
         else if (strcmp(arg, "bounded") == 0) {
                 s->anp->update_algorithm = bp_update_sd;
-                s->anp->sd_type = SD_BOUNDED;
+                s->anp->flags->sd_type = SD_BOUNDED;
         }
         /* resilient propagation plus */
         else if (strcmp(arg, "rprop+") == 0) {
                 s->anp->update_algorithm = bp_update_rprop;
-                s->anp->rp_type = RPROP_PLUS;
+                s->anp->flags->rp_type = RPROP_PLUS;
         }
         /* resilient propagation minus */
         else if (strcmp(arg, "rprop-") == 0) {
                 s->anp->update_algorithm = bp_update_rprop;
-                s->anp->rp_type = RPROP_MINUS;
+                s->anp->flags->rp_type = RPROP_MINUS;
         }
         /* modified resilient propagation plus */
         else if (strcmp(arg, "irprop+") == 0) {
                 s->anp->update_algorithm = bp_update_rprop;
-                s->anp->rp_type = IRPROP_PLUS;
+                s->anp->flags->rp_type = IRPROP_PLUS;
         }
         /* modified resilient propagation minus */
         else if (strcmp(arg, "irprop-") == 0) {
                 s->anp->update_algorithm = bp_update_rprop;
-                s->anp->rp_type = IRPROP_MINUS;
+                s->anp->flags->rp_type = IRPROP_MINUS;
         }
         /* quickprop */
         else if (strcmp(arg, "qprop") == 0)
@@ -1120,13 +1118,13 @@ bool cmd_set_training_order(char *cmd, char *fmt, struct session *s)
                 return false;
         /* ordered */
         if      (strcmp(arg, "ordered") == 0)
-                s->anp->training_order = train_ordered;
+                s->anp->flags->training_order = train_ordered;
         /* permuted */
         else if (strcmp(arg, "permuted") == 0)    
-                s->anp->training_order = train_permuted;
+                s->anp->flags->training_order = train_permuted;
         /* randomized */
         else if (strcmp(arg, "randomized") == 0)
-                s->anp->training_order = train_randomized;
+                s->anp->flags->training_order = train_randomized;
         else {
                 eprintf("Invalid training order '%s'\n", arg);
                 return true;
@@ -1397,7 +1395,7 @@ bool cmd_init(char *cmd, char *fmt, struct session *s)
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
                 return false;
         init_network(s->anp);
-        if (s->anp->initialized)
+        if (s->anp->flags->initialized)
                 mprintf("Initialized network \t\t [ %s ]\n", s->anp->name);
         return true;
 }

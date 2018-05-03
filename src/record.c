@@ -47,7 +47,7 @@ void record_units(struct network *n, struct group *g, char *filename)
                 fprintf(fd, ",\"Unit%d\"", u + 1);
         fprintf(fd, "\n");
 
-        switch (n->type) {
+        switch (n->flags->type) {
         case ntype_ffn: /* fall through */
         case ntype_srn:
                 record_ffn_units(n, g, fd);
@@ -75,10 +75,10 @@ void record_ffn_units(struct network *n, struct group *g, FILE *fd)
                 if (!keep_running) return;
                 struct item *item = n->asp->items->elements[i];
 
-                if (n->type == ntype_srn)
+                if (n->flags->type == ntype_srn)
                         reset_context_groups(n);
                 for (uint32_t j = 0; j < item->num_events; j++) {
-                        if (j > 0 && n->type == ntype_srn)
+                        if (j > 0 && n->flags->type == ntype_srn)
                                 shift_context_groups(n);
                         copy_vector(n->input->vector, item->inputs[j]);
                         feed_forward(n, n->input);
