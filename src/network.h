@@ -147,7 +147,6 @@ struct group
 struct group_flags
 {
         bool bias;                  /* flags bias group */
-        bool recurrent;             /* flags recurrent group */        
 };
 
 struct group_params

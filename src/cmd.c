@@ -546,7 +546,7 @@ bool cmd_create_projection(char *cmd, char *fmt, struct session *s)
                 return true;
         }
         /* projection should not already exist */
-        if ((fg == tg && fg->flags->recurrent) || find_projection(fg->out_projs, tg)) {
+        if (find_projection(fg->out_projs, tg)) {
         
                 eprintf("Cannot create projection - projection '%s -> %s' already exists\n", arg1, arg2);
                 return true;

@@ -73,6 +73,8 @@ void collect_weight_statistics(struct weight_stats *ws, struct group *g)
                                         ws->maximum = w->elements[r][c];
                         }
                 }
+                if (p->flags->recurrent)
+                        continue;
                 collect_weight_statistics(ws, p->to);
         }
 }
@@ -94,6 +96,8 @@ void collect_mean_dependent_ws(struct weight_stats *ws, struct group *g)
                                         pow(w->elements[r][c] - ws->mean, 2.0);
                         }
                 }
+                if (p->flags->recurrent)
+                        continue;
                 collect_mean_dependent_ws(ws, p->to);
         }
 }

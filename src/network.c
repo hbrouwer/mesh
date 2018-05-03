@@ -402,7 +402,6 @@ struct group *create_group(char *name, uint32_t size, bool bias,
         g->ctx_groups          = create_array(atype_groups);
 
         g->flags->bias         = bias;
-        g->flags->recurrent    = recurrent;
 
         g->pars->relu_alpha    = DEFAULT_RELU_ALPHA;
         g->pars->logistic_fsc  = DEFAULT_LOGISTIC_FSC;
@@ -655,11 +654,9 @@ void reset_recurrent_groups(struct network *n)
         }
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
-                if (!g->flags->recurrent)
-                        continue;
                 for (uint32_t j = 0; j < g->inc_projs->num_elements; j++) {
                         struct projection *p = g->inc_projs->elements[j];
-                        if (!p->to->flags->recurrent)
+                        if (!p->flags->recurrent)
                                 continue;
                         fill_vector_with_value(p->to->vector,
                                 n->pars->init_context_units);
@@ -684,10 +681,11 @@ void reset_rnn_error_signals(struct network *n)
                         struct group *g = sn->groups->elements[j];
                         zero_out_vector(g->error);
                         /* reset error vector of "terminal" group */
-                        if (i > 0 || !g->flags->recurrent) continue;
+                        if (i > 0)
+                                continue;
                         for (uint32_t x = 0; x < g->inc_projs->num_elements; x++) {
                                 struct projection *p = g->inc_projs->elements[x];
-                                if (p->to->flags->recurrent)
+                                if (p->flags->recurrent)
                                         zero_out_vector(p->to->error);
                         }
                 }
@@ -741,10 +739,6 @@ void add_projection(struct array *projs, struct projection *p)
 
 void add_bidirectional_projection(struct group *fg, struct group *tg)
 {
-        if (fg == tg) {
-                fg->flags->recurrent = true;
-                return;
-        }
         /* weight matrix */
         struct matrix *weights = create_matrix(
                 fg->vector->size, tg->vector->size);
@@ -765,6 +759,14 @@ void add_bidirectional_projection(struct group *fg, struct group *tg)
         if (!(flags = malloc(sizeof(struct projection_flags))))
                 goto error_out;
         memset(flags, 0, sizeof(struct projection_flags));
+        
+        /* 
+         * Flag recurrent projection, if 'from' and 'to' group
+         * are the same.
+         */
+        if (fg == tg)
+                flags->recurrent = true;
+
         /* add projections */
         struct projection *op = create_projection(tg, weights, gradients,
                 prev_gradients, prev_deltas, dynamic_params, flags);
@@ -847,18 +849,11 @@ void print_projections(struct network *n)
                         cprintf("%s (%dx%d)", fg->name,
                                 p->weights->rows, p->weights->cols);
                 }
-                /* recurrent incoming projection */
-                if (g->flags->recurrent) {
-                        if (g->inc_projs->num_elements > 0)
-                                cprintf(", ");
-                        cprintf("%s (%d x %d)", g->name,
-                                g->vector->size, g->vector->size);
-                }
                 /* current group */
-                if (g->flags->recurrent || g->inc_projs->num_elements > 0)
+                if (g->inc_projs->num_elements > 0)
                         cprintf(" -> ", g->name);
                 cprintf("[%s]", g->name);
-                if (g->flags->recurrent || g->out_projs->num_elements > 0)
+                if (g->out_projs->num_elements > 0)
                         cprintf(" -> ", g->name);
                 /* outgoing projections */
                 for (uint32_t j = 0; j < g->out_projs->num_elements; j++) {
@@ -868,12 +863,6 @@ void print_projections(struct network *n)
                                 cprintf(", ");
                         cprintf("%s (%dx%d)", tg->name,
                                 p->weights->rows, p->weights->cols);
-                }
-                /* recurrent outgoing projection */
-                if (g->flags->recurrent) {
-                        if (g->out_projs->num_elements > 0)
-                                cprintf(", ");
-                        cprintf("%s", g->name);
                 }
                 cprintf("\n");
                 /* context (Elman) groups */
@@ -953,12 +942,15 @@ void randomize_weight_matrices(struct group *g, struct network *n)
         /* incoming projections */
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
-                if (ip->flags->frozen) continue;
+                if (ip->flags->frozen)
+                        continue;
                 n->random_algorithm(ip->weights, n);
         }
         /* outgoing projections */
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
+                if (op->flags->recurrent)
+                        continue;
                 randomize_weight_matrices(op->to, n);
         }
 }
@@ -978,6 +970,8 @@ void initialize_dynamic_params(struct group *g, struct network *n)
         /* outgoing projections */
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
+                if (op->flags->recurrent)
+                        continue;
                 initialize_dynamic_params(op->to, n);
         }
 }
