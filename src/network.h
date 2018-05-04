@@ -126,11 +126,11 @@ struct network_params
 
 struct rnn_unfolded_network
 {
-        struct array *rcr_groups;           /* recurrent groups */
-        struct array *trm_groups;           /* "terminal" groups */
-        uint32_t stack_size;                /* stack size */
-        struct network **stack;             /* network stack */
-        uint32_t sp;                        /* stack pointer */
+        struct array *rcr_groups;   /* recurrent groups */
+        struct array *trm_groups;   /* "terminal" groups */
+        uint32_t stack_size;        /* stack size */
+        struct network **stack;     /* network stack */
+        uint32_t sp;                /* stack pointer */
 };
 
                 /***************
