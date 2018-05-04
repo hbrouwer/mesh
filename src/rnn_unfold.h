@@ -23,15 +23,8 @@
 #include "matrix.h"
 #include "network.h"
 
-struct rnn_unfolded_network
-{
-        struct array *rcr_groups;           /* recurrent groups */
-        uint32_t stack_size;                /* stack size */
-        struct network **stack;             /* network stack */
-        uint32_t sp;                        /* stack pointer */
-};
-
-struct rnn_unfolded_network *rnn_init_unfolded_network(struct network *n);
+struct rnn_unfolded_network *rnn_unfold_network(struct network *n);
+void rnn_find_recurrent_groups(struct group *g, struct array *rcr_groups);
 void rnn_free_unfolded_network(struct rnn_unfolded_network *un);
 
 struct group *rnn_duplicate_group(struct group *g);
@@ -49,12 +42,9 @@ void rnn_free_duplicate_projection(struct projection *dp);
 struct network *rnn_duplicate_network(struct network *n);
 void rnn_free_duplicate_network(struct network *n);
 
-struct array *rnn_recurrent_groups(struct network *n);
-void rnn_collect_recurrent_groups(struct group *g, struct array *gs);
-
-void rnn_attach_recurrent_groups(struct rnn_unfolded_network *un,
+void rnn_attach_terminal_groups(struct rnn_unfolded_network *un,
         struct network *n);
-void rnn_detach_recurrent_groups(struct rnn_unfolded_network *un,
+void rnn_detach_terminal_groups(struct rnn_unfolded_network *un,
         struct network *n);
 
 void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,

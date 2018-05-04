@@ -260,7 +260,8 @@ void test_rnn_network_with_item(struct network *n, struct item *item,
                        : print_vector(un->stack[un->sp]->output->vector);
 
                 /* only compute error if event has a target */
-                if (!item->targets[i]) goto next_tick;
+                if (!item->targets[i])
+                        goto next_tick;
 
                 struct group *g   = un->stack[un->sp]->output;
                 struct vector *tv = item->targets[i];

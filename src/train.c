@@ -21,6 +21,7 @@
 #include "act.h"
 #include "bp.h"
 #include "main.h"
+#include "rnn_unfold.h"
 #include "train.h"
 
 static bool keep_running = true;
@@ -60,7 +61,8 @@ void train_network_with_bp(struct network *n)
                 n->status->error      = 0.0;
 
                 /* reorder training set, if required */
-                if (item_itr == 0) reorder_training_set(n);
+                if (item_itr == 0)
+                        reorder_training_set(n);
 
                 /* train network on one batch */
                 for (uint32_t i = 0; i < n->pars->batch_size; i++) {
@@ -162,7 +164,8 @@ void train_network_with_bptt(struct network *n)
                 n->status->error      = 0.0;
                 
                 /* reorder training set, if required */
-                if (item_itr == 0) reorder_training_set(n);
+                if (item_itr == 0)
+                        reorder_training_set(n);
 
                 /* select next item */
                 uint32_t item_idx = n->asp->order[item_itr++];
@@ -216,13 +219,15 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
                 double zr         = n->pars->zero_error_radius;
 
                 /* compute error for current item */
-                bp_output_error(g, tv, tr, zr);
+                // bp_output_error(g, tv, tr, zr);
 
                 /* 
                  * If unfolded network stack is full, backpropagate error
                  * through time, update network error, and update weights.
                  */
-                if (un->sp == un->stack_size - 1) {
+                if (un->sp == un->stack_size - 1
+                        || i == item->num_events - 1) {
+                        bp_output_error(g, tv, tr, zr);
                         /* backpropagate error */
                         bp_backpropagate_error(un->stack[un->sp], g);
                         /* update network error */

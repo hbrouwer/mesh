@@ -27,6 +27,7 @@
 #include "math.h"
 #include "network.h"
 #include "random.h"
+#include "rnn_unfold.h"
 #include "train.h"
 #include "verify.h"
 
@@ -132,7 +133,7 @@ void init_network(struct network *n)
         if (n->learning_algorithm == train_network_with_bptt) {
                 if(n->unfolded_net)
                         rnn_free_unfolded_network(n->unfolded_net);
-                n->unfolded_net = rnn_init_unfolded_network(n);
+                n->unfolded_net = rnn_unfold_network(n);
         }
 
         n->flags->initialized = true;
@@ -1003,19 +1004,8 @@ bool save_weight_matrices(struct network *n, char *filename)
         FILE *fd;
         if (!(fd = fopen(filename, "w")))
                 goto error_file;
-
-        switch (n->flags->type) {
-        case ntype_ffn: /* fall through */
-        case ntype_srn:
-                save_weight_matrix(n->input, fd);
-                break;
-        case ntype_rnn:
-                save_weight_matrix(n->unfolded_net->stack[0]->input, fd);
-                break;
-        }
-
+        save_weight_matrix(n->input, fd);
         fclose(fd);
-
         return true;
 
 error_file:
@@ -1059,17 +1049,6 @@ bool load_weight_matrices(struct network *n, char *filename)
         FILE *fd;
         if (!(fd = fopen(filename, "r")))
                 goto error_file;
-
-        struct network *np = NULL;
-        switch (n->flags->type) {
-        case ntype_ffn: /* fall through */
-        case ntype_srn:
-                np = n;
-                break;
-        case ntype_rnn:
-                np = n->unfolded_net->stack[0];
-                break;
-        }
         char buf[MAX_BUF_SIZE];
         while (fgets(buf, sizeof(buf), fd)) {
                 buf[strlen(buf) - 1] = '\0';
@@ -1098,13 +1077,13 @@ bool load_weight_matrices(struct network *n, char *filename)
                                 goto error_format;
                 /* find 'from' group */
                 struct group *fg;
-                if ((fg = find_array_element_by_name(np->groups, arg1)) == NULL) {
+                if ((fg = find_array_element_by_name(n->groups, arg1)) == NULL) {
                         eprintf("Cannot load weights - no such group '%s'\n", arg1);
                         return false;
                 }
                 /* find 'to' group */
                 struct group *tg;
-                if ((tg = find_array_element_by_name(np->groups, arg2)) == NULL) {
+                if ((tg = find_array_element_by_name(n->groups, arg2)) == NULL) {
                         eprintf("Cannot load weights - no such group '%s'\n", arg2);
                         return false;
                 }

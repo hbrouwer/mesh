@@ -23,7 +23,6 @@
 
 #include "array.h"
 #include "matrix.h"
-#include "rnn_unfold.h"
 #include "set.h"
 #include "vector.h"
 
@@ -81,7 +80,6 @@ struct network
         struct network_params *pars;
         /* unfolded recurrent network */
         struct rnn_unfolded_network *unfolded_net;
-        
 };
 
 struct network_flags
@@ -124,6 +122,15 @@ struct network_params
         double rp_eta_minus;        /* update value decrease rate */        
         double dbd_rate_increment;  /* LR increment factor for DBD */
         double dbd_rate_decrement;  /* LR decrement factor for DBD */
+};
+
+struct rnn_unfolded_network
+{
+        struct array *rcr_groups;           /* recurrent groups */
+        struct array *trm_groups;           /* "terminal" groups */
+        uint32_t stack_size;                /* stack size */
+        struct network **stack;             /* network stack */
+        uint32_t sp;                        /* stack pointer */
 };
 
                 /***************
