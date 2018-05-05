@@ -234,7 +234,7 @@ void train_rnn_network_with_item(struct network *n, struct item *item)
                         n->status->error +=
                                 n->output->err_fun->fun(g, tv, tr, zr);
                         /* update weights */        
-                        rnn_sum_gradients(un);
+                        rnn_sum_and_reset_gradients(un);
                         n->update_algorithm(un->stack[0]);
                 }
 

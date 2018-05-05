@@ -25,6 +25,8 @@
 #include "../main.h"
 #include "../math.h"
 
+#include "../engine.h"
+
                 /********************************************
                  **** distributed-situation state spaces ****
                  ********************************************/

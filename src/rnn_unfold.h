@@ -52,8 +52,8 @@ void rnn_connect_duplicate_networks(struct rnn_unfolded_network *un,
 void rnn_disconnect_duplicate_networks(struct rnn_unfolded_network *un,
         struct network *n, struct network *nn);
 
-void rnn_sum_gradients(struct rnn_unfolded_network *un);
-void rnn_add_gradients(struct group *g, struct group *dg);
+void rnn_sum_and_reset_gradients(struct rnn_unfolded_network *un);
+void rnn_add_and_reset_gradients(struct group *g, struct group *dg);
 
 void rnn_shift_stack(struct rnn_unfolded_network *un);
 

@@ -25,6 +25,8 @@
 #include "pprint.h"
 #include "test.h"
 
+#include "engine.h"
+
 static bool keep_running = true;
 
                 /**********************

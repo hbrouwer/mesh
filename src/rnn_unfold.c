@@ -130,8 +130,6 @@ struct rnn_unfolded_network *rnn_unfold_network(struct network *n)
                 }
         }
 
-        rnn_sum_gradients(un);
-
         return un;
 
 error_out:
@@ -458,15 +456,15 @@ void rnn_disconnect_duplicate_networks(struct rnn_unfolded_network *un,
         }
 }
 
-void rnn_sum_gradients(struct rnn_unfolded_network *un)
+void rnn_sum_and_reset_gradients(struct rnn_unfolded_network *un)
 {
         for (uint32_t i = 1; i < un->stack_size; i++)
-                rnn_add_gradients(
+                rnn_add_and_reset_gradients(
                         un->stack[0]->output,
                         un->stack[i]->output);
 }
 
-void rnn_add_gradients(struct group *g, struct group *dg)
+void rnn_add_and_reset_gradients(struct group *g, struct group *dg)
 {
         /*
          * Provided a group g and g', add gradients for all incoming,
@@ -490,7 +488,7 @@ void rnn_add_gradients(struct group *g, struct group *dg)
                                         += dp->gradients->elements[r][c];
                 copy_matrix(dp->gradients, dp->prev_gradients);
                 zero_out_matrix(dp->gradients);
-                rnn_add_gradients(p->to, dp->to);
+                rnn_add_and_reset_gradients(p->to, dp->to);
         }
 }
 
