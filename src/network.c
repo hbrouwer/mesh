@@ -667,9 +667,10 @@ void reset_recurrent_groups(struct network *n)
 
 void reset_ffn_error_signals(struct network *n)
 {
-        for (uint32_t i = 0; i < n->groups->num_elements; i++)
-                zero_out_vector(((struct group *)
-                        n->groups->elements[i])->error);
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
+                struct group *g = n->groups->elements[i];
+                zero_out_vector(g->error);
+        }
 }
 
 void reset_rnn_error_signals(struct network *n)
@@ -682,13 +683,17 @@ void reset_rnn_error_signals(struct network *n)
                         struct group *g = sn->groups->elements[j];
                         zero_out_vector(g->error);
                         /* reset error vector of "terminal" group */
+                        /*
                         if (i > 0)
                                 continue;
                         for (uint32_t x = 0; x < g->inc_projs->num_elements; x++) {
                                 struct projection *p = g->inc_projs->elements[x];
-                                if (p->flags->recurrent)
+                                if (p->flags->recurrent) {
+                                        print_vector(p->to->error);
                                         zero_out_vector(p->to->error);
+                                }
                         }
+                        */
                 }
         }
 }

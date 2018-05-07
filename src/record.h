@@ -22,9 +22,6 @@
 #include "network.h"
 
 void record_units(struct network *n, struct group *g, char *filename);
-void record_ffn_units(struct network *n, struct group *g, FILE *fd);
-void record_rnn_units(struct network *n, struct group *g, FILE *fd);
-
 void recording_signal_handler(int32_t signal);
 
 #endif /* RECORD_H */

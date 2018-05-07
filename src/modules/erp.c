@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../act.h"
+#include "../engine.h"
 #include "../main.h"
 #include "../math.h"
 #include "../matrix.h"
@@ -110,19 +110,19 @@ struct vector *erp_values_for_item(struct network *n, struct group *g,
         fill_vector_with_value(pv, 1.0);
         fill_vector_with_value(pv, 1.0 / euclidean_norm(pv));
 
-        if (n->flags->type == ntype_srn)
-                reset_context_groups(n);
+        reset_ticks(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
-                if (i > 0 && n->flags->type == ntype_srn)
-                        shift_context_groups(n);
-                copy_vector(n->input->vector, item->inputs[i]);
-                feed_forward(n, n->input);
+                if (i > 0)
+                        next_tick(n);
+                clamp_input_vector(n, item->inputs[i]);
+                forward_sweep(n);
                 /*
                  * amplitude = 1.0 - sim(g_t, g_{t-1})
                  */
+                struct vector *v = group_vector_by_name(n, g->name);
                 ev->elements[i] =
-                        1.0 - n->similarity_metric(g->vector, pv);
-                copy_vector(pv, g->vector);
+                        1.0 - n->similarity_metric(v, pv);
+                copy_vector(pv, v);
         }
 
         free_vector(pv);

@@ -35,8 +35,10 @@ void clamp_input_vector(struct network *n, struct vector *input)
 
 void reset_ticks(struct network *n)
 {
+        /*
         if (!n->flags->reset_contexts)
                 return;
+                */
         struct rnn_unfolded_network *un = n->unfolded_net;
         switch(n->flags->type) {
         case ntype_ffn:
@@ -46,8 +48,7 @@ void reset_ticks(struct network *n)
                 break;
         case ntype_rnn:
                 reset_stack_pointer(n);
-                reset_recurrent_groups(un->stack[un->sp]);
-                // reset_recurrent_groups(un->stack[un->sp]);
+                reset_recurrent_groups(un->stack[0]);
                 break;
         }       
 }
@@ -114,18 +115,14 @@ double output_error(struct network *n, struct vector *target)
         struct rnn_unfolded_network *un = n->unfolded_net;
         double tr = n->pars->target_radius;
         double zr = n->pars->zero_error_radius;
-        double error;
         switch(n->flags->type) {
         case ntype_ffn: /* fall through */
         case ntype_srn:
-                error = n->output->err_fun->fun(n->output, target, tr, zr);
-                break;
+                return n->output->err_fun->fun(n->output, target, tr, zr);
         case ntype_rnn:
-                error = un->stack[un->sp]->output->err_fun->fun(
+                return un->stack[un->sp]->output->err_fun->fun(
                         un->stack[un->sp]->output, target, tr, zr);
-                break;
         }
-        return error;
 }
 
 struct vector *output_vector(struct network *n)
@@ -140,6 +137,22 @@ struct vector *output_vector(struct network *n)
                 return(un->stack[un->sp]->output->vector);
                 break;     
         }
+}
+
+struct vector *group_vector_by_name(struct network *n, char *name)
+{
+        struct rnn_unfolded_network *un = n->unfolded_net;
+        struct group *g;
+        switch(n->flags->type) {
+        case ntype_ffn: /* fall through */
+        case ntype_srn:
+                g = find_array_element_by_name(n->groups, name);
+                break;
+        case ntype_rnn:
+                g = find_array_element_by_name(un->stack[un->sp]->groups, name);
+                break;
+        }
+        return g->vector;
 }
 
 void backward_sweep(struct network *n)

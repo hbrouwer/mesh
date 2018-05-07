@@ -39,9 +39,6 @@ Frank, S. L., Haselager, W. F. G, & van Rooij, I. (2009). Connectionist
         semantic systematicity. Cognition, 110, 358-379.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
 
-/*
- * TODO: Support RNNs - currently this only supports SRNs.
- */
 void dss_test(struct network *n)
 {
         double acs = 0.0;       /* accumulated comprehension score */
@@ -52,18 +49,17 @@ void dss_test(struct network *n)
         cprintf("\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item = n->asp->items->elements[i];
-                if (n->flags->type == ntype_srn)
-                        reset_context_groups(n);
+                reset_ticks(n);
                 for (uint32_t j = 0; j < item->num_events; j++) {
-                        if (j > 0 && n->flags->type == ntype_srn)
-                                shift_context_groups(n);
-                        copy_vector(n->input->vector, item->inputs[j]);
-                        feed_forward(n, n->input);
+                        if (j > 0)
+                                next_tick(n);
+                        clamp_input_vector(n, item->inputs[j]);
+                        forward_sweep(n);
                 }
 
                 /* comprehension score */
                 struct vector *tv = item->targets[item->num_events - 1];
-                ov = dss_adjust_output_vector(n->output->vector, tv,
+                ov = dss_adjust_output_vector(output_vector(n), tv,
                         n->pars->target_radius, n->pars->zero_error_radius);
                 double tau = dss_comprehension_score(tv, ov);
                 if (!isnan(tau)) {
@@ -267,20 +263,19 @@ struct matrix *dss_score_matrix(struct network *n, struct set *set,
         uint32_t cols = item->num_events;
         struct matrix *sm = create_matrix(rows, cols);
         struct vector *ov = create_vector(n->output->vector->size);
-        if (n->flags->type == ntype_srn)
-                reset_context_groups(n);
+        reset_ticks(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
-                if (i > 0 && n->flags->type == ntype_srn)
-                        shift_context_groups(n);
-                copy_vector(n->input->vector, item->inputs[i]);
-                feed_forward(n, n->input);
+                if (i > 0)
+                        next_tick(n);
+                clamp_input_vector(n, item->inputs[i]);
+                forward_sweep(n);
 
                 /*
                  * Compute overall comprehension score, as well as
                  * comprehension scores per probe event.
                  */
                 struct vector *tv = item->targets[item->num_events - 1];
-                ov = dss_adjust_output_vector(n->output->vector, tv,
+                ov = dss_adjust_output_vector(output_vector(n), tv,
                         n->pars->target_radius, n->pars->zero_error_radius);                
                 sm->elements[0][i] = dss_comprehension_score(tv, ov);
                 for (uint32_t j = 0; j < set->items->num_elements; j++) {
@@ -641,18 +636,20 @@ struct matrix *dss_word_info_matrix(struct network *n,
          * Output vector and previous output vector. At time-step t=0, we
          * bootstrap this by using the unit vector.
          */
-        struct vector *ov = n->output->vector;
         struct vector *pv = create_vector(n->output->vector->size);
         fill_vector_with_value(pv, 1.0);
         fill_vector_with_value(pv, 1.0 / euclidean_norm(pv));
 
-        if (n->flags->type == ntype_srn)
-                reset_context_groups(n);
+        reset_ticks(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
-                if (i > 0 && n->flags->type == ntype_srn)
-                        shift_context_groups(n);
-                copy_vector(n->input->vector, item->inputs[i]);
-                feed_forward(n, n->input);
+                if (i > 0)
+                        next_tick(n);
+                clamp_input_vector(n, item->inputs[i]);
+                forward_sweep(n);
+
+                struct vector *tv = item->targets[item->num_events - 1];
+                struct vector *ov = dss_adjust_output_vector(output_vector(n),
+                        tv, n->pars->target_radius, n->pars->zero_error_radius);
 
                 /*
                  * Compute semantic entropy for prefix w_1...i and
@@ -701,7 +698,7 @@ struct matrix *dss_word_info_matrix(struct network *n,
                 im->elements[i][4] = sonl;
                 im->elements[i][5] = delta_honl;
 
-                copy_vector(pv, n->output->vector);
+                copy_vector(pv, ov);
         }
 
         free_vector(pv);

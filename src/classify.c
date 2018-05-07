@@ -19,8 +19,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "act.h"
 #include "classify.h"
+#include "engine.h"
 #include "main.h"
 
 static bool keep_running = true;
@@ -51,95 +51,36 @@ struct matrix *confusion_matrix(struct network *n)
 
         keep_running = true;
 
-        struct matrix *cm = NULL;
-        switch (n->flags->type) {
-        case ntype_ffn: /* fall through */
-        case ntype_srn:
-                cm = ffn_network_cm(n);
-                break;
-        case ntype_rnn:
-                cm = rnn_network_cm(n);
+        uint32_t d = n->output->vector->size;
+        struct matrix *cm = create_matrix(d, d);
+        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                if (!keep_running)
+                        goto out;
+                struct item *item = n->asp->items->elements[i];
+                reset_ticks(n);
+                for (uint32_t j = 0; j < item->num_events; j++) {
+                        if (j > 0)
+                                next_tick(n);
+                        clamp_input_vector(n, item->inputs[j]);
+                        forward_sweep(n);
+                        if (!(item->targets[j] && j == item->num_events - 1))
+                                continue;
+                        struct vector *ov = output_vector(n);
+                        struct vector *tv = item->targets[j];
+                        uint32_t t = 0, o = 0;
+                        for (uint32_t x = 0; x < ov->size; x++) {
+                                if (tv->elements[x] > tv->elements[t]) t = x;
+                                if (ov->elements[x] > ov->elements[o]) o = x;
+                        }
+                        cm->elements[t][o]++;
+                }
         }
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
 
-        return cm;
-}
-
-struct matrix *ffn_network_cm(struct network *n)
-{
-        uint32_t d = n->output->vector->size;
-        struct matrix *cm = create_matrix(d, d);
-
-        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                if (!keep_running)
-                        goto out;
-                struct item *item = n->asp->items->elements[i];
-
-                if (n->flags->type == ntype_srn)
-                        reset_context_groups(n);
-                for (uint32_t j = 0; j < item->num_events; j++) {
-                        if (j > 0 && n->flags->type == ntype_srn)
-                                shift_context_groups(n);
-                        copy_vector(n->input->vector, item->inputs[j]);
-                        feed_forward(n, n->input);
-                        
-                        /* only classify last event */
-                        if (!(item->targets[j] && j == item->num_events - 1))
-                                continue;
-                        classify(n->output->vector, item->targets[j], cm);
-                }
-        }
-
 out:
-        return cm;
-}
-
-struct matrix *rnn_network_cm(struct network *n)
-{
-        struct rnn_unfolded_network *un = n->unfolded_net;
-
-        uint32_t d = n->output->vector->size;
-        struct matrix *cm = create_matrix(d, d);
-
-        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                if (!keep_running)
-                        goto out;
-                struct item *item = n->asp->items->elements[i];
-
-                reset_recurrent_groups(un->stack[un->sp]);
-                for (uint32_t j = 0; j < item->num_events; j++) {
-                        copy_vector(
-                                un->stack[un->sp]->input->vector,
-                                item->inputs[j]);
-                        feed_forward(
-                                un->stack[un->sp],
-                                un->stack[un->sp]->input);
-
-                        /* only classify last event */
-                        if (!(item->targets[j] && j == item->num_events - 1))
-                                goto next_tick;
-                        classify(un->stack[un->sp]->output->vector,
-                                item->targets[j], cm);
-
-next_tick:
-                        shift_pointer_or_stack(n);
-                }
-        }
-
-out:
-        return cm;
-}
-
-void classify(struct vector *ov, struct vector *tv, struct matrix *cm)
-{
-        uint32_t t = 0, o = 0;
-        for (uint32_t x = 0; x < ov->size; x++) {
-                if (tv->elements[x] > tv->elements[t]) t = x;
-                if (ov->elements[x] > ov->elements[o]) o = x;
-        }
-        cm->elements[t][o]++;
+        return cm;        
 }
 
 void print_cm_summary(struct network *n, bool print_cm, bool pprint,
@@ -206,7 +147,8 @@ void print_cm_summary(struct network *n, bool print_cm, bool pprint,
          */
         double accuracy = num_correct / (num_correct + num_incorrect);
         
-        /*                   #incorrect
+        /*
+         *                   #incorrect
          * error rate = -------------------
          *              #correct + #incorrect
          */

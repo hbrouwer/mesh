@@ -19,13 +19,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "act.h"
+#include "engine.h"
 #include "error.h"
 #include "main.h"
 #include "pprint.h"
 #include "test.h"
-
-#include "engine.h"
 
 static bool keep_running = true;
 
@@ -43,118 +41,40 @@ void test_network(struct network *n, bool verbose)
 
         keep_running = true;
 
-        switch (n->flags->type) {
-        case ntype_ffn: /* fall through */
-        case ntype_srn:
-                test_ffn_network(n, verbose);
-                break;
-        case ntype_rnn:
-                test_rnn_network(n, verbose);
-                break;
+        n->status->error = 0.0;
+        uint32_t tr      = 0;
+        if (verbose)
+                cprintf("\n");
+        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                if (!keep_running)
+                        return;
+                struct item *item = n->asp->items->elements[i];
+                reset_ticks(n);
+                for (uint32_t j = 0; j < item->num_events; j++) {
+                        if (j > 0)
+                                next_tick(n);
+                        clamp_input_vector(n, item->inputs[j]);
+                        forward_sweep(n);
+                        if (!(item->targets[j] && j == item->num_events - 1))
+                                continue;
+                        double error = output_error(n, item->targets[j]);
+                        n->status->error += error;
+                        if (error <= n->pars->error_threshold)
+                                tr++;
+                        if (!verbose)
+                                continue;
+                        error <= n->pars->error_threshold
+                                ? pprintf("%d: \x1b[32m%s: %f\x1b[0m\n",
+                                        i + 1, item->name, error)
+                                : pprintf("%d: \x1b[31m%s: %f\x1b[0m\n",
+                                        i + 1, item->name, error);
+                }
         }
+
+        print_testing_summary(n, tr);
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
-}
-
-void test_ffn_network(struct network *n, bool verbose)
-{
-        n->status->error = 0.0;
-        uint32_t threshold_reached = 0;
-
-        /* test network on all items in the current set */
-        if (verbose)
-                cprintf("\n");
-        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                if (!keep_running)
-                        return;
-                struct item *item = n->asp->items->elements[i];
-
-                if (n->flags->type == ntype_srn)
-                        reset_context_groups(n);
-                for (uint32_t j = 0; j < item->num_events; j++) {
-                        if (j > 0 && n->flags->type == ntype_srn)
-                                shift_context_groups(n);
-                        copy_vector(n->input->vector, item->inputs[j]);
-                        feed_forward(n, n->input);
-
-                        /* only compute network error for last event */
-                        if (!(item->targets[j] && j == item->num_events - 1))
-                                continue;
-
-                        struct group *g   = n->output;
-                        struct vector *tv = item->targets[j];
-                        double tr         = n->pars->target_radius;
-                        double zr         = n->pars->zero_error_radius;
-
-                        double error = n->output->err_fun->fun(g, tv, tr, zr);
-                        n->status->error += error;
-                        if (error <= n->pars->error_threshold)
-                                threshold_reached++;
-
-                        if (!verbose)
-                                continue;
-                        error <= n->pars->error_threshold
-                                ? pprintf("%d: \x1b[32m%s: %f\x1b[0m\n",
-                                        i + 1, item->name, error)
-                                : pprintf("%d: \x1b[31m%s: %f\x1b[0m\n",
-                                        i + 1, item->name, error);
-                }
-        }
-
-        print_testing_summary(n, threshold_reached);
-}
-
-void test_rnn_network(struct network *n, bool verbose)
-{
-        struct rnn_unfolded_network *un = n->unfolded_net;
-        n->status->error = 0.0;
-        uint32_t threshold_reached = 0;
-
-        /* test network on all items in the current set */
-        if (verbose)
-                cprintf("\n");
-        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                if (!keep_running)
-                        return;
-                struct item *item = n->asp->items->elements[i];
-
-                reset_recurrent_groups(un->stack[un->sp]);
-                for (uint32_t j = 0; j < item->num_events; j++) {
-                        copy_vector(
-                                un->stack[un->sp]->input->vector,
-                                item->inputs[j]);
-                        feed_forward(
-                                un->stack[un->sp],
-                                un->stack[un->sp]->input);
-
-                        /* only compute error if event has a target */
-                        if (!item->targets[j]) goto next_tick;
-
-                        struct group *g   = un->stack[un->sp]->output;
-                        struct vector *tv = item->targets[j];
-                        double tr         = n->pars->target_radius;
-                        double zr         = n->pars->zero_error_radius;
-
-                        double error = n->output->err_fun->fun(g, tv, tr, zr);
-                        n->status->error += error;
-                        if (error <= n->pars->error_threshold)
-                                threshold_reached++;
-
-                        if (!verbose)
-                                continue;
-                        error <= n->pars->error_threshold
-                                ? pprintf("%d: \x1b[32m%s: %f\x1b[0m\n",
-                                        i + 1, item->name, error)
-                                : pprintf("%d: \x1b[31m%s: %f\x1b[0m\n",
-                                        i + 1, item->name, error);
-
-next_tick:
-                        shift_pointer_or_stack(n);
-                }
-        }
-
-        print_testing_summary(n, threshold_reached);
 }
 
                 /********************************
@@ -164,20 +84,6 @@ next_tick:
 void test_network_with_item(struct network *n, struct item *item,
         bool pprint, enum color_scheme scheme)
 {
-        switch (n->flags->type) {
-        case ntype_ffn: /* fall through */
-        case ntype_srn:
-                test_ffn_network_with_item(n, item, pprint, scheme);
-                break;
-        case ntype_rnn:
-                test_rnn_network_with_item(n, item, pprint, scheme);
-                break;
-        }
-}
-
-void test_ffn_network_with_item(struct network *n, struct item *item,
-        bool pprint, enum color_scheme scheme)
-{
         n->status->error = 0.0;
 
         cprintf("\n");
@@ -187,13 +93,12 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
         cprintf("\n");
         cprintf("(E: Event; I: Input; T: Target; O: Output)\n");
 
-        if (n->flags->type == ntype_srn)
-                reset_context_groups(n);
+        reset_ticks(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
-                if (i > 0 && n->flags->type == ntype_srn)
-                shift_context_groups(n);
-                        copy_vector(n->input->vector, item->inputs[i]);
-                        feed_forward(n, n->input);
+                if(i > 0)
+                        next_tick(n);
+                clamp_input_vector(n, item->inputs[i]);
+                forward_sweep(n);
 
                 cprintf("\n");
                 cprintf("E: %d\n", i + 1);
@@ -206,80 +111,17 @@ void test_ffn_network_with_item(struct network *n, struct item *item,
                                : print_vector(item->targets[i]);
                 }
                 cprintf("O: ");
-                pprint ? pprint_vector(n->output->vector, scheme)
-                       : print_vector(n->output->vector);
+                struct vector *ov = output_vector(n);
+                pprint ? pprint_vector(ov, scheme)
+                       : print_vector(ov);
 
-                /* only compute and print error for last event */
-                if (!(i == item->num_events - 1) || !item->targets[i])
+                if (!(item->targets[i] && i == item->num_events - 1))
                         continue;
-
-                struct group *g   = n->output;
-                struct vector *tv = item->targets[i];
-                double tr         = n->pars->target_radius;
-                double zr         = n->pars->zero_error_radius; 
-
-                n->status->error += n->output->err_fun->fun(g, tv, tr, zr);
+                n->status->error += output_error(n, item->targets[i]);
                 cprintf("\nError:\t%lf\n", n->status->error);
-        }
-
-        cprintf("\n");
-}
-
-void test_rnn_network_with_item(struct network *n, struct item *item,
-        bool pprint, enum color_scheme scheme)
-{
-        struct rnn_unfolded_network *un = n->unfolded_net;
-        n->status->error = 0.0;
+        }    
         
-        cprintf("\n");
-        cprintf("Name:   \"%s\"\n", item->name);
-        cprintf("Meta:   \"%s\"\n", item->meta);
-        cprintf("Events: %d\n", item->num_events);
-        cprintf("\n");
-        cprintf("(E: Event; I: Input; T: Target; O: Output)\n");
 
-        reset_stack_pointer(n);
-        reset_recurrent_groups(un->stack[un->sp]);
-        for (uint32_t i = 0; i < item->num_events; i++) {
-                copy_vector(
-                        un->stack[un->sp]->input->vector,
-                        item->inputs[i]);
-                feed_forward(
-                        un->stack[un->sp],
-                        un->stack[un->sp]->input);
-
-                cprintf("\n");
-                cprintf("E: %d\n", i + 1);
-                cprintf("I: ");
-                pprint ? pprint_vector(item->inputs[i], scheme)
-                       : print_vector(item->inputs[i]);
-                if (item->targets[i]) {
-                        cprintf("T: ");
-                        pprint ? pprint_vector(item->targets[i], scheme)
-                               : print_vector(item->targets[i]);
-                }
-                cprintf("O: ");
-                pprint ? pprint_vector(un->stack[un->sp]->output->vector,
-                                scheme)
-                       : print_vector(un->stack[un->sp]->output->vector);
-
-                /* only compute error if event has a target */
-                if (!item->targets[i])
-                        goto next_tick;
-
-                struct group *g   = un->stack[un->sp]->output;
-                struct vector *tv = item->targets[i];
-                double tr         = n->pars->target_radius;
-                double zr         = n->pars->zero_error_radius;
-
-                n->status->error += n->output->err_fun->fun(g, tv, tr, zr);
-                cprintf("\nError:\t%lf\n", n->status->error);
-
-next_tick:
-                shift_pointer_or_stack(n);
-        }
-        
-        cprintf("\n");
 }
 
 void print_testing_summary(struct network *n, uint32_t tr)

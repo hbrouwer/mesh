@@ -19,7 +19,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "act.h"
+#include "engine.h"
 #include "main.h"
 #include "similarity.h"
 
@@ -49,101 +49,38 @@ struct matrix *similarity_matrix(struct network *n)
         sa.sa_flags = SA_RESTART;
         sigaction(SIGINT, &sa, NULL);
 
-        keep_running = true;
-
-        struct matrix *sm = NULL;
-        switch (n->flags->type) {
-        case ntype_ffn: /* fall through */
-        case ntype_srn:
-                sm = ffn_network_sm(n);
-                break;
-        case ntype_rnn:
-                sm = rnn_network_sm(n);
-                break;
+        keep_running = true;   
+        
+        uint32_t d = n->asp->items->num_elements;
+        struct matrix *sm = create_matrix(d, d);
+        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                if (!keep_running)
+                        goto out;
+                struct item *item = n->asp->items->elements[i];
+                reset_ticks(n);
+                for (uint32_t j = 0; j < item->num_events; j++) {
+                        if (j > 0)
+                                next_tick(n);
+                        clamp_input_vector(n, item->inputs[j]);
+                        forward_sweep(n);
+                        if (!(item->targets[j] && j == item->num_events - 1))
+                                continue;
+                        struct vector *ov = output_vector(n);
+                        for (uint32_t x = 0; x < n->asp->items->num_elements; x++) {
+                                struct item *ci   = n->asp->items->elements[x];
+                                struct vector *tv = ci->targets[ci->num_events - 1];
+                                if (!tv)
+                                        continue;
+                                sm->elements[i][x] = n->similarity_metric(ov, tv);
+                        }
+                }
         }
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
 
-        return sm;
-}
-
-struct matrix *ffn_network_sm(struct network *n)
-{
-        uint32_t d = n->asp->items->num_elements;
-        struct matrix *sm = create_matrix(d, d);
-
-        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                if (!keep_running)
-                        goto out;
-                 struct item *item = n->asp->items->elements[i];
-
-                if (n->flags->type == ntype_srn)
-                        reset_context_groups(n);
-                for (uint32_t j = 0; j < item->num_events; j++) {
-                        if (j > 0 && n->flags->type == ntype_srn)
-                                shift_context_groups(n);
-                        copy_vector(n->input->vector, item->inputs[j]);
-                        feed_forward(n, n->input);
-                        
-                        /* only compute distance metrics for last event */
-                        if (!(item->targets[j] && j == item->num_events - 1))
-                                continue;
-                        similarity_scores(n, n->output, i, sm);
-                }
-        }
-
 out:
         return sm;
-}
-
-struct matrix *rnn_network_sm(struct network *n)
-{
-        struct rnn_unfolded_network *un = n->unfolded_net;
-
-        uint32_t d = n->asp->items->num_elements;
-        struct matrix *sm = create_matrix(d, d);
-
-        /* test network on all items in the current set */
-        for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                if (!keep_running)
-                        goto out;
-                struct item *item = n->asp->items->elements[i];
-
-                reset_recurrent_groups(un->stack[un->sp]);
-                for (uint32_t j = 0; j < item->num_events; j++) {
-                        copy_vector(
-                                un->stack[un->sp]->input->vector,
-                                item->inputs[j]);
-                        feed_forward(
-                                un->stack[un->sp],
-                                un->stack[un->sp]->input);
-
-                        /* only compute distance metrics for last event */
-                        if (!(item->targets[j] && j == item->num_events - 1))
-                                goto next_tick;
-                        similarity_scores(n, un->stack[un->sp]->output, i, sm);
-
-next_tick:
-                        shift_pointer_or_stack(n);
-                }
-        }
-
-out:
-        return sm;
-}
-
-void similarity_scores(struct network *n, struct group *output,
-        uint32_t item_num, struct matrix *sm)
-{
-        for (uint32_t x = 0; x < n->asp->items->num_elements; x++) {
-                struct item *ci = n->asp->items->elements[x];
-                struct vector *tv = ci->targets[ci->num_events - 1];
-                if (!tv)
-                        continue;
-                sm->elements[item_num][x] = n->similarity_metric(
-                        output->vector, tv);
-        }
 }
 
 void print_sm_summary(struct network *n, bool print_sm, bool pprint,
