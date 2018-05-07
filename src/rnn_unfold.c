@@ -208,6 +208,9 @@ struct group *rnn_duplicate_group(struct group *g)
         dg->flags      = g->flags;
         dg->pars       = g->pars;
 
+        if (dg->flags->bias)
+                copy_vector(dg->vector, g->vector);
+
         return dg;
 
 error_out:

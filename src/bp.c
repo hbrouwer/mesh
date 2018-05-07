@@ -115,37 +115,37 @@ void bp_backpropagate_error(struct network *n, struct group *g)
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
                 struct group *ng = ip->to;
-                /* skip "terminal" groups */
-                // if (ng->inc_projs->num_elements == 0)
-                //         continue;
+
                 for (uint32_t j = 0; j < ng->out_projs->num_elements; j++) {
                         struct projection *p = ng->out_projs->elements[j];
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif /* _OPENMP */
                         for (uint32_t x = 0; x < ng->error->size; x++) {
-                                for (uint32_t z = 0; z < p->to->vector->size; z++) {
+                                for (uint32_t z = 0; z < p->to->vector->size; z++) {                                      
                                         /*
-                                         * Compute the error derivative:
+                                         * Compute the error derivative
+                                         * (for non-terminal groups):
                                          *
                                          * dE/dy_j += sum_k delta_k w_jk
                                          */
-                                        ng->error->elements[x] += p->to->error->elements[z]
-                                                * p->weights->elements[x][z];
+                                        if (ng->inc_projs->num_elements > 0)
+                                                ng->error->elements[x] += p->to->error->elements[z]
+                                                        * p->weights->elements[x][z];
 
                                         /*
                                          * We only compute gradients for
                                          * projections to g:
                                          *
-                                         * 0
-                                         * |
-                                         * 1   3
-                                         * | \ |
-                                         * 2   4   .
+                                         *     0
+                                         *     |
+                                         *     1   3
                                          *     | \ |
-                                         *     5   7
-                                         *         |
-                                         *         . 
+                                         *     2   4   .
+                                         *         | \ |
+                                         *         5   7
+                                         *             |
+                                         *             . 
                                          *
                                          * If the current group is 1, we
                                          * compute the gradients for the
@@ -158,7 +158,7 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                                          */
                                         if (p->to != g)
                                                 continue;
-
+                                                
                                         /*
                                          * Compute the weight gradient:
                                          *
@@ -168,7 +168,8 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                                          * epoch.
                                          */
                                         p->gradients->elements[x][z] += p->to->error->elements[z]
-                                                * ng->vector->elements[x];
+                                                * ng->vector->elements[x];                                        
+
                                 }
                         }
                 }
@@ -191,6 +192,8 @@ void bp_backpropagate_error(struct network *n, struct group *g)
          */
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
+                if (ip->flags->recurrent)
+                        continue;
                 bp_backpropagate_error(n, ip->to);
         }
 }

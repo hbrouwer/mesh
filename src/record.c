@@ -53,11 +53,11 @@ void record_units(struct network *n, struct group *g, char *filename)
                                 next_tick(n);
                         clamp_input_vector(n, item->inputs[j]);
                         forward_sweep(n);
-                        struct vector *v = group_vector_by_name(n, g->name);
+                        struct group *ng = find_network_group_by_name(n, g->name);
                         fprintf(fd, "%d,\"%s\",\"%s\",%d,%s",
                                 i + 1, item->name, item->meta, j + 1, g->name);
-                        for (uint32_t u = 0; u < v->size; u++)
-                                fprintf(fd, ",%f", v->elements[u]);
+                        for (uint32_t u = 0; u < ng->vector->size; u++)
+                                fprintf(fd, ",%f", ng->vector->elements[u]);
                         fprintf(fd, "\n");                        
                 }
                 pprintf("%d: %s\n", i + 1, item->name);

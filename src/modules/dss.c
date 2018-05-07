@@ -20,12 +20,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../act.h"
+#include "../engine.h"
 #include "../error.h"
 #include "../main.h"
 #include "../math.h"
-
-#include "../engine.h"
 
                 /********************************************
                  **** distributed-situation state spaces ****

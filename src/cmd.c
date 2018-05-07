@@ -23,6 +23,7 @@
 #include "bp.h"
 #include "classify.h"
 #include "cmd.h"
+#include "engine.h"
 #include "error.h"
 #include "help.h"
 #include "main.h"
@@ -1186,7 +1187,7 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
                 return true;
         }
         /* find group */
-        struct group *g = find_array_element_by_name(s->anp->groups, arg2);
+        struct group *g = find_network_group_by_name(s->anp, arg2);
         if (g == NULL) {
                 eprintf("Cannot show vector - no such group '%s'\n", arg2);
                 return true;

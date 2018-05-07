@@ -139,7 +139,7 @@ struct vector *output_vector(struct network *n)
         }
 }
 
-struct vector *group_vector_by_name(struct network *n, char *name)
+struct group *find_network_group_by_name(struct network *n, char *name)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
         struct group *g;
@@ -152,7 +152,7 @@ struct vector *group_vector_by_name(struct network *n, char *name)
                 g = find_array_element_by_name(un->stack[un->sp]->groups, name);
                 break;
         }
-        return g->vector;
+        return g;
 }
 
 void backward_sweep(struct network *n)
@@ -164,9 +164,15 @@ void backward_sweep(struct network *n)
                 bp_backpropagate_error(n, n->output);
                 break;
         case ntype_rnn:
-                bp_backpropagate_error(un->stack[un->sp], un->stack[un->sp]->output);
+                for (int32_t i = un->sp; i >= 0; i--) {
+                        // printf("SP: %d\n", i);
+                        bp_backpropagate_error(un->stack[i], un->stack[i]->output);
+                }
+                // printf("\n");
+                // bp_backpropagate_error(un->stack[un->sp], un->stack[un->sp]->output);
                 break;     
         }
+        // printf("\n");
 }
 
 void update_weights(struct network *n)

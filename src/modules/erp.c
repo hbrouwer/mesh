@@ -119,10 +119,10 @@ struct vector *erp_values_for_item(struct network *n, struct group *g,
                 /*
                  * amplitude = 1.0 - sim(g_t, g_{t-1})
                  */
-                struct vector *v = group_vector_by_name(n, g->name);
+                struct group *ng = find_network_group_by_name(n, g->name);
                 ev->elements[i] =
-                        1.0 - n->similarity_metric(v, pv);
-                copy_vector(pv, v);
+                        1.0 - n->similarity_metric(ng->vector, pv);
+                copy_vector(pv, ng->vector);
         }
 
         free_vector(pv);
