@@ -116,8 +116,8 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                 struct projection *ip = g->inc_projs->elements[i];
                 struct group *ng = ip->to;
                 /* skip "terminal" groups */
-                if (ng->inc_projs->num_elements == 0)
-                        continue;
+                // if (ng->inc_projs->num_elements == 0)
+                //         continue;
                 for (uint32_t j = 0; j < ng->out_projs->num_elements; j++) {
                         struct projection *p = ng->out_projs->elements[j];
 #ifdef _OPENMP
