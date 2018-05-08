@@ -85,6 +85,9 @@ void train_network_with_bp(struct network *n)
                                         n->status->error += output_error(n,
                                                 item->targets[j])
                                                 / n->pars->batch_size;
+                                /* multi-stage sweep */
+                                if (n->ms_input)
+                                        multi_stage_sweep(n, item, j);
                         }
                 }
                 if (n->status->error < n->pars->error_threshold) {
@@ -146,6 +149,9 @@ void train_network_with_bptt(struct network *n)
                                         n->status->error += output_error(n,
                                                 item->targets[j])
                                                 / n->pars->batch_size;
+                                /* multi-stage sweep */
+                                if (n->ms_input)
+                                        multi_stage_sweep(n, item, j);                                                
                                 }
                         }
                 }

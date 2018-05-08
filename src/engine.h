@@ -18,13 +18,15 @@
 #define ENGINE_H
 
 #include "network.h"
+#include "set.h"
 #include "vector.h"
 
 void clamp_input_vector(struct network *n, struct vector *input);
 void reset_ticks(struct network *n);
-void reset_error_signals(struct network *n);
-void forward_sweep(struct network *n);
 void next_tick(struct network *n);
+void forward_sweep(struct network *n);
+
+void multi_stage_sweep(struct network *n, struct item *item, uint32_t event);
 
 void inject_error(struct network *n, struct vector *target);
 double output_error(struct network *n, struct vector *target);
@@ -32,6 +34,7 @@ double output_error(struct network *n, struct vector *target);
 struct vector *output_vector(struct network *n);
 struct group *find_network_group_by_name(struct network *n, char *name);
 
+void reset_error_signals(struct network *n);
 void backward_sweep(struct network *n);
 void update_weights(struct network *n);
 

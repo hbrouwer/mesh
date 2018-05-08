@@ -57,15 +57,16 @@ void reset_ticks(struct network *n)
         }       
 }
 
-void reset_error_signals(struct network *n)
+void next_tick(struct network *n)
 {
         switch(n->flags->type) {
-        case ntype_ffn: /* fall through */
+        case ntype_ffn:
+                break;
         case ntype_srn:
-                reset_ffn_error_signals(n);
+                shift_context_groups(n);
                 break;
         case ntype_rnn:
-                reset_rnn_error_signals(n);
+                shift_pointer_or_stack(n);
                 break;
         }
 }
@@ -84,18 +85,25 @@ void forward_sweep(struct network *n)
         }
 }
 
-void next_tick(struct network *n)
+void multi_stage_sweep(struct network *n, struct item *item, uint32_t event)
 {
+        struct rnn_unfolded_network *un = n->unfolded_net;
+        struct network *np;
         switch(n->flags->type) {
-        case ntype_ffn:
-                break;
+        case ntype_ffn: /* fall through */
         case ntype_srn:
-                shift_context_groups(n);
+                np = n;
                 break;
         case ntype_rnn:
-                shift_pointer_or_stack(n);
+                np = un->stack[un->sp];
                 break;
         }
+        struct group *ms_input = find_network_group_by_name(
+                np, n->ms_input->name);
+        struct item  *ms_item  = find_array_element_by_name(
+                n->ms_set->items, item->name);
+        copy_vector(ms_input->vector, ms_item->inputs[event]);
+        feed_forward(np, ms_input);
 }
 
 void inject_error(struct network *n, struct vector *target)
@@ -158,6 +166,19 @@ struct group *find_network_group_by_name(struct network *n, char *name)
                 break;
         }
         return g;
+}
+
+void reset_error_signals(struct network *n)
+{
+        switch(n->flags->type) {
+        case ntype_ffn: /* fall through */
+        case ntype_srn:
+                reset_ffn_error_signals(n);
+                break;
+        case ntype_rnn:
+                reset_rnn_error_signals(n);
+                break;
+        }
 }
 
 void backward_sweep(struct network *n)
