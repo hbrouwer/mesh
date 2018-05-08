@@ -1237,13 +1237,13 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
                 return false;
         }
         /* find 'from' group */
-        struct group *fg = find_array_element_by_name(s->anp->groups, arg2);
+        struct group *fg = find_network_group_by_name(s->anp, arg2);
         if (fg == NULL) {
                 eprintf("Cannot show matrix - no such group '%s'\n", arg2);
                 return true;
         }
         /* find 'to' group */
-        struct group *tg = find_array_element_by_name(s->anp->groups, arg3);
+        struct group *tg = find_network_group_by_name(s->anp, arg3);
         if (tg == NULL) {
                 eprintf("Cannot show matrix - no such group '%s'\n", arg3);
                 return true;

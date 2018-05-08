@@ -17,14 +17,6 @@
 #ifndef BP_H
 #define BP_H
 
-#define SD_DEFAULT      0
-#define SD_BOUNDED      1
-
-#define RPROP_PLUS      0
-#define RPROP_MINUS     1
-#define IRPROP_PLUS     2
-#define IRPROP_MINUS    3
-
 #include "network.h"
 
 /* backpropagation */

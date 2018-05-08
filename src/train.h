@@ -23,16 +23,8 @@
 #include "set.h"
 
 void train_network(struct network *n);
-void train_with_bp(struct network *n);
-void train_item_with_bp(struct network *n, struct item *item);
-
-// void train_network_with_item(struct network *n, struct item *item);
-
 void train_network_with_bp(struct network *n);
-void train_ffn_network_with_item(struct network *n, struct item *item);
-
 void train_network_with_bptt(struct network *n);
-void train_rnn_network_with_item(struct network *n, struct item *item);
 
 void reorder_training_set(struct network *n);
 

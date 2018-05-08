@@ -23,9 +23,17 @@
 #include "main.h"
 #include "math.h"
 
-                /*************************
-                 **** backpropagation ****
-                 *************************/
+#define SD_DEFAULT      0
+#define SD_BOUNDED      1
+
+#define RPROP_PLUS      0
+#define RPROP_MINUS     1
+#define IRPROP_PLUS     2
+#define IRPROP_MINUS    3
+
+                /*******************************
+                 **** error backpropagation ****
+                 *******************************/
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 This implements the backpropagation (BP) algorithm (Rumelhart, Hinton, &
@@ -192,6 +200,10 @@ void bp_backpropagate_error(struct network *n, struct group *g)
          */
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *ip = g->inc_projs->elements[i];
+                /*
+                 * During BPTT, we want to backpropagate error only through
+                 * the network of the current timestep.
+                 */
                 if (ip->flags->recurrent)
                         continue;
                 bp_backpropagate_error(n, ip->to);

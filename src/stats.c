@@ -57,10 +57,9 @@ void free_weight_statistics(struct weight_stats *ws)
  */
 void collect_weight_statistics(struct weight_stats *ws, struct group *g)
 {
- 
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
-                struct matrix *w = p->weights;
+                struct matrix *w     = p->weights;
                 for (uint32_t r = 0; r < w->rows; r++) {
                         for (uint32_t c = 0; c < w->cols; c++) {
                                 ws->num_weights++;
@@ -73,6 +72,7 @@ void collect_weight_statistics(struct weight_stats *ws, struct group *g)
                                         ws->maximum = w->elements[r][c];
                         }
                 }
+                /* skip recurrent groups */
                 if (p->flags->recurrent)
                         continue;
                 collect_weight_statistics(ws, p->to);
@@ -87,15 +87,16 @@ void collect_mean_dependent_ws(struct weight_stats *ws, struct group *g)
 {
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];
-                struct matrix *w = p->weights;
+                struct matrix *w     = p->weights;
                 for (uint32_t r = 0; r < w->rows; r++) {
                         for (uint32_t c = 0; c < w->cols; c++) {
-                                ws->mean_dist +=
-                                        fabs(w->elements[r][c] - ws->mean);
-                                ws->variance +=
-                                        pow(w->elements[r][c] - ws->mean, 2.0);
+                                ws->mean_dist += fabs(
+                                        w->elements[r][c] - ws->mean);
+                                ws->variance += pow(
+                                        w->elements[r][c] - ws->mean, 2.0);
                         }
                 }
+                /* skip recurrent groups */
                 if (p->flags->recurrent)
                         continue;
                 collect_mean_dependent_ws(ws, p->to);
@@ -108,14 +109,14 @@ void print_weight_statistics(struct network *n)
         cprintf("\n");
         cprintf("Weight statistics for network '%s'\n", n->name);
         cprintf("\n");
-        cprintf("Number of weights: \t %d\n", ws->num_weights);
-        cprintf("Cost: \t\t\t %f\n", ws->cost);
-        cprintf("Mean: \t\t\t %f\n", ws->mean);
-        cprintf("Absolute mean: \t\t %f\n", ws->mean_abs);
-        cprintf("Mean dist.: \t\t %f\n", ws->mean_dist);
-        cprintf("Variance: \t\t %f\n", ws->variance);
-        cprintf("Minimum: \t\t %f\n", ws->minimum);
-        cprintf("Maximum: \t\t %f\n", ws->maximum);
+        cprintf("Number of weights: \t %d\n",           ws->num_weights);
+        cprintf("Cost: \t\t\t %f\n",                    ws->cost);
+        cprintf("Mean: \t\t\t %f\n",                    ws->mean);
+        cprintf("Absolute mean: \t\t %f\n",             ws->mean_abs);
+        cprintf("Mean dist.: \t\t %f\n",                ws->mean_dist);
+        cprintf("Variance: \t\t %f\n",                  ws->variance);
+        cprintf("Minimum: \t\t %f\n",                   ws->minimum);
+        cprintf("Maximum: \t\t %f\n",                   ws->maximum);
         cprintf("\n");
         free_weight_statistics(ws);
 }

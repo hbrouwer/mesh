@@ -118,6 +118,7 @@ struct rnn_unfolded_network *rnn_unfold_network(struct network *n)
          */
         for (uint32_t i = 0; i < un->stack_size; i++) {
                 un->stack[i] = rnn_duplicate_network(n);
+                un->stack[i]->unfolded_net = un; /* <- unfolded network */
                 if (i == 0) {
                         /* attach "terminal" groups */
                         rnn_attach_terminal_groups(un,

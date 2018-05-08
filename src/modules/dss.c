@@ -644,7 +644,6 @@ struct matrix *dss_word_info_matrix(struct network *n,
                         next_tick(n);
                 clamp_input_vector(n, item->inputs[i]);
                 forward_sweep(n);
-
                 struct vector *tv = item->targets[item->num_events - 1];
                 struct vector *ov = dss_adjust_output_vector(output_vector(n),
                         tv, n->pars->target_radius, n->pars->zero_error_radius);

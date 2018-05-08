@@ -19,6 +19,14 @@
 #include "engine.h"
 #include "rnn_unfold.h"
 
+                /****************
+                 **** engine ****
+                 ****************/
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+This glues together the processing logic for different network types.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */                
+
 void clamp_input_vector(struct network *n, struct vector *input)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
@@ -35,10 +43,6 @@ void clamp_input_vector(struct network *n, struct vector *input)
 
 void reset_ticks(struct network *n)
 {
-        /*
-        if (!n->flags->reset_contexts)
-                return;
-                */
         struct rnn_unfolded_network *un = n->unfolded_net;
         switch(n->flags->type) {
         case ntype_ffn:
@@ -149,7 +153,8 @@ struct group *find_network_group_by_name(struct network *n, char *name)
                 g = find_array_element_by_name(n->groups, name);
                 break;
         case ntype_rnn:
-                g = find_array_element_by_name(un->stack[un->sp]->groups, name);
+                g = find_array_element_by_name(un->stack[un->sp]->groups,
+                        name);
                 break;
         }
         return g;
@@ -164,15 +169,11 @@ void backward_sweep(struct network *n)
                 bp_backpropagate_error(n, n->output);
                 break;
         case ntype_rnn:
-                for (int32_t i = un->sp; i >= 0; i--) {
-                        // printf("SP: %d\n", i);
-                        bp_backpropagate_error(un->stack[i], un->stack[i]->output);
-                }
-                // printf("\n");
-                // bp_backpropagate_error(un->stack[un->sp], un->stack[un->sp]->output);
+                for (int32_t i = un->sp; i >= 0; i--)
+                        bp_backpropagate_error(un->stack[i], 
+                                un->stack[i]->output);
                 break;     
         }
-        // printf("\n");
 }
 
 void update_weights(struct network *n)

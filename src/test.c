@@ -70,8 +70,20 @@ void test_network(struct network *n, bool verbose)
                                         i + 1, item->name, error);
                 }
         }
-
-        print_testing_summary(n, tr);
+        
+        cprintf("\n");
+        cprintf("Number of items: \t\t %d\n",
+                n->asp->items->num_elements);
+        cprintf("Total error: \t\t\t %lf\n",
+                n->status->error);
+        cprintf("Error per example: \t\t %lf\n",
+                n->status->error / n->asp->items->num_elements);
+        if (n->output->err_fun->fun == err_fun_sum_of_squares)
+                cprintf("Root Mean Square (RMS) error: \t %lf\n",
+                        sqrt((2.0 * n->status->error) / n->asp->items->num_elements));
+        cprintf("# Items reached threshold: \t %d (%.2lf%%)\n",
+                tr, ((double)tr / n->asp->items->num_elements) * 100.0);
+        cprintf("\n");
 
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
@@ -99,7 +111,6 @@ void test_network_with_item(struct network *n, struct item *item,
                         next_tick(n);
                 clamp_input_vector(n, item->inputs[i]);
                 forward_sweep(n);
-
                 cprintf("\n");
                 cprintf("E: %d\n", i + 1);
                 cprintf("I: ");
@@ -119,26 +130,8 @@ void test_network_with_item(struct network *n, struct item *item,
                         continue;
                 n->status->error += output_error(n, item->targets[i]);
                 cprintf("\nError:\t%lf\n", n->status->error);
-        }    
-        
-
-}
-
-void print_testing_summary(struct network *n, uint32_t tr)
-{
-        cprintf("\n");
-        cprintf("Number of items: \t\t %d\n",
-                n->asp->items->num_elements);
-        cprintf("Total error: \t\t\t %lf\n",
-                n->status->error);
-        cprintf("Error per example: \t\t %lf\n",
-                n->status->error / n->asp->items->num_elements);
-        if (n->output->err_fun->fun == err_fun_sum_of_squares)
-                cprintf("Root Mean Square (RMS) error: \t %lf\n",
-                        sqrt((2.0 * n->status->error) / n->asp->items->num_elements));
-        cprintf("# Items reached threshold: \t %d (%.2lf%%)\n",
-                tr, ((double)tr / n->asp->items->num_elements) * 100.0);
-        cprintf("\n");
+                cprintf("\n");
+        }
 }
 
 void testing_signal_handler(int32_t signal)

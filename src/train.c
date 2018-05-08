@@ -44,6 +44,16 @@ void train_network(struct network *n)
         cprintf("\n");
 }
 
+                /*************************
+                 **** backpropagation ****
+                 *************************/
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Standard backpropagation training. For each event of an item, error is
+injected and backpropagated if a target pattern is present.ß. Weights are
+updated after each batch.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 void train_network_with_bp(struct network *n)
 {
         uint32_t z = 0;
@@ -89,10 +99,23 @@ void train_network_with_bp(struct network *n)
         }
 }
 
+                /**************************************
+                 **** backpropagation through time ****
+                 **************************************/
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Backpropagation Through Time (BPTT_ training. For each event of an item,
+error is injected if a target pattern is present. Error is only
+backpropagated once all events of an item have been processed. Weights are
+updated after each batch.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 void train_network_with_bptt(struct network *n)
 {
         uint32_t z = 0;
         for (uint32_t epoch = 1; epoch <= n->pars->max_epochs; epoch++) {
+                if (!keep_running)
+                        return;
                 n->status->epoch      = epoch;
                 n->status->prev_error = n->status->error;
                 n->status->error      = 0.0;
@@ -100,7 +123,7 @@ void train_network_with_bptt(struct network *n)
                         reorder_training_set(n);
                 for (uint32_t i = 0; i < n->pars->batch_size; i++) {
                         if (!keep_running)
-                                return;
+                                return;                 
                         uint32_t x = n->asp->order[z++];
                         struct item *item = n->asp->items->elements[x];
                         if (z == n->asp->items->num_elements)
@@ -114,11 +137,11 @@ void train_network_with_bptt(struct network *n)
                                 forward_sweep(n);
                                 if (!item->targets[j])
                                         continue;
-                                // inject_error(n, item->targets[i]);
+                                inject_error(n, item->targets[j]);
                                 if (n->unfolded_net->sp
                                         == n->unfolded_net->stack_size - 1
                                         || j == item->num_events - 1) {
-                                        inject_error(n, item->targets[j]);
+                                        // inject_error(n, item->targets[j]);
                                         backward_sweep(n);
                                         n->status->error += output_error(n,
                                                 item->targets[j])
@@ -129,7 +152,7 @@ void train_network_with_bptt(struct network *n)
                 if (n->status->error < n->pars->error_threshold) {
                         print_training_summary(n);
                         break;
-                }                
+                }                       
                 update_weights(n);
                 scale_learning_rate(n);
                 scale_momentum(n);
@@ -137,48 +160,6 @@ void train_network_with_bptt(struct network *n)
                 print_training_progress(n);
         }
 }
-
-// void train_network_with_bptt(struct network *n)
-// {
-//         uint32_t z = 0;
-//         for (uint32_t epoch = 1; epoch <= n->pars->max_epochs; epoch++) {
-//                 if (!keep_running)
-//                         return;
-//                 n->status->epoch      = epoch;
-//                 n->status->prev_error = n->status->error;
-//                 n->status->error      = 0.0;
-//                 if (z == 0)
-//                         reorder_training_set(n);
-//                 uint32_t x = n->asp->order[z++];
-//                 struct item *item = n->asp->items->elements[x];
-//                 if (z == n->asp->items->num_elements)
-//                         z = 0;
-//                 reset_ticks(n);
-//                 reset_error_signals(n);
-//                 for (uint32_t i = 0; i < item->num_events; i++) {
-//                         if (i > 0)
-//                                 next_tick(n);
-//                         clamp_input_vector(n, item->inputs[i]);
-//                         forward_sweep(n);
-//                         if (!item->targets[i])
-//                                 continue;
-//                         // inject_error(n, item->targets[i]);
-//                         if (n->unfolded_net->sp
-//                                 == n->unfolded_net->stack_size - 1
-//                                 || i == item->num_events - 1) {
-//                                 inject_error(n, item->targets[i]);
-//                                 backward_sweep(n);
-//                                 n->status->error += output_error(n,
-//                                         item->targets[i]);
-//                                 update_weights(n);
-//                         }
-//                 }
-//                 scale_learning_rate(n);
-//                 scale_momentum(n);
-//                 scale_weight_decay(n);
-//                 print_training_progress(n);
-//         }
-// }
 
 void reorder_training_set(struct network *n)
 {

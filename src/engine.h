@@ -25,10 +25,13 @@ void reset_ticks(struct network *n);
 void reset_error_signals(struct network *n);
 void forward_sweep(struct network *n);
 void next_tick(struct network *n);
+
 void inject_error(struct network *n, struct vector *target);
 double output_error(struct network *n, struct vector *target);
+
 struct vector *output_vector(struct network *n);
 struct group *find_network_group_by_name(struct network *n, char *name);
+
 void backward_sweep(struct network *n);
 void update_weights(struct network *n);
 

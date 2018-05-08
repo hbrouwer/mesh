@@ -87,13 +87,12 @@ void print_cm_summary(struct network *n, bool print_cm, bool pprint,
         enum color_scheme scheme)
 {       
         struct matrix *cm = confusion_matrix(n);
-
         if (print_cm) {
                 cprintf("\nConfusion matrix (actual x predicted):\n\n");
                 pprint ? pprint_matrix(cm, scheme) : print_matrix(cm);
         }
-
-        /* compute row and column totals */
+        
+        /* row and column totals */
         struct vector *rows = create_vector(cm->rows);
         struct vector *cols = create_vector(cm->cols);
         for (uint32_t r = 0; r < cm->rows; r++) {
@@ -103,16 +102,15 @@ void print_cm_summary(struct network *n, bool print_cm, bool pprint,
                 }
         }
 
+        /*
+         * precision = #correct / column total
+         *              
+         * recall    = #correct / row total
+         */
         double num_correct   = 0.0;
         double num_incorrect = 0.0;
         double precision     = 0.0;
         double recall        = 0.0;
-
-        /*
-         * precision = #correct / column total
-         *              
-         * recall = #correct / row total
-         */
         for (uint32_t r = 0; r < cm->rows; r++) {
                 for (uint32_t c = 0; c < cm->cols; c++) {
                         /* incorrectly classified */

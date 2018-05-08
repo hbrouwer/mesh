@@ -25,18 +25,8 @@
 #include "set.h"
 
 void test_network(struct network *n, bool verbose);
-void test_ffn_network(struct network *n, bool verbose);
-void test_rnn_network(struct network *n, bool verbose);
-
 void test_network_with_item(struct network *n, struct item *item,
         bool pprint, enum color_scheme scheme);
-void test_ffn_network_with_item(struct network *n, struct item *item,
-        bool pprint, enum color_scheme scheme);
-void test_rnn_network_with_item(struct network *n, struct item *item,
-        bool pprint, enum color_scheme scheme);
-
-void print_testing_summary(struct network *n, uint32_t tr);
-
 void testing_signal_handler(int32_t signal);
 
 #endif /* TEST_H */

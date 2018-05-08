@@ -37,7 +37,6 @@ bool verify_network(struct network *n)
                 eprintf("No pathway from input group to output group\n");
                 return false;
         }
-
         return true;
 }
 
@@ -50,6 +49,5 @@ bool verify_input_to_output_path(struct network *n, struct group *g)
                         return true;
                 reachable = verify_input_to_output_path(n, p->to);
         }
-
         return reachable;
 }
