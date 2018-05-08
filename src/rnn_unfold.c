@@ -186,7 +186,8 @@ error_out:
 
 void rnn_free_duplicate_network(struct network *dn)
 {
-        rnn_free_duplicate_groups(dn->output);
+        // rnn_free_duplicate_groups(dn->output);
+        rnn_free_duplicate_groups(dn->groups);
         free_array(dn->groups);
         free(dn);
 }
@@ -239,8 +240,11 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
                 /* skip non-bias groups */
                 if (!bg->flags->bias)
                         continue;
-                struct group *dbg = rnn_duplicate_group(bg);
-                add_group(dn, dbg);
+                struct group *dbg = find_array_element_by_name(dn->groups, bg->name);
+                if (!dbg) {
+                        dbg = rnn_duplicate_group(bg);
+                        add_group(dn, dbg);
+                }
                 /*
                  * Duplicate the projection between the current group and
                  * its bias group. We only need a unique gradient and
@@ -285,20 +289,23 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
         return dg;
 }
 
-void rnn_free_duplicate_groups(struct group *dg)
+void rnn_free_duplicate_group(struct group *dg)
 {
-        for (uint32_t i = 0; i < dg->inc_projs->num_elements; i++) {
-                struct projection *ip = dg->inc_projs->elements[i];
-                rnn_free_duplicate_groups(ip->to);
-                rnn_free_duplicate_projection(ip);
-        }
+        free_vector(dg->vector);
+        free_vector(dg->error);
+        for (uint32_t i = 0; i < dg->inc_projs->num_elements; i++)
+                rnn_free_duplicate_projection(dg->inc_projs->elements[i]);
         free_array(dg->inc_projs);
         for (uint32_t i = 0; i < dg->out_projs->num_elements; i++)
                 free(dg->out_projs->elements[i]);
         free_array(dg->out_projs);
-        free_vector(dg->vector);
-        free_vector(dg->error);
-        free(dg);
+        free(dg);        
+}
+
+void rnn_free_duplicate_groups(struct array *dgs)
+{
+        for (uint32_t i = 0; i < dgs->num_elements; i++)
+                rnn_free_duplicate_group(dgs->elements[i]);
 }
 
 struct projection *rnn_duplicate_projection(
@@ -393,7 +400,8 @@ void rnn_detach_terminal_groups(struct rnn_unfolded_network *un,
                 remove_projection(fg->out_projs, op);
                 free(op);
                 /* remove terminal group */
-                rnn_free_duplicate_groups(fg);
+                // rnn_free_duplicate_groups(fg);
+                rnn_free_duplicate_group(fg);
         }
 }
 
