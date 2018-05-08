@@ -266,7 +266,7 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
                 struct group *tg      = op->to;
-                /* skip reucrrent projections */
+                /* skip recurrent projections */
                 if (op->flags->recurrent)
                         continue;
                 /* recursively duplicate groups */
