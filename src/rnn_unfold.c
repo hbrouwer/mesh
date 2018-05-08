@@ -240,6 +240,7 @@ struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
                 /* skip non-bias groups */
                 if (!bg->flags->bias)
                         continue;
+                /* only duplicate unseen bias groups */
                 struct group *dbg = find_array_element_by_name(dn->groups, bg->name);
                 if (!dbg) {
                         dbg = rnn_duplicate_group(bg);
