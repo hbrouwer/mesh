@@ -47,6 +47,8 @@ bool verify_input_to_output_path(struct network *n, struct group *g)
                 struct projection *p = g->out_projs->elements[i];
                 if (p->to == n->output)
                         return true;
+                if (p->flags->recurrent)
+                        continue;
                 reachable = verify_input_to_output_path(n, p->to);
         }
         return reachable;

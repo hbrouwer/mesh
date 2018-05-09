@@ -141,7 +141,7 @@ error_out:
 void rnn_find_recurrent_groups(struct group *g, struct array *rcr_groups)
 {
         if (find_projection(g->out_projs, g))
-                add_to_array(rcr_groups, g);
+                printf("%s\n", g->name);
         for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
                 struct projection *op = g->out_projs->elements[i];
                 if (op->flags->recurrent)
@@ -186,7 +186,6 @@ error_out:
 
 void rnn_free_duplicate_network(struct network *dn)
 {
-        // rnn_free_duplicate_groups(dn->output);
         rnn_free_duplicate_groups(dn->groups);
         free_array(dn->groups);
         free(dn);
