@@ -81,13 +81,17 @@ void train_network_with_bp(struct network *n)
                                 reset_error_signals(n);
                                 inject_error(n, item->targets[j]);
                                 backward_sweep(n);
+                                /* multi-stage forward sweep */
+                                if (n->ms_input)
+                                        multi_stage_backward_sweep(n, item, j);
                                 if (j == item->num_events - 1)
                                         n->status->error += output_error(n,
                                                 item->targets[j])
                                                 / n->pars->batch_size;
-                                /* multi-stage sweep */
+                                /* multi-stage forward sweep */
+                                /*
                                 if (n->ms_input)
-                                        multi_stage_sweep(n, item, j);
+                                        multi_stage_forward_sweep(n, item, j); */
                         }
                 }
                 if (n->status->error < n->pars->error_threshold) {
@@ -149,9 +153,9 @@ void train_network_with_bptt(struct network *n)
                                         n->status->error += output_error(n,
                                                 item->targets[j])
                                                 / n->pars->batch_size;
-                                /* multi-stage sweep */
+                                /* multi-stage forward sweep */
                                 if (n->ms_input)
-                                        multi_stage_sweep(n, item, j);                                                
+                                        multi_stage_forward_sweep(n, item, j);                                                
                                 }
                         }
                 }

@@ -26,7 +26,8 @@ void reset_ticks(struct network *n);
 void next_tick(struct network *n);
 void forward_sweep(struct network *n);
 
-void multi_stage_sweep(struct network *n, struct item *item, uint32_t event);
+void multi_stage_forward_sweep(struct network *n, struct item *item, uint32_t event);
+void multi_stage_backward_sweep(struct network *n, struct item *item, uint32_t event);
 
 void inject_error(struct network *n, struct vector *target);
 double output_error(struct network *n, struct vector *target);
