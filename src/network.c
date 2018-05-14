@@ -288,17 +288,19 @@ void inspect_network(struct network *n)
         cprintf("| Batch size: \t\t\t %d\n",            n->pars->batch_size);
         cprintf("| Maximum #epochs: \t\t %d\n",         n->pars->max_epochs);
         cprintf("| Report after #epochs \t\t %d\n",     n->pars->report_after);
-        cprintf("|\n");
-        cprintf("| Multi-stage input: \t\t ");
-        n->ms_input
-                ? cprintf("%s (%d)\n",
-                        n->ms_input->name, n->ms_input->vector->size)
-                : cprintf("\n");
-        cprintf("| Multi-stage set: \t\t ");
-        n->ms_set
-                ? cprintf("%s (%d)\n",
-                        n->ms_set->name, n->ms_set->items->num_elements)
-                : cprintf("\n");
+        if (n->ts_fw_group) {
+                cprintf("|\n");
+                cprintf("| Two-stage forward: \t\t %s (%d) :: %s (%d)\n", 
+                        n->ts_fw_group->name, n->ts_fw_group->vector->size,
+                        n->ts_fw_set->name, n->ts_fw_set->items->num_elements);
+        }
+        if (n->ts_bw_group) {
+                if (!n->ts_fw_group)
+                        cprintf("|\n");
+                cprintf("| Two-stage backward: \t\t %s (%d) :: %s (%d)\n", 
+                        n->ts_bw_group->name, n->ts_bw_group->vector->size,
+                        n->ts_bw_set->name, n->ts_bw_set->items->num_elements);
+        }
 
                 /***********************
                  **** randomization ****

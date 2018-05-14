@@ -100,8 +100,10 @@ bool cmd_show_item_num(char *cmd, char *fmt, struct session *s);
 
 bool cmd_record_units(char *cmd, char *fmt, struct session *s);
 
-bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s);
-bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s);
+bool cmd_set_two_stage_forward(char *cmd, char *fmt, struct session *s);
+bool cmd_set_one_stage_forward(char *cmd, char *fmt, struct session *s);
+bool cmd_set_two_stage_backward(char *cmd, char *fmt, struct session *s);
+bool cmd_set_one_stage_backward(char *cmd, char *fmt, struct session *s);
 
 bool cmd_similarity_matrix(char *cmd, char *fmt, struct session *s);
 bool cmd_similarity_stats(char *cmd, char *fmt, struct session *s);
@@ -261,8 +263,10 @@ const static struct command cmds[] = {
         {"recordUnits",             "%s %s",         &cmd_record_units},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"set MultiStage",          "%s %s",         &cmd_set_multi_stage},
-        {"set SingleStage",         NULL,            &cmd_set_single_stage},
+        {"set TwoStageForward",     "%s %s",         &cmd_set_two_stage_forward},
+        {"set OneStageForward",     NULL,            &cmd_set_one_stage_forward},
+        {"set TwoStageBackward",    "%s %s",         &cmd_set_two_stage_backward},
+        {"set OneStageBackward",    NULL,            &cmd_set_one_stage_backward},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"similarityMatrix",        NULL,            &cmd_similarity_matrix},

@@ -26,9 +26,6 @@ void reset_ticks(struct network *n);
 void next_tick(struct network *n);
 void forward_sweep(struct network *n);
 
-void multi_stage_forward_sweep(struct network *n, struct item *item, uint32_t event);
-void multi_stage_backward_sweep(struct network *n, struct item *item, uint32_t event);
-
 void inject_error(struct network *n, struct vector *target);
 double output_error(struct network *n, struct vector *target);
 
@@ -38,5 +35,8 @@ struct group *find_network_group_by_name(struct network *n, char *name);
 void reset_error_signals(struct network *n);
 void backward_sweep(struct network *n);
 void update_weights(struct network *n);
+
+void two_stage_forward_sweep(struct network *n, struct item *item, uint32_t event);
+void two_stage_backward_sweep(struct network *n, struct item *item, uint32_t event);
 
 #endif /* ENGINE_H */

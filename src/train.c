@@ -81,17 +81,14 @@ void train_network_with_bp(struct network *n)
                                 reset_error_signals(n);
                                 inject_error(n, item->targets[j]);
                                 backward_sweep(n);
-                                /* multi-stage forward sweep */
-                                if (n->ms_input)
-                                        multi_stage_backward_sweep(n, item, j);
+                                if (n->ts_bw_group) /* two-stage backward sweep */
+                                        two_stage_backward_sweep(n, item, j);
                                 if (j == item->num_events - 1)
                                         n->status->error += output_error(n,
                                                 item->targets[j])
                                                 / n->pars->batch_size;
-                                /* multi-stage forward sweep */
-                                /*
-                                if (n->ms_input)
-                                        multi_stage_forward_sweep(n, item, j); */
+                                if (n->ts_fw_group) /* two-stage forward sweep */
+                                        two_stage_forward_sweep(n, item, j);
                         }
                 }
                 if (n->status->error < n->pars->error_threshold) {
@@ -150,13 +147,14 @@ void train_network_with_bptt(struct network *n)
                                         || j == item->num_events - 1) {
                                         // inject_error(n, item->targets[j]);
                                         backward_sweep(n);
+                                        if (n->ts_bw_group) /* two-stage backward sweep */
+                                                two_stage_backward_sweep(n, item, j);
                                         n->status->error += output_error(n,
                                                 item->targets[j])
-                                                / n->pars->batch_size;
-                                /* multi-stage forward sweep */
-                                if (n->ms_input)
-                                        multi_stage_forward_sweep(n, item, j);                                                
+                                                / n->pars->batch_size;                                          
                                 }
+                                if (n->ts_fw_group) /* two-stage forward sweep */
+                                        two_stage_forward_sweep(n, item, j);  
                         }
                 }
                 if (n->status->error < n->pars->error_threshold) {

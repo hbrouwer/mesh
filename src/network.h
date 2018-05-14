@@ -64,10 +64,14 @@ struct network
         void (*learning_algorithm)(struct network *n);
         /* weight update algorithm */
         void (*update_algorithm)(struct network *n);
-        /* multi-stage input group */
-        struct group *ms_input;
-        /* multi-stage set */
-        struct set *ms_set;        
+        /* two-stage forward group */
+        struct group *ts_fw_group;
+        /* two-stage forward set */
+        struct set *ts_fw_set;
+        /* two-stage backward group */
+        struct group *ts_bw_group;
+        /* two-stage backward set */
+        struct set *ts_bw_set;            
         /* sets in this network */
         struct array *sets;
         /* active set pointer */

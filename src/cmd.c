@@ -1530,42 +1530,76 @@ bool cmd_record_units(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-/*
- * TODO: Document this.
- */
-bool cmd_set_multi_stage(char *cmd, char *fmt, struct session *s)
+bool cmd_set_two_stage_forward(char *cmd, char *fmt, struct session *s)
 {
-        char arg1[MAX_ARG_SIZE]; /* multi-stage input group name */
-        char arg2[MAX_ARG_SIZE]; /* multi-stage input set name */
+        char arg1[MAX_ARG_SIZE]; /* two-stage forward group name */
+        char arg2[MAX_ARG_SIZE]; /* two-stage forward set name */
         if (sscanf(cmd, fmt, arg1, arg2) != 2)
                 return false;
-        /* find multi-stage input group */
+        /* find two-stage forward group */
         struct group *g = find_array_element_by_name(s->anp->groups, arg1);
         if (g == NULL) {
-                eprintf("Cannot set multi-stage training-no such group '%s'\n",
+                eprintf("Cannot set two-stage forward - no such group '%s'\n",
                         arg1);
                 return true;
         }
-        /* find multi-stage input set */
+        /* find two-stage forward set */
         struct set *set = find_array_element_by_name(s->anp->sets, arg2);
         if (!set) {
-                eprintf("Cannot set multi-stage training - no such set '%s'\n",
+                eprintf("Cannot set two-stage forward  - no such set '%s'\n",
                         arg2);
                 return true;
         }
-        s->anp->ms_input = g;
-        s->anp->ms_set   = set;
-        mprintf("Set multi-stage training \t [ %s --> %s :: %s ==> %s ]\n", 
-                s->anp->input->name, s->anp->ms_input->name,
-                s->anp->ms_set->name, s->anp->output->name);
+        s->anp->ts_fw_group = g;
+        s->anp->ts_fw_set   = set;
+        mprintf("Set two-stage forward \t [ %s --> (%s :: %s) --> %s ]\n", 
+                s->anp->input->name, s->anp->ts_fw_group->name,
+                s->anp->ts_fw_set->name, s->anp->output->name);
         return true;
 }
 
-bool cmd_set_single_stage(char *cmd, char *fmt, struct session *s)
+bool cmd_set_one_stage_forward(char *cmd, char *fmt, struct session *s)
 {
-        s->anp->ms_input = NULL;
-        s->anp->ms_set   = NULL;
-        mprintf("Set single-stage training \t [ %s --> %s ]\n", 
+        s->anp->ts_fw_group = NULL;
+        s->anp->ts_fw_set   = NULL;
+        mprintf("Set one-stage forward \t [ %s --> %s ]\n", 
+                s->anp->input->name, s->anp->output->name);
+        return true;   
+}
+
+bool cmd_set_two_stage_backward(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* two-stage backward group name */
+        char arg2[MAX_ARG_SIZE]; /* two-stage backward set name */
+        if (sscanf(cmd, fmt, arg1, arg2) != 2)
+                return false;
+        /* find two-stage backward group */
+        struct group *g = find_array_element_by_name(s->anp->groups, arg1);
+        if (g == NULL) {
+                eprintf("Cannot set two-stage backward - no such group '%s'\n",
+                        arg1);
+                return true;
+        }
+        /* find two-stage backward set */
+        struct set *set = find_array_element_by_name(s->anp->sets, arg2);
+        if (!set) {
+                eprintf("Cannot set two-stage backward  - no such set '%s'\n",
+                        arg2);
+                return true;
+        }
+        s->anp->ts_bw_group = g;
+        s->anp->ts_bw_set   = set;
+        mprintf("Set two-stage backward \t [ %s <-- (%s :: %s) <-- %s ]\n", 
+                s->anp->input->name, s->anp->ts_bw_group->name,
+                s->anp->ts_bw_set->name, s->anp->output->name);
+        return true;       
+}
+
+bool cmd_set_one_stage_backward(char *cmd, char *fmt, struct session *s)
+{
+        s->anp->ts_bw_group = NULL;
+        s->anp->ts_bw_set   = NULL;
+        mprintf("Set one-stage backward \t [ %s <-- %s ]\n",
                 s->anp->input->name, s->anp->output->name);
         return true;
 }
