@@ -90,34 +90,40 @@ double output_error(struct network *n, struct vector *target)
         struct rnn_unfolded_network *un = n->unfolded_net;
         double tr = n->pars->target_radius;
         double zr = n->pars->zero_error_radius;
+        double error = 0.0;
         switch(n->flags->type) {
         case ntype_ffn: /* fall through */
         case ntype_srn:
-                return n->output->err_fun->fun(n->output, target, tr, zr);
+                error = n->output->err_fun->fun(n->output, target, tr, zr);
+                break;
         case ntype_rnn:
-                return un->stack[un->sp]->output->err_fun->fun(
+                error = un->stack[un->sp]->output->err_fun->fun(
                         un->stack[un->sp]->output, target, tr, zr);
+                break;
         }
+        return error;
 }
 
 struct vector *output_vector(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
+        struct vector *v = NULL;
         switch(n->flags->type) {
         case ntype_ffn: /* fall through */
         case ntype_srn:
-                return(n->output->vector);
+                v = n->output->vector;
                 break;
         case ntype_rnn:
-                return(un->stack[un->sp]->output->vector);
+                v = un->stack[un->sp]->output->vector;
                 break;     
         }
+        return v;
 }
 
 struct group *find_network_group_by_name(struct network *n, char *name)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
-        struct group *g;
+        struct group *g = NULL;
         switch(n->flags->type) {
         case ntype_ffn: /* fall through */
         case ntype_srn:
@@ -194,7 +200,7 @@ void inject_error(struct network *n, struct vector *target)
 void two_stage_forward_sweep(struct network *n, struct item *item, uint32_t event)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
-        struct network *np;
+        struct network *np = NULL;
         switch(n->flags->type) {
         case ntype_ffn: /* fall through */
         case ntype_srn:
@@ -215,7 +221,7 @@ void two_stage_forward_sweep(struct network *n, struct item *item, uint32_t even
 void two_stage_backward_sweep(struct network *n, struct item *item, uint32_t event)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
-        struct network *np;
+        struct network *np = NULL;
         double tr = n->pars->target_radius;
         double zr = n->pars->zero_error_radius;        
         switch(n->flags->type) {

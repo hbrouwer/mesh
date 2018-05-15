@@ -485,7 +485,7 @@ void rnn_add_and_reset_gradients(struct group *g, struct group *dg)
          */
         for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
                 struct projection *p = g->inc_projs->elements[i];                
-                struct projection *dp;
+                struct projection *dp = NULL;
                 for (uint32_t j = 0; j < dg->inc_projs->num_elements; j++) {
                         dp = dg->inc_projs->elements[j];
                         if (dp->to->name == p->to->name)
