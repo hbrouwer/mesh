@@ -1539,15 +1539,13 @@ bool cmd_set_two_stage_forward(char *cmd, char *fmt, struct session *s)
         /* find two-stage forward group */
         struct group *g = find_array_element_by_name(s->anp->groups, arg1);
         if (g == NULL) {
-                eprintf("Cannot set two-stage forward - no such group '%s'\n",
-                        arg1);
+                eprintf("Cannot set two-stage forward - no such group '%s'\n", arg1);
                 return true;
         }
         /* find two-stage forward set */
         struct set *set = find_array_element_by_name(s->anp->sets, arg2);
         if (!set) {
-                eprintf("Cannot set two-stage forward  - no such set '%s'\n",
-                        arg2);
+                eprintf("Cannot set two-stage forward  - no such set '%s'\n", arg2);
                 return true;
         }
         s->anp->ts_fw_group = g;
@@ -1576,15 +1574,19 @@ bool cmd_set_two_stage_backward(char *cmd, char *fmt, struct session *s)
         /* find two-stage backward group */
         struct group *g = find_array_element_by_name(s->anp->groups, arg1);
         if (g == NULL) {
-                eprintf("Cannot set two-stage backward - no such group '%s'\n",
+                eprintf("Cannot set two-stage backward - no such group '%s'\n", arg1);
+                return true;
+        }
+        /* group requires error function */
+        if (!g->err_fun) {
+                eprintf("Cannot set two-stage backward - group '%s' has no error function\n",
                         arg1);
                 return true;
         }
         /* find two-stage backward set */
         struct set *set = find_array_element_by_name(s->anp->sets, arg2);
         if (!set) {
-                eprintf("Cannot set two-stage backward  - no such set '%s'\n",
-                        arg2);
+                eprintf("Cannot set two-stage backward  - no such set '%s'\n", arg2);
                 return true;
         }
         s->anp->ts_bw_group = g;
