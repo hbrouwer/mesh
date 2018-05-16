@@ -221,9 +221,9 @@ void two_stage_forward_sweep(struct network *n, struct item *item, uint32_t even
 void two_stage_backward_sweep(struct network *n, struct item *item, uint32_t event)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
-        struct network *np = NULL;
         double tr = n->pars->target_radius;
-        double zr = n->pars->zero_error_radius;        
+        double zr = n->pars->zero_error_radius;
+        struct network *np = NULL;
         switch(n->flags->type) {
         case ntype_ffn: /* fall through */
         case ntype_srn:
