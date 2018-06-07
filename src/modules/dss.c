@@ -177,6 +177,10 @@ void dss_scores(struct network *n, struct set *set, struct item *item)
 
         free_matrix(sm);
 
+        struct vector *sv = dss_score_vector(n, set, item);
+        print_vector(sv);
+        free(sv);
+
         return;
 }
 
@@ -237,6 +241,27 @@ struct vector *dss_adjust_output_vector(struct vector *ov, struct vector *tv,
         return av;
 }
 
+/*
+ * Construct a vector containing the comprehension score of each proposition
+ * in the specified set, given the output of the model.
+ */
+struct vector *dss_score_vector(struct network *n, struct set *set,
+        struct item *item)
+{
+        struct vector *sv = create_vector(set->items->num_elements);
+        struct vector *ov = create_vector(n->output->vector->size);
+        struct vector *tv = item->targets[item->num_events - 1];
+        ov = dss_adjust_output_vector(output_vector(n), tv,
+                n->pars->target_radius, n->pars->zero_error_radius);
+        for (uint32_t i = 0; i < set->items->num_elements; i++) {
+                struct item *probe = set->items->elements[i];
+                struct vector *pv = probe->targets[0];
+                sv->elements[i] = dss_comprehension_score(pv, ov);
+        }
+        free_vector(ov);
+        return sv;
+}
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 This construsts a (1+m) x n comprehension score matrix, where m is the
 number of events for which a score is computed after processing each of n
@@ -251,9 +276,6 @@ target event of the current sentence.
     [ . . . . . . ] <-- score for event n
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/*
- * TODO: Support RNNs - currently this only supports SRNs.
- */
 struct matrix *dss_score_matrix(struct network *n, struct set *set,
         struct item *item)
 {
