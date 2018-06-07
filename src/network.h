@@ -151,6 +151,7 @@ struct group
         struct array *inc_projs;    /* array of incoming projections */
         struct array *out_projs;    /* array of outgoing projections */
         struct array *ctx_groups;   /* array of context groups */
+        struct set *dss_cs_context; /* DSS context event set */
         struct group_flags *flags;  /* flags */
         struct group_params *pars;  /* paramaters */
 };
@@ -164,7 +165,7 @@ struct group_params
 {
         double relu_alpha;          /* alpha parameter for ReLUs */
         double logistic_fsc;        /* flat spot correction */
-        double logistic_gain;       /* gain coefficient */        
+        double logistic_gain;       /* gain coefficient */
 };
 
                 /********************

@@ -27,14 +27,14 @@ void dss_inferences(struct network *n, struct set *set, struct item *item,
 struct vector *dss_adjust_output_vector(struct vector *ov, struct vector *tv,
         double tr, double zr);
 
-struct vector *dss_score_vector(struct network *n, struct set *set,
-        struct item *item);
+void dss_score_vector(struct vector *v, struct network *n, struct set *set);
 struct matrix *dss_score_matrix(struct network *n, struct set *set,
         struct item *item);
 
 double dss_comprehension_score(struct vector *a, struct vector *z);
 double dss_tau_prior(struct vector *a);
 double dss_tau_conditional(struct vector *a, struct vector *z);
+double dss_clip_unit(double u);
 
 bool is_same_vector(struct vector *a, struct vector *b);
 
@@ -48,5 +48,8 @@ void dss_word_info(struct network *n, struct set *s,
         struct item *item);
 void dss_write_word_info(struct network *n, struct set *s,
         char *filename);
+
+void reset_dss_cs_context_vectors(struct network *n);
+void update_dss_cs_context_vectors(struct network *n);
 
 #endif /* DSS_H */

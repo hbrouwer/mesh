@@ -177,10 +177,6 @@ void dss_scores(struct network *n, struct set *set, struct item *item)
 
         free_matrix(sm);
 
-        struct vector *sv = dss_score_vector(n, set, item);
-        print_vector(sv);
-        free(sv);
-
         return;
 }
 
@@ -224,20 +220,14 @@ void dss_inferences(struct network *n, struct set *set, struct item *item,
 }
 
 /*
- * Adjust DSS output vector based on target radius and zero error radius, and
- * clip units to values between 0 and 1.
+ * Adjust DSS output vector based on target radius and zero error radius.
  */
 struct vector *dss_adjust_output_vector(struct vector *ov, struct vector *tv,
         double tr, double zr)
 {
         struct vector *av = create_vector(ov->size);
-
-        for (uint32_t i = 0; i < av->size; i++) {
+        for (uint32_t i = 0; i < av->size; i++)
                 av->elements[i] = adjust_target(tv->elements[i], ov->elements[i], tr, zr);
-                av->elements[i] = minimum(av->elements[i], 1.0);
-                av->elements[i] = maximum(av->elements[i], 0.0);
-        }
-
         return av;
 }
 
@@ -245,21 +235,13 @@ struct vector *dss_adjust_output_vector(struct vector *ov, struct vector *tv,
  * Construct a vector containing the comprehension score of each proposition
  * in the specified set, given the output of the model.
  */
-struct vector *dss_score_vector(struct network *n, struct set *set,
-        struct item *item)
+void dss_score_vector(struct vector *v, struct network *n, struct set *set)
 {
-        struct vector *sv = create_vector(set->items->num_elements);
-        struct vector *ov = create_vector(n->output->vector->size);
-        struct vector *tv = item->targets[item->num_events - 1];
-        ov = dss_adjust_output_vector(output_vector(n), tv,
-                n->pars->target_radius, n->pars->zero_error_radius);
         for (uint32_t i = 0; i < set->items->num_elements; i++) {
                 struct item *probe = set->items->elements[i];
                 struct vector *pv = probe->targets[0];
-                sv->elements[i] = dss_comprehension_score(pv, ov);
+                v->elements[i] = dss_comprehension_score(pv, output_vector(n));
         }
-        free_vector(ov);
-        return sv;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -364,7 +346,7 @@ double dss_tau_prior(struct vector *a)
 {
         double tau = 0.0;
         for (uint32_t i = 0; i < a->size; i++)
-                tau += a->elements[i];
+                tau += dss_clip_unit(a->elements[i]);
 
         return tau / a->size;
 }
@@ -380,10 +362,19 @@ double dss_tau_conjunction(struct vector *a, struct vector *b)
         double tau = 0.0;
         if (is_same_vector(a, b))
                 tau = dss_tau_prior(a);
-        else
-                tau = inner_product(a, b) / a->size;
+        else {
+                for (uint32_t i = 0; i < a->size; i++)
+                        tau += dss_clip_unit(a->elements[i])
+                                * dss_clip_unit(b->elements[i]);
+                tau /= a->size;
+        }
         
         return tau;
+}
+
+double dss_clip_unit(double u)
+{
+        return maximum(minimum(u, 1.0), 0.0);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -867,4 +858,27 @@ void dss_write_word_info(struct network *n, struct set *s,
 error_out:
         perror("[dss_write_word_info()]");
         return;
+}
+
+void reset_dss_cs_context_vectors(struct network *n)
+{
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
+                struct group *g = n->groups->elements[i];
+                if (g->dss_cs_context) {
+                        struct group *ng = find_network_group_by_name(n, g->name);
+                        zero_out_vector(ng->vector);
+                }
+        }
+
+}
+
+void update_dss_cs_context_vectors(struct network *n)
+{
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
+                struct group *g = n->groups->elements[i];
+                if (g->dss_cs_context) {
+                        struct group *ng = find_network_group_by_name(n, g->name);
+                        dss_score_vector(ng->vector, n, ng->dss_cs_context);
+                }
+        }
 }

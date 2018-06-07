@@ -18,6 +18,7 @@
 #include "bp.h"
 #include "engine.h"
 #include "rnn_unfold.h"
+#include "modules/dss.h"
 
                 /****************
                  **** engine ****
@@ -44,6 +45,7 @@ void clamp_input_vector(struct network *n, struct vector *input)
 void reset_ticks(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
+        reset_dss_cs_context_vectors(n);
         switch(n->flags->type) {
         case ntype_ffn:
                 break;
@@ -54,11 +56,12 @@ void reset_ticks(struct network *n)
                 reset_stack_pointer(n);
                 reset_recurrent_groups(un->stack[0]);
                 break;
-        }       
+        }
 }
 
 void next_tick(struct network *n)
 {
+        update_dss_cs_context_vectors(n);
         switch(n->flags->type) {
         case ntype_ffn:
                 break;

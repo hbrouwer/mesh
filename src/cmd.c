@@ -1545,7 +1545,7 @@ bool cmd_set_two_stage_forward(char *cmd, char *fmt, struct session *s)
         /* find two-stage forward set */
         struct set *set = find_array_element_by_name(s->anp->sets, arg2);
         if (!set) {
-                eprintf("Cannot set two-stage forward  - no such set '%s'\n", arg2);
+                eprintf("Cannot set two-stage forward - no such set '%s'\n", arg2);
                 return true;
         }
         s->anp->ts_fw_group = g;
@@ -1586,7 +1586,7 @@ bool cmd_set_two_stage_backward(char *cmd, char *fmt, struct session *s)
         /* find two-stage backward set */
         struct set *set = find_array_element_by_name(s->anp->sets, arg2);
         if (!set) {
-                eprintf("Cannot set two-stage backward  - no such set '%s'\n", arg2);
+                eprintf("Cannot set two-stage backward - no such set '%s'\n", arg2);
                 return true;
         }
         s->anp->ts_bw_group = g;
@@ -1645,6 +1645,35 @@ bool cmd_confusion_stats(char *cmd, char *fmt, struct session *s)
                 /********************************************
                  **** distributed-situation state spaces ****
                  ********************************************/
+
+bool cmd_set_dss_comp_score_context(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* DSS CS context group name */
+        char arg2[MAX_ARG_SIZE]; /* DSS CS context set name */
+        if (sscanf(cmd, fmt, arg1, arg2) != 2)
+                return false;
+        /* find DSS CS context group */
+        struct group *g = find_array_element_by_name(s->anp->groups, arg1);
+        if (g == NULL) {
+                eprintf("Cannot set DSS CS context - no such group '%s'\n", arg1);
+                return true;
+        }
+        /* find DSS CS context set */
+        struct set *set = find_array_element_by_name(s->anp->sets, arg2);
+        if (!set) {
+                eprintf("Cannot set DSS CS context - no such set '%s'\n", arg2);
+                return true;
+        }
+        /* group size should match set size */
+        if (g->vector->size != set->items->num_elements) {
+                eprintf("Cannot set DSS CS context - group size and set size mismatch\n", arg2);
+                return true;
+        }
+        g->dss_cs_context = set;
+        mprintf("Set DSS CS context \t [ (%s :: %s) <-- %s ]\n", 
+                g->name, set->name, s->anp->output->name);
+        return true;           
+}
 
 bool cmd_dss_test(char *cmd, char *fmt, struct session *s)
 {
