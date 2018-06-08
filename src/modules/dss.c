@@ -660,6 +660,8 @@ struct matrix *dss_word_info_matrix(struct network *n,
                 struct vector *tv = item->targets[item->num_events - 1];
                 struct vector *ov = dss_adjust_output_vector(output_vector(n),
                         tv, n->pars->target_radius, n->pars->zero_error_radius);
+                for (uint32_t i = 0; i < ov->size; i++)
+                        ov->elements[i] = dss_clip_unit(ov->elements[i]);
 
                 /*
                  * Compute semantic entropy for prefix w_1...i and
