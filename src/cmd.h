@@ -110,7 +110,7 @@ bool cmd_similarity_stats(char *cmd, char *fmt, struct session *s);
 bool cmd_confusion_matrix(char *cmd, char *fmt, struct session *s);
 bool cmd_confusion_stats(char *cmd, char *fmt, struct session *s);
 
-bool cmd_set_dss_comp_score_context(char *cmd, char *fmt, struct session *s);
+bool cmd_create_dcs_group(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_test(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_scores(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s);
@@ -276,7 +276,7 @@ const static struct command cmds[] = {
         {"confusionStats",          NULL,            &cmd_confusion_stats},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"set DSSCompScoreContext", "%s %s",         &cmd_set_dss_comp_score_context},
+        {"createDCSGroup",         "%s %s",          &cmd_create_dcs_group},
         {"dssTest",                 NULL,            &cmd_dss_test},
         {"dssScores",               "%s \"%[^\"]\"", &cmd_dss_scores},
         {"dssScores",               "%s '%[^']'",    &cmd_dss_scores},

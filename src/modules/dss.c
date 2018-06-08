@@ -860,11 +860,11 @@ error_out:
         return;
 }
 
-void reset_dss_cs_context_vectors(struct network *n)
+void reset_dcs_vectors(struct network *n)
 {
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
-                if (g->dss_cs_context) {
+                if (g->pars->dcs_set) {
                         struct group *ng = find_network_group_by_name(n, g->name);
                         zero_out_vector(ng->vector);
                 }
@@ -872,13 +872,13 @@ void reset_dss_cs_context_vectors(struct network *n)
 
 }
 
-void update_dss_cs_context_vectors(struct network *n)
+void update_dcs_vectors(struct network *n)
 {
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
-                if (g->dss_cs_context) {
+                if (g->pars->dcs_set) {
                         struct group *ng = find_network_group_by_name(n, g->name);
-                        dss_score_vector(ng->vector, n, ng->dss_cs_context);
+                        dss_score_vector(ng->vector, n, ng->pars->dcs_set);
                 }
         }
 }

@@ -45,7 +45,8 @@ void clamp_input_vector(struct network *n, struct vector *input)
 void reset_ticks(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
-        reset_dss_cs_context_vectors(n);
+        if (n->flags->dcs)
+                reset_dcs_vectors(n);
         switch(n->flags->type) {
         case ntype_ffn:
                 break;
@@ -61,7 +62,8 @@ void reset_ticks(struct network *n)
 
 void next_tick(struct network *n)
 {
-        update_dss_cs_context_vectors(n);
+        if (n->flags->dcs)
+                update_dcs_vectors(n);
         switch(n->flags->type) {
         case ntype_ffn:
                 break;

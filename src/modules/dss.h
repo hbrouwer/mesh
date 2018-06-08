@@ -49,7 +49,7 @@ void dss_word_info(struct network *n, struct set *s,
 void dss_write_word_info(struct network *n, struct set *s,
         char *filename);
 
-void reset_dss_cs_context_vectors(struct network *n);
-void update_dss_cs_context_vectors(struct network *n);
+void reset_dcs_vectors(struct network *n);
+void update_dcs_vectors(struct network *n);
 
 #endif /* DSS_H */

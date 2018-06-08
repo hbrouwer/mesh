@@ -94,6 +94,7 @@ struct network_flags
         uint32_t sd_type;           /* type of steepest descent */
         uint32_t rp_type;           /* type of Rprop */
         uint32_t training_order;    /* order of which training items */
+        bool dcs;                   /* flags whether DCS is enabled */
 };
 
 struct network_params
@@ -151,7 +152,6 @@ struct group
         struct array *inc_projs;    /* array of incoming projections */
         struct array *out_projs;    /* array of outgoing projections */
         struct array *ctx_groups;   /* array of context groups */
-        struct set *dss_cs_context; /* DSS context event set */
         struct group_flags *flags;  /* flags */
         struct group_params *pars;  /* paramaters */
 };
@@ -166,6 +166,7 @@ struct group_params
         double relu_alpha;          /* alpha parameter for ReLUs */
         double logistic_fsc;        /* flat spot correction */
         double logistic_gain;       /* gain coefficient */
+        struct set *dcs_set;        /* DSS context event set */
 };
 
                 /********************
