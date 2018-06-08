@@ -364,7 +364,7 @@ double dss_tau_conjunction(struct vector *a, struct vector *b)
                 tau = dss_tau_prior(a);
         else {
                 for (uint32_t i = 0; i < a->size; i++)
-                        tau += dss_clip_unit(a->elements[i])
+                        tau += dss_clip_unit(a->elements[i]) 
                                 * dss_clip_unit(b->elements[i]);
                 tau /= a->size;
         }
