@@ -161,6 +161,7 @@ const static struct command cmds[] = {
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"createGroup",             "%s %d",         &cmd_create_group},
         {"createBiasGroup",         "%s",            &cmd_create_bias_group},
+        {"createDCSGroup",         "%s %s",          &cmd_create_dcs_group},
         {"removeGroup",             "%s",            &cmd_remove_group},
         {"groups",                  NULL,            &cmd_groups},
         {"attachBias",              "%s",            &cmd_attach_bias},
@@ -276,7 +277,6 @@ const static struct command cmds[] = {
         {"confusionStats",          NULL,            &cmd_confusion_stats},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        {"createDCSGroup",         "%s %s",          &cmd_create_dcs_group},
         {"dssTest",                 NULL,            &cmd_dss_test},
         {"dssScores",               "%s \"%[^\"]\"", &cmd_dss_scores},
         {"dssScores",               "%s '%[^']'",    &cmd_dss_scores},

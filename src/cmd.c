@@ -342,6 +342,29 @@ bool cmd_create_bias_group(char *cmd, char *fmt, struct session *s)
         return true;        
 }
 
+bool cmd_create_dcs_group(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* DCS group name */
+        char arg2[MAX_ARG_SIZE]; /* DCS set name */
+        if (sscanf(cmd, fmt, arg1, arg2) != 2)
+                return false;
+        /* find DCS context set */
+        struct set *set = find_array_element_by_name(s->anp->sets, arg2);
+        if (!set) {
+                eprintf("Cannot create DCS group - no such set '%s'\n", arg2);
+                return true;
+        }
+        /* create DCS context group */
+        struct group *g = create_group(arg1, set->items->num_elements, false, false);
+        g->pars->dcs_set = set;
+        add_group(s->anp, g);
+        /* enable DCS */
+        s->anp->flags->dcs = true;
+        mprintf("Created DCS group \t\t [ (%s :: %s) <-- %s ]\n",
+                g->name, set->name, s->anp->output->name);                
+        return true;           
+}
+
 bool cmd_remove_group(char *cmd, char *fmt, struct session *s)
 {
         char arg[MAX_ARG_SIZE]; /* group name */
@@ -1645,29 +1668,6 @@ bool cmd_confusion_stats(char *cmd, char *fmt, struct session *s)
                 /********************************************
                  **** distributed-situation state spaces ****
                  ********************************************/
-
-bool cmd_create_dcs_group(char *cmd, char *fmt, struct session *s)
-{
-        char arg1[MAX_ARG_SIZE]; /* DCS group name */
-        char arg2[MAX_ARG_SIZE]; /* DCS set name */
-        if (sscanf(cmd, fmt, arg1, arg2) != 2)
-                return false;
-        /* find DCS context set */
-        struct set *set = find_array_element_by_name(s->anp->sets, arg2);
-        if (!set) {
-                eprintf("Cannot create DCS group - no such set '%s'\n", arg2);
-                return true;
-        }
-        /* create DCS context group */
-        struct group *g = create_group(arg1, set->items->num_elements, false, false);
-        g->pars->dcs_set = set;
-        add_group(s->anp, g);
-        /* enable DCS */
-        s->anp->flags->dcs = true;
-        mprintf("Created DCS group \t\t [ (%s :: %s) <-- %s ]\n",
-                g->name, set->name, s->anp->output->name);                
-        return true;           
-}
 
 bool cmd_dss_test(char *cmd, char *fmt, struct session *s)
 {
