@@ -309,12 +309,14 @@ and its derivative:
 
 double act_fun_binary_relu(struct group *g, uint32_t i)
 {
-        return minimum(act_fun_relu(g, i), 1.0);
+        // return minimum(act_fun_relu(g, i), 1.0);
+        return minimum(act_fun_leaky_relu(g, i), 1.0);
 }
 
 double act_fun_binary_relu_deriv(struct group *g, uint32_t i)
 {
-        return act_fun_relu_deriv(g, i);
+        // return act_fun_relu_deriv(g, i);
+        return act_fun_leaky_relu_deriv(g, i);
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
