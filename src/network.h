@@ -164,6 +164,7 @@ struct group_flags
 struct group_params
 {
         double relu_alpha;          /* alpha parameter for ReLUs */
+        double relu_max;            /* maximum value for ReLUs */
         double logistic_fsc;        /* flat spot correction */
         double logistic_gain;       /* gain coefficient */
         struct set *dcs_set;        /* DSS context event set */

@@ -271,7 +271,7 @@ Rectified Linear Unit (ReLU) function:
 
         f(x) = max(0,x)
 
-and its derivative:
+where x may be clipped by a maximum value, and its derivative:
 
                 | 1     iff x > 0
         f'(x) = |
@@ -280,7 +280,8 @@ and its derivative:
 
 double act_fun_relu(struct group *g, uint32_t i)
 {
-        return maximum(0.0, g->vector->elements[i]);
+        return maximum(0.0,
+                minimum(g->vector->elements[i], g->pars->relu_max));
 }
 
 double act_fun_relu_deriv(struct group *g, uint32_t i)
@@ -292,41 +293,13 @@ double act_fun_relu_deriv(struct group *g, uint32_t i)
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Binary Rectified Linear Unit (ReLU) function:
-
-                | 0     iff x < 0
-                |
-        f(x) =  | x     iff 0 <= x < 1
-                |
-                | 1     iff x >= 1 
-
-and its derivative:
-
-                | 1     iff x > 0
-        f'(x) = |
-                | 0     otherwise
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-double act_fun_binary_relu(struct group *g, uint32_t i)
-{
-        // return minimum(act_fun_relu(g, i), 1.0);
-        return minimum(act_fun_leaky_relu(g, i), 1.0);
-}
-
-double act_fun_binary_relu_deriv(struct group *g, uint32_t i)
-{
-        // return act_fun_relu_deriv(g, i);
-        return act_fun_leaky_relu_deriv(g, i);
-}
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Leaky Rectified Linear Unit (ReLU) function:
 
                 | x             iff x > 0
         f(x) =  |
                 | alpha * x     otherwise
 
-and its derivative:
+where x may be clipped by a maximum value, and its derivative:
 
                 | 1             iff x > 0
         f'(x) = |
@@ -336,7 +309,9 @@ and its derivative:
 double act_fun_leaky_relu(struct group *g, uint32_t i)
 {
         if (g->vector->elements[i] > 0.0)
-                return g->vector->elements[i];
+                return minimum(
+                        g->vector->elements[i],
+                        g->pars->relu_max);
         else
                 return g->pars->relu_alpha * g->vector->elements[i];
 }
@@ -356,7 +331,7 @@ Exponential Linear Unit (ELU) function:
         f(x) =  |
                 | alpha(e ^ x - 1)      otherwise
 
-and its derivative:
+where x may be clipped by a maximum value, and its derivative:
 
                 | 1                     iff x >= 0
         f'(x) = |
@@ -366,7 +341,9 @@ and its derivative:
 double act_fun_elu(struct group *g, uint32_t i)
 {
         if (g->vector->elements[i] >= 0.0)
-                return g->vector->elements[i];
+                return minimum(
+                        g->vector->elements[i],
+                        g->pars->relu_max);
         else
                 return g->pars->relu_alpha
                         * (EXP(g->vector->elements[i]) - 1.0);

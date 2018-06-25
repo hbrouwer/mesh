@@ -52,9 +52,6 @@ double act_fun_softplus_deriv(struct group *g, uint32_t i);
 double act_fun_relu(struct group *g, uint32_t i);
 double act_fun_relu_deriv(struct group *g, uint32_t i);
 
-double act_fun_binary_relu(struct group *g, uint32_t i);
-double act_fun_binary_relu_deriv(struct group *g, uint32_t i);
-
 double act_fun_leaky_relu(struct group *g, uint32_t i);
 double act_fun_leaky_relu_deriv(struct group *g, uint32_t i);
 

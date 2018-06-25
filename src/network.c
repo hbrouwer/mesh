@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -398,15 +399,16 @@ struct group *create_group(char *name, uint32_t size, bool bias,
                 goto error_out;
         memset(g->pars, 0, sizeof(struct  group_params));
 
-        g->vector              = create_vector(size);
-        g->error               = create_vector(size);
-        g->inc_projs           = create_array(atype_projs);
-        g->out_projs           = create_array(atype_projs);
-        g->ctx_groups          = create_array(atype_groups);
+        g->vector     = create_vector(size);
+        g->error      = create_vector(size);
+        g->inc_projs  = create_array(atype_projs);
+        g->out_projs  = create_array(atype_projs);
+        g->ctx_groups = create_array(atype_groups);
 
-        g->flags->bias         = bias;
+        g->flags->bias = bias;
 
         g->pars->relu_alpha    = DEFAULT_RELU_ALPHA;
+        g->pars->relu_max      = DEFAULT_RELU_MAX;
         g->pars->logistic_fsc  = DEFAULT_LOGISTIC_FSC;
         g->pars->logistic_gain = DEFAULT_LOGISTIC_GAIN;
 
@@ -534,15 +536,16 @@ void print_groups(struct network *n)
                 if (g->act_fun->fun == act_fun_softplus)
                         cprintf(" :: softplus");
                 if (g->act_fun->fun == act_fun_relu)
-                        cprintf(" :: relu");
-                if (g->act_fun->fun == act_fun_binary_relu)
-                        cprintf(" :: binary_relu");
+                        cprintf(" :: relu (max = %f)",
+                                g->pars->relu_max);
                 if (g->act_fun->fun == act_fun_leaky_relu)
-                        cprintf(" :: leaky_relu (alpha = %f)",
-                                g->pars->relu_alpha);
+                        cprintf(" :: leaky_relu (alpha = %f; max = %f)",
+                                g->pars->relu_alpha,
+                                g->pars->relu_max);
                 if (g->act_fun->fun == act_fun_elu)
-                        cprintf(" :: elu (alpha = %f)",
-                                g->pars->relu_alpha);
+                        cprintf(" :: elu (alpha = %f; max = %f)",
+                                g->pars->relu_alpha,
+                                g->pars->relu_max);
 
                 /* error function */
                 if (g->err_fun->fun == err_fun_sum_of_squares)

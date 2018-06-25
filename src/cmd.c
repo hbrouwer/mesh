@@ -489,12 +489,7 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
         else if (strcmp(arg2, "relu") == 0) {
                 g->act_fun->fun   = act_fun_relu;
                 g->act_fun->deriv = act_fun_relu_deriv;
-        }
-        /* binary relu activation function */
-        else if (strcmp(arg2, "binary_relu") == 0) {
-                g->act_fun->fun   = act_fun_binary_relu;
-                g->act_fun->deriv = act_fun_binary_relu_deriv;
-        }        
+        }       
         /* leaky relu activation function */
         else if (strcmp(arg2, "leaky_relu") == 0) {
                 g->act_fun->fun   = act_fun_leaky_relu;
@@ -986,6 +981,11 @@ bool cmd_set_group_double_parameter(char *cmd, char *fmt, struct session *s)
                 g->pars->relu_alpha = arg3;
                 mprintf("Set ReLU alpha \t\t [ %s :: %lf ]\n",
                         arg2, g->pars->relu_alpha);
+        /* ReLU max value */
+        } else if (strcmp(arg1, "ReLUMax") == 0) {
+                g->pars->relu_max = arg3;
+                mprintf("Set ReLU max \t\t [ %s :: %lf ]\n",
+                        arg2, g->pars->relu_max);
         /* logistic FSC (Flat Spot Correction) */
         } else if (strcmp(arg1, "LogisticFSC") == 0) {
                 g->pars->logistic_fsc = arg3;
