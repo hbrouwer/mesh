@@ -881,9 +881,11 @@ void update_dcs_vectors(struct network *n)
                 if (g->pars->dcs_set) {
                         struct group *ng = find_network_group_by_name(n, g->name);
                         dss_score_vector(ng->vector, n, ng->pars->dcs_set);
-                        // for (uint32_t j = 0; j < ng->vector->size; j++)
-                        //         if (fabs(ng->vector->elements[j]) < 0.5)
-                        //                 ng->vector->elements[j] = 0.0;
+                        /*
+                        for (uint32_t j = 0; j < ng->vector->size; j++)
+                                if (ng->vector->elements[j] < 0.0)
+                                        ng->vector->elements[j] = 0.0;
+                                        */
                 }
         }
 }
