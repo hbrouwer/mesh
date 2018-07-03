@@ -984,7 +984,7 @@ bool cmd_set_group_double_parameter(char *cmd, char *fmt, struct session *s)
         /* ReLU max value */
         } else if (strcmp(arg1, "ReLUMax") == 0) {
                 g->pars->relu_max = arg3;
-                mprintf("Set ReLU max \t\t [ %s :: %lf ]\n",
+                mprintf("Set ReLU max \t\t\t [ %s :: %lf ]\n",
                         arg2, g->pars->relu_max);
         /* logistic FSC (Flat Spot Correction) */
         } else if (strcmp(arg1, "LogisticFSC") == 0) {
