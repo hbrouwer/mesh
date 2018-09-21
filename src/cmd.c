@@ -1723,7 +1723,6 @@ bool cmd_dss_scores_num(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
-
 bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* set name */
