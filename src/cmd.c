@@ -1701,6 +1701,29 @@ bool cmd_dss_scores(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
+bool cmd_dss_scores_num(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* set name */
+        uint32_t arg2;           /* item number */
+        if (sscanf(cmd, fmt, arg1, &arg2) != 2)
+                return false;
+        /* find set */
+        struct set *set = find_array_element_by_name(s->anp->sets, arg1);
+        if (!set) {
+                eprintf("Cannot compute scores - no such set '%s'\n", arg1);
+                return true;
+        }
+        /* find item */
+        if (arg2 == 0 || arg2 > s->anp->asp->items->num_elements) {
+                eprintf("Cannot compute scores - no such item number '%d'\n", arg2);
+                return true;
+        }
+        struct item *item = s->anp->asp->items->elements[arg2 - 1];
+        dss_scores(s->anp, set, item);
+        return true;
+}
+
+
 bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* set name */
@@ -1731,6 +1754,35 @@ bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
+bool cmd_dss_inferences_num(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* set name */
+        uint32_t arg2;           /* item number */
+        double arg3;             /* inference score threshold */
+        if (sscanf(cmd, fmt, arg1, &arg2, &arg3) != 3)
+                return false;
+        /* find set */
+        struct set *set = find_array_element_by_name(s->anp->sets, arg1);
+        if (!set) {
+                eprintf("Cannot compute inferences - no such set '%s'\n", arg1);
+                return true;
+        }
+        /* find item */
+        if (arg2 == 0 || arg2 > s->anp->asp->items->num_elements) {
+                eprintf("Cannot compute inferences - no such item number '%d'\n", arg2);
+                return true;
+        }
+        struct item *item = s->anp->asp->items->elements[arg2 - 1];
+        /* require a proper threshold */
+        if (arg3 < -1.0 || arg3 > 1.0) {
+                eprintf("Cannot compute inferences - invalid score threshold '%lf'\n", arg3);
+                return true;
+
+        }
+        dss_inferences(s->anp, set, item, arg3);
+        return true;
+}
+
 bool cmd_dss_word_info(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* set name */
@@ -1750,6 +1802,29 @@ bool cmd_dss_word_info(char *cmd, char *fmt, struct session *s)
                 return true;
         }
         mprintf("Testing network '%s' with item '%s':\n", s->anp->name, arg2);
+        dss_word_info(s->anp, set, item);
+        return true;
+}
+
+bool cmd_dss_word_info_num(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* set name */
+        uint32_t arg2; /* item number */
+        if (sscanf(cmd, fmt, arg1, &arg2) != 2)
+                return false;
+        /* find set */
+        struct set *set = find_array_element_by_name(s->anp->sets, arg1);
+        if (!set) {
+                eprintf("Cannot compute informativity metrics - no such set '%s'\n", arg1);
+                return true;
+        }
+        /* find item */
+        if (arg2 == 0 || arg2 > s->anp->asp->items->num_elements) {
+                eprintf("Cannot compute informativity metrics - no such item number '%d'\n", arg2);
+                return true;
+        }
+        struct item *item = s->anp->asp->items->elements[arg2 - 1];
+        mprintf("Testing network '%s' with item '%s':\n", s->anp->name, item->name);
         dss_word_info(s->anp, set, item);
         return true;
 }

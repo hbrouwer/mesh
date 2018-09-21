@@ -113,8 +113,11 @@ bool cmd_confusion_stats(char *cmd, char *fmt, struct session *s);
 bool cmd_create_dcs_group(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_test(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_scores(char *cmd, char *fmt, struct session *s);
+bool cmd_dss_scores_num(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_inferences(char *cmd, char *fmt, struct session *s);
+bool cmd_dss_inferences_num(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_word_info(char *cmd, char *fmt, struct session *s);
+bool cmd_dss_word_info_num(char *cmd, char *fmt, struct session *s);
 bool cmd_dss_write_word_info(char *cmd, char *fmt, struct session *s);
 
 bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s);
@@ -281,12 +284,16 @@ const static struct command cmds[] = {
         {"dssTest",                 NULL,            &cmd_dss_test},
         {"dssScores",               "%s \"%[^\"]\"", &cmd_dss_scores},
         {"dssScores",               "%s '%[^']'",    &cmd_dss_scores},
+        {"dssScores",               "%s %d",         &cmd_dss_scores_num},
         {"dssInferences",           "%s \"%[^\"]\" %lf",
                                                      &cmd_dss_inferences},
         {"dssInferences",           "%s '%[^']' %lf",
                                                      &cmd_dss_inferences},
+        {"dssInferences",           "%s %d %lf",
+                                                     &cmd_dss_inferences_num},                                                     
         {"dssWordInfo",             "%s \"%[^\"]\"", &cmd_dss_word_info},
         {"dssWordInfo",             "%s '%[^']'",    &cmd_dss_word_info},
+        {"dssWordInfo",             "%s %d",         &cmd_dss_word_info_num},
         {"dssWriteWordInfo",        "%s %s",         &cmd_dss_write_word_info},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
