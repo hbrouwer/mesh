@@ -297,6 +297,7 @@ void add_set(struct network *n, struct set *set);
 void remove_set(struct network *n, struct set *set);
 void print_sets(struct network *n);
 
+void reset_projection_matrices(struct group *g, struct network *n);
 void randomize_weight_matrices(struct group *g, struct network *n);
 void initialize_dynamic_params(struct group *g, struct network *n);
 

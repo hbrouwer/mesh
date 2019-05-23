@@ -142,6 +142,7 @@ void init_network(struct network *n)
 
 void reset_network(struct network *n)
 {
+        reset_projection_matrices(n->input, n);
         randomize_weight_matrices(n->input, n);
         initialize_dynamic_params(n->input, n);
         reset_context_groups(n);
@@ -946,6 +947,27 @@ void print_sets(struct network *n)
                 else
                         cprintf("\n");
         }     
+}
+
+void reset_projection_matrices(struct group *g, struct network *n)
+{
+        /* incoming projections */
+        for (uint32_t i = 0; i < g->inc_projs->num_elements; i++) {
+                struct projection *ip = g->inc_projs->elements[i];
+                if (ip->flags->frozen)
+                        continue;
+                zero_out_matrix(ip->weights);
+                zero_out_matrix(ip->gradients);
+                zero_out_matrix(ip->prev_deltas);
+                zero_out_matrix(ip->prev_gradients);
+        }
+        /* outgoing projections */
+        for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
+                struct projection *op = g->out_projs->elements[i];
+                if (op->flags->recurrent)
+                        continue;
+                reset_projection_matrices(op->to, n);
+        }
 }
 
 void randomize_weight_matrices(struct group *g, struct network *n)
