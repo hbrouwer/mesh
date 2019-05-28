@@ -575,7 +575,8 @@ void reset_groups(struct network *n)
 {
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
-                zero_out_vector(g->vector);
+                if (!g->flags->bias)
+                        zero_out_vector(g->vector);
         }
 }
 
