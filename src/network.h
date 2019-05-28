@@ -255,6 +255,7 @@ void free_groups(struct array *gs);
 void add_group(struct network *n, struct group *g);
 void remove_group(struct network *n, struct group *g);
 void print_groups(struct network *n);
+void reset_groups(struct network *n);
 
 void shift_context_groups(struct network *n);
 void shift_context_group_chain(struct group *g, struct vector *v);

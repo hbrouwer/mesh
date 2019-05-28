@@ -142,6 +142,7 @@ void init_network(struct network *n)
 
 void reset_network(struct network *n)
 {
+        reset_groups(n);
         reset_projection_matrices(n->input, n);
         randomize_weight_matrices(n->input, n);
         initialize_dynamic_params(n->input, n);
@@ -568,6 +569,14 @@ void print_groups(struct network *n)
                 else
                         cprintf("\n");                        
         }       
+}
+
+void reset_groups(struct network *n)
+{
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
+                struct group *g = n->groups->elements[i];
+                zero_out_vector(g->vector);
+        }
 }
 
 void shift_context_groups(struct network *n)
