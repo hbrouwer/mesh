@@ -127,12 +127,12 @@ void init_network(struct network *n)
         if (n->pars->batch_size == 0 && n->asp)
                 n->pars->batch_size = n->asp->items->num_elements;
 
-        /* 
+        /*
          * If a recurrent neural network will be trained with
          * backpropagation through time, unfold it.
          */
         if (n->learning_algorithm == train_network_with_bptt) {
-                if(n->unfolded_net)
+                if (n->unfolded_net)
                         rnn_free_unfolded_network(n->unfolded_net);
                 n->unfolded_net = rnn_unfold_network(n);
         }
