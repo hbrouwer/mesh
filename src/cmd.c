@@ -1289,8 +1289,8 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
         case mtype_gradients:
                 cprintf("Gradient matrix for projection '%s -> %s':\n\n",
                         arg2, arg3);
-                s->pprint ? pprint_matrix(fg_to_tg->gradients, s->scheme)
-                          : print_matrix(fg_to_tg->gradients);
+                s->pprint ? pprint_matrix(fg_to_tg->prev_gradients, s->scheme)
+                          : print_matrix(fg_to_tg->prev_gradients);
                 break;
         case mtype_dynamic_params:
                 cprintf("Dynamic learning parameters for projection '%s -> %s':\n\n",

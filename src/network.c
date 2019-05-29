@@ -143,6 +143,7 @@ void init_network(struct network *n)
 void reset_network(struct network *n)
 {
         reset_groups(n);
+        reset_ffn_error_signals(n);
         reset_projection_matrices(n->input, n);
         randomize_weight_matrices(n->input, n);
         initialize_dynamic_params(n->input, n);
@@ -177,9 +178,9 @@ void inspect_network(struct network *n)
         if (n->flags->type == ntype_ffn)
                 cprintf("ffn");
         if (n->flags->type == ntype_srn)
-                cprintf("ffn");
+                cprintf("srn");
         if (n->flags->type == ntype_rnn)
-                cprintf("ffn");
+                cprintf("rnn");
         cprintf("\n");
         cprintf("| Initialized: \t\t\t ");
         n->flags->initialized ? cprintf("true\n") : cprintf("false\n");
