@@ -571,12 +571,26 @@ void print_groups(struct network *n)
         }       
 }
 
+/*
+ * Resets the units of all non-bias groups to zero. Groups that have context
+ * groups get their units set to the initial context unit value. This
+ * assures that when context resetting is disabled, the initial context unit
+ * values get shifted into the context groups at the first tick after
+ * initialization.
+ */
 void reset_groups(struct network *n)
 {
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {
                 struct group *g = n->groups->elements[i];
-                if (!g->flags->bias)
+                if (g->flags->bias)
+                        continue;
+                if (g->ctx_groups->num_elements > 0) {
+                        fill_vector_with_value(
+                                g->vector,
+                                n->pars->init_context_units);
+                } else {
                         zero_out_vector(g->vector);
+                }
         }
 }
 
