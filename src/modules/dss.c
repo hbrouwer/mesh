@@ -102,7 +102,7 @@ void dss_scores(struct network *n, struct set *set, struct item *item)
         size_t block_size = strlen(item->name) + 1;
         char sentence[block_size];
         memset(&sentence, 0, block_size);
-        strncpy(sentence, item->name, block_size - 1);
+        strcpy(sentence, item->name);
         for (uint32_t i = 0; i < init_col_len; i++)
                 cprintf(" ");
         char *token = strtok(sentence, " ");
@@ -492,8 +492,8 @@ struct matrix *dss_word_info_matrix(struct network *n,
         /* compute measures for each word in the sentence */
         for (uint32_t i = 0; i < item->num_events; i++) {
                 /* reset prefixes */
-                strncpy(prefix1, item->name, strlen(item->name));
-                strncpy(prefix2, item->name, strlen(item->name));
+                strcpy(prefix1, item->name);
+                strcpy(prefix2, item->name);
 
                 /* reset disjunctions of sit(w_1...i) */
                 zero_out_vector(sit1);
@@ -767,7 +767,7 @@ void dss_word_info(struct network *n, struct set *s,
         size_t block_size = strlen(item->name) + 1;
         char sentence[block_size];
         memset(&sentence, 0, block_size);
-        strncpy(sentence, item->name, block_size - 1);
+        strcpy(sentence, item->name);
 
         uint32_t col_len = 10;
 

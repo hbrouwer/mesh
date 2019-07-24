@@ -42,7 +42,7 @@ struct network *create_network(char *name, enum network_type type)
         if (!(n->name = malloc(block_size)))
                 goto error_out;
         memset(n->name, 0, block_size);
-        strncpy(n->name, name, strlen(name));
+        strcpy(n->name, name);
 
         if (!(n->flags = malloc(sizeof(struct network_flags))))
                 goto error_out;
@@ -381,7 +381,7 @@ struct group *create_group(char *name, uint32_t size, bool bias,
         if (!(g->name = malloc(block_size)))
                 goto error_out;
         memset(g->name, 0, block_size);
-        strncpy(g->name, name, strlen(name));
+        strcpy(g->name, name);
 
         /* activation function (default to linear) */
         if (!(g->act_fun = malloc(sizeof(struct act_fun))))

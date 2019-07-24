@@ -31,7 +31,7 @@ struct set *create_set(char *name)
         if (!(s->name = malloc(block_size)))
                 goto error_out;
         memset(s->name, 0, block_size);
-        strncpy(s->name, name, strlen(name));
+        strcpy(s->name, name);
 
         s->items = create_array(atype_items);
 
@@ -172,7 +172,7 @@ struct set *load_legacy_set(char *name, char *filename, uint32_t input_size,
                 if (!(name = malloc(block_size)))
                         goto error_out;
                 memset(name, 0, block_size);
-                strncpy(name, arg1, strlen(arg1));
+                strcpy(name, arg1);
 
                 /* meta information */
                 char *meta;
@@ -180,7 +180,7 @@ struct set *load_legacy_set(char *name, char *filename, uint32_t input_size,
                 if (!(meta = malloc(block_size)))
                         goto error_out;
                 memset(meta, 0, block_size);
-                strncpy(meta, arg2, strlen(arg2));
+                strcpy(meta, arg2);
 
                 /* input vectors */
                 struct vector **inputs;
@@ -423,7 +423,7 @@ struct item *load_item(FILE *fd, uint32_t input_dims, uint32_t output_dims)
                         if (!(name = malloc(block_size)))
                                 goto error_out;
                         memset(name, 0, block_size);
-                        strncpy(name, arg, strlen(arg));
+                        strcpy(name, arg);
                 }
 
                 /* meta */
@@ -432,7 +432,7 @@ struct item *load_item(FILE *fd, uint32_t input_dims, uint32_t output_dims)
                         if (!(meta = malloc(block_size)))
                                 goto error_out;
                         memset(meta, 0, block_size);
-                        strncpy(meta, arg, strlen(arg));
+                        strcpy(meta, arg);
                 }
 
                 /* end of item */
