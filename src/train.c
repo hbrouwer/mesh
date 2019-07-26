@@ -50,7 +50,7 @@ void train_network(struct network *n)
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Standard backpropagation training. For each event of an item, error is
-injected and backpropagated if a target pattern is present.ß. Weights are
+injected and backpropagated if a target pattern is present. Weights are
 updated after each batch.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 

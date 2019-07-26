@@ -85,18 +85,21 @@ void print_openmp_status()
         omp_sched_t k;
         int m;
         omp_get_schedule(&k, &m);
-        switch(k) {
-        case 1:
+        switch (k) {
+        case omp_sched_static:
                 cprintf("+ [ OpenMP ]: Static schedule (chunk size: %d)\n", m);
                 break;
-        case 2:
+        case omp_sched_dynamic:
                 cprintf("+ [ OpenMP ]: Dynamic schedule (chunk size: %d)\n", m);
                 break;
-        case 3:
+        case omp_sched_guided:
                 cprintf("+ [ OpenMP ]: Guided schedule (chunk size: %d)\n", m);
                 break;
-        case 4:
+        case omp_sched_auto:
                 cprintf("+ [ OpenMP ]: Auto schedule\n");
+                break;
+        default:
+                /* to handle omp_sched_monotonic */
                 break;
         }
 }

@@ -93,8 +93,11 @@ struct network_flags
         bool reset_contexts;        /* flags context group resetting */
         uint32_t sd_type;           /* type of steepest descent */
         uint32_t rp_type;           /* type of Rprop */
-        uint32_t training_order;    /* order of which training items */
+        uint32_t training_order;    /* order of training items */
         bool dcs;                   /* flags whether DCS is enabled */
+#ifdef _OPENMP
+        bool omp_mthreaded;         /* flags if multi-threading is enabled */
+#endif /* _OPENMP */   
 };
 
 struct network_params
@@ -217,11 +220,9 @@ struct act_fun
 struct err_fun
 {
         /* error function */
-        double (*fun)(struct group *g, struct vector *t,
-                double tr, double zr);
+        double (*fun)(struct network *, struct group *g, struct vector *t);
         /* error function derivative */
-        void (*deriv)(struct group *g, struct vector *t,
-                double tr, double zr);
+        void (*deriv)(struct network *n, struct group *g, struct vector *t);
 };
 
                 /************************

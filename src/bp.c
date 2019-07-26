@@ -77,14 +77,13 @@ Rumelhart, D. E., Hinton, G. E., & Williams, R. J. (1986). Learning
 /*
  * This computes the error signal delta_j for each output unit j.
  */
-void bp_output_error(struct group *g, struct vector *t, double tr,
-        double zr)
+void bp_output_error(struct network *n, struct group *g, struct vector *t)
 {
         /*
          * First, compute error derivates dE/dy for all units in the output
          * layer.
          */
-        g->err_fun->deriv(g, t, tr, zr);
+        g->err_fun->deriv(n, g, t);
 
         /*
          * Multiply all error derivatives dE/dy with the activation function
@@ -119,7 +118,7 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                 for (uint32_t j = 0; j < ng->out_projs->num_elements; j++) {
                         struct projection *p = ng->out_projs->elements[j];
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
                         for (uint32_t x = 0; x < ng->error->size; x++) {
                                 for (uint32_t z = 0; z < p->to->vector->size; z++) {                                      
@@ -181,7 +180,7 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                  * delta_j = f'(x_j) dE/dy_j
                  */
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
                 for (uint32_t x = 0; x < ng->error->size; x++)
                         ng->error->elements[x] *= ng->act_fun->deriv(ng, x);
@@ -291,7 +290,8 @@ void bp_update_projection_sd(struct network *n, struct group *g,
          * g.
          */
 #ifdef _OPENMP
-#pragma omp parallel for reduction(+:weight_cost, gradient_linearity, last_deltas_length, gradients_length)
+#pragma omp parallel for reduction(+:weight_cost, gradient_linearity, last_deltas_length, gradients_length) \
+        if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < p->to->vector->size; i++) {
                 for (uint32_t j = 0; j < g->vector->size; j++) {
@@ -436,7 +436,7 @@ void determine_gradient_ssq(struct network *n, struct group *g)
 
                 /* sum gradients */
 #ifdef _OPENMP
-#pragma omp parallel for reduction(+:sd_scale_factor)
+#pragma omp parallel for reduction(+:sd_scale_factor) if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
                 for (uint32_t j = 0; j < p->to->vector->size; j++)
                         for (uint32_t x = 0; x < g->vector->size; x++)
@@ -597,7 +597,8 @@ void bp_update_projection_rprop(struct network *n, struct group *g,
          * g.
          */
 #ifdef _OPENMP
-#pragma omp parallel for reduction(+:weight_cost, gradient_linearity, last_deltas_length, gradients_length)
+#pragma omp parallel for reduction(+:weight_cost, gradient_linearity, last_deltas_length, gradients_length) \
+        if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < p->to->vector->size; i++) {
                 for (uint32_t j = 0; j < g->vector->size; j++) {
@@ -872,7 +873,8 @@ void bp_update_projection_qprop(struct network *n, struct group *g,
          * g.
          */
 #ifdef _OPENMP
-#pragma omp parallel for reduction(+:weight_cost, gradient_linearity, last_deltas_length, gradients_length)
+#pragma omp parallel for reduction(+:weight_cost, gradient_linearity, last_deltas_length, gradients_length) \
+        if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < p->to->vector->size; i++) {
                 for (uint32_t j = 0; j < g->vector->size; j++) {
@@ -1164,7 +1166,8 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
          * g' and unit j in group g.
          */
 #ifdef _OPENMP
-#pragma omp parallel for reduction(+:weight_cost, gradient_linearity, last_deltas_length, gradients_length)
+#pragma omp parallel for reduction(+:weight_cost, gradient_linearity, last_deltas_length, gradients_length) \
+        if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < p->to->vector->size; i++) {
                 for (uint32_t j = 0; j < g->vector->size; j++) {

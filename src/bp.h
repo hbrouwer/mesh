@@ -28,8 +28,7 @@
 #define IRPROP_MINUS    3
 
 /* backpropagation */
-void bp_output_error(struct group *g, struct vector *t, double tr,
-        double zr);
+void bp_output_error(struct network *n, struct group *g, struct vector *t);
 void bp_backpropagate_error(struct network *n, struct group *g);
 
 /* steepest descent */

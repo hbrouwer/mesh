@@ -756,6 +756,20 @@ bool cmd_toggle_reset_contexts(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
+#ifdef _OPENMP
+bool cmd_toggle_multithreading(char *cmd, char *fmt, struct session *s)
+{
+        if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)
+                return false;
+        s->anp->flags->omp_mthreaded = !s->anp->flags->omp_mthreaded;
+        if (s->anp->flags->omp_mthreaded)
+                mprintf("Toggled multithreading \t [ on ]\n");
+        else
+                mprintf("Toggled multithreading\t [ off ]\n");
+        return true;
+}
+#endif /* _OPENMP */
+
 bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s)
 {
         if (strlen(cmd) != strlen(fmt) || strncmp(cmd, fmt, strlen(cmd)) != 0)

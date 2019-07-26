@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif /* _OPENMP */
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -348,6 +351,42 @@ void inspect_network(struct network *n)
         if (n->similarity_metric == pearson_correlation)
                 cprintf("pearson_correlation");
         cprintf("\n");
+
+                /****************
+                 **** OpenMP ****
+                 ****************/
+                
+#ifdef _OPENMP
+        cprintf("|\n");
+        cprintf("| Multithreading enabled: \t ");
+        n->flags->omp_mthreaded ? cprintf("true\n") : cprintf("false\n");
+        cprintf("| Processor(s) available: \t %d\n",  omp_get_num_procs());
+        cprintf("| Maximum #threads: \t\t %d\n",      omp_get_max_threads());
+        cprintf("| Schedule: \t\t\t ");
+        omp_sched_t k;
+        int m;
+        omp_get_schedule(&k, &m);
+        switch (k) {
+        case omp_sched_static:
+                cprintf("static\n");
+                break;
+        case omp_sched_dynamic:
+                cprintf("dynamic\n");
+                break;
+        case omp_sched_guided:
+                cprintf("guided\n");
+                break;
+        case omp_sched_auto:
+                cprintf("auto\n");
+                break;
+        default: 
+                /* to handle omp_sched_monotonic */
+                break;
+        }
+        cprintf("| Chunk size \t\t\t %d\n", m);
+        cprintf("\n");
+#endif /* _OPENMP */
+
 
                 /****************
                  **** status ****

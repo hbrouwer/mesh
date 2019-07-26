@@ -82,17 +82,18 @@ and its derivative:
         se' = y_i - d_i
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double err_fun_sum_of_squares(struct group *g, struct vector *t, double tr,
-        double zr)
+double err_fun_sum_of_squares(struct network *n, struct group *g,
+        struct vector *t)
 {
         double se = 0.0;
 
 #ifdef _OPENMP
-#pragma omp parallel for reduction(+:se)
+#pragma omp parallel for reduction(+:se) if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
-                double d = adjust_target(y, t->elements[i], tr, zr);
+                double d = adjust_target(y, t->elements[i],
+                        n->pars->target_radius, n->pars->zero_error_radius);
                 
                 se += pow(y - d, 2.0);
         }
@@ -100,16 +101,17 @@ double err_fun_sum_of_squares(struct group *g, struct vector *t, double tr,
         return 0.5 * se;
 }
 
-void err_fun_sum_of_squares_deriv(struct group *g, struct vector *t, double tr,
-        double zr)
+void err_fun_sum_of_squares_deriv(struct network *n, struct group *g,
+        struct vector *t)
 {
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
-                double d = adjust_target(y, t->elements[i], tr, zr);
-
+                double d = adjust_target(y, t->elements[i],
+                        n->pars->target_radius, n->pars->zero_error_radius);
+                
                 g->error->elements[i] = y - d;
         }
 }
@@ -135,18 +137,19 @@ Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
      University, Department of Computer Science).
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double err_fun_cross_entropy(struct group *g, struct vector *t, double tr,
-        double zr)
+double err_fun_cross_entropy(struct network *n, struct group *g,
+        struct vector *t)
 {
         double ce = 0.0;
 
 #ifdef _OPENMP
-#pragma omp parallel for reduction(+:ce)
+#pragma omp parallel for reduction(+:ce) if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
-                double d = adjust_target(y, t->elements[i], tr, zr);
-
+                double d = adjust_target(y, t->elements[i],
+                        n->pars->target_radius, n->pars->zero_error_radius);
+                
                 if (d == 0.0) {
                         /*
                          * If d = 0 and y = 1, we obtain:
@@ -226,16 +229,17 @@ double err_fun_cross_entropy(struct group *g, struct vector *t, double tr,
         return ce;
 }
 
-void err_fun_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
-        double zr)
+void err_fun_cross_entropy_deriv(struct network *n, struct group *g,
+        struct vector *t)
 {
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
-                double d = adjust_target(y, t->elements[i], tr, zr);
-
+                double d = adjust_target(y, t->elements[i],
+                        n->pars->target_radius, n->pars->zero_error_radius);
+                
                 if (d == 0.0) {
                         /*
                          * If d = 0 and 1 - y <= SMALL_VALUE, we obtain:
@@ -319,17 +323,18 @@ Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
      University, Department of Computer Science).
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-double err_fun_divergence(struct group *g, struct vector *t, double tr,
-        double zr)
+double err_fun_divergence(struct network *n, struct group *g,
+        struct vector *t)
 {
         double de = 0.0;
 
 #ifdef _OPENMP
-#pragma omp parallel for reduction(+:de)
+#pragma omp parallel for reduction(+:de) if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
-                double d = adjust_target(y, t->elements[i], tr, zr);
+                double d = adjust_target(y, t->elements[i],
+                        n->pars->target_radius, n->pars->zero_error_radius);
 
                 /*
                  * If d is 0, we obtain:
@@ -362,16 +367,17 @@ double err_fun_divergence(struct group *g, struct vector *t, double tr,
         return de;
 }
 
-void err_fun_divergence_deriv(struct group *g, struct vector *t, double tr,
-        double zr)
+void err_fun_divergence_deriv(struct network *n, struct group *g,
+        struct vector *t)
 {
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < g->vector->size; i++) {
                 double y = g->vector->elements[i];
-                double d = adjust_target(y, t->elements[i], tr, zr);
-
+                double d = adjust_target(y, t->elements[i],
+                        n->pars->target_radius, n->pars->zero_error_radius);
+                
                 /*
                  * If d = 0, we obtain:
                  *

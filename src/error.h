@@ -26,21 +26,21 @@
 double adjust_target(double y, double d, double tr, double zr);
 
 /* sum of squares */
-double err_fun_sum_of_squares(struct group *g, struct vector *t, double tr,
-        double zr);
-void err_fun_sum_of_squares_deriv(struct group *g, struct vector *t, double tr,
-        double zr);
+double err_fun_sum_of_squares(struct network *n, struct group *g,
+        struct vector *t);
+void err_fun_sum_of_squares_deriv(struct network *n, struct group *g,
+        struct vector *t);
 
 /* cross entropy */
-double err_fun_cross_entropy(struct group *g, struct vector *t, double tr,
-        double zr);
-void err_fun_cross_entropy_deriv(struct group *g, struct vector *t, double tr,
-        double zr);
+double err_fun_cross_entropy(struct network *n, struct group *g,
+        struct vector *t);
+void err_fun_cross_entropy_deriv(struct network *n, struct group *g,
+        struct vector *t);
 
 /* divergence */
-double err_fun_divergence(struct group *g, struct vector *t, double tr,
-        double zr);
-void err_fun_divergence_deriv(struct group *g, struct vector *t, double tr,
-        double zr);
+double err_fun_divergence(struct network *n, struct group *g,
+        struct vector *t);
+void err_fun_divergence_deriv(struct network *n, struct group *g,
+        struct vector *t);
 
 #endif /* ERROR_H */

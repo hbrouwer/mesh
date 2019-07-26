@@ -57,6 +57,10 @@ bool cmd_unfreeze_projection(char *cmd, char *fmt, struct session *s);
 
 bool cmd_toggle_reset_contexts(char *cmd, char *fmt, struct session *s);
 
+#ifdef _OPENMP
+bool cmd_toggle_multithreading(char *cmd, char *fmt, struct session *s);
+#endif /* _OPENMP */
+
 bool cmd_toggle_pretty_printing(char *cmd, char *fmt, struct session *s);
 bool cmd_set_color_scheme(char *cmd, char *fmt, struct session *s);
 
@@ -184,6 +188,11 @@ const static struct command cmds[] = {
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"toggleResetContexts",     NULL,            &cmd_toggle_reset_contexts},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+#ifdef _OPENMP
+        {"toggleMultithreading",    NULL,            &cmd_toggle_multithreading},
+#endif /* _OPENMP */
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"togglePrettyPrinting",    NULL,            &cmd_toggle_pretty_printing},

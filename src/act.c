@@ -63,7 +63,7 @@ void feed_forward(struct network *n, struct group *g)
                  */
                 struct group *rg = op->to;
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
                 for (uint32_t j = 0; j < rg->vector->size; j++) {
                         /* 
