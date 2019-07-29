@@ -85,7 +85,8 @@ void print_openmp_status()
         omp_sched_t k;
         int m;
         omp_get_schedule(&k, &m);
-        switch (k & ~omp_sched_monotonic) {
+        // switch (k & ~omp_sched_monotonic) {
+        switch (k) {
         case omp_sched_static:
                 cprintf("+ [ OpenMP ]: Static schedule (chunk size: %d)\n", m);
                 break;

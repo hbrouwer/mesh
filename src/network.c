@@ -364,7 +364,8 @@ void inspect_network(struct network *n)
         omp_sched_t k;
         int m;
         omp_get_schedule(&k, &m);
-        switch (k & ~omp_sched_monotonic) {
+        // switch (k & ~omp_sched_monotonic) {
+        switch (k) {
         case omp_sched_static:
                 cprintf("static\n");
                 break;
