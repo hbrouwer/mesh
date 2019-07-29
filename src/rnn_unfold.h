@@ -30,7 +30,6 @@ void rnn_free_unfolded_network(struct rnn_unfolded_network *un);
 struct group *rnn_duplicate_group(struct group *g);
 struct group *rnn_duplicate_groups(struct network *n, struct network *dn,
         struct group *g);
-/* void rnn_free_duplicate_groups(struct group *dg); */
 void rnn_free_duplicate_group(struct group *g);
 void rnn_free_duplicate_groups(struct array *dgs);
 
