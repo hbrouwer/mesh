@@ -364,7 +364,7 @@ void inspect_network(struct network *n)
         omp_sched_t k;
         int m;
         omp_get_schedule(&k, &m);
-        switch (k) {
+        switch (k & ~omp_sched_monotonic) {
         case omp_sched_static:
                 cprintf("static\n");
                 break;
@@ -377,8 +377,8 @@ void inspect_network(struct network *n)
         case omp_sched_auto:
                 cprintf("auto\n");
                 break;
-        default: 
-                /* to handle omp_sched_monotonic */
+        default:
+                /* to handle new schedules */
                 break;
         }
         cprintf("| Chunk size \t\t\t %d\n", m);

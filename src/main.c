@@ -85,7 +85,7 @@ void print_openmp_status()
         omp_sched_t k;
         int m;
         omp_get_schedule(&k, &m);
-        switch (k) {
+        switch (k & ~omp_sched_monotonic) {
         case omp_sched_static:
                 cprintf("+ [ OpenMP ]: Static schedule (chunk size: %d)\n", m);
                 break;
@@ -99,7 +99,7 @@ void print_openmp_status()
                 cprintf("+ [ OpenMP ]: Auto schedule\n");
                 break;
         default:
-                /* to handle omp_sched_monotonic */
+                /* to handle new schedules */
                 break;
         }
         if (omp_get_num_devices() > 1)
