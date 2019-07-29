@@ -27,7 +27,7 @@ struct vector
 
 struct vector *create_vector(uint32_t size);
 void free_vector(struct vector *v);
-void copy_vector(struct vector *v1, struct vector *v2);
+void copy_vector(struct vector *sv, struct vector *dv);
 
 void zero_out_vector(struct vector *v);
 void fill_vector_with_value(struct vector *v, double val);

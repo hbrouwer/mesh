@@ -259,7 +259,7 @@ void bp_update_inc_projs_sd(struct network *n, struct group *g)
                  * Make a copy of the weight gradients, and reset the
                  * current weight gradients.
                  */
-                copy_matrix(p->prev_gradients, p->gradients);
+                copy_matrix(p->gradients, p->prev_gradients);
                 zero_out_matrix(p->gradients);
 
                 /*
@@ -566,7 +566,7 @@ void bp_update_inc_projs_rprop(struct network *n, struct group *g)
                  * Make a copy of the weight gradients, and reset the
                  * current weight gradients.
                  */
-                copy_matrix(p->prev_gradients, p->gradients);
+                copy_matrix(p->gradients, p->prev_gradients);
                 zero_out_matrix(p->gradients);
 
                 /*
@@ -840,7 +840,7 @@ void bp_update_inc_projs_qprop(struct network *n, struct group *g)
                  * Make a copy of the weight gradients, and reset the
                  * current weight gradients.
                  */
-                copy_matrix(p->prev_gradients, p->gradients);
+                copy_matrix(p->gradients, p->prev_gradients);
                 zero_out_matrix(p->gradients);
 
                 /*

@@ -30,7 +30,7 @@ struct matrix
 
 struct matrix *create_matrix(uint32_t rows, uint32_t cols);
 void free_matrix(struct matrix *m);
-void copy_matrix(struct matrix *m1, struct matrix *m2);
+void copy_matrix(struct matrix *sm, struct matrix *dm);
 
 void zero_out_matrix(struct matrix *m);
 void fill_matrix_with_value(struct matrix *m, double val);

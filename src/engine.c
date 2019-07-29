@@ -32,12 +32,13 @@ void clamp_input_vector(struct network *n, struct vector *input)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
         switch(n->flags->type) {
-        case ntype_ffn: /* fall through */
+        case ntype_ffn:
+                /* fall through */
         case ntype_srn:
-                copy_vector(n->input->vector, input);
+                copy_vector(input, n->input->vector);
                 break;
         case ntype_rnn:
-                copy_vector(un->stack[un->sp]->input->vector, input);
+                copy_vector(input, un->stack[un->sp]->input->vector);
                 break;
         }
 }
@@ -80,7 +81,8 @@ void forward_sweep(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
         switch(n->flags->type) {
-        case ntype_ffn: /* fall through */
+        case ntype_ffn:
+                /* fall through */
         case ntype_srn:
                 feed_forward(n, n->input);
                 break;
@@ -95,13 +97,14 @@ double output_error(struct network *n, struct vector *target)
         struct rnn_unfolded_network *un = n->unfolded_net;
         double error = 0.0;
         switch(n->flags->type) {
-        case ntype_ffn: /* fall through */
+        case ntype_ffn:
+                /* fall through */
         case ntype_srn:
                 error = n->output->err_fun->fun(n, n->output, target);
                 break;
         case ntype_rnn:
-                error = un->stack[un->sp]->output->err_fun->fun(n,
-                        un->stack[un->sp]->output, target);
+                error = un->stack[un->sp]->output->err_fun->fun(
+                        n, un->stack[un->sp]->output, target);
                 break;
         }
         return error;
@@ -112,7 +115,8 @@ struct vector *output_vector(struct network *n)
         struct rnn_unfolded_network *un = n->unfolded_net;
         struct vector *v = NULL;
         switch(n->flags->type) {
-        case ntype_ffn: /* fall through */
+        case ntype_ffn:
+                /* fall through */
         case ntype_srn:
                 v = n->output->vector;
                 break;
@@ -128,13 +132,14 @@ struct group *find_network_group_by_name(struct network *n, char *name)
         struct rnn_unfolded_network *un = n->unfolded_net;
         struct group *g = NULL;
         switch(n->flags->type) {
-        case ntype_ffn: /* fall through */
+        case ntype_ffn:
+                /* fall through */
         case ntype_srn:
                 g = find_array_element_by_name(n->groups, name);
                 break;
         case ntype_rnn:
-                g = find_array_element_by_name(un->stack[un->sp]->groups,
-                        name);
+                g = find_array_element_by_name(
+                        un->stack[un->sp]->groups, name);
                 break;
         }
         return g;
@@ -143,7 +148,8 @@ struct group *find_network_group_by_name(struct network *n, char *name)
 void reset_error_signals(struct network *n)
 {
         switch(n->flags->type) {
-        case ntype_ffn: /* fall through */
+        case ntype_ffn:
+                /* fall through */
         case ntype_srn:
                 reset_ffn_error_signals(n);
                 break;
@@ -157,13 +163,15 @@ void backward_sweep(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
         switch(n->flags->type) {
-        case ntype_ffn: /* fall through */
+        case ntype_ffn:
+                /* fall through */
         case ntype_srn:
                 bp_backpropagate_error(n, n->output);
                 break;
         case ntype_rnn:
                 for (int32_t i = un->sp; i >= 0; i--)
-                        bp_backpropagate_error(un->stack[i], 
+                        bp_backpropagate_error(
+                                un->stack[i], 
                                 un->stack[i]->output);
                 break;     
         }
@@ -173,7 +181,8 @@ void update_weights(struct network *n)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
         switch(n->flags->type) {
-        case ntype_ffn: /* fall through */
+        case ntype_ffn:
+                /* fall through */
         case ntype_srn:
                 n->update_algorithm(n);
                 break;
@@ -188,7 +197,8 @@ void inject_error(struct network *n, struct vector *target)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
         switch(n->flags->type) {
-        case ntype_ffn: /* fall through */
+        case ntype_ffn:
+                /* fall through */
         case ntype_srn:
                 bp_output_error(n, n->output, target);
                 break;
@@ -198,12 +208,14 @@ void inject_error(struct network *n, struct vector *target)
         } 
 }
 
-void two_stage_forward_sweep(struct network *n, struct item *item, uint32_t event)
+void two_stage_forward_sweep(struct network *n, struct item *item,
+        uint32_t event)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
         struct network *np = NULL;
         switch(n->flags->type) {
-        case ntype_ffn: /* fall through */
+        case ntype_ffn:
+                /* fall through */
         case ntype_srn:
                 np = n;
                 break;
@@ -212,19 +224,23 @@ void two_stage_forward_sweep(struct network *n, struct item *item, uint32_t even
                 break;
         }
         struct group *ts_fw_group = find_network_group_by_name(
-                np, n->ts_fw_group->name);
+                np,
+                n->ts_fw_group->name);
         struct item  *ts_fw_item  = find_array_element_by_name(
-                n->ts_fw_set->items, item->name);
-        copy_vector(ts_fw_group->vector, ts_fw_item->inputs[event]);
+                n->ts_fw_set->items,
+                item->name);
+        copy_vector(ts_fw_item->inputs[event], ts_fw_group->vector);
         feed_forward(np, ts_fw_group);
 }
 
-void two_stage_backward_sweep(struct network *n, struct item *item, uint32_t event)
+void two_stage_backward_sweep(struct network *n, struct item *item,
+        uint32_t event)
 {
         struct rnn_unfolded_network *un = n->unfolded_net;
         struct network *np = NULL;
         switch(n->flags->type) {
-        case ntype_ffn: /* fall through */
+        case ntype_ffn:
+                /* fall through */
         case ntype_srn:
                 np = n;
                 break;
@@ -233,9 +249,11 @@ void two_stage_backward_sweep(struct network *n, struct item *item, uint32_t eve
                 break;
         }
         struct group *ts_bw_group = find_network_group_by_name(
-                np, n->ts_bw_group->name);
+                np,
+                n->ts_bw_group->name);
         struct item  *ts_bw_item  = find_array_element_by_name(
-                n->ts_bw_set->items, item->name);
+                n->ts_bw_set->items,
+                item->name);
         bp_output_error(n, ts_bw_group, ts_bw_item->targets[event]);
         bp_backpropagate_error(np, ts_bw_group);
 }

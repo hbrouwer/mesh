@@ -55,14 +55,14 @@ void free_matrix(struct matrix *m)
         free(m);
 }
 
-void copy_matrix(struct matrix *m1, struct matrix *m2)
+void copy_matrix(struct matrix *sm, struct matrix *dm)
 {
-        if(m1->rows != m2->rows || m1->cols != m2->cols)
+        if(sm->rows != dm->rows || sm->cols != dm->cols)
                 return;
 
-        for (uint32_t i = 0; i < m1->rows; i++)
-                for (uint32_t j = 0; j < m1->cols; j++)
-                        m1->elements[i][j] = m2->elements[i][j];
+        for (uint32_t i = 0; i < sm->rows; i++)
+                for (uint32_t j = 0; j < sm->cols; j++)
+                        dm->elements[i][j] = sm->elements[i][j];
 }
 
 void zero_out_matrix(struct matrix *m)

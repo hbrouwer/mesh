@@ -530,13 +530,13 @@ struct matrix *dss_word_info_matrix(struct network *n,
                         /* w_1...i */
                         if (strncmp(ti->name, prefix1, strlen(prefix1)) == 0) {
                                 freq_prefix1++;
-                                j == 0 ? copy_vector(sit1, tv) 
+                                j == 0 ? copy_vector(tv, sit1) 
                                        : fuzzy_or(sit1, tv);
                         }
                         /* w_1...i+1 */
                         if (strncmp(ti->name, prefix2, strlen(prefix2)) == 0) {
                                 freq_prefix2++;
-                                j == 0 ? copy_vector(sit2, tv) 
+                                j == 0 ? copy_vector(tv, sit2) 
                                        : fuzzy_or(sit2, tv);
                         }
                 }
@@ -710,7 +710,7 @@ struct matrix *dss_word_info_matrix(struct network *n,
                 im->elements[i][4] = sonl;
                 im->elements[i][5] = delta_honl;
 
-                copy_vector(pv, ov);
+                copy_vector(ov, pv);
         }
 
         free_vector(pv);

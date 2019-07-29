@@ -658,7 +658,7 @@ void shift_context_group_chain(struct group *g,
                 shift_context_group_chain(
                         g->ctx_groups->elements[i],
                         g->vector);
-        copy_vector(g->vector, v);
+        copy_vector(v, g->vector);
 }
 
 /*

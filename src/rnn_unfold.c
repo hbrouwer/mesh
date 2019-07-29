@@ -210,7 +210,7 @@ struct group *rnn_duplicate_group(struct group *g)
         dg->pars       = g->pars;
 
         if (dg->flags->bias)
-                copy_vector(dg->vector, g->vector);
+                copy_vector(g->vector, dg->vector);
 
         return dg;
 
@@ -498,7 +498,7 @@ void rnn_add_and_reset_gradients(struct group *g, struct group *dg)
                         for (uint32_t c = 0; c < p->gradients->cols; c++)
                                 p->gradients->elements[r][c]
                                         += dp->gradients->elements[r][c];
-                copy_matrix(dp->gradients, dp->prev_gradients);
+                copy_matrix(dp->prev_gradients, dp->gradients);
                 zero_out_matrix(dp->gradients);
                 rnn_add_and_reset_gradients(p->to, dp->to);
         }
@@ -560,7 +560,7 @@ void rnn_shift_stack(struct rnn_unfolded_network *un)
                         find_projection(g2->out_projs, g3);
                 remove_projection(g2->out_projs, g2_to_g3);
                 free(g2_to_g3);
-                copy_vector(g1->vector, g2->vector);
+                copy_vector(g2->vector, g1->vector);
 
                 /* 
                  * Connect the terminal recurrent group to the recurrent

@@ -46,13 +46,13 @@ void free_vector(struct vector *v)
         free(v);
 }
 
-void copy_vector(struct vector *v1, struct vector *v2)
+void copy_vector(struct vector *sv, struct vector *dv)
 {
-        if(v1->size != v2->size)
+        if(sv->size != dv->size)
                 return;
 
-        for (uint32_t i = 0; i < v1->size; i++)
-                v1->elements[i] = v2->elements[i];
+        for (uint32_t i = 0; i < sv->size; i++)
+                dv->elements[i] = sv->elements[i];
 }
 
 void zero_out_vector(struct vector *v)
