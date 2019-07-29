@@ -36,7 +36,9 @@ void reset_error_signals(struct network *n);
 void backward_sweep(struct network *n);
 void update_weights(struct network *n);
 
-void two_stage_forward_sweep(struct network *n, struct item *item, uint32_t event);
-void two_stage_backward_sweep(struct network *n, struct item *item, uint32_t event);
+void two_stage_forward_sweep(struct network *n, struct item *item,
+        uint32_t event);
+void two_stage_backward_sweep(struct network *n, struct item *item,
+        uint32_t event);
 
 #endif /* ENGINE_H */
