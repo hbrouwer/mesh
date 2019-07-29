@@ -765,7 +765,7 @@ bool cmd_toggle_multithreading(char *cmd, char *fmt, struct session *s)
         if (s->anp->flags->omp_mthreaded)
                 mprintf("Toggled multithreading \t [ on ]\n");
         else
-                mprintf("Toggled multithreading\t [ off ]\n");
+                mprintf("Toggled multithreading \t [ off ]\n");
         return true;
 }
 #endif /* _OPENMP */
