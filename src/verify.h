@@ -22,6 +22,9 @@
 #include "network.h"
 
 bool verify_network(struct network *n);
-bool verify_input_to_output_path(struct network *n, struct group *g);
+
+bool verify_projection_path(struct group *fg, struct group *tg);
+bool verify_group_connectivity(struct network *n);
+bool verify_context_loops(struct network *n);
 
 #endif /* VERIFY_H */

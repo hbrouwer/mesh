@@ -112,10 +112,8 @@ void init_network(struct network *n)
         /*
          * Verify network sanity.
          */
-        if (!verify_network(n)) {
-                eprintf("Cannot initialize network--network cannot be verified\n");
+        if (!verify_network(n))
                 return;
-        }
 
         /*
          * Randomize weights, and initialize dynamic learning parameters.
