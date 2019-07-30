@@ -103,7 +103,7 @@ void print_openmp_status()
                 /* to handle new schedules */
                 break;
         }
-        if (omp_get_num_devices() > 1)
+        if (omp_get_num_devices() > 0)
                 cprintf("+ [ OpenMP ]: %d accelerator(s) available (default device: %d)\n",
                         omp_get_num_devices(),
                         omp_get_default_device());
