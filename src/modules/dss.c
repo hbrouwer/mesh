@@ -769,7 +769,7 @@ void dss_word_info(struct network *n, struct set *s,
         memset(&sentence, 0, block_size);
         strcpy(sentence, item->name);
 
-        uint32_t col_len = 10;
+        uint32_t col_len = 20;
 
         /* print the words of the sentence */
         cprintf("\n");
