@@ -20,7 +20,7 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 This implements various check to verify if a network architecture is sane.
 
-TODO: Add verification check.
+TODO: Add more verification checks.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 bool verify_network(struct network *n)
