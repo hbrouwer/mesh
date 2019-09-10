@@ -582,6 +582,13 @@ struct matrix *dss_word_info_matrix(struct network *n,
                  *                           * mu_j(sit(w_1...i)))
                  * tau(p_x|sit(w_1...i)) = --------------------------
                  *                         sum_j (mu_j(sit(w_1...i)))
+                 *
+                 * Note: As this defines a probability distribution over
+                 *     the observations that constitute the DSS by iterating
+                 *     over the individual dimensions, there should be no
+                 *     duplicate observations. Duplicates would require
+                 *     identification of unique observations in order to
+                 *     obtain a proper probability distribution.
                  */
                 double ssum1 = 0.0, ssum2 = 0.0;
                 for (uint32_t j = 0 ; j < sit1->size; j++) {
@@ -618,6 +625,10 @@ struct matrix *dss_word_info_matrix(struct network *n,
                  * Ssem(w_i+1) = -log((P(sit(w_1...i+1)|w_1...i))
                  *     = log(P(sit(w_1...i)) - log(P(sit(w_1...i+1)))
                  *     = log(tau(sit(w_1...i)) - log(tau(sit(w_1...i+1)))
+                 *
+                 * Note: This assumes that sit(w_1...i+1) |= sit(w_1...i),
+                 *     and hence that: tau(sit(w_1...i+1))
+                 *     = tau(sit(w_1...i+1) & sit(w_1...i))
                  */
                 double ssem = log(dss_tau_prior(sit1))
                         - log(dss_tau_prior(sit2));
@@ -678,6 +689,13 @@ struct matrix *dss_word_info_matrix(struct network *n,
                  * 
                  * where DSS_i is the output vector of the network at
                  * after processing w_1...i.
+                 *
+                 * Note: As this defines a probability distribution over
+                 *     the observations that constitute the DSS by iterating
+                 *     over the individual dimensions, there should be no
+                 *     duplicate observations. Duplicates would require
+                 *     identification of unique observations in order to
+                 *     obtain a proper probability distribution.
                  */
                 double ssum1 = 0.0, ssum2 = 0.0;
                 for (uint32_t j = 0 ; j < ov->size; j++) {
