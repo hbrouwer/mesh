@@ -352,7 +352,7 @@ double dss_tau_prior(struct vector *a)
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Conjunction belief a and b:
+Conjunction belief in a and b:
 
         tau(a^b) = 1/n sum_i u_i(a) * u_i(b)
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
