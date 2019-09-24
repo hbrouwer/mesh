@@ -955,7 +955,6 @@ void print_projections(struct network *n)
         }     
 }
 
-
 void freeze_projection(struct projection *p)
 {
         p->flags->frozen = true;
