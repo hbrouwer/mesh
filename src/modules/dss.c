@@ -57,7 +57,7 @@ void dss_test(struct network *n)
 
                 /* comprehension score */
                 struct vector *tv = item->targets[item->num_events - 1];
-                ov = dss_adjust_output_vector(output_vector(n), tv,
+                dss_adjust_output_vector(ov, tv, output_vector(n),
                         n->pars->target_radius, n->pars->zero_error_radius);
                 double tau = dss_comprehension_score(tv, ov);
                 if (!isnan(tau)) {
@@ -220,20 +220,19 @@ void dss_inferences(struct network *n, struct set *set, struct item *item,
 }
 
 /*
- * Adjust DSS output vector based on target radius and zero error radius.
+ * Fills a vector with the output vector adjusted for target radius and zero
+ * error radius.
  */
-struct vector *dss_adjust_output_vector(struct vector *ov, struct vector *tv,
-        double tr, double zr)
+void dss_adjust_output_vector(struct vector *av, struct vector *tv,
+        struct vector *ov, double tr, double zr)
 {
-        struct vector *av = create_vector(ov->size);
         for (uint32_t i = 0; i < av->size; i++)
                 av->elements[i] = adjust_target(tv->elements[i], ov->elements[i], tr, zr);
-        return av;
 }
 
 /*
- * Construct a vector containing the comprehension score of each proposition
- * in the specified set, given the output of the model.
+ * Fills a vector with the comprehension score of each proposition in the
+ * specified set, given the output of the model.
  */
 void dss_score_vector(struct vector *v, struct network *n, struct set *set)
 {
@@ -265,6 +264,7 @@ struct matrix *dss_score_matrix(struct network *n, struct set *set,
         uint32_t cols = item->num_events;
         struct matrix *sm = create_matrix(rows, cols);
         struct vector *ov = create_vector(n->output->vector->size);
+
         reset_ticks(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
                 if (i > 0)
@@ -277,7 +277,7 @@ struct matrix *dss_score_matrix(struct network *n, struct set *set,
                  * comprehension scores per probe event.
                  */
                 struct vector *tv = item->targets[item->num_events - 1];
-                ov = dss_adjust_output_vector(output_vector(n), tv,
+                dss_adjust_output_vector(ov, tv, output_vector(n),
                         n->pars->target_radius, n->pars->zero_error_radius);                
                 sm->elements[0][i] = dss_comprehension_score(tv, ov);
                 for (uint32_t j = 0; j < set->items->num_elements; j++) {
@@ -286,6 +286,7 @@ struct matrix *dss_score_matrix(struct network *n, struct set *set,
                         sm->elements[j + 1][i] = dss_comprehension_score(pv, ov);
                 }
         }
+
         free_vector(ov);
 
         return sm;
@@ -658,6 +659,7 @@ struct matrix *dss_word_info_matrix(struct network *n,
          * Output vector and previous output vector. At time-step t=0, we
          * bootstrap this by using the unit vector.
          */
+        struct vector *ov = create_vector(n->output->vector->size);
         struct vector *pv = create_vector(n->output->vector->size);
         fill_vector_with_value(pv, 1.0);
         fill_vector_with_value(pv, 1.0 / euclidean_norm(pv));
@@ -669,8 +671,8 @@ struct matrix *dss_word_info_matrix(struct network *n,
                 clamp_input_vector(n, item->inputs[i]);
                 forward_sweep(n);
                 struct vector *tv = item->targets[item->num_events - 1];
-                struct vector *ov = dss_adjust_output_vector(output_vector(n),
-                        tv, n->pars->target_radius, n->pars->zero_error_radius);
+                dss_adjust_output_vector(ov, tv, output_vector(n),
+                        n->pars->target_radius, n->pars->zero_error_radius);
                 for (uint32_t i = 0; i < ov->size; i++)
                         ov->elements[i] = dss_clip_unit(ov->elements[i]);
 
@@ -732,6 +734,7 @@ struct matrix *dss_word_info_matrix(struct network *n,
         }
 
         free_vector(pv);
+        free_vector(ov);
 
         return im;
 }
