@@ -57,7 +57,7 @@ void dss_test(struct network *n)
 
                 /* comprehension score */
                 struct vector *tv = item->targets[item->num_events - 1];
-                dss_adjust_output_vector(ov, tv, output_vector(n),
+                dss_adjust_output_vector(ov, output_vector(n), tv,
                         n->pars->target_radius, n->pars->zero_error_radius);
                 double tau = dss_comprehension_score(tv, ov);
                 if (!isnan(tau)) {
@@ -221,10 +221,11 @@ void dss_inferences(struct network *n, struct set *set, struct item *item,
 
 /*
  * Fills a vector with the output vector adjusted for target radius and zero
- * error radius.
+ * error radius. The output vector is adjusted in the direction of the
+ * target vector (i.e., the inverse of what happens in error computation).
  */
-void dss_adjust_output_vector(struct vector *av, struct vector *tv,
-        struct vector *ov, double tr, double zr)
+void dss_adjust_output_vector(struct vector *av, struct vector *ov,
+        struct vector *tv, double tr, double zr)
 {
         for (uint32_t i = 0; i < av->size; i++)
                 av->elements[i] = adjust_target(tv->elements[i], ov->elements[i], tr, zr);
@@ -277,7 +278,7 @@ struct matrix *dss_score_matrix(struct network *n, struct set *set,
                  * comprehension scores per probe event.
                  */
                 struct vector *tv = item->targets[item->num_events - 1];
-                dss_adjust_output_vector(ov, tv, output_vector(n),
+                dss_adjust_output_vector(ov, output_vector(n), tv,
                         n->pars->target_radius, n->pars->zero_error_radius);                
                 sm->elements[0][i] = dss_comprehension_score(tv, ov);
                 for (uint32_t j = 0; j < set->items->num_elements; j++) {
@@ -671,7 +672,7 @@ struct matrix *dss_word_info_matrix(struct network *n,
                 clamp_input_vector(n, item->inputs[i]);
                 forward_sweep(n);
                 struct vector *tv = item->targets[item->num_events - 1];
-                dss_adjust_output_vector(ov, tv, output_vector(n),
+                dss_adjust_output_vector(ov, output_vector(n), tv,
                         n->pars->target_radius, n->pars->zero_error_radius);
                 for (uint32_t i = 0; i < ov->size; i++)
                         ov->elements[i] = dss_clip_unit(ov->elements[i]);
