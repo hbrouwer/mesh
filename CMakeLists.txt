@@ -49,3 +49,8 @@ if(OPENMP)
                 LINK_FLAGS    -fopenmp
         )
 endif(OPENMP)
+
+# Temporarily fix gcc compilation on macOS with Xcode 11 ...
+if(APPLE)
+        add_definitions(-include stdio.h)
+endif(APPLE)
