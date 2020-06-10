@@ -73,7 +73,7 @@ void erp_write_values(struct network *n, struct group *N400_gen,
                 goto error_out;
 
         cprintf("\n");
-        fprintf(fd,"\"ItemID\",\"ItemName\",\"ItemMeta\",\"WordPos\",\"N400\",\"P600\"\n");
+        fprintf(fd,"\"ItemId\",\"ItemName\",\"ItemMeta\",\"WordPos\",\"N400\",\"P600\"\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
                 struct item *item   = n->asp->items->elements[i];
                 struct vector *N400 = erp_values_for_item(n, N400_gen, item);
