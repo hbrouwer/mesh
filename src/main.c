@@ -31,7 +31,7 @@
 
 int main(int argc, char **argv)
 {
-        cprintf("Mesh, version %s: http://hbrouwer.github.io/mesh/\n", VERSION);
+        cprintf("Mesh, version %s: https://github.com/hbrouwer/mesh (? for help)\n", VERSION);
 #ifdef FAST_EXP
         print_fast_exp_status();
 #endif /* FAST_EXP */

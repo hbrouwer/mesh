@@ -23,7 +23,7 @@
 
 #define TOPIC_ABOUT \
 "         ______                                                        \n" \
-"    __---   )  --_  Mesh: http://hbrouwer.github.io/mesh/              \n" \
+"    __---   )  --_  Mesh: https://github.com/hbrouwer/mesh             \n" \
 "  --       /      -_  Copyright 2012-2022 Harm Brouwer <me@hbrouwer.eu>\n" \
 " /     o  (         )                                                  \n" \
 "(     o   ____  o    )  Saarland University                            \n" \
@@ -36,7 +36,7 @@
 /* for Matt ... */
 #define TOPIC_ABOOT \
 "         ______                                                        \n" \
-"    __---   )  --_  Mesh: http://hbrouwer.github.io/mesh/              \n" \
+"    __---   )  --_  Mesh: https://github.com/hbrouwer/mesh             \n" \
 "  --       /      -_  Copyright 2012-2022 Harm Brouwer <me@hbrouwer.eu>\n" \
 " /     \x1b[1m\x1b[5;33mo\x1b[0m  (         )                                                  \n" \
 "(     \x1b[1m\x1b[5;33mo\x1b[0m   ____  \x1b[1m\x1b[5;36mo\x1b[0m    )  Saarland University                            \n" \
