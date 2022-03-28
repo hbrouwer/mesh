@@ -13,8 +13,8 @@ extensibility in mind. It comes with support for:
 
 * Weight update algorithms: steepest/gradient descent (```steepest```),
   bounded steepest descent (```bounded```) (Rohde, 2002), four flavours of
-  resilient propagation (```rprop+```, ```rprop-```, ```irprop+```,
-  ```irprop-``` (Igel & Husken, 2000), quickprop (```qprop```), (Fahlman,
+  resilient propagation (```rprop+```, ```rprop-```, ```irprop+```, and
+  ```irprop-```) (Igel & Husken, 2000), quickprop (```qprop```), (Fahlman,
   1988) and delta-bar-delta (```dbd```) (Jacobs, 1988);
 
 * Activation functions: logistic (sigmoid)  (```logistic```), bipolar
