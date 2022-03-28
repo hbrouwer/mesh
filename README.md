@@ -1,43 +1,47 @@
 # Mesh
 
-Mesh is an artificial neural network simulator, primarily designed as a
-fast, general-purpose backpropagation simulator with flexibility and
+Mesh is an artificial neural network simulator, primarily designed as
+a fast, general-purpose backpropagation simulator with flexibility and
 extensibility in mind. It comes with support for:
 
-* Different architectures: ```Feed Forward Networks (FFNs)```, ```Simple
-  Recurrent Networks (SRNs)``` (Elman, 1990), and ```Recurrent Neural
-  Networks (RNNs)```;
+* Different architectures: feed forward networks (```ffn```), simple
+  recurrent networks (```srn```) (Elman, 1990), and recurrent neural
+  networks (```rnn```);
 
-* Training algorithms: ```Backpropagation (BP)``` (Rumelhart et al., 1986a)
-  and ```Backpropagation Through Time (BPTT)``` (Rumelhart et al., 1986b);
+* Training algorithms: backpropagation (```bp```) (Rumelhart et al., 1986a)
+  and backpropagation through time (```bptt```) (Rumelhart et al., 1986b);
 
-* Weight update algorithms: ```Steepest (gradient) descent```, ```Bounded
-  steepest descent``` (Rohde, 2002), four flavours of Resilient propagation:
-  ```Rprop+```, ```Rprop-```, ```iRprop+```, ```iRprop-``` (Igel & Husken,
-  2000), ```Quickprop```, (Fahlman, 1988) and ```Delta-Bar-Delta``` (Jacobs,
-  1988);
+* Weight update algorithms: steepest/gradient descent (```steepest```),
+  bounded steepest descent (```bounded```) (Rohde, 2002), four flavours of
+  resilient propagation (```rprop+```, ```rprop-```, ```irprop+```,
+  ```irprop-``` (Igel & Husken, 2000), quickprop (```qprop```), (Fahlman,
+  1988) and delta-bar-delta (```dbd```) (Jacobs, 1988);
 
-* Activation functions: ```Logistic```, ```Bipolar sigmoid```,
-  ```Softmax```, ```Hyperbolic tangent (tanh)```, ```Linear*```
-  ```Recitified Linear Unit (ReLU)```, ```Leaky ReLU```, ```Binary ReLU
-  (bounded ReLU)```, and ```Softplus (smooth ReLU)```;
+* Activation functions: logistic (sigmoid)  (```logistic```), bipolar
+  sigmoid (```bipolar_sigmoid```), softmax (```softmax```), hyperbolic
+  tangent (```tanh```), linear (```Linear```), recitified linear
+  (```relu```), leaky rectified linear (```leaky_relu```), binary (bounded)
+  rectified linear (```binary_relu```), and softplus (smoothed rectified
+  linear) (```softplus```);
 
-* Error functions: ```Sum of squares```, ```Cross entropy```, and
-  ```Divergence```;
+* Error functions: Ssm squared error (```sum_of_squares```) , cross entropy
+  error (```cross_entropy```), and Kullback-Leibler divergence
+  (```divergence```);
 
-* Weight randomization algorithms: ```Gaussian```, ```Range```,
-  ```Nguyen-Widrow``` (Nguyen & Widrow, 1990), ```Fan-In```, and
-  ```Binary``` randomization.
+* Weight randomization algorithms: gaussian randomization (```gaussian```),
+  uniform range randomization (```range```), Nguyen-Widrow randomization
+  (```nguyen_windrow```) (Nguyen & Widrow, 1990), Fan-In randomization
+  (```fan_in```), and binary randomization (```binary```).
 
 * Multithreading (through [OpenMP](https://www.openmp.org/));
 
-* A module for navivating semantic spaces: ```Distributed Situation-state
-  Spaces (DSS)``` (Frank et al., 2003, 2009) and ```Distributional Formal
-  Semantics (DFS)``` (Venhuizen et al., 2021);
+* A module for navivating semantic spaces: Distributed Situation-state
+  Spaces (DSS) (Frank et al., 2003, 2009) and Distributional Formal
+  Semantics (DFS) (Venhuizen et al., 2021);
 
-* A module for modeling electrophysiological correlates: ```N400``` and
-  ```P600``` components of the Event-Related Potentials (ERP) signal
-  (Brouwer, 2014; Brouwer et al., 2017);
+* A module for modeling electrophysiological correlates: N400 and P600
+  components of the Event-Related Potentials (ERP) signal (Brouwer, 2014;
+  Brouwer et al., 2017);
 
 * Pretty printing of vectors and matrices (through ANSI escape codes);
 
@@ -61,16 +65,15 @@ TensorFlow are backed by Facebook and Google, respectively.
 
 ## So, why Mesh?
 
-**I learned a lot**: I built Mesh from scratch using
-classical papers as technical references (see below). I have waded through
-many slides, books, and websites, in order to put the different pieces
-together (again this was prior to the deep learning revolution, and
-hence prior to the wealth of information that has become available over the
-last few years).  I implemented various flavours of the backpropagation
-algorithm (e.g., Rprop, Quickprop, Delta-Bar-Delta), as well as
-backpropagation through time. In sum, I learned an enormous amount about
-neural networks, and for that reason alone building Mesh has been
-worthwhile.
+**I learned a lot**: I built Mesh from scratch using classical papers as
+technical references (see below). I have waded through many slides, books,
+and websites, in order to put the different pieces together (again this was
+prior to the deep learning revolution, and hence prior to the wealth of
+information that has become available over the last few years).
+I implemented various flavours of the backpropagation algorithm (e.g.,
+Rprop, Quickprop, Delta-Bar-Delta), as well as backpropagation through time.
+In sum, I learned an enormous amount about neural networks, and for that
+reason alone building Mesh has been worthwhile.
 
 **It does what I want it to do, in the way I want it to do it**: We use Mesh
 on a daily basis to run cognitive models of human language comprehension
@@ -109,9 +112,8 @@ As Mesh is fully command driven, it is recommended to use
 
 # Documentation
 
-**TODO.** Minimal documentation is available by typing ```?``` or ```help```
-within Mesh. Also, see the [example
-networks](https://github.com/hbrouwer/mesh-examples).
+Documentation is available by typing ```?``` or ```help``` within Mesh.
+Also, see the [example networks](https://github.com/hbrouwer/mesh-examples).
 
 # Examples
 
