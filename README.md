@@ -61,7 +61,7 @@ TensorFlow are backed by Facebook and Google, respectively.
 
 ## So, why Mesh?
 
-**I learned a lot.**: I built Mesh from scratch using
+**I learned a lot**: I built Mesh from scratch using
 classical papers as technical references (see below). I have waded through
 many slides, books, and websites, in order to put the different pieces
 together (again this was prior to the deep learning revolution, and
