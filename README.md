@@ -1,3 +1,15 @@
+```
+         ______
+    __---   )  --_  Mesh: https://github.com/hbrouwer/mesh
+  --       /      -_  Copyright 2012-2022 Harm Brouwer <me@hbrouwer.eu>
+ /     o  (         )
+(     o   ____  o    )  Saarland University
+(    o _--     o      )  Department of Language Science and Technology
+ (____/       o _____)  Psycholinguistics Group
+      (____  ---  )
+           \ \-__/  Licensed under the Apache License, Version 2.0
+```
+
 # Mesh
 
 Mesh is an artificial neural network simulator, primarily designed as
