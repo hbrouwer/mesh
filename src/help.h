@@ -97,7 +97,7 @@
 "set LogisicFSC <name> <val>    Set logistic flat spot correction       \n" \
 "set LogisicGain <name> <val>   Set logistic gain coefficient           \n" \
 "                                                                       \n" \
-"showVector <type>              Show group vector                       \n" \
+"showVector <type> <name>       Show group vector                       \n" \
 "                               (type = [units|error])                  \n" \
 "                                                                       \n" \
 "## Other relevant topics                                               \n" \
@@ -163,7 +163,7 @@
 "freezeProjection <from> <to>   Freeze projection weights               \n" \
 "unfreezeProjection <from> <to> Unfreeze projection weights             \n" \
 "                                                                       \n" \
-"showMatrix <type>              Show projection matrix                  \n" \
+"showMatrix <type> <from> <to>  Show projection matrix                  \n" \
 "                               (type = [weights|gradients|dynamics])   \n" \
 "                                                                       \n" \
 "## Other relevant topics                                               \n" \
