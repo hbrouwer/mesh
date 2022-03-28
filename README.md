@@ -14,12 +14,12 @@ extensibility in mind. It comes with support for:
 * Weight update algorithms: steepest/gradient descent (```steepest```),
   bounded steepest descent (```bounded```) (Rohde, 2002), four flavours of
   resilient propagation (```rprop+```, ```rprop-```, ```irprop+```, and
-  ```irprop-```) (Igel & Husken, 2000), quickprop (```qprop```), (Fahlman,
-  1988) and delta-bar-delta (```dbd```) (Jacobs, 1988);
+  ```irprop-```) (Igel & Husken, 2000), quickprop (```qprop```) (Fahlman,
+  1988), and delta-bar-delta (```dbd```) (Jacobs, 1988);
 
 * Activation functions: logistic (sigmoid)  (```logistic```), bipolar
   sigmoid (```bipolar_sigmoid```), softmax (```softmax```), hyperbolic
-  tangent (```tanh```), linear (```Linear```), recitified linear
+  tangent (```tanh```), linear (```linear```), recitified linear
   (```relu```), leaky rectified linear (```leaky_relu```), binary (bounded)
   rectified linear (```binary_relu```), and softplus (smoothed rectified
   linear) (```softplus```);
@@ -28,10 +28,9 @@ extensibility in mind. It comes with support for:
   error (```cross_entropy```), and Kullback-Leibler divergence
   (```divergence```);
 
-* Weight randomization algorithms: gaussian randomization (```gaussian```),
-  uniform range randomization (```range```), Nguyen-Widrow randomization
-  (```nguyen_windrow```) (Nguyen & Widrow, 1990), Fan-In randomization
-  (```fan_in```), and binary randomization (```binary```).
+* Weight randomization algorithms: gaussian (```gaussian```), uniform range
+  (```range```), Nguyen-Widrow (```nguyen_windrow```) (Nguyen & Widrow,
+  1990), Fan-In (```fan_in```), and binary (```binary```).
 
 * Multithreading (through [OpenMP](https://www.openmp.org/));
 
