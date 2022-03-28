@@ -1,13 +1,13 @@
 ```
          ______
-    __---   )  --_  Mesh: https://github.com/hbrouwer/mesh
-  --       /      -_  Copyright 2012-2022 Harm Brouwer <me@hbrouwer.eu>
- /     o  (         )
-(     o   ____  o    )  Saarland University
-(    o _--     o      )  Department of Language Science and Technology
- (____/       o _____)  Psycholinguistics Group
+    __---   )  --_      - - - - - - - - - - - - - - - - - - - - - - - -
+  --       /      -_
+ /     o  (         )   Mesh: https://github.com/hbrouwer/mesh
+(     o   ____  o    )  (c) 2012-2022 Harm Brouwer <me@hbrouwer.eu>
+(    o _--     o      )
+ (____/       o _____)  Licensed under the Apache License, Version 2.0
       (____  ---  )
-           \ \-__/  Licensed under the Apache License, Version 2.0
+           \ \-__/      - - - - - - - - - - - - - - - - - - - - - - - -
 ```
 
 # Mesh
