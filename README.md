@@ -56,8 +56,8 @@ extensibility in mind. It comes with support for:
 
 * Pretty printing of vectors and matrices (through ANSI escape codes);
 
-* And finally, it is completely self-contained: it is fully dependency free
-  and you only need a C99 compiler to build Mesh.
+* And finally, it is free of dependencies: you only need a C99-compliant
+  compiler to build Mesh.
 
 ## What MESH is *not*
 
@@ -88,7 +88,7 @@ reason alone building Mesh has been worthwhile.
 
 **It does what I want it to do, in the way I want it to do it**: We use Mesh
 on a daily basis to run cognitive models of human language comprehension
-(e.g., it is used in Brouwer et al., 2017 as well as Venhuizen et al.,
+(e.g., it is used in Brouwer et al., 2017 as well in Venhuizen et al.,
 2021).
 
 **It is great for teaching**: Mesh is fully command driven, and hence ideal
