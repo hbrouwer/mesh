@@ -132,6 +132,52 @@ networks](https://github.com/hbrouwer/mesh-examples).
 Various psycholinguistic connectionist models are available as [example
 networks](https://github.com/hbrouwer/mesh-examples).
 
+# A note on multithreading
+
+When Mesh is compiled with `-DOPENMP=ON` (default), multithreading is
+implemented through [OpenMP](https://www.openmp.org/), and controlled with
+its [environment
+variables](https://www.openmp.org/spec-html/5.0/openmpch6.html). For
+example, the following limits the number of threads, and enables automatic
+scheduling:
+
+```
+$ OMP_NUM_THREADS=2 OMP_SCHEDULE=auto ./mesh
+Mesh, version 0.1.0: https://github.com/hbrouwer/mesh (`?` for help)
++ [ OpenMP ]: 10 processor(s) available (2 thread(s) max)
++ [ OpenMP ]: Auto schedule
+  [:>
+```
+
+Note that in order to use multithreading, you need to activate it in Mesh as
+well for a given network using `toggleMultithreading` (default: off):
+
+```
+$ OMP_NUM_THREADS=2 mesh plaut.mesh
+Mesh, version 0.1.0: https://github.com/hbrouwer/mesh (`?` for help)
++ [ OpenMP ]: 10 processor(s) available (2 thread(s) max)
++ [ OpenMP ]: Dynamic schedule (chunk size: 1)
+...
+> Loaded file                    [ plaut.mesh ]
+  [plaut:train> toggleMultithreading
+> Toggled multithreading         [ on ]
+```
+
+You can inspect the multithreading status of an active network using
+`inspect`:
+
+```
+  [plaut:train> inspect
+| Name:                          plaut
+| Type:                          ffn
+...
+| Multithreading enabled:        true
+| Processor(s) available:        10
+| Maximum #threads:              2
+| Schedule:                      dynamic
+| Chunk size                     1
+```
+
 # References
 
 Brouwer, H. (2014). The Electrophysiology of Language Comprehension:
