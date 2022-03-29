@@ -84,9 +84,10 @@ and [Google](https://www.google.com/), respectively.
 technical references. I have waded through many slides, books, and websites,
 in order to put the different pieces together. Again this was prior to the
 deep learning revolution, and hence prior to the wealth of information that
-has become available over the last few years. As such, I learned an enormous
-amount about neural networks, and for that reason alone building Mesh has
-been worthwhile.
+has become available over the last few years. Indeed, as the late Jeffrey L.
+Elman (author of [tlearn](https://crl.ucsd.edu/innate/tlearn.html)) pointed
+out to me, I learned an enormous amount about neural networks by
+implementing Mesh, and for that reason alone it has been worthwhile.
 
 **I know what it does and why it does it**: We use Mesh on a daily basis to
 run cognitive models of human language comprehension. In Brouwer et al.
