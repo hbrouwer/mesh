@@ -78,24 +78,28 @@ and [Google](https://www.google.com/), respectively.
 
 ## So, why Mesh?
 
+> "What I cannot create, I do not understand“ -Richard Feynman
+
 **I learned a lot**: I built Mesh from scratch using classical papers as
-technical references (see below). I have waded through many slides, books,
-and websites, in order to put the different pieces together (again this was
-prior to the deep learning revolution, and hence prior to the wealth of
-information that has become available over the last few years).
-I implemented various flavours of the backpropagation algorithm (e.g.,
-Rprop, Quickprop, Delta-Bar-Delta), as well as backpropagation through time.
-In sum, I learned an enormous amount about neural networks, and for that
-reason alone building Mesh has been worthwhile.
+technical references. I have waded through many slides, books, and websites,
+in order to put the different pieces together. Again this was prior to the
+deep learning revolution, and hence prior to the wealth of information that
+has become available over the last few years. As such, I learned an enormous
+amount about neural networks, and for that reason alone building Mesh has
+been worthwhile.
 
-**It does what I want it to do, in the way I want it to do it**: We use Mesh
-on a daily basis to run cognitive models of human language comprehension
-(e.g., it is used in Brouwer et al., 2017 as well in Venhuizen et al.,
-2021).
+**I know what it does and why it does it**: We use Mesh on a daily basis to
+run cognitive models of human language comprehension. In Brouwer et al.
+(2017), for instance, it is used to model electrophysiological correlates of
+online comprehension, and in Venhuizen et al. (2021) we use it to navigate
+Distributional Formal Semantics (DFS) spaces.
 
-**It is great for teaching**: Mesh is fully command driven, and hence ideal
-for teaching (e.g., we use it to teach [Connectionist Language
-Processing](https://hbrouwer.github.io/courses/clp21/)). 
+**It is great for teaching connectionism**: Mesh is fully command driven,
+and hence ideal for teaching students about neural networks, without
+requiring them to do any programming. It has for instance been used to teach
+[Connectionist Language
+Processing](https://hbrouwer.github.io/courses/clp21/)) to students
+interested in cognitive science and psycholinguistics.
 
 # Building and running Mesh
 
@@ -131,7 +135,8 @@ networks](https://github.com/hbrouwer/mesh-examples).
 
 # Examples
 
-Various psycholinguistic connectionist models are available as [example
+Simple boolean functions, as well as various psycholinguistic connectionist
+models are available as [example
 networks](https://github.com/hbrouwer/mesh-examples).
 
 # A note on multithreading
