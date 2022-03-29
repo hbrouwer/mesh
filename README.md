@@ -72,7 +72,9 @@ before the deep learning revolution, and hence before large-scale deep
 learning frameworks like PyTorch and became available. Indeed, if you are
 interested in deep learning, you are probably better off with such a widely
 supported framework. Remember, Mesh is a one-man show, whereas PyTorch and
-TensorFlow are backed by Facebook and Google, respectively.
+TensorFlow are backed by
+[Facebook](https://www.facebook.com/)/[Meta](https://about.facebook.com/meta)
+and [Google](https://www.google.com/), respectively.
 
 ## So, why Mesh?
 
