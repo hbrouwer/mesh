@@ -123,8 +123,9 @@ As Mesh is fully command driven, it is recommended to use
 
 # Documentation
 
-Documentation is available by typing ```?``` or ```help``` within Mesh.
-Also, see the [example networks](https://github.com/hbrouwer/mesh-examples).
+Documentation is available within Mesh, by typing ```?``` or ```help```, as
+well as [here](docs/welcome.md) in Markdown format. Also, see the [example
+networks](https://github.com/hbrouwer/mesh-examples).
 
 # Examples
 
