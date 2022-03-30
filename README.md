@@ -14,7 +14,11 @@
 
 Mesh is an artificial neural network simulator, primarily designed as
 a fast, general-purpose backpropagation simulator with flexibility and
-extensibility in mind. It comes with support for:
+extensibility in mind. 
+
+## Features
+
+Mesh comes with support for:
 
 * Different architectures: feed forward networks (```ffn```), simple
   recurrent networks (```srn```) (Elman, 1990), and recurrent neural
