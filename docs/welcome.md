@@ -20,7 +20,7 @@ help on a specific topic. Type `help topics` for a full list of topics.
 Topics to start with include:
 
 
-* [about]                        Show version and copyright information
+* [about](about.md)                        Show version and copyright information
 
 * [networks](networks.md)                     Creating different network architectures
 

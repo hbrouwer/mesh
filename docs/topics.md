@@ -4,7 +4,7 @@
 ## General
 
 
-* [about]                        Show version and copyright information
+* [about](about.md)                        Show version and copyright information
 
 * [activation](activation.md)                   Activation functions
 

@@ -34,8 +34,8 @@ def parse_topics(lines):
         topic = re.search("#define TOPIC_(.+) ", line)
         if (topic):
             topic = topic.group(1)
-            # skip 'ABOUT' and 'ABOOT'
-            if (topic != "ABOUT" and topic != "ABOOT"):
+            # skip 'ABOOT'
+            if topic != "ABOOT":
                 topics[topic] = []
     return topics
 
@@ -50,7 +50,7 @@ def parse_topic_texts(lines, topics):
             while True:
                 i = i + 1
                 line = re.search(r'"(.+)\\n" \\', lines[i])
-                if (line):
+                if line:
                     line = parse_xref(line.group(1), topics)
                     topics[topic].append(line)
                 else:
@@ -71,13 +71,20 @@ def write_markdown(topics):
     for topic in topics.keys():
         with open (topic.lower() + ".md", "w") as f:
             lines = topics[topic]
-            for i in range(0, len(lines)):
-                # strip all leading and trailing whitespace, 
-                f.write(lines[i].strip() + "\n")
-                # if a next line exista, and does not start with a 
-                # whitespace, add a newline for proper formatting
-                if (i + 1 < len(lines) and not re.match("^\s", lines[i + 1])):
-                    f.write("\n")
+            # the 'ABOUT' topic is special
+            if topic == 'ABOUT':
+                f.write("```\n")
+                for line in lines:
+                    f.write(line + "\n")
+                f.write("```\n")
+            else:
+                for i in range(0, len(lines)):
+                    # strip all leading and trailing whitespace, 
+                    f.write(lines[i].strip() + "\n")
+                    # if a next line exists, and does not start with a 
+                    # whitespace, add a newline for proper formatting
+                    if (i + 1 < len(lines) and not re.match("^\s", lines[i + 1])):
+                        f.write("\n")
 
 if __name__ == "__main__":
     lines = read_help_header()
