@@ -71,8 +71,8 @@ Mesh comes with support for:
 [TensorFlow](https://www.tensorflow.org/). Mesh is a simulator that focuses
 on traditional connectionist / Parallel Distributed Processing (PDP)
 architectures and learning algorithms. It was developed along with my PhD
-dissertation in cognitive neuroscience [(Brouwer,
-2014)](https://hbrouwer.github.io/papers/Brouwer2014ElectrophysiologyLanguage.pdf),
+dissertation in cognitive neuroscience ([Brouwer,
+2014](https://hbrouwer.github.io/papers/Brouwer2014ElectrophysiologyLanguage.pdf)),
 in which I used it to build a neurocomputational model of the
 electrophysiology of language comprehension (Brouwer et al., 2017). Mesh is
 a one-man show; I started developing Mesh before the deep learning
