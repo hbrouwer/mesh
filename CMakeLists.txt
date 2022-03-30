@@ -18,8 +18,8 @@ cmake_minimum_required(VERSION 3.4)
 
 project(Mesh)
 
-option(FAST_EXP "Enable fast exponential"       OFF)
-option(OPENMP   "Enable OpenMP support"         ON)
+option(FAST_EXP "Enable Fast exponential" OFF)
+option(OPENMP   "Enable OpenMP support"   ON)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -D_POSIX_C_SOURCE=200809L")
 
