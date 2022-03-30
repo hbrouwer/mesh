@@ -20,33 +20,30 @@ extensibility in mind.
 
 Mesh comes with support for:
 
-* Different architectures: feed forward networks (```ffn```), simple
-  recurrent networks (```srn```) (Elman, 1990), and recurrent neural
-  networks (```rnn```);
+* Different architectures: feed forward networks (`ffn`), simple recurrent
+  networks (`srn`) (Elman, 1990), and recurrent neural networks (`rnn`);
 
-* Training algorithms: backpropagation (```bp```) (Rumelhart et al., 1986a)
-  and backpropagation through time (```bptt```) (Rumelhart et al., 1986b);
+* Training algorithms: backpropagation (`bp`) (Rumelhart et al., 1986a) and
+  backpropagation through time (`bptt`) (Rumelhart et al., 1986b);
 
-* Weight update algorithms: steepest/gradient descent (```steepest```),
-  bounded steepest descent (```bounded```) (Rohde, 2002), four flavours of
-  resilient propagation (```rprop+```, ```rprop-```, ```irprop+```, and
-  ```irprop-```) (Igel & Husken, 2000), quickprop (```qprop```) (Fahlman,
-  1988), and delta-bar-delta (```dbd```) (Jacobs, 1988);
+* Weight update algorithms: steepest/gradient descent (`steepest`), bounded
+  steepest descent (`bounded`) (Rohde, 2002), four flavours of resilient
+  propagation (`rprop+`, `rprop-`, `irprop+`, and `irprop-`) (Igel & Husken,
+  2000), quickprop (`qprop`) (Fahlman, 1988), and delta-bar-delta (`dbd`)
+  (Jacobs, 1988);
 
-* Activation functions: logistic (sigmoid)  (```logistic```), bipolar
-  sigmoid (```bipolar_sigmoid```), softmax (```softmax```), hyperbolic
-  tangent (```tanh```), linear (```linear```), recitified linear
-  (```relu```), leaky rectified linear (```leaky_relu```), binary (bounded)
-  rectified linear (```binary_relu```), and softplus (smoothed rectified
-  linear) (```softplus```);
+* Activation functions: logistic (sigmoid)  (`logistic`), bipolar sigmoid
+  (`bipolar_sigmoid`), softmax (`softmax`), hyperbolic tangent (`tanh`),
+  linear (`linear`), recitified linear (`relu`), leaky rectified linear
+  (`leaky_relu`), binary (bounded) rectified linear (`binary_relu`), and
+  softplus (smoothed rectified linear) (`softplus`);
 
-* Error functions: Ssm squared error (```sum_of_squares```) , cross entropy
-  error (```cross_entropy```), and Kullback-Leibler divergence
-  (```divergence```);
+* Error functions: Ssm squared error (`sum_of_squares`) , cross entropy
+  error (`cross_entropy`), and Kullback-Leibler divergence (`divergence`);
 
-* Weight randomization algorithms: gaussian (```gaussian```), uniform range
-  (```range```), Nguyen-Widrow (```nguyen_windrow```) (Nguyen & Widrow,
-  1990), Fan-In (```fan_in```), and binary (```binary```).
+* Weight randomization algorithms: gaussian (`gaussian`), uniform range
+  (`range`), Nguyen-Widrow (`nguyen_windrow`) (Nguyen & Widrow, 1990),
+  Fan-In (`fan_in`), and binary (`binary`).
 
 * Multithreading (through [OpenMP](https://www.openmp.org/));
 
@@ -116,8 +113,8 @@ $ make
 ```
 
 Note that you need an [OpenMP](https://www.openmp.org/)-enabled compiler if
-you want to enable multithreading. Passing the flag ```-DOPENMP=OFF``` to
-CMake disables multithreading.
+you want to enable multithreading. Passing the flag `-DOPENMP=OFF` to CMake
+disables multithreading.
 
 You can then run Mesh as:
 
@@ -134,8 +131,8 @@ As Mesh is fully command driven, it is recommended to use
 
 # Documentation
 
-Documentation is available within Mesh, by typing ```?``` or ```help```, as
-well as [here](docs/welcome.md) in Markdown format. Also, see the [example
+Documentation is available within Mesh, by typing `?` or `help`, as well as
+[here](docs/welcome.md) in Markdown format. Also, see the [example
 networks](https://github.com/hbrouwer/mesh-examples).
 
 # Examples
