@@ -1306,7 +1306,7 @@ void bp_update_projection_dbd(struct network *n, struct group *g,
                                 + DBD_BASE * p->prev_gradients->elements[i][i];
 
                         /*
-                         * Store a copy of the current exponentional
+                         * Store a copy of the current exponential
                          * average.
                          */
                         p->prev_gradients->elements[i][j] = exp_average;
