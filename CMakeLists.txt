@@ -18,7 +18,7 @@ cmake_minimum_required(VERSION 3.4)
 
 project(Mesh)
 
-option(FAST_EXP "Enable fast exponentional"     OFF)
+option(FAST_EXP "Enable fast exponential"       OFF)
 option(OPENMP   "Enable OpenMP support"         ON)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -D_POSIX_C_SOURCE=200809L")
@@ -55,7 +55,7 @@ set(Mesh_SOURCE_FILES
 add_executable(mesh ${Mesh_SOURCE_FILES})
 target_link_libraries(mesh m)
 
-#### fast exponentional ####
+#### Fast exponential ####
 
 if(FAST_EXP)
         add_definitions(-DFAST_EXP)
@@ -67,6 +67,5 @@ if(OPENMP)
         set_target_properties(
                 mesh PROPERTIES
                 COMPILE_FLAGS -fopenmp
-                LINK_FLAGS    -fopenmp
-        )
+                LINK_FLAGS    -fopenmp)
 endif(OPENMP)
