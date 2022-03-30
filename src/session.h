@@ -28,7 +28,7 @@ struct session
         struct array *networks;     /* networks in this session */
         struct network *anp;        /* active network pointer */
         bool pprint;                /* flag for pretty printing */
-        enum color_scheme scheme;   /* pretty priniting scheme */
+        enum color_scheme scheme;   /* pretty printing scheme */
 };
 
 struct session *create_session();
