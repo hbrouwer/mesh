@@ -111,11 +111,7 @@ $ cmake .
 $ make
 ```
 
-Note that you need an [OpenMP](https://www.openmp.org/)-enabled compiler if
-you want to enable multithreading. Passing the flag `-DOPENMP=OFF` to CMake
-disables multithreading.
-
-After building, you can run Mesh as:
+You can then run Mesh as:
 
 ```
 $ ./mesh
@@ -183,6 +179,9 @@ You can inspect the multithreading status of an active network using
 | Schedule:                      dynamic
 | Chunk size                     1
 ```
+
+To compile Mesh without multithreading, pass the flag `-DOPENMP=OFF` to
+CMake.
 
 # References
 
