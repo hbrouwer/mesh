@@ -33,6 +33,7 @@
 "           \\ \\-__/      - - - - - - - - - - - - - - - - - - - - - - - - -\n" \
 "                                                                         \n" \
 
+/* for Matt ... */
 #define TOPIC_ABOOT \
 "         ______                                                          \n" \
 "    __---   )  --_      - - - - - - - - - - - - - - - - - - - - - - - - -\n" \
@@ -54,7 +55,7 @@
 "## Functions                                                             \n" \
 "                                                                         \n" \
 "* `logistic`                     Logistic (sigmoid) function             \n" \
-"* `bipolar_sigmoid`              A bipolar sigmoid function              \n" \
+"* `bipolar_sigmoid`              Bipolar sigmoid function                \n" \
 "* `softmax`                      Softmax activation function             \n" \
 "* `tanh`                         Hyperbolic tangent                      \n" \
 "* `linear`                       Linear function                         \n" \
@@ -62,6 +63,10 @@
 "* `relu`                         Rectified linear function               \n" \
 "* `leaky_relu`                   Leaky rectified linear function         \n" \
 "* `binary_relu`                  Binary rectified linear function        \n" \
+"                                                                         \n" \
+"## Other relevant topics                                                 \n" \
+"                                                                         \n" \
+"* [groups]                       Creating groups                         \n" \
 
 #define TOPIC_CLASSIFICATION \
 "# Classification                                                         \n" \
@@ -114,11 +119,11 @@
 "## Learning algorithms and parameters                                    \n" \
 "                                                                         \n" \
 "* `bp`                           Backpropagation                         \n" \
-"`set TargetRadius <val>`         Adjust target if output is within radius\n" \
-"`set ZeroErrorRadius <val>`      No error if output is withing radius    \n" \
+"`set TargetRadius <value>`       Adjust target if output is within radius\n" \
+"`set ZeroErrorRadius <value>`    No error if output is withing radius    \n" \
 "* `bptt`                         Backpropagation Through Time (BPTT)     \n" \
 "`set BackTicks <value>`          Sets number of backward time ticks      \n" \
-"(also see `bp`)                                                          \n" \
+"(see `bp`)                                                               \n" \
 "                                                                         \n" \
 "## Other relevant topics                                                 \n" \
 "                                                                         \n" \
@@ -143,7 +148,7 @@
 "                                 (id = `[<name>|<number>]`)              \n" \
 "                                                                         \n" \
 "`toggleResetContexts`            Toggle context resetting                \n" \
-"`set InitContextUnits <val>`     Activation of initial context units     \n" \
+"`set InitContextUnits <value>`   Activation of initial context units     \n" \
 "                                                                         \n" \
 "## Other relevant topics                                                 \n" \
 "                                                                         \n" \
@@ -239,7 +244,7 @@
 "`test`                           Test network on all items               \n" \
 "`testItem <name>`                Test network on specified item          \n" \
 "`set TargetRadius <value>`       Adjust target if output is within radius\n" \
-"`set ZeroErrorRadius <val>`      No error if output is withing radius    \n" \
+"`set ZeroErrorRadius <value>`    No error if output is withing radius    \n" \
 "`set ErrorThreshold <value>`     Error threshold to reach for each item  \n" \
 "                                                                         \n" \
 "`recordUnits <group> <file>`     Record unit activations to file         \n" \
@@ -286,11 +291,11 @@
 "                                                                         \n" \
 "## Training parameters                                                   \n" \
 "                                                                         \n" \
-"`set BatchSize <val>`            #examples after which to update weights \n" \
+"`set BatchSize <value>`          #examples after which to update weights \n" \
 "                                 (default is #items in active set)       \n" \
-"`set MaxEpochs <val>`            Maximum number of training epochs       \n" \
-"`set ErrorThreshold <val>`       Stop if error drops below threshold     \n" \
-"`set ReportAfter <val>`          Report progress after #epochs           \n" \
+"`set MaxEpochs <value>`          Maximum number of training epochs       \n" \
+"`set ErrorThreshold <value>`     Stop if error drops below threshold     \n" \
+"`set ReportAfter <value>`        Report progress after #epochs           \n" \
 "                                                                         \n" \
 "## Other relevant topics                                                 \n" \
 "                                                                         \n" \
@@ -305,29 +310,29 @@
 "## Update algorithms and parameters                                      \n" \
 "                                                                         \n" \
 "* `steepest`                     Steepest (gradient) descent             \n" \
-"`set LearningRate <val>`         Set learning rate (LR) coefficient      \n" \
-"`set LRScaleFactor <val>`        Set LR scaling factor                   \n" \
-"`set LRScaleAfter <val>`         Scale LR after \%epochs                 \n" \
-"`set Momentum <val>`             Set momentenum (MN) coefficient         \n" \
-"`set MNScaleFactor <val>`        Set MN scaling factor                   \n" \
-"`set MNScaleAfter <val>`         Scale MN after \%epochs                 \n" \
-"`set WeightDecay <val>`          Set weight decay (WD) coefficient       \n" \
-"`set WDScaleFactor <val>`        Set WD scaling factor                   \n" \
-"`set WDScaleAfter <val>`         Scale WD after \%epochs                 \n" \
+"`set LearningRate <value>`       Set learning rate (LR) coefficient      \n" \
+"`set LRScaleFactor <value>`      Set LR scaling factor                   \n" \
+"`set LRScaleAfter <value>`       Scale LR after \%epochs                 \n" \
+"`set Momentum <value>`           Set momentenum (MN) coefficient         \n" \
+"`set MNScaleFactor <value>`      Set MN scaling factor                   \n" \
+"`set MNScaleAfter <value>`       Scale MN after \%epochs                 \n" \
+"`set WeightDecay <value>`        Set weight decay (WD) coefficient       \n" \
+"`set WDScaleFactor <value>`      Set WD scaling factor                   \n" \
+"`set WDScaleAfter <value>`       Scale WD after \%epochs                 \n" \
 "* `bounded`                      Bounded steepest descent                \n" \
 "(see `steepest`)                                                         \n" \
 "* `rprop+|irprop+`               (modified) Rprop (+ weight backtracking)\n" \
-"`set RpropInitUpdate <val>`      Set initial update value for Rprop      \n" \
-"`set RpropEtaMinus <val>`        Set Eta- for Rprop                      \n" \
-"`set RpropEtaPlus <val>`         Set Eta+ for Rprop                      \n" \
+"`set RpropInitUpdate <value>`    Set initial update value for Rprop      \n" \
+"`set RpropEtaMinus <value>`      Set Eta- for Rprop                      \n" \
+"`set RpropEtaPlus <value>`       Set Eta+ for Rprop                      \n" \
 "* `rprop-|irprop-`               (modified) Rprop (- weight backtracking)\n" \
-"(see `rprop+|irprop+` and also `steepest`)                               \n" \
+"(see `rprop+|irprop+` and `steepest`)                                    \n" \
 "* `qprop`                        Quick propagation                       \n" \
 "(see `steepest`)                                                         \n" \
 "* `dbd`                          Delta-Bar-Delta                         \n" \
-"`set DBDRateIncrement <val>`     Set Kappa for Delta-Bar-Delta           \n" \
-"`set DBDRateDecrement <val>`     Set Phi for Delta-Bar-Delta             \n" \
-"(also see `steepest`)                                                    \n" \
+"`set DBDRateIncrement <value>`   Set Kappa for Delta-Bar-Delta           \n" \
+"`set DBDRateDecrement <value>`   Set Phi for Delta-Bar-Delta             \n" \
+"(see `steepest`)                                                         \n" \
 "                                                                         \n" \
 "## Other relevant topics                                                 \n" \
 "                                                                         \n" \
@@ -395,6 +400,18 @@
 "                                 each word, given a sentence set         \n" \
 "`dssWriteWordInfo <set> <fn>`    Write information-theoretic metrics for \n" \
 "                                 each word of each sentence to a file    \n" \
+"                                                                         \n" \
+"## Further reading                                                       \n" \
+"                                                                         \n" \
+"Frank, S. L., Koppen, M., Noordman, L. G., & Vonk, W. (2003). Modeling   \n" \
+"    knowledge-based inferences in story comprehension. Cognitive Science,\n" \
+"    27(6), 875–910.                                                      \n" \
+"                                                                         \n" \
+"Venhuizen, N. J., Crocker, M. W., and Brouwer, H. (2019).                \n" \
+"    Expectation-based Comprehension: Modeling the Interaction of World   \n" \
+"    Knowledge and Linguistic Experience. Discourse Processes, 56:3,      \n" \
+"    229-255.                                                             \n" \
+
 
 #define TOPIC_MODULE_ERP \
 "# Event-Related brain Potentials (ERPs)                                  \n" \
@@ -405,6 +422,12 @@
 "`erpWriteValues <n4> <p6> <fn>`  Derive N400 and P600 estimates from the \n" \
 "                                 specified generators, and write values  \n" \
 "                                 for each word of each sentence to file  \n" \
+"                                                                         \n" \
+"## Further reading                                                       \n" \
+"                                                                         \n" \
+"Brouwer, H., Crocker, M. W., Venhuizen, N. J., and Hoeks, J. C. J.       \n" \
+"    (2017). A Neurocomputational Model of the N400 and the P600 in       \n" \
+"    Language Processing. Cognitive Science, 41(S6), 1318-1352.           \n" \
 
 struct help
 {

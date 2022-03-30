@@ -9,23 +9,23 @@
 
 * `steepest`                     Steepest (gradient) descent
 
-`set LearningRate <val>`         Set learning rate (LR) coefficient
+`set LearningRate <value>`       Set learning rate (LR) coefficient
 
-`set LRScaleFactor <val>`        Set LR scaling factor
+`set LRScaleFactor <value>`      Set LR scaling factor
 
-`set LRScaleAfter <val>`         Scale LR after \%epochs
+`set LRScaleAfter <value>`       Scale LR after \%epochs
 
-`set Momentum <val>`             Set momentenum (MN) coefficient
+`set Momentum <value>`           Set momentenum (MN) coefficient
 
-`set MNScaleFactor <val>`        Set MN scaling factor
+`set MNScaleFactor <value>`      Set MN scaling factor
 
-`set MNScaleAfter <val>`         Scale MN after \%epochs
+`set MNScaleAfter <value>`       Scale MN after \%epochs
 
-`set WeightDecay <val>`          Set weight decay (WD) coefficient
+`set WeightDecay <value>`        Set weight decay (WD) coefficient
 
-`set WDScaleFactor <val>`        Set WD scaling factor
+`set WDScaleFactor <value>`      Set WD scaling factor
 
-`set WDScaleAfter <val>`         Scale WD after \%epochs
+`set WDScaleAfter <value>`       Scale WD after \%epochs
 
 * `bounded`                      Bounded steepest descent
 
@@ -33,15 +33,15 @@
 
 * `rprop+|irprop+`               (modified) Rprop (+ weight backtracking)
 
-`set RpropInitUpdate <val>`      Set initial update value for Rprop
+`set RpropInitUpdate <value>`    Set initial update value for Rprop
 
-`set RpropEtaMinus <val>`        Set Eta- for Rprop
+`set RpropEtaMinus <value>`      Set Eta- for Rprop
 
-`set RpropEtaPlus <val>`         Set Eta+ for Rprop
+`set RpropEtaPlus <value>`       Set Eta+ for Rprop
 
 * `rprop-|irprop-`               (modified) Rprop (- weight backtracking)
 
-(see `rprop+|irprop+` and also `steepest`)
+(see `rprop+|irprop+` and `steepest`)
 
 * `qprop`                        Quick propagation
 
@@ -49,11 +49,11 @@
 
 * `dbd`                          Delta-Bar-Delta
 
-`set DBDRateIncrement <val>`     Set Kappa for Delta-Bar-Delta
+`set DBDRateIncrement <value>`   Set Kappa for Delta-Bar-Delta
 
-`set DBDRateDecrement <val>`     Set Phi for Delta-Bar-Delta
+`set DBDRateDecrement <value>`   Set Phi for Delta-Bar-Delta
 
-(also see `steepest`)
+(see `steepest`)
 
 
 ## Other relevant topics

@@ -8,15 +8,15 @@
 
 * `bp`                           Backpropagation
 
-`set TargetRadius <val>`         Adjust target if output is within radius
+`set TargetRadius <value>`       Adjust target if output is within radius
 
-`set ZeroErrorRadius <val>`      No error if output is withing radius
+`set ZeroErrorRadius <value>`    No error if output is withing radius
 
 * `bptt`                         Backpropagation Through Time (BPTT)
 
 `set BackTicks <value>`          Sets number of backward time ticks
 
-(also see `bp`)
+(see `bp`)
 
 
 ## Other relevant topics

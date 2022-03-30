@@ -9,7 +9,7 @@
 
 * `logistic`                     Logistic (sigmoid) function
 
-* `bipolar_sigmoid`              A bipolar sigmoid function
+* `bipolar_sigmoid`              Bipolar sigmoid function
 
 * `softmax`                      Softmax activation function
 
@@ -24,3 +24,9 @@
 * `leaky_relu`                   Leaky rectified linear function
 
 * `binary_relu`                  Binary rectified linear function
+
+
+## Other relevant topics
+
+
+* [groups](groups.md)                       Creating groups

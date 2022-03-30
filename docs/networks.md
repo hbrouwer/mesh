@@ -29,7 +29,7 @@
 
 `toggleResetContexts`            Toggle context resetting
 
-`set InitContextUnits <val>`     Activation of initial context units
+`set InitContextUnits <value>`   Activation of initial context units
 
 
 ## Other relevant topics

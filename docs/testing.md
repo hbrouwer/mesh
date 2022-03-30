@@ -7,7 +7,7 @@
 
 `set TargetRadius <value>`       Adjust target if output is within radius
 
-`set ZeroErrorRadius <val>`      No error if output is withing radius
+`set ZeroErrorRadius <value>`    No error if output is withing radius
 
 `set ErrorThreshold <value>`     Error threshold to reach for each item
 
