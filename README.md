@@ -20,88 +20,86 @@ extensibility in mind.
 
 Mesh comes with support for:
 
-* Different architectures: feed forward networks (`ffn`), simple recurrent
-  networks (`srn`) (Elman, 1990), and recurrent neural networks (`rnn`);
+* **Different architectures:** feed forward networks (`ffn`), simple
+  recurrent networks (`srn`) (Elman, 1990), and recurrent neural networks
+  (`rnn`);
 
-* Training algorithms: backpropagation (`bp`) (Rumelhart et al., 1986a) and
-  backpropagation through time (`bptt`) (Rumelhart et al., 1986b);
+* **Training algorithms:** backpropagation (`bp`) (Rumelhart et al., 1986a)
+  and backpropagation through time (`bptt`) (Rumelhart et al., 1986b);
 
-* Weight update algorithms: steepest/gradient descent (`steepest`), bounded
-  steepest descent (`bounded`) (Rohde, 2002), four flavours of resilient
-  propagation (`rprop+`, `rprop-`, `irprop+`, and `irprop-`) (Igel & Husken,
-  2000), quickprop (`qprop`) (Fahlman, 1988), and delta-bar-delta (`dbd`)
-  (Jacobs, 1988);
+* **Weight update algorithms:** steepest/gradient descent (`steepest`),
+  bounded steepest descent (`bounded`) (Rohde, 2002), four flavours of
+  resilient propagation (`rprop+`, `rprop-`, `irprop+`, and `irprop-`) (Igel
+  & Husken, 2000), quickprop (`qprop`) (Fahlman, 1988), and delta-bar-delta
+  (`dbd`) (Jacobs, 1988);
 
-* Activation functions: logistic (sigmoid)  (`logistic`), bipolar sigmoid
-  (`bipolar_sigmoid`), softmax (`softmax`), hyperbolic tangent (`tanh`),
-  linear (`linear`), recitified linear (`relu`), leaky rectified linear
-  (`leaky_relu`), binary (bounded) rectified linear (`binary_relu`), and
-  softplus (smoothed rectified linear) (`softplus`);
+* **Activation functions:** logistic (sigmoid)  (`logistic`), bipolar
+  sigmoid (`bipolar_sigmoid`), softmax (`softmax`), hyperbolic tangent
+  (`tanh`), linear (`linear`), recitified linear (`relu`), leaky rectified
+  linear (`leaky_relu`), binary (bounded) rectified linear (`binary_relu`),
+  and softplus (smoothed rectified linear) (`softplus`);
 
-* Error functions: Ssm squared error (`sum_of_squares`) , cross entropy
+* **Error functions:** Sum squared error (`sum_of_squares`) , cross entropy
   error (`cross_entropy`), and Kullback-Leibler divergence (`divergence`);
 
-* Weight randomization algorithms: gaussian (`gaussian`), uniform range
+* **Weight randomization algorithms:** gaussian (`gaussian`), uniform range
   (`range`), Nguyen-Widrow (`nguyen_windrow`) (Nguyen & Widrow, 1990),
   Fan-In (`fan_in`), and binary (`binary`).
 
-* Multithreading (through [OpenMP](https://www.openmp.org/));
+* **Multithreading** (through [OpenMP](https://www.openmp.org/));
 
-* A module for navivating semantic spaces: Distributed Situation-state
-  Spaces (DSS) (Frank et al., 2003, 2009) and Distributional Formal
-  Semantics (DFS) (Venhuizen et al., 2021);
+* A module for navigating **propositional meaning spaces**: Distributed
+  Situation-state Space (DSS) (Frank et al., 2003, 2009) and Distributional
+  Formal Semantics (DFS) (Venhuizen et al., 2021);
 
-* A module for modeling electrophysiological correlates: N400 and P600
-  components of the Event-Related Potentials (ERP) signal (Brouwer, 2014;
-  Brouwer et al., 2017);
+* A module for modeling **electrophysiological correlates**: the N400 and
+  P600 components of the Event-Related Potentials (ERP) signal (Brouwer,
+  2014; Brouwer et al., 2017);
 
-* Pretty printing of vectors and matrices (through ANSI escape codes);
+* **Pretty printing** of vectors and matrices (through ANSI escape codes);
 
-* And finally, it is free of dependencies: you only need a C99-compliant
+* And finally, it is **dependency-free**: you only need a C99-compliant
   compiler to build Mesh.
 
-## What MESH is *not*
 
-Mesh is **not** the next [PyTorch](https://pytorch.org/) or
-[TensorFlow](https://www.tensorflow.org/). Mesh is a simulator that focuses
-on traditional connectionist/Parallel Distributed Processing (PDP)
-architectures and learning algorithms. It was developed along with my PhD
-dissertation in cognitive science (Brouwer, 2014), in which I used it to
-build a neurocomputational model of the electrophysiology of language
-comprehension (Brouwer et al., 2017). Crucially, I started developing Mesh
-before the deep learning revolution, and hence before large-scale deep
-learning frameworks like PyTorch and became available. Indeed, if you are
-interested in deep learning, you are probably better off with such a widely
-supported framework. Remember, Mesh is a one-man show, whereas PyTorch and
-TensorFlow are backed by
-[Facebook](https://www.facebook.com/)/[Meta](https://about.facebook.com/meta)
-and [Google](https://www.google.com/), respectively.
-
-## So, why Mesh?
+## Why Mesh?
 
 > "What I cannot create, I do not understand“ -Richard Feynman
 
-**I learned a lot**: I built Mesh from scratch using classical papers as
-technical references. I have waded through many slides, books, and websites,
-in order to put the different pieces together. Again this was prior to the
-deep learning revolution, and hence prior to the wealth of information that
-has become available over the last few years. Indeed, as the late Jeffrey L.
-Elman (author of [tlearn](https://crl.ucsd.edu/innate/tlearn.html)) pointed
-out to me, I learned an enormous amount about neural networks by
-implementing Mesh, and for that reason alone it has been worthwhile.
+**Is Mesh the new PyTorch or TensorFlow?** No, Mesh is **not** the next
+[PyTorch](https://pytorch.org/) or
+[TensorFlow](https://www.tensorflow.org/). Mesh is a simulator that focuses
+on traditional connectionist / Parallel Distributed Processing (PDP)
+architectures and learning algorithms. It was developed along with my PhD
+dissertation in cognitive science (Brouwer, 2014), in which I used it to
+build a neurocomputational model of the electrophysiology of language
+comprehension (Brouwer et al., 2017). Mesh is a one-man show; I started
+developing Mesh before the deep learning revolution, and hence before
+large-scale deep learning frameworks like PyTorch and TensorFlow, backed by
+respectively
+[Facebook](https://www.facebook.com/)/[Meta](https://about.facebook.com/meta)
+and [Google](https://www.google.com/), became available.
 
-**I know what it does and why it does it**: We use Mesh on a daily basis to
-run cognitive models of human language comprehension. In Brouwer et al.
+**I learned a lot implementing Mesh:** I built Mesh from scratch using
+classical papers as technical references. I have waded through many slides,
+books, and websites, in order to put the different pieces together. Again
+this was prior to the deep learning revolution, and hence prior to the
+wealth of information that has become available over the last few years.
+Indeed, as the late Jeffrey L. Elman (author of
+[tlearn](https://crl.ucsd.edu/innate/tlearn.html)) once said to me,
+I learned an enormous amount about neural networks by implementing Mesh, and
+for that reason alone it has been worthwhile.
+
+**Mesh is lightweight and gets the job done:** We use Mesh on a daily basis
+to run cognitive models of human language comprehension. In Brouwer et al.
 (2017), for instance, it is used to model electrophysiological correlates of
 online comprehension, and in Venhuizen et al. (2021) we use it to navigate
-Distributional Formal Semantics (DFS) spaces.
-
-**It is great for teaching connectionism**: Mesh is fully command driven,
-and hence ideal for teaching students about neural networks, without
-requiring them to do any programming. It has for instance been used to teach
+a propositional meaning space from Distributional Formal Semantics (DFS).
+Moreover, as Mesh is fully command driven, it is also ideal for teaching
+connectionistm/PDP: it has for instance been used in a course on
 [Connectionist Language
-Processing](https://hbrouwer.github.io/courses/clp21/)) to students
-interested in cognitive science and psycholinguistics.
+Processing](https://hbrouwer.github.io/courses/clp21/) at [Saarland
+University](https://www.uni-saarland.de/start.html).
 
 # Building and running Mesh
 
@@ -116,7 +114,7 @@ Note that you need an [OpenMP](https://www.openmp.org/)-enabled compiler if
 you want to enable multithreading. Passing the flag `-DOPENMP=OFF` to CMake
 disables multithreading.
 
-You can then run Mesh as:
+After building, you can run Mesh as:
 
 ```
 $ ./mesh
@@ -126,16 +124,13 @@ Mesh, version 0.1.0: https://github.com/hbrouwer/mesh (? for help)
   [:>
 ```
 
-As Mesh is fully command driven, it is recommended to use
+Note that as Mesh is fully command driven, it is recommended to use
 [rlwrap](https://github.com/hanslub42/rlwrap).
 
-# Documentation
+# Documentation and Examples
 
 Documentation is available within Mesh, by typing `?` or `help`, as well as
-[here](docs/welcome.md) in Markdown format. Also, see the [example
-networks](https://github.com/hbrouwer/mesh-examples).
-
-# Examples
+[here](docs/welcome.md) in Markdown format. 
 
 Simple boolean functions, as well as various psycholinguistic connectionist
 models are available as [example
