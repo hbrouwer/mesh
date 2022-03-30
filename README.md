@@ -133,9 +133,10 @@ Note that as Mesh is fully command driven, it is recommended to use
 Documentation is available within Mesh, by typing `?` or `help`, as well as
 [here](docs/welcome.md) in Markdown format. 
 
-Simple boolean functions, as well as various psycholinguistic connectionist
-models are available as [example
-networks](https://github.com/hbrouwer/mesh-examples).
+Tutorials are available in the
+[mesh-examples](https://github.com/hbrouwer/mesh-examples) repository, and
+cover networks implementing simple boolean functions, as well as various
+psycholinguistic connectionist models.
 
 # A note on multithreading
 
