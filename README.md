@@ -41,7 +41,7 @@ Mesh comes with support for:
   linear (`leaky_relu`), binary (bounded) rectified linear (`binary_relu`),
   and softplus (smoothed rectified linear) (`softplus`);
 
-* **Error functions:** Sum squared error (`sum_of_squares`) , cross entropy
+* **Error functions:** sum squared error (`sum_of_squares`) , cross entropy
   error (`cross_entropy`), and Kullback-Leibler divergence (`divergence`);
 
 * **Weight randomization algorithms:** gaussian (`gaussian`), uniform range
@@ -50,19 +50,19 @@ Mesh comes with support for:
 
 * **Multithreading** (through [OpenMP](https://www.openmp.org/));
 
-* A module for navigating **propositional meaning spaces**: Distributed
-  Situation-state Space (DSS) (Frank et al., 2003, 2009) and Distributional
-  Formal Semantics (DFS) (Venhuizen et al., 2021);
+* A module for navigating **propositional meaning spaces**: meaning spaces
+  derived from the Distributed Situation-state Space (DSS) model (Frank et
+  al., 2003, 2009) and Distributional Formal Semantics (DFS) (Venhuizen et
+  al., 2021);
 
 * A module for modeling **electrophysiological correlates**: the N400 and
-  P600 components of the Event-Related Potentials (ERP) signal (Brouwer,
-  2014; Brouwer et al., 2017);
+  P600 components of the Event-Related brain Potentials (ERP) signal
+  (Brouwer, 2014; Brouwer et al., 2017);
 
 * **Pretty printing** of vectors and matrices (through ANSI escape codes);
 
 * And finally, it is **dependency-free**: you only need a C99-compliant
-  compiler to build Mesh.
-
+  (and for multithreading OpenMP-enabled) compiler to build Mesh.
 
 ## Why Mesh?
 
@@ -79,9 +79,9 @@ in which I used it to build a neurocomputational model of the
 electrophysiology of language comprehension (Brouwer et al., 2017). Mesh is
 a one-man show; I started developing Mesh before the deep learning
 revolution, and hence before large-scale deep learning frameworks like
-PyTorch and TensorFlow, backed by respectively
+PyTorch and TensorFlow, backed by
 [Facebook](https://www.facebook.com/)/[Meta](https://about.facebook.com/meta)
-and [Google](https://www.google.com/), became available.
+and [Google](https://www.google.com/), respectively, became available.
 
 **I learned a lot implementing Mesh:** I built Mesh from scratch using
 classical papers as technical references. I have waded through many slides,
@@ -89,7 +89,7 @@ books, and websites, in order to put the different pieces together. Again
 this was prior to the deep learning revolution, and hence prior to the
 wealth of information that has become available over the last few years.
 Indeed, as the late Jeffrey L. Elman (author of
-[tlearn](https://crl.ucsd.edu/innate/tlearn.html)) once said to me,
+[tlearn](https://crl.ucsd.edu/innate/tlearn.html)) pointed out to me:
 I learned an enormous amount about neural networks by implementing Mesh, and
 for that reason alone it has been worthwhile.
 
@@ -141,8 +141,8 @@ When Mesh is compiled with `-DOPENMP=ON` (default), multithreading is
 implemented through [OpenMP](https://www.openmp.org/), and controlled with
 its [environment
 variables](https://www.openmp.org/spec-html/5.0/openmpch6.html). For
-example, the following limits the number of threads, and enables automatic
-scheduling:
+example, the following limits the number of threads to `2`, and enables
+`auto` scheduling:
 
 ```
 $ OMP_NUM_THREADS=2 OMP_SCHEDULE=auto ./mesh
@@ -187,8 +187,8 @@ CMake.
 **Warning:** If multithreading is enabled, Mesh will always distribute
 computations among the available threads. Depending on network size,
 however, this may not always lead to improved performance over
-single-threaded execution, and the overhead of multithreading may in fact
-even damage performance. 
+single-threaded execution. In fact, the overhead of multithreading may even
+damage performance. 
 
 # Fast exponentiation 
 
