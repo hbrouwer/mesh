@@ -1,4 +1,4 @@
-Usage: mesh [file] | [option]
+Usage: mesh [file | option]
 
 
 [file]:
@@ -6,7 +6,7 @@ Usage: mesh [file] | [option]
 Mesh will load and run the specified script file.
 
 
-[options]:
+[option]:
 
 `--help`                         Show this help message
 

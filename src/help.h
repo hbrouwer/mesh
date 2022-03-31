@@ -339,12 +339,12 @@
 "* [learning]                     Learning algorithms, parameters         \n" \
 
 #define TOPIC_USAGE \
-"Usage: mesh [file] | [option]                                            \n" \
+"Usage: mesh [file | option]                                              \n" \
 "                                                                         \n" \
 "[file]:                                                                  \n" \
 "Mesh will load and run the specified script file.                        \n" \
 "                                                                         \n" \
-"[options]:                                                               \n" \
+"[option]:                                                                \n" \
 "`--help`                         Show this help message                  \n" \
 "`--version`                      Show version information                \n" \
 "                                                                         \n" \
