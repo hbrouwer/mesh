@@ -3,4 +3,4 @@
 
 `confusionMatrix`                Show confusion matrix
 
-`confusionStatistics`            Show classification statistics
+`confusionStats`                 Show classification statistics

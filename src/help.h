@@ -72,7 +72,7 @@
 "# Classification                                                         \n" \
 "                                                                         \n" \
 "`confusionMatrix`                Show confusion matrix                   \n" \
-"`confusionStatistics`            Show classification statistics          \n" \
+"`confusionStats`                 Show classification statistics          \n" \
 
 #define TOPIC_ERROR \
 "# Error functions                                                        \n" \
