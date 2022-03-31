@@ -125,6 +125,27 @@ Mesh, version 1.0.0: https://github.com/hbrouwer/mesh (`?` for help)
 Note that as Mesh is fully command driven, it is recommended to use
 [rlwrap](https://github.com/hanslub42/rlwrap).
 
+# Usage
+
+```
+$ ./mesh --help                                                                                                                                                                                      ✭
+Mesh, version 1.0.0: https://github.com/hbrouwer/mesh (`?` for help)
++ [ OpenMP ]: 10 processor(s) available (10 thread(s) max)
++ [ OpenMP ]: Static schedule (chunk size: 0)
+
+Usage: mesh [file | option]
+
+[file]:
+Mesh will load and run the specified script file.
+
+[option]:
+`--help`                         Show this help message
+`--version`                      Show version information
+
+When no arguments are specified, Mesh will start in CLI mode.
+
+```
+
 # Documentation and Examples
 
 Documentation is available within Mesh, by typing `?` or `help`, as well as
