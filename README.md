@@ -117,10 +117,9 @@ You can then run Mesh as:
 
 ```
 $ ./mesh
-Mesh, version 0.1.0: https://github.com/hbrouwer/mesh (? for help)
+Mesh, version 1.0.0: https://github.com/hbrouwer/mesh (`?` for help)
 + [ OpenMP ]: 10 processor(s) available (10 thread(s) max)
-+ [ OpenMP ]: Static schedule (chunk size: 0)
-  [:>
++ [ OpenMP ]: Dynamic schedule (chunk size: 1)
 ```
 
 Note that as Mesh is fully command driven, it is recommended to use
@@ -136,7 +135,7 @@ Tutorials are available in the
 cover networks implementing simple boolean functions, as well as various
 psycholinguistic connectionist models.
 
-# A note on multithreading
+# Multithreading
 
 When Mesh is compiled with `-DOPENMP=ON` (default), multithreading is
 implemented through [OpenMP](https://www.openmp.org/), and controlled with
@@ -147,7 +146,7 @@ scheduling:
 
 ```
 $ OMP_NUM_THREADS=2 OMP_SCHEDULE=auto ./mesh
-Mesh, version 0.1.0: https://github.com/hbrouwer/mesh (`?` for help)
+Mesh, version 1.0.0: https://github.com/hbrouwer/mesh (`?` for help)
 + [ OpenMP ]: 10 processor(s) available (2 thread(s) max)
 + [ OpenMP ]: Auto schedule
   [:>
@@ -158,7 +157,7 @@ well for a given network using `toggleMultithreading` (default: off):
 
 ```
 $ OMP_NUM_THREADS=2 mesh plaut.mesh
-Mesh, version 0.1.0: https://github.com/hbrouwer/mesh (`?` for help)
+Mesh, version 1.0.0: https://github.com/hbrouwer/mesh (`?` for help)
 + [ OpenMP ]: 10 processor(s) available (2 thread(s) max)
 + [ OpenMP ]: Dynamic schedule (chunk size: 1)
 ...
@@ -184,6 +183,27 @@ You can inspect the multithreading status of an active network using
 
 To compile Mesh without multithreading, pass the flag `-DOPENMP=OFF` to
 CMake.
+
+**Warning:** If multithreading is enabled, Mesh will always distribute
+computations among the available threads. Depending on network size,
+however, this may not always lead to improved performance over
+single-threaded execution, and the overhead of multithreading may in fact
+even damage performance. 
+
+# Fast exponentiation 
+
+Mesh implements Nicol N. Schraudolph's fast, compact approximation of the
+exponential function (Schraudolph, 1999). This feature is disable by
+default, but can be enabled by passing the flag `-DFAST_EXP=ON` to CMake. If
+enabled, Mesh will report this on startup:
+
+```
+$ ./mesh
+Mesh, version 1.0.0: https://github.com/hbrouwer/mesh (`?` for help)
++ [ FastExp ]: Using Schraudolph's exp() approximation (c: 60801)
+...
+  [:>
+```
 
 # References
 
@@ -232,6 +252,9 @@ internal representations by error propagation. In: D. E. Rumelhart & J. L.
 McClelland (Eds.), *Parallel distributed processing: Explorations in the
 microstructure of cognition, Volume 1: Foundations,* pp. 318-362, Cambridge,
 MA: MIT Press.
+
+Schraudolph, N. N. (1999). A fast, compact approximation of the exponential
+function. Neural Computation, 11, 854-862.
 
 Venhuizen, N. J., Hendriks, P., Crocker, M. W., and Brouwer, H. (in press).
 Distributional Formal Semantics. *Information and Computation*. arXiv
