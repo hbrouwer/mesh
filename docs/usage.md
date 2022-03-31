@@ -1,3 +1,16 @@
-Usage: mesh <file> [options]
+Usage: mesh [file] | [option]
 
-`--help`                     Show this help message
+
+[file]:
+
+Mesh will load and run the specified script file.
+
+
+[options]:
+
+`--help`                         Show this help message
+
+`--version`                      Show version information
+
+
+When no arguments are specified, Mesh will start in CLI mode.
