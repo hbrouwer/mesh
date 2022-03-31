@@ -386,7 +386,6 @@ void inspect_network(struct network *n)
         cprintf("\n");
 #endif /* _OPENMP */
 
-
                 /****************
                  **** status ****
                  ****************/
