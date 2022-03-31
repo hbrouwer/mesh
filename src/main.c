@@ -45,6 +45,9 @@ int main(int argc, char **argv)
                         help("usage");
                         goto exit_session;
                 }
+                else if (strcmp(argv[i],"--version") == 0) {
+                        goto exit_session;
+                }
                 else if (argv[i] != NULL) {
                         char cmd_base[] = "loadFile";
                         char *cmd;

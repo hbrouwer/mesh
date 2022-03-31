@@ -339,9 +339,16 @@
 "* [learning]                     Learning algorithms, parameters         \n" \
 
 #define TOPIC_USAGE \
-"Usage: mesh <file> [options]                                             \n" \
+"Usage: mesh [file] | [option]                                            \n" \
 "                                                                         \n" \
-"    `--help`                     Show this help message                  \n" \
+"[file]:                                                                  \n" \
+"Mesh will load and run the specified script file.                        \n" \
+"                                                                         \n" \
+"[options]:                                                               \n" \
+"`--help`                         Show this help message                  \n" \
+"`--version`                      Show version information                \n" \
+"                                                                         \n" \
+"When no arguments are specified, Mesh will start in CLI mode.            \n" \
 
 #define TOPIC_WEIGHTS \
 "# Weights                                                                \n" \

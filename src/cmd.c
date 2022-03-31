@@ -203,7 +203,7 @@ bool cmd_help(char *cmd, char *fmt, struct session *s)
         if (help_on_topic)
                 help(arg);
         else
-                help("general");    
+                help("welcome");
         return true;
 }
 
