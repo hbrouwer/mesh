@@ -312,13 +312,13 @@
 "* `steepest`                     Steepest (gradient) descent             \n" \
 "`set LearningRate <value>`       Set learning rate (LR) coefficient      \n" \
 "`set LRScaleFactor <value>`      Set LR scaling factor                   \n" \
-"`set LRScaleAfter <value>`       Scale LR after \%epochs                 \n" \
+"`set LRScaleAfter <value>`       Scale LR after \%epochs                  \n" \
 "`set Momentum <value>`           Set momentenum (MN) coefficient         \n" \
 "`set MNScaleFactor <value>`      Set MN scaling factor                   \n" \
-"`set MNScaleAfter <value>`       Scale MN after \%epochs                 \n" \
+"`set MNScaleAfter <value>`       Scale MN after \%epochs                  \n" \
 "`set WeightDecay <value>`        Set weight decay (WD) coefficient       \n" \
 "`set WDScaleFactor <value>`      Set WD scaling factor                   \n" \
-"`set WDScaleAfter <value>`       Scale WD after \%epochs                 \n" \
+"`set WDScaleAfter <value>`       Scale WD after \%epochs                  \n" \
 "* `bounded`                      Bounded steepest descent                \n" \
 "(see `steepest`)                                                         \n" \
 "* `rprop+|irprop+`               (modified) Rprop (+ weight backtracking)\n" \
