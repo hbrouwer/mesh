@@ -193,7 +193,7 @@ even damage performance.
 # Fast exponentiation 
 
 Mesh implements Nicol N. Schraudolph's fast, compact approximation of the
-exponential function (Schraudolph, 1999). This feature is disable by
+exponential function (Schraudolph, 1999). This feature is disabled by
 default, but can be enabled by passing the flag `-DFAST_EXP=ON` to CMake. If
 enabled, Mesh will report this on startup:
 
