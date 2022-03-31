@@ -91,10 +91,10 @@ Indeed, as the late Jeffrey L. Elman (author of
 I learned an enormous amount about neural networks by implementing Mesh, and
 for that reason alone it has been worthwhile.
 
-**Mesh is lightweight and gets the job done:** We use Mesh on a daily basis
-to run cognitive models of human language comprehension. In Brouwer et al.
-(2017), for instance, it is used to model electrophysiological correlates of
-online comprehension, and in Venhuizen et al. (2021) we use it to navigate
+**Mesh is lightweight yet versatile:** We use Mesh on a daily basis to run
+cognitive models of human language comprehension. In Brouwer et al. (2017),
+for instance, it is used to model electrophysiological correlates of online
+comprehension, and in Venhuizen et al. (2021) we use it to navigate
 a propositional meaning space from Distributional Formal Semantics (DFS).
 Moreover, as Mesh is fully command driven, it is also ideal for teaching
 connectionistm/PDP: it has for instance been used in a course on
