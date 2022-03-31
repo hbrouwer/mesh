@@ -108,7 +108,7 @@ void train_network_with_bp(struct network *n)
                  **************************************/
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Backpropagation Through Time (BPTT_ training. For each event of an item,
+Backpropagation Through Time (BPTT) training. For each event of an item,
 error is injected if a target pattern is present. Error is only
 backpropagated once all events of an item have been processed. Weights are
 updated after each batch.
