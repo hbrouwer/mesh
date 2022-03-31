@@ -358,9 +358,9 @@
 #define TOPIC_WELCOME \
 "# Welcome to Mesh                                                        \n" \
 "                                                                         \n" \
-"Mesh is an artificial neural network simulator, primarily designed as    \n" \
-"a fast, general-purpose backpropagation simulator with flexibility and   \n" \
-"extensibility in mind.                                                   \n" \
+"Mesh is a lightweight and versatile artificial neural network simulator, \n" \
+"primarily designed as a general-purpose backpropagation simulator with   \n" \
+"flexibility and extensibility in mind.                                   \n" \
 "                                                                         \n" \
 "## Quick-start                                                           \n" \
 "                                                                         \n" \

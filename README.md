@@ -12,9 +12,9 @@
 
 # Mesh
 
-Mesh is an artificial neural network simulator, primarily designed as
-a fast, general-purpose backpropagation simulator with flexibility and
-extensibility in mind. 
+Mesh is a lightweight and versatile artificial neural network simulator,
+primarily designed as a general-purpose backpropagation simulator with
+flexibility and extensibility in mind.
 
 ## Features
 
