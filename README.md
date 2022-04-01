@@ -72,8 +72,10 @@ Mesh comes with support for:
 [PyTorch](https://pytorch.org/) or
 [TensorFlow](https://www.tensorflow.org/). Mesh is a simulator that focuses
 on traditional connectionist / Parallel Distributed Processing (PDP)
-architectures and learning algorithms. It was developed along with my PhD
-dissertation in cognitive neuroscience ([Brouwer,
+architectures and learning algorithms (in the spirit of simulators like
+[Tlearn](https://crl.ucsd.edu/innate/tlearn.html) and
+[Lens](https://ni.cmu.edu/~plaut/Lens/Manual/)). It was developed along with
+my PhD dissertation in cognitive neuroscience ([Brouwer,
 2014](https://hbrouwer.github.io/papers/Brouwer2014ElectrophysiologyLanguage.pdf)),
 in which I used it to build a neurocomputational model of the
 electrophysiology of language comprehension (Brouwer et al., 2017). Mesh is
@@ -89,7 +91,7 @@ books, and websites, in order to put the different pieces together. Again
 this was prior to the deep learning revolution, and hence prior to the
 wealth of information that has become available over the last few years.
 Indeed, as the late Jeffrey L. Elman (author of
-[tlearn](https://crl.ucsd.edu/innate/tlearn.html)) pointed out to me:
+[Tlearn](https://crl.ucsd.edu/innate/tlearn.html)) pointed out to me:
 I learned an enormous amount about neural networks by implementing Mesh, and
 for that reason alone it has been worthwhile.
 
