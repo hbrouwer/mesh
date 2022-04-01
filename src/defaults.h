@@ -27,6 +27,7 @@
 #define DEFAULT_RANDOM_MIN         -1.0
 #define DEFAULT_RANDOM_MAX         +1.0
 #define DEFAULT_LEARNING_ALGORITHM train_network_with_bp
+#define DEFAULT_BACK_TICKS         1
 #define DEFAULT_UPDATE_ALGORITHM   bp_update_sd
 #define DEFAULT_LEARNING_RATE      0.05
 #define DEFAULT_LR_SCALE_FACTOR    0.0

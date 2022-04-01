@@ -82,6 +82,7 @@ void set_network_defaults(struct network *n)
         n->pars->random_min         = DEFAULT_RANDOM_MIN;
         n->pars->random_max         = DEFAULT_RANDOM_MAX;
         n->learning_algorithm       = DEFAULT_LEARNING_ALGORITHM;
+        n->pars->back_ticks         = DEFAULT_BACK_TICKS;
         n->update_algorithm         = DEFAULT_UPDATE_ALGORITHM;
         n->pars->learning_rate      = DEFAULT_LEARNING_RATE;
         n->pars->lr_scale_factor    = DEFAULT_LR_SCALE_FACTOR;
@@ -229,11 +230,11 @@ void inspect_network(struct network *n)
         cprintf("| Learning algorithm: \t\t ");
         if (n->learning_algorithm == train_network_with_bp)
                 cprintf("bp");
-        if (n->learning_algorithm == train_network_with_bptt) {
+        if (n->learning_algorithm == train_network_with_bptt)
                 cprintf("bptt");
-        }
         cprintf("\n");
-        cprintf("| Back ticks: \t\t\t %d\n", n->pars->back_ticks);
+        if (n->learning_algorithm == train_network_with_bptt)
+                cprintf("| Back ticks: \t\t\t %d\n", n->pars->back_ticks);
         cprintf("| Update algorithm: \t\t ");
         if (n->update_algorithm == bp_update_sd
                 && n->flags->sd_type == SD_DEFAULT)
