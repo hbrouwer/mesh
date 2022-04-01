@@ -130,7 +130,7 @@ Note that as Mesh is fully command driven, it is recommended to use
 # Usage
 
 ```
-$ ./mesh --help                                                                                                                                                                                      ✭
+$ ./mesh --help
 Mesh, version 1.0.0: https://github.com/hbrouwer/mesh (`?` for help)
 + [ OpenMP ]: 10 processor(s) available (10 thread(s) max)
 + [ OpenMP ]: Static schedule (chunk size: 0)
