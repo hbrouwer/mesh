@@ -52,8 +52,8 @@ Mesh comes with support for:
 
 * A module for navigating **propositional meaning spaces**: meaning spaces
   derived from the Distributed Situation-state Space (DSS) model (Frank et
-  al., 2003, 2009) and Distributional Formal Semantics (DFS) (Venhuizen et
-  al., 2021);
+  al., 2003) and Distributional Formal Semantics (DFS) (Venhuizen et al.,
+  2021);
 
 * A module for modeling **electrophysiological correlates**: the N400 and
   P600 components of the Event-Related brain Potentials (ERP) signal
@@ -247,10 +247,6 @@ Computer Science, Carnegie Mellon University, Pittsburgh, PA 15213.
 Frank, S. L., Koppen, M., Noordman, L. G., & Vonk, W. (2003). Modeling
 knowledge-based inferences in story comprehension. *Cognitive Science,
 27*(6), 875–910. doi:10.1207/s15516709cog2706_3
-
-Frank, S. L., Haselager, W. F., & van Rooij, I. (2009). Connectionist
-semantic systematicity. *Cognition, 110*(3), 358–379.
-doi:10.1016/j.cognition.2008.11.013
 
 Igel, C., & Husken, M. (2000). Improving the Rprop Algorithm. Proceedings of
 the Second International Symposium on Neural Computation, NC'2000, pp.
