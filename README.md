@@ -90,7 +90,7 @@ classical papers as technical references. I have waded through many slides,
 books, and websites, in order to put the different pieces together. Again
 this was prior to the deep learning revolution, and hence prior to the
 wealth of information that has become available over the last few years.
-Indeed, as the late Jeffrey L. Elman (author of
+Indeed, as the late Jeff Elman (author of
 [Tlearn](https://crl.ucsd.edu/innate/tlearn.html)) pointed out to me:
 I learned an enormous amount about neural networks by implementing Mesh, and
 for that reason alone it has been worthwhile.
