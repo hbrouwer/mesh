@@ -185,7 +185,7 @@ Softmax function:
 
         f(x) = (e ^ x) / sum_j (e ^ x_j)
  
-and its derivative:
+and its derivative (assuming cross entropy error):
 
         f'(x) = 1
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
