@@ -574,8 +574,6 @@ void print_groups(struct network *n)
                         cprintf(" :: tanh");
                 if (g->act_fun->fun == act_fun_linear)
                         cprintf(" :: linear");
-                if (g->act_fun->fun == act_fun_softplus)
-                        cprintf(" :: softplus");
                 if (g->act_fun->fun == act_fun_relu)
                         cprintf(" :: relu (max = %f)",
                                 g->pars->relu_max);

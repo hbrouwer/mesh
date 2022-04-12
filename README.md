@@ -37,9 +37,8 @@ Mesh comes with support for:
 
 * **Activation functions:** logistic (sigmoid)  (`logistic`), bipolar
   sigmoid (`bipolar_sigmoid`), softmax (`softmax`), hyperbolic tangent
-  (`tanh`), linear (`linear`), softplus (smoothed rectified linear)
-  (`softplus`), (bounded) recitified linear (`relu`), leaky rectified linear
-  (`leaky_relu`), and exponential linear (`elu`);
+  (`tanh`), linear (`linear`), (bounded) recitified linear (`relu`), leaky
+  rectified linear (`leaky_relu`), and exponential linear (`elu`);
 
 * **Error functions:** sum squared error (`sum_of_squares`) , cross entropy
   error (`cross_entropy`), and Kullback-Leibler divergence (`divergence`);

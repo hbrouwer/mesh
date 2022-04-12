@@ -46,7 +46,6 @@
 "           \\ \\-__/      - - - - - - - - - - - - - - - - - - - - - - - - -\n" \
 "                                                                         \n" \
 
-
 #define TOPIC_ACTIVATION \
 "# Activation functions                                                   \n" \
 "                                                                         \n" \
@@ -59,10 +58,9 @@
 "* `softmax`                      Softmax activation function             \n" \
 "* `tanh`                         Hyperbolic tangent                      \n" \
 "* `linear`                       Linear function                         \n" \
-"* `softplus`                     Smoothed rectified linear function      \n" \
 "* `relu`                         Rectified linear function               \n" \
 "* `leaky_relu`                   Leaky rectified linear function         \n" \
-"* `binary_relu`                  Binary rectified linear function        \n" \
+"* `elu`                          Exponential linear function             \n" \
 "                                                                         \n" \
 "## Other relevant topics                                                 \n" \
 "                                                                         \n" \

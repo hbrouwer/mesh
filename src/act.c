@@ -247,26 +247,6 @@ double act_fun_linear_deriv(struct group *g, uint32_t i)
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Softplus function:
-
-        f(x) = ln(1 + e^x)
-
-and its derivative:
-
-        f'(x) = 1 / (1 + e ^ (-x))      [= logistic function]
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-double act_fun_softplus(struct group *g, uint32_t i)
-{
-        return log(1.0 + EXP(g->vector->elements[i]));
-}
-
-double act_fun_softplus_deriv(struct group *g, uint32_t i)
-{
-        return act_fun_logistic(g, i);
-}
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Rectified Linear Unit (ReLU) function:
 
         f(x) = max(0,x)

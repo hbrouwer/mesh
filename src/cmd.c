@@ -480,11 +480,6 @@ bool cmd_set_act_func(char *cmd, char *fmt, struct session *s)
                 g->act_fun->fun   = act_fun_linear;
                 g->act_fun->deriv = act_fun_linear_deriv;
         }
-        /* softplus activation function */
-        else if (strcmp(arg2, "softplus") == 0) {
-                g->act_fun->fun   = act_fun_softplus;
-                g->act_fun->deriv = act_fun_softplus_deriv;
-        }
         /* relu activation function */
         else if (strcmp(arg2, "relu") == 0) {
                 g->act_fun->fun   = act_fun_relu;

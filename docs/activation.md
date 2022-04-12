@@ -17,13 +17,11 @@
 
 * `linear`                       Linear function
 
-* `softplus`                     Smoothed rectified linear function
-
 * `relu`                         Rectified linear function
 
 * `leaky_relu`                   Leaky rectified linear function
 
-* `binary_relu`                  Binary rectified linear function
+* `elu`                          Exponential linear function
 
 
 ## Other relevant topics

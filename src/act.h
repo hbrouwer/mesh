@@ -46,9 +46,6 @@ double act_fun_tanh_deriv(struct group *g, uint32_t i);
 double act_fun_linear(struct group *g, uint32_t i);
 double act_fun_linear_deriv(struct group *g, uint32_t i);
 
-double act_fun_softplus(struct group *g, uint32_t i);
-double act_fun_softplus_deriv(struct group *g, uint32_t i);
-
 double act_fun_relu(struct group *g, uint32_t i);
 double act_fun_relu_deriv(struct group *g, uint32_t i);
 
