@@ -185,9 +185,9 @@ Softmax function:
 
         f(x) = (e ^ x) / sum_j (e ^ x_j)
  
-and its derivative:
+and the error signal for unit i:
 
-        f'(x) = J * y
+        delta_i = J[i,:] * v(dE/dy)
 
 where J is the Jacobian matrix with:
 
@@ -210,11 +210,14 @@ double act_fun_softmax(struct group *g, uint32_t i)
 double act_fun_softmax_deriv(struct group *g, uint32_t i)
 {
         static struct matrix *jm;
-        double ip = 0.0;
+        static struct vector *ev;
+        double delta = 0.0;
         /* compute Jacobian matrix */
         if (i == 0) {
                 struct vector *v = g->vector;
                 jm = create_matrix(v->size, v->size);
+                ev = create_vector(v->size);
+                copy_vector(g->error, ev);
                 for (uint32_t r = 0; r < v->size; r++)
                         for (uint32_t c = 0; c < v->size; c++)
                                 if (r == c)
@@ -227,11 +230,13 @@ double act_fun_softmax_deriv(struct group *g, uint32_t i)
         }
         /* compute derivative for current unit */
         for (uint32_t j = 0; j < g->vector->size; j++)
-                ip += jm->elements[i][j] * g->vector->elements[j];
-        /* free matrix */
-        if (i == g->vector->size - 1)
+                delta += jm->elements[i][j] * ev->elements[j];
+        /* clean up */
+        if (i == g->vector->size - 1) {
                 free_matrix(jm);
-        return ip;
+                free_vector(ev);
+        }
+        return delta;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

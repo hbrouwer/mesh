@@ -88,12 +88,19 @@ void bp_output_error(struct network *n, struct group *g, struct vector *t)
         /*
          * Multiply all error derivatives dE/dy with the activation function
          * derivative f'(x_j) to obtain the error signal for unit j.
+         *
+         * In case of softmax, the derivative of the activation function
+         * directly outputs the error signal for unit j.
          */
 #ifdef _OPENMP
 #pragma omp parallel for if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < g->error->size; i++)
-                g->error->elements[i] *= g->act_fun->deriv(g, i);
+                if (g->act_fun->fun != act_fun_softmax)
+                        g->error->elements[i] *= g->act_fun->deriv(g, i);
+                else
+                        /* softmax */
+                        g->error->elements[i] = g->act_fun->deriv(g, i);
 }
 
 /*
