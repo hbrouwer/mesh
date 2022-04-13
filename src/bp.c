@@ -188,12 +188,18 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                  * activation derivative to get the error signal:
                  *
                  * delta_j = f'(x_j) dE/dy_j
+                 *
+                 * In case of softmax, the derivative of the activation function
+                 * directly outputs the error signal for unit j.
                  */
 #ifdef _OPENMP
 #pragma omp parallel for if (n->flags->omp_mthreaded)
 #endif /* _OPENMP */
                 for (uint32_t x = 0; x < ng->error->size; x++)
-                        ng->error->elements[x] *= ng->act_fun->deriv(ng, x);
+                        if (ng->act_fun->fun != act_fun_softmax)
+                                ng->error->elements[x] *= ng->act_fun->deriv(ng, x);
+                        else
+                                ng->error->elements[x] = ng->act_fun->deriv(ng, x);
         }
 
         /*
