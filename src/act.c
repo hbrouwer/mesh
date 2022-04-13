@@ -228,7 +228,7 @@ double act_fun_softmax_deriv(struct group *g, uint32_t i)
                                                 * v->elements[r]
                                                 * v->elements[c];
         }
-        /* compute derivative for current unit */
+        /* compute delta for current unit */
         for (uint32_t j = 0; j < g->vector->size; j++)
                 delta += jm->elements[i][j] * ev->elements[j];
         /* clean up */
