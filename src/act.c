@@ -191,9 +191,9 @@ and its derivative:
 
 where J is the Jacobian matrix with:
 
-                 | y_i (1.0 - y_j)  , if i = j
+                 | y_i * (1.0 - y_j)  , if i = j
         J[i,j] = |
-                 | -1.0 * y_i * y_j , if i != j
+                 | -1.0 * y_i * y_j   , if i != j
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 double act_fun_softmax(struct group *g, uint32_t i)
