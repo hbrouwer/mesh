@@ -335,20 +335,20 @@ double act_fun_leaky_relu_deriv(struct group *g, uint32_t i)
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Exponential Linear Unit (ELU) function:
 
-                | x                     iff x >= 0
+                | x                     iff x > 0
         f(x) =  |
                 | alpha(e ^ x - 1)      otherwise
 
 where x may be clipped by a maximum value, and its derivative:
 
-                | 1                     iff x >= 0
+                | 1                     iff x > 0
         f'(x) = |
                 | y + alpha             otherwise
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 double act_fun_elu(struct group *g, uint32_t i)
 {
-        if (g->vector->elements[i] >= 0.0)
+        if (g->vector->elements[i] > 0.0)
                 return minimum(
                         g->vector->elements[i],
                         g->pars->relu_max);
@@ -359,7 +359,7 @@ double act_fun_elu(struct group *g, uint32_t i)
 
 double act_fun_elu_deriv(struct group *g, uint32_t i)
 {
-        if (g->vector->elements[i] >= 0.0)
+        if (g->vector->elements[i] > 0.0)
                 return 1.0;
         else
                 return g->vector->elements[i] + g->pars->relu_alpha;
