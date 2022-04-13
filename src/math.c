@@ -200,7 +200,6 @@ double dice(struct vector *v1, struct vector *v2)
         return (2.0 * nom) / (xsq + ysq);
 }
 
-
 /*
  * Pearson's correlation:
  *

@@ -185,9 +185,15 @@ Softmax function:
 
         f(x) = (e ^ x) / sum_j (e ^ x_j)
  
-and its derivative (assuming cross entropy error):
+and its derivative:
 
-        f'(x) = 1
+        f'(x) = J * y
+
+where J is the Jacobian matrix with:
+
+                 | y_i (1.0 - y_j)  , if i = j
+        J[i,j] = |
+                 | -1.0 * y_i * y_j , if i != j
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 double act_fun_softmax(struct group *g, uint32_t i)
@@ -203,7 +209,29 @@ double act_fun_softmax(struct group *g, uint32_t i)
 
 double act_fun_softmax_deriv(struct group *g, uint32_t i)
 {
-        return 1.0;
+        static struct matrix *jm;
+        double ip = 0.0;
+        /* compute Jacobian matrix */
+        if (i == 0) {
+                struct vector *v = g->vector;
+                jm = create_matrix(v->size, v->size);
+                for (uint32_t r = 0; r < v->size; r++)
+                        for (uint32_t c = 0; c < v->size; c++)
+                                if (r == c)
+                                        jm->elements[r][c] = v->elements[r]
+                                                * (1.0 - v->elements[c]);
+                                else
+                                        jm->elements[r][c] = -1.0
+                                                * v->elements[r]
+                                                * v->elements[c];
+        }
+        /* compute derivative for current unit */
+        for (uint32_t j = 0; j < g->vector->size; j++)
+                ip += jm->elements[i][j] * g->vector->elements[j];
+        /* free matrix */
+        if (i == g->vector->size - 1)
+                free_matrix(jm);
+        return ip;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
