@@ -133,8 +133,13 @@ and its derivative:
 Formulas and limit handling adapted from LENS (Rohde, 1999) source code.
 
 Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
-     Technical Report CMU-CS-99-164 (Pittsburgh, PA: Carnegie Mellon
-     University, Department of Computer Science).
+        Technical Report CMU-CS-99-164 (Pittsburgh, PA: Carnegie Mellon
+        University, Department of Computer Science).
+
+Also see:
+
+Bishop, C. M. (1995). Neural Networks for Pattern Recognition. Oxford
+        University Press: New York.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 double err_fun_cross_entropy(struct network *n, struct group *g,
@@ -319,8 +324,8 @@ and its derivative:
 Formulas and limit handling adapted from LENS (Rohde, 1999) source code.
 
 Rohde, D. L. T. (1999). LENS: the light, efficient network simulator.
-     Technical Report CMU-CS-99-164 (Pittsburgh, PA: Carnegie Mellon
-     University, Department of Computer Science).
+        Technical Report CMU-CS-99-164 (Pittsburgh, PA: Carnegie Mellon
+        University, Department of Computer Science).
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 double err_fun_divergence(struct network *n, struct group *g,
