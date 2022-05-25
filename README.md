@@ -13,8 +13,8 @@
 # Mesh
 
 Mesh is a lightweight and versatile artificial neural network simulator,
-primarily designed as a general-purpose backpropagation simulator with
-flexibility and extensibility in mind.
+primarily designed as a general-purpose backpropagation (through time)
+simulator with flexibility and extensibility in mind.
 
 [![build](https://github.com/hbrouwer/mesh/actions/workflows/build.yml/badge.svg)](https://github.com/hbrouwer/mesh/actions/workflows/build.yml)
 
