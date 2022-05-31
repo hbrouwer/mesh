@@ -38,8 +38,6 @@ bool verify_network(struct network *n)
                 return false;
         }
         verify_group_connectivity(n);
-        if (!verify_context_loops(n))
-                return false;
         return true;
 }
 
@@ -71,26 +69,6 @@ bool verify_group_connectivity(struct network *n)
                 if (!(verify_projection_path(g, n->output)))
                         eprintf("WARNING: %s is not connected to the network\n",
                                 g->name);
-        }
-        return true;
-}
-
-/*
- * When group g has a context group cg, there needs to be a direct or
- * indirect path from cg to g.
- */
-bool verify_context_loops(struct network *n)
-{
-        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
-                struct group *g = n->groups->elements[i];
-                for (uint32_t j = 0; j < g->ctx_groups->num_elements; j++) {
-                        struct group *cg = g->ctx_groups->elements[j];
-                        if (!verify_projection_path(cg, g)) {
-                                eprintf("Invalid context loop: no projection path from '%s' to '%s'\n",
-                                        cg->name, g->name);
-                                return false;
-                        }
-                }
         }
         return true;
 }

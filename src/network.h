@@ -258,7 +258,7 @@ void remove_group(struct network *n, struct group *g);
 void print_groups(struct network *n);
 void reset_groups(struct network *n);
 
-void shift_context_groups(struct network *n);
+void shift_context_groups(struct network *n, struct group *g);
 void shift_context_group_chain(struct group *g, struct vector *v);
 void shift_pointer_or_stack(struct network *n);
 

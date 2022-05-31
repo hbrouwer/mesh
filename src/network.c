@@ -631,14 +631,15 @@ void reset_groups(struct network *n)
         }
 }
 
-void shift_context_groups(struct network *n)
+void shift_context_groups(struct network *n, struct group *g)
 {
-        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
-                struct group *g = n->groups->elements[i];
-                for (uint32_t j = 0; j < g->ctx_groups->num_elements; j++)
+        for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
+                struct projection *op = g->out_projs->elements[i];
+                struct group *rg = op->to;
+                for (uint32_t j = 0; j < rg->ctx_groups->num_elements; j++)
                         shift_context_group_chain(
-                                g->ctx_groups->elements[j],
-                                g->vector);
+                                rg->ctx_groups->elements[j],
+                                rg->vector);
         }
 }
 
@@ -691,7 +692,7 @@ void reset_context_groups(struct network *n)
          * If context groups should not be reset, shift the context groups.
          */
         if (n->flags->initialized && !n->flags->reset_contexts) {
-                shift_context_groups(n);
+                shift_context_groups(n, n->input);
                 return;
         }
         for (uint32_t i = 0; i < n->groups->num_elements; i++) {

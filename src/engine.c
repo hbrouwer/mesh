@@ -69,7 +69,7 @@ void next_tick(struct network *n)
         case ntype_ffn:
                 break;
         case ntype_srn:
-                shift_context_groups(n);
+                shift_context_groups(n, n->input);
                 break;
         case ntype_rnn:
                 shift_pointer_or_stack(n);
