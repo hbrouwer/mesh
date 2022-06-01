@@ -149,7 +149,7 @@ void reset_network(struct network *n)
         reset_projection_matrices(n->input, n);
         randomize_weight_matrices(n->input, n);
         initialize_dynamic_params(n->input, n);
-        reset_context_groups(n);
+        reset_context_groups(n, n->input);
         reset_recurrent_groups(n);
 }
 
@@ -640,6 +640,7 @@ void shift_context_groups(struct network *n, struct group *g)
                         shift_context_group_chain(
                                 rg->ctx_groups->elements[j],
                                 rg->vector);
+                shift_context_groups(n, rg);
         }
 }
 
@@ -686,7 +687,7 @@ void reset_stack_pointer(struct network *n)
         n->unfolded_net->sp = 0;
 }
 
-void reset_context_groups(struct network *n)
+void reset_context_groups(struct network *n, struct group *g)
 {
         /*
          * If context groups should not be reset, shift the context groups.
@@ -695,10 +696,12 @@ void reset_context_groups(struct network *n)
                 shift_context_groups(n, n->input);
                 return;
         }
-        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
-                struct group *g = n->groups->elements[i];
-                for (uint32_t j = 0; j < g->ctx_groups->num_elements; j++)
-                        reset_context_group_chain(n, g->ctx_groups->elements[j]);
+        for (uint32_t i = 0; i < g->out_projs->num_elements; i++) {
+                struct projection *op = g->out_projs->elements[i];
+                struct group *rg = op->to;
+                for (uint32_t j = 0; j < rg->ctx_groups->num_elements; j++)
+                        reset_context_group_chain(n, rg->ctx_groups->elements[j]);
+                reset_context_groups(n, rg);
         }
 }
 

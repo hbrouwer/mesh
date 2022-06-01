@@ -52,7 +52,7 @@ void reset_ticks(struct network *n)
         case ntype_ffn:
                 break;
         case ntype_srn:
-                reset_context_groups(n);
+                reset_context_groups(n, n->input);
                 break;
         case ntype_rnn:
                 reset_stack_pointer(n);
