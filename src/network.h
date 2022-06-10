@@ -220,7 +220,7 @@ struct act_fun
 struct err_fun
 {
         /* error function */
-        double (*fun)(struct network *, struct group *g, struct vector *t);
+        double (*fun)(struct network *n, struct group *g, struct vector *t);
         /* error function derivative */
         void (*deriv)(struct network *n, struct group *g, struct vector *t);
 };
