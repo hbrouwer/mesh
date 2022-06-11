@@ -93,7 +93,7 @@ void bp_output_error(struct network *n, struct group *g, struct vector *t)
          * directly outputs the error signal for unit j.
          */
 #ifdef _OPENMP
-#pragma omp parallel for if (n->flags->omp_mthreaded)
+#pragma omp parallel for if (n->flags->omp_mthreaded && g->act_fun->fun != act_fun_softmax)
 #endif /* _OPENMP */
         for (uint32_t i = 0; i < g->error->size; i++)
                 if (g->act_fun->fun != act_fun_softmax)
@@ -193,7 +193,7 @@ void bp_backpropagate_error(struct network *n, struct group *g)
                  * directly outputs the error signal for unit j.
                  */
 #ifdef _OPENMP
-#pragma omp parallel for if (n->flags->omp_mthreaded)
+#pragma omp parallel for if (n->flags->omp_mthreaded && g->act_fun->fun != act_fun_softmax)
 #endif /* _OPENMP */
                 for (uint32_t x = 0; x < ng->error->size; x++)
                         if (ng->act_fun->fun != act_fun_softmax)
