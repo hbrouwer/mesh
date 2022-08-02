@@ -380,7 +380,7 @@
 "* [sets]                         Training and testing examples           \n" \
 "* [training]                     Training networks                       \n" \
 "* [testing]                      Testing networks                        \n" \
-"* [topics]                       List of all topics                      \n" \
+"* [topics]                       List of all help topics                 \n" \
 "                                                                         \n" \
 "Type `loadFile <file>` to load and run script file.                      \n" \
 

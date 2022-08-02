@@ -30,7 +30,7 @@ help on a specific topic. Topics to start with include:
 
 * [testing](testing.md)                      Testing networks
 
-* [topics](topics.md)                       List of all topics
+* [topics](topics.md)                       List of all help topics
 
 
 Type `loadFile <file>` to load and run script file.
