@@ -372,8 +372,7 @@
 "                                                                         \n" \
 "Mesh is command driven. Type `quit` or `exit` to leave this session.     \n" \
 "Type `help` to show this information, or type `help <topic>` to show     \n" \
-"help on a specific topic. Type `help topics` for a full list of topics.  \n" \
-"Topics to start with include:                                            \n" \
+"help on a specific topic. Topics to start with include:                  \n" \
 "                                                                         \n" \
 "* [about]                        Show version and copyright information  \n" \
 "* [networks]                     Creating different network architectures\n" \
@@ -381,6 +380,7 @@
 "* [sets]                         Training and testing examples           \n" \
 "* [training]                     Training networks                       \n" \
 "* [testing]                      Testing networks                        \n" \
+"* [topics]                       List of all topics                      \n" \
 "                                                                         \n" \
 "Type `loadFile <file>` to load and run script file.                      \n" \
 
