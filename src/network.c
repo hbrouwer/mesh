@@ -1027,7 +1027,7 @@ void print_projection_table(struct network *n)
          * - "(from x to) "
          * - the maximum of the non-first column sizes (minus one)
          */
-        col_sizes[0] = strlen("(from x to)");
+        col_sizes[0] = strlen("(from x to) ");
         for (uint32_t i = 1; i < n->groups->num_elements + 1; i++)
                 if (col_sizes[i] > col_sizes[0])
                         col_sizes[0] = col_sizes[i] - 1;
