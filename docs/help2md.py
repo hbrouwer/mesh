@@ -19,7 +19,7 @@ import re
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Extract relevant topics from the 'src/help.h' file, and write each topic 
-# into a Markdown file. Cross-references topics will be turned into links.
+# into a Markdown file. Cross-referenced topics will be turned into links.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 def read_help_header():
