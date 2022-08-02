@@ -957,6 +957,141 @@ void print_projections(struct network *n)
         }     
 }
 
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Print network topology as a projection table, e.g.:
+
+        (from x to) | input (10) | hidden (20) | output (15) |
+        ------------+------------+-------------+-------------|
+        input (10)  |            | 10 x 20     |             |
+        hidden (20) |            |             | 20 x 10     |
+        output (15) |            |             |             |
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+void print_projection_table(struct network *n)
+{
+        if (n->groups->num_elements == 0) {
+                cprintf("(no groups)\n");
+                return;
+        }
+        cprintf("\n");
+
+        /*
+         * Identify column sizes, which for each column other
+         * than the first is the maximum of:
+         * - " to name (size) "
+         * - " from size x to size "
+         */
+        uint32_t col_sizes[n->groups->num_elements + 1];
+        memset(col_sizes, 0, sizeof(col_sizes));
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
+                struct group *tg = n->groups->elements[i];
+
+                /*
+                 * The length of " to name (size) " decomposses into:
+                 */
+
+                /* a leading and trailing whitespace */
+                uint32_t len = 2;
+                /* the length of the group name */
+                len += strlen(tg->name);
+                /* a whitespace seperating group name and size */
+                len++;
+                /* parentheses around the group size */
+                len += 2;
+                /* the number of digits in the group size */
+                uint32_t tds = 0;
+                for(uint32_t x = 1; x <= tg->vector->size; x *= 10, tds++);
+                len += tds;
+
+                /*
+                 * Find if any " from size x to size " length is larger than
+                 * " to name (size) "
+                 */
+                for (uint32_t j = 0; j < tg->inc_projs->num_elements; j++) {
+                        struct projection *p = tg->inc_projs->elements[j];
+                        struct group *fg = p->to;
+                        uint32_t fds = 0;
+                        for(uint32_t x = 1; x <= fg->vector->size; x *= 10, fds++);
+                        uint32_t plen = 2;
+                        plen += fds + strlen(" x ") + tds;
+                        if (plen > len)
+                                len = plen;
+                }
+                col_sizes[i + 1] = len;
+        }
+
+        /*
+         * The size of the first column is the maximum of:
+         * - "(from x to) "
+         * - the maximum of the non-first column sizes (minus one)
+         */
+        col_sizes[0] = strlen("(from x to)");
+        for (uint32_t i = 1; i < n->groups->num_elements + 1; i++)
+                if (col_sizes[i] > col_sizes[0])
+                        col_sizes[0] = col_sizes[i] - 1;
+
+        /* print header */
+        for (uint32_t i = 0; i < n->groups->num_elements + 1; i++) {
+                char buf[col_sizes[i] + 1];
+                memset(buf, ' ', sizeof(buf));
+                /* "(from x to) " */
+                if (i == 0) {
+                        sprintf(buf, "(from x to) ");
+                /* " to name (size) " */
+                } else {
+                        struct group *tg = n->groups->elements[i - 1];
+                        sprintf(buf, " %s (%d) ", tg->name, tg->vector->size);
+                }
+                buf[strlen(buf)] = ' ';
+                buf[col_sizes[i]] = '\0';
+                cprintf("%s|", buf);
+        }
+        cprintf("\n");
+
+        /* print rows */
+        for (uint32_t i = 0; i < n->groups->num_elements; i++) {
+                /* horizontal separator */
+                for (uint32_t j = 0; j < n->groups->num_elements + 1; j++) {
+                        for (uint32_t x = 0; x < col_sizes[j]; x++)
+                                cprintf("-");
+                        cprintf("+");
+                }
+                cprintf("\n");
+                /* "from name (size) " */
+                struct group *fg = n->groups->elements[i];
+                char buf[col_sizes[0] + 1];
+                memset(buf, ' ', sizeof(buf));
+                sprintf(buf, "%s (%d)", fg->name, fg->vector->size);
+                buf[strlen(buf)] = ' ';
+                buf[col_sizes[0]] = '\0';
+                cprintf("%s|", buf);
+                /* " from size x to size */
+                for (uint32_t j = 0; j < n->groups->num_elements; j++) {
+                        struct group *tg = n->groups->elements[j];
+                        char buf[col_sizes[j + 1] + 1];
+                        memset(buf, ' ', sizeof(buf));
+                        /* mutable projection */
+                        if (find_projection(tg->inc_projs, fg)) {
+                                sprintf(buf, " %d x %d ",
+                                        fg->vector->size,
+                                        tg->vector->size);
+                                buf[strlen(buf)] = ' ';
+                        }
+                        /* copy projection */
+                        if (find_elman_projection(fg, tg)) {
+                                sprintf(buf, " copy ");
+                                buf[strlen(buf)] = ' ';
+                        }
+                        buf[col_sizes[j + 1]] = '\0';
+                        cprintf("%s|", buf);
+                }
+                cprintf("\n");
+        }
+        cprintf("\n");
+}
+
 void freeze_projection(struct projection *p)
 {
         p->flags->frozen = true;

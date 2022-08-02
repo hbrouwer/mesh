@@ -678,6 +678,14 @@ bool cmd_projections(char *cmd, char *fmt, struct session *s)
         return true;
 }
 
+bool cmd_projection_table(char *cmd, char *fmt, struct session *s)
+{
+        if (strcmp(cmd, fmt) != 0)
+                return false;
+        print_projection_table(s->anp);
+        return true;
+}
+
 bool cmd_freeze_projection(char *cmd, char *fmt, struct session *s)
 {
         char arg1[MAX_ARG_SIZE]; /* 'from' group name */

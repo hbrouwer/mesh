@@ -291,6 +291,7 @@ void add_elman_projection(struct group *fg, struct group *tg);
 void remove_elman_projection(struct group *fg, struct group *tg);
 bool find_elman_projection(struct group *fg, struct group *tg);
 void print_projections(struct network *n);
+void print_projection_table(struct network *n);
 void freeze_projection(struct projection *p);
 void unfreeze_projection(struct projection *p);
 
