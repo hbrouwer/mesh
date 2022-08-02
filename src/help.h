@@ -163,6 +163,7 @@
 "`createElmanProjection <f> <t>`  Create Elman (copy) projection          \n" \
 "`removeElmanProjection <f> <t>`  Remove Elman (copy) projection          \n" \
 "`projections`                    List all projection in network          \n" \
+"`projectionTable`                Show projection table                   \n" \
 "`freezeProjection <from> <to>`   Freeze projection weights               \n" \
 "`unfreezeProjection <from> <to>` Unfreeze projection weights             \n" \
 "                                                                         \n" \

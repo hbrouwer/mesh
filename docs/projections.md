@@ -11,6 +11,8 @@
 
 `projections`                    List all projection in network
 
+`projectionTable`                Show projection table
+
 `freezeProjection <from> <to>`   Freeze projection weights
 
 `unfreezeProjection <from> <to>` Unfreeze projection weights
