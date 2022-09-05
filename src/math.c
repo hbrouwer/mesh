@@ -157,7 +157,7 @@ double cosine(struct vector *v1, struct vector *v2)
 
         /* check if vectors are non-orthogonal */
         if (nom > 0 && denom > 0)
-                return nom / (xsq * ysq);
+                return nom / denom;
         else
                 return 0.0;
 }
