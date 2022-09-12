@@ -181,7 +181,7 @@ void dss_scores(struct network *n, struct set *set, struct item *item)
 }
 
 void dss_inferences(struct network *n, struct set *set, struct item *item,
-        float threshold)
+        double threshold)
 {
         struct matrix *sm = dss_score_matrix(n, set, item);
 
@@ -209,9 +209,9 @@ void dss_inferences(struct network *n, struct set *set, struct item *item,
                 score = sm->elements[r][c];
                 if (fabs(score) >= fabs(threshold))
                         score >= 0.0 ? cprintf("\x1b[32m[+%.5f]: %s\x1b[0m\n",
-                                        probe->name, score)
+                                        score, probe->name)
                                      : cprintf("\x1b[31m[%.5f]: %s\x1b[0m\n",
-                                        probe->name, score);
+                                        score, probe->name);
         }
         
         cprintf("\n");

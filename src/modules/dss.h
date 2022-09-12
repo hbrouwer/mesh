@@ -22,7 +22,7 @@
 void dss_test(struct network *n);
 void dss_scores(struct network *n, struct set *set, struct item *item);
 void dss_inferences(struct network *n, struct set *set, struct item *item,
-        float threshold);
+        double threshold);
 
 void dss_adjust_output_vector(struct vector *av, struct vector *ov,
         struct vector *tv, double tr, double zr);
