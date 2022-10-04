@@ -44,8 +44,10 @@ void record_units(struct network *n, struct group *g, char *filename)
                 fprintf(fd, ",\"Unit%d\"", u + 1);
         fprintf(fd, "\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                if (!keep_running)
-                        return;
+                if (!keep_running) {
+                        keep_running = true;
+                        goto out;
+                }
                 struct item *item = n->asp->items->elements[i];
                 reset_ticks(n);
                 for (uint32_t j = 0; j < item->num_events; j++) {
@@ -62,7 +64,9 @@ void record_units(struct network *n, struct group *g, char *filename)
                 pprintf("%d: %s\n", i + 1, item->name);
         }
 
+out:
         fclose(fd);
+
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
 
@@ -75,7 +79,7 @@ error_out:
 
 void recording_signal_handler(int32_t signal)
 {
-        cprintf("Recording interrupted. Abort [y/n]");
+        cprintf("(interrupted): Abort [y/n]? ");
         int32_t c = getc(stdin);
         getc(stdin); /* get newline */
         if (c == 'y' || c == 'Y')

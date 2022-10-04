@@ -46,8 +46,10 @@ void test_network(struct network *n, bool verbose)
         if (verbose)
                 cprintf("\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                if (!keep_running)
-                        return;
+                if (!keep_running) {
+                        keep_running = true;
+                        goto out;
+                }
                 struct item *item = n->asp->items->elements[i];
                 reset_ticks(n);
                 for (uint32_t j = 0; j < item->num_events; j++) {
@@ -85,6 +87,7 @@ void test_network(struct network *n, bool verbose)
                 tr, ((double)tr / n->asp->items->num_elements) * 100.0);
         cprintf("\n");
 
+out:
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
 }
@@ -136,7 +139,7 @@ void test_network_with_item(struct network *n, struct item *item,
 
 void testing_signal_handler(int32_t signal)
 {
-        cprintf("Testing interrupted. Abort [y/n]");
+        cprintf("(interrupted): Abort [y/n]? ");
         int32_t c = getc(stdin);
         getc(stdin); /* get newline */
         if (c == 'y' || c == 'Y')

@@ -54,8 +54,10 @@ struct matrix *confusion_matrix(struct network *n)
         uint32_t d = n->output->vector->size;
         struct matrix *cm = create_matrix(d, d);
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
-                if (!keep_running)
+                if (!keep_running) {
+                        keep_running = true;
                         goto out;
+                }
                 struct item *item = n->asp->items->elements[i];
                 reset_ticks(n);
                 for (uint32_t j = 0; j < item->num_events; j++) {
@@ -76,10 +78,10 @@ struct matrix *confusion_matrix(struct network *n)
                 }
         }
 
+out:
         sa.sa_handler = SIG_DFL;
         sigaction(SIGINT, &sa, NULL);
 
-out:
         return cm;        
 }
 
@@ -169,7 +171,7 @@ void print_cm_summary(struct network *n, bool print_cm, bool pprint,
 
 void cm_signal_handler(int32_t signal)
 {
-        cprintf("Confusion matrix computation interrupted. Abort [y/n]");
+        cprintf("(interrupted): Abort [y/n]? ");
         int32_t c = getc(stdin);
         getc(stdin); /* get newline */
         if (c == 'y' || c == 'Y')

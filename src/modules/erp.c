@@ -16,6 +16,7 @@
 
 #include "erp.h"
 
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -24,6 +25,8 @@
 #include "../math.h"
 #include "../matrix.h"
 #include "../vector.h"
+
+static bool keep_running = true;
 
                 /**********************************
                  **** event-related potentials ****
@@ -68,6 +71,12 @@ void erp_contrast(struct network *n, struct group *gen,
 void erp_write_values(struct network *n, struct group *N400_gen,
         struct group *P600_gen, char *filename)
 {
+        struct sigaction sa;
+        sa.sa_handler = erp_signal_handler;
+        sigemptyset(&sa.sa_mask);
+        sa.sa_flags = SA_RESTART;
+        sigaction(SIGINT, &sa, NULL);
+
         FILE *fd;
         if (!(fd = fopen(filename, "w")))
                 goto error_out;
@@ -75,6 +84,10 @@ void erp_write_values(struct network *n, struct group *N400_gen,
         cprintf("\n");
         fprintf(fd,"\"ItemId\",\"ItemName\",\"ItemMeta\",\"WordPos\",\"N400\",\"P600\"\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                if (!keep_running) {
+                        keep_running = true;
+                        goto out;
+                }
                 struct item *item   = n->asp->items->elements[i];
                 struct vector *N400 = erp_values_for_item(n, N400_gen, item);
                 struct vector *P600 = erp_values_for_item(n, P600_gen, item);
@@ -88,7 +101,11 @@ void erp_write_values(struct network *n, struct group *N400_gen,
         }
         cprintf("\n");
 
+out:
         fclose(fd);
+
+        sa.sa_handler = SIG_DFL;
+        sigaction(SIGINT, &sa, NULL);
 
         return;
 
@@ -128,4 +145,13 @@ struct vector *erp_values_for_item(struct network *n, struct group *g,
         free_vector(pv);
 
         return ev;
+}
+
+void erp_signal_handler(int32_t signal)
+{
+        cprintf("(interrupted): Abort [y/n]? ");
+        int32_t c = getc(stdin);
+        getc(stdin); /* get newline */
+        if (c == 'y' || c == 'Y')
+                keep_running = false;
 }

@@ -64,8 +64,10 @@ void train_network_with_bp(struct network *n)
                 if (z == 0)
                         reorder_training_set(n);
                 for (uint32_t i = 0; i < n->pars->batch_size; i++) {
-                        if (!keep_running)
+                        if (!keep_running) {
+                                keep_running = true;
                                 return;
+                        }
                         uint32_t x = n->asp->order[z++];
                         struct item *item = n->asp->items->elements[x];
                         if (z == n->asp->items->num_elements)
@@ -126,8 +128,10 @@ void train_network_with_bptt(struct network *n)
                 if (z == 0)
                         reorder_training_set(n);
                 for (uint32_t i = 0; i < n->pars->batch_size; i++) {
-                        if (!keep_running)
-                                return;                 
+                        if (!keep_running) {
+                                keep_running = true;
+                                return;
+                        }
                         uint32_t x = n->asp->order[z++];
                         struct item *item = n->asp->items->elements[x];
                         if (z == n->asp->items->num_elements)
@@ -237,7 +241,7 @@ void scale_weight_decay(struct network *n)
 
 void training_signal_handler(int32_t signal)
 {
-        cprintf("Training interrupted. Abort [y/n]");
+        cprintf("(interrupted): Abort [y/n]? ");
         int32_t c = getc(stdin);
         getc(stdin); /* get newline */
         if (c == 'y' || c == 'Y')

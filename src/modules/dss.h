@@ -52,4 +52,6 @@ void dss_write_word_info(struct network *n, struct set *s,
 void reset_dcs_vectors(struct network *n);
 void update_dcs_vectors(struct network *n);
 
+void dss_signal_handler(int32_t signal);
+
 #endif /* DSS_H */

@@ -17,6 +17,7 @@
 #include "dss.h"
 
 #include <math.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -24,6 +25,8 @@
 #include "../error.h"
 #include "../main.h"
 #include "../math.h"
+
+static bool keep_running = true;
 
                 /********************************************
                  **** distributed-situation state spaces ****
@@ -39,6 +42,12 @@ Frank, S. L., Haselager, W. F. G, & van Rooij, I. (2009). Connectionist
 
 void dss_test(struct network *n)
 {
+        struct sigaction sa;
+        sa.sa_handler = dss_signal_handler;
+        sigemptyset(&sa.sa_mask);
+        sa.sa_flags = SA_RESTART;
+        sigaction(SIGINT, &sa, NULL);
+
         double acs = 0.0;       /* accumulated comprehension score */
         uint32_t ncs = 0;       /* number of comprehension scores */
 
@@ -46,6 +55,10 @@ void dss_test(struct network *n)
 
         cprintf("\n");
         for (uint32_t i = 0; i < n->asp->items->num_elements; i++) {
+                if (!keep_running) {
+                        keep_running = true;
+                        goto out;
+                }
                 struct item *item = n->asp->items->elements[i];
                 reset_ticks(n);
                 for (uint32_t j = 0; j < item->num_events; j++) {
@@ -72,7 +85,11 @@ void dss_test(struct network *n)
         cprintf("\nAverage comprehension score: (%f / %d =) %f\n\n",
                 acs, ncs, acs / ncs);
 
+out:
         free_vector(ov);
+
+        sa.sa_handler = SIG_DFL;
+        sigaction(SIGINT, &sa, NULL);
 
         return;
 }
@@ -476,6 +493,12 @@ Frank, S. L. and Vigliocco, G. (2011). Sentence comprehension as mental
 struct matrix *dss_word_info_matrix(struct network *n,
         struct set *s, struct item *item, int32_t *freq_table)
 {
+        struct sigaction sa;
+        sa.sa_handler = dss_signal_handler;
+        sigemptyset(&sa.sa_mask);
+        sa.sa_flags = SA_RESTART;
+        sigaction(SIGINT, &sa, NULL);
+
         struct matrix *im = create_matrix(item->num_events, 6);
 
                 /**************************
@@ -667,6 +690,10 @@ struct matrix *dss_word_info_matrix(struct network *n,
 
         reset_ticks(n);
         for (uint32_t i = 0; i < item->num_events; i++) {
+                if (!keep_running) {
+                        keep_running = true;
+                        goto out;
+                }
                 if (i > 0)
                         next_tick(n);
                 clamp_input_vector(n, item->inputs[i]);
@@ -734,8 +761,12 @@ struct matrix *dss_word_info_matrix(struct network *n,
                 copy_vector(ov, pv);
         }
 
+out:
         free_vector(pv);
         free_vector(ov);
+
+        sa.sa_handler = SIG_DFL;
+        sigaction(SIGINT, &sa, NULL);
 
         return im;
 }
@@ -910,4 +941,13 @@ void update_dcs_vectors(struct network *n)
                                         */
                 }
         }
+}
+
+void dss_signal_handler(int32_t signal)
+{
+        cprintf("(interrupted): Abort [y/n]? ");
+        int32_t c = getc(stdin);
+        getc(stdin); /* get newline */
+        if (c == 'y' || c == 'Y')
+                keep_running = false;
 }
