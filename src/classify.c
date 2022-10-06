@@ -44,7 +44,7 @@ matrix will be the 'actual' classes, and the columns the 'predicted' ones:
 struct matrix *confusion_matrix(struct network *n)
 {
         struct sigaction sa;
-        sa.sa_handler = cm_signal_handler;
+        sa.sa_handler = classify_signal_handler;
         sigemptyset(&sa.sa_mask);
         sa.sa_flags = SA_RESTART;
         sigaction(SIGINT, &sa, NULL);
@@ -169,7 +169,7 @@ void print_cm_summary(struct network *n, bool print_cm, bool pprint,
         free_matrix(cm);
 }
 
-void cm_signal_handler(int32_t signal)
+void classify_signal_handler(int32_t signal)
 {
         cprintf("(interrupted): Abort [y/n]? ");
         int32_t c = getc(stdin);

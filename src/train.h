@@ -35,6 +35,6 @@ void scale_learning_rate(struct network *n);
 void scale_momentum(struct network *n);
 void scale_weight_decay(struct network *n);
 
-void training_signal_handler(int32_t signal);
+void train_signal_handler(int32_t signal);
 
 #endif /* TRAIN_H */

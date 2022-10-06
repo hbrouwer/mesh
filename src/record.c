@@ -31,7 +31,7 @@ static bool keep_running = true;
 void record_units(struct network *n, struct group *g, char *filename)
 {
         struct sigaction sa;
-        sa.sa_handler = recording_signal_handler;
+        sa.sa_handler = record_signal_handler;
         sigemptyset(&sa.sa_mask);
         sa.sa_flags = SA_RESTART;
         sigaction(SIGINT, &sa, NULL);      
@@ -77,7 +77,7 @@ error_out:
         return;
 }
 
-void recording_signal_handler(int32_t signal)
+void record_signal_handler(int32_t signal)
 {
         cprintf("(interrupted): Abort [y/n]? ");
         int32_t c = getc(stdin);

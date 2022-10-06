@@ -22,6 +22,6 @@
 #include "network.h"
 
 void record_units(struct network *n, struct group *g, char *filename);
-void recording_signal_handler(int32_t signal);
+void record_signal_handler(int32_t signal);
 
 #endif /* RECORD_H */

@@ -26,6 +26,6 @@
 struct matrix *similarity_matrix(struct network *n);
 void print_sm_summary(struct network *n, bool print_sm, bool pprint,
         enum color_scheme scheme);
-void sm_signal_handler(int32_t signal);
+void similarity_signal_handler(int32_t signal);
 
 #endif /* SIMILARITY_H */

@@ -27,6 +27,6 @@
 void test_network(struct network *n, bool verbose);
 void test_network_with_item(struct network *n, struct item *item,
         bool pprint, enum color_scheme scheme);
-void testing_signal_handler(int32_t signal);
+void test_signal_handler(int32_t signal);
 
 #endif /* TEST_H */

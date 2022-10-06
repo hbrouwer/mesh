@@ -34,7 +34,7 @@ static bool keep_running = true;
 void test_network(struct network *n, bool verbose)
 {
         struct sigaction sa;
-        sa.sa_handler = testing_signal_handler;
+        sa.sa_handler = test_signal_handler;
         sigemptyset(&sa.sa_mask);
         sa.sa_flags = SA_RESTART;
         sigaction(SIGINT, &sa, NULL);
@@ -137,7 +137,7 @@ void test_network_with_item(struct network *n, struct item *item,
         }
 }
 
-void testing_signal_handler(int32_t signal)
+void test_signal_handler(int32_t signal)
 {
         cprintf("(interrupted): Abort [y/n]? ");
         int32_t c = getc(stdin);

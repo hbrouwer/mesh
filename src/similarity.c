@@ -44,7 +44,7 @@ item, and the cells the similarity between each output and target vector:
 struct matrix *similarity_matrix(struct network *n)
 {
         struct sigaction sa;
-        sa.sa_handler = sm_signal_handler;
+        sa.sa_handler = similarity_signal_handler;
         sigemptyset(&sa.sa_mask);
         sa.sa_flags = SA_RESTART;
         sigaction(SIGINT, &sa, NULL);
@@ -134,7 +134,7 @@ void print_sm_summary(struct network *n, bool print_sm, bool pprint,
         free_matrix(sm);
 }
 
-void sm_signal_handler(int32_t signal)
+void similarity_signal_handler(int32_t signal)
 {
         cprintf("(interrupted): Abort [y/n]? ");
         int32_t c = getc(stdin);
