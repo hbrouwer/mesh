@@ -418,7 +418,6 @@
 "    Knowledge and Linguistic Experience. Discourse Processes, 56:3,      \n" \
 "    229-255.                                                             \n" \
 
-
 #define TOPIC_MODULE_ERP \
 "# Event-Related brain Potentials (ERPs)                                  \n" \
 "                                                                         \n" \
