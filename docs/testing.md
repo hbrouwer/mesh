@@ -3,7 +3,8 @@
 
 `test`                           Test network on all items
 
-`testItem <name>`                Test network on specified item
+`testItem <id>`                  Test network on specified item
+(id = `[<name>|<number>]`)
 
 `set TargetRadius <value>`       Adjust target if output is within radius
 

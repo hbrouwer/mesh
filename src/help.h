@@ -241,7 +241,8 @@
 "# Testing                                                                \n" \
 "                                                                         \n" \
 "`test`                           Test network on all items               \n" \
-"`testItem <name>`                Test network on specified item          \n" \
+"`testItem <id>`                  Test network on specified item          \n" \
+"                                 (id = `[<name>|<number>]`)              \n" \
 "`set TargetRadius <value>`       Adjust target if output is within radius\n" \
 "`set ZeroErrorRadius <value>`    No error if output is withing radius    \n" \
 "`set ErrorThreshold <value>`     Error threshold to reach for each item  \n" \
