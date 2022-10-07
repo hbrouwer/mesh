@@ -681,7 +681,7 @@ struct matrix *dss_word_info_matrix(struct network *n,
         
         /* 
          * Output vector and previous output vector. At time-step t=0, we
-         * bootstrap this by using the unit vector.
+         * bootstrap this by using the unit vector v(1) / |v(1)|.
          */
         struct vector *ov = create_vector(n->output->vector->size);
         struct vector *pv = create_vector(n->output->vector->size);

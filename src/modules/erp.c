@@ -121,7 +121,7 @@ struct vector *erp_values_for_item(struct network *n, struct group *g,
 
         /*
          * Previous activation vector for the specified group. At time-step
-         * t=0, we bootstrap this using the unit vector.
+         * t=0, we bootstrap this using the unit vector v(1) / |v(1)|.
          */
         struct vector *pv = create_vector(g->vector->size);
         fill_vector_with_value(pv, 1.0);
