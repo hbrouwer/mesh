@@ -18,14 +18,9 @@
 
 #include "tep.h"
 
-#include "dss.h"
-
-#include "../act.h"
-#include "../array.h"
 #include "../engine.h"
 #include "../main.h"
 #include "../math.h"
-#include "../session.h"
 #include "../vector.h"
 
 static bool keep_running = true;
