@@ -247,7 +247,7 @@
 "`set ZeroErrorRadius <value>`    No error if output is withing radius    \n" \
 "`set ErrorThreshold <value>`     Error threshold to reach for each item  \n" \
 "                                                                         \n" \
-"`recordUnits <group> <file>`     Record unit activations to file         \n" \
+"`recordUnits <group> <file>`     Record group unit activations to file   \n" \
 "                                                                         \n" \
 "## Other relevant topics                                                 \n" \
 "                                                                         \n" \
@@ -283,6 +283,7 @@
 "                                                                         \n" \
 "* [module_dss]                   Distributed Situation-state Space (DSS) \n" \
 "* [module_erp]                   Event-Related brain Potentials (ERPs)   \n" \
+"* [module_tep]                   Temporally Extended Propagation (TEP)   \n" \
 
 #define TOPIC_TRAINING \
 "# Training                                                               \n" \
@@ -435,6 +436,16 @@
 "    (2017). A Neurocomputational Model of the N400 and the P600 in       \n" \
 "    Language Processing. Cognitive Science, 41(S6), 1318-1352.           \n" \
 
+#define TOPIC_MODULE_TEP \
+"# Temporally Extended Propagation (TEP)                                  \n" \
+"                                                                         \n" \
+"`tepTestItem [pars] <id>`        Test network on specified item          \n" \
+"                                 (id = `[<name>|<number>]`)              \n" \
+"`tepRecordUnits [pars] <g> <fn>` Record group unit activations to file   \n" \
+"`tepWriteMicroTicks [pars] <fn>` Write micro ticks for each word of each \n" \
+"                                 sentence to a file                      \n" \
+"`[pars] = <eg> <h> <th>`: temporally extended group, step-size, threshold\n" \
+
 struct help
 {
         char *help_topic;
@@ -467,6 +478,7 @@ const static struct help hts[] = {
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {"module_dss",          TOPIC_MODULE_DSS},
         {"module_erp",          TOPIC_MODULE_ERP},
+        {"module_tep",          TOPIC_MODULE_TEP},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {NULL,         NULL}

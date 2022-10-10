@@ -13,7 +13,7 @@
 `set ErrorThreshold <value>`     Error threshold to reach for each item
 
 
-`recordUnits <group> <file>`     Record unit activations to file
+`recordUnits <group> <file>`     Record group unit activations to file
 
 
 ## Other relevant topics

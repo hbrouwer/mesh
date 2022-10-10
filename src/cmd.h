@@ -128,11 +128,16 @@ bool cmd_dss_write_word_info(char *cmd, char *fmt, struct session *s);
 bool cmd_erp_contrast(char *cmd, char *fmt, struct session *s);
 bool cmd_erp_write_values(char *cmd, char *fmt, struct session *s);
 
+bool cmd_tep_test_item(char *cmd, char *fmt, struct session *s);
+bool cmd_tep_test_item_num(char *cmd, char *fmt, struct session *s);
+bool cmd_tep_record_units(char *cmd, char *fmt, struct session *s);
+bool cmd_tep_write_micro_ticks(char *cmd, char *fmt, struct session *s);
+
                 /******************
                  **** commands ****
                  ******************/
 
-#define MAX_FMT_SIZE 32
+#define MAX_FMT_SIZE 48
 
 struct command
 {
@@ -317,6 +322,18 @@ const static struct command cmds[] = {
         {"erpContrast",             "%s '%[^']' '%[^']'",
                                                      &cmd_erp_contrast},
         {"erpWriteValues",          "%s %s %s",      &cmd_erp_write_values},
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        {"tepTestItem",             "%s %lf %lf \"%[^\"]\"",
+                                                     &cmd_tep_test_item},
+        {"tepTestItem",             "%s %lf %lf '%[^']'",
+                                                     &cmd_tep_test_item},
+        {"tepTestItem",             "%s %lf %lf %d",
+                                                     &cmd_tep_test_item_num},
+        {"tepRecordUnits",          "%s %lf %lf %s %s",
+                                                     &cmd_tep_record_units},
+        {"tepWriteMicroTicks",      "%s %lf %lf %s",
+                                                     &cmd_tep_write_micro_ticks},
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         {NULL,                      NULL,            NULL} /* tail */

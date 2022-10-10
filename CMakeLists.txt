@@ -50,7 +50,8 @@ set(Mesh_SOURCE_FILES
         src/vector.c
         src/verify.c
         src/modules/dss.c
-        src/modules/erp.c)
+        src/modules/erp.c
+        src/modules/tep.c)
 
 add_executable(mesh ${Mesh_SOURCE_FILES})
 target_link_libraries(mesh m)

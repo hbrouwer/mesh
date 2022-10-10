@@ -49,3 +49,5 @@
 * [module_dss](module_dss.md)                   Distributed Situation-state Space (DSS)
 
 * [module_erp](module_erp.md)                   Event-Related brain Potentials (ERPs)
+
+* [module_tep](module_tep.md)                   Temporally Extended Propagation (TEP)

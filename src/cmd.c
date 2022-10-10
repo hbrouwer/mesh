@@ -40,6 +40,7 @@
 #include "train.h"
 #include "modules/dss.h"
 #include "modules/erp.h"
+#include "modules/tep.h"
 
                 /***************************
                  **** command processor ****
@@ -1920,5 +1921,123 @@ bool cmd_erp_write_values(char *cmd, char *fmt, struct session *s)
                 arg1, arg2);
         erp_write_values(s->anp, N400_gen, P600_gen, arg3);
         mprintf("Written ERP estimates \t [ %s ]\n", arg3);
+        return true;
+}
+
+                /*****************************************
+                 **** temporally extended propagation ****
+                 *****************************************/
+
+bool cmd_tep_test_item(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* group name */
+        double arg2;             /* step-size */
+        double arg3;             /* threshold */
+        char arg4[MAX_ARG_SIZE]; /* item name */
+        if (sscanf(cmd, fmt, arg1, &arg2, &arg3, arg4) != 4)
+                return false;
+        /* find group */
+        struct group *eg = find_array_element_by_name(s->anp->groups, arg1);
+        if (eg == NULL) {
+                eprintf("Cannot test network - no such group '%s'\n", arg1);
+                return true;
+        }
+        if (eg->ctx_groups->elements[0] == NULL) {
+                eprintf("Cannot test network - '%s' has no context group\n", arg1);
+                return true;
+        }
+        /* find item */
+        struct item *item = find_array_element_by_name(s->anp->asp->items, arg4);
+        if (!item) {
+                eprintf("Cannot test network - no such item '%s'\n", arg4);
+                return true;
+        }
+        mprintf("Testing network '%s' with item '%s'\n", s->anp->name, arg4);
+        tep_test_network_with_item(s->anp, eg, arg2, arg3, item, s->pprint, s->scheme);
+        return true;
+}
+
+bool cmd_tep_test_item_num(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* group name */
+        double arg2;             /* step-size */
+        double arg3;             /* threshold */
+        uint32_t arg4;           /* item number */
+        if (sscanf(cmd, fmt, arg1, &arg2, &arg3, &arg4) != 4)
+                return false;
+        /* find group */
+        struct group *eg = find_array_element_by_name(s->anp->groups, arg1);
+        if (eg == NULL) {
+                eprintf("Cannot test network - no such group '%s'\n", arg1);
+                return true;
+        }
+        if (eg->ctx_groups->elements[0] == NULL) {
+                eprintf("Cannot test network - '%s' has no context group\n", arg1);
+                return true;
+        }
+        /* find item */
+        if (arg4 == 0 || arg4 > s->anp->asp->items->num_elements) {
+                eprintf("Cannot test network - no such item number '%d'\n", arg4);
+                return true;
+        }
+        struct item *item = s->anp->asp->items->elements[arg4 - 1];
+        mprintf("Testing network '%s' with item '%s'\n", s->anp->name, item->name);
+        tep_test_network_with_item(s->anp, eg, arg2, arg3, item, s->pprint, s->scheme);
+        return true;
+}
+
+bool cmd_tep_record_units(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* 'tep' group name */
+        double arg2;             /* step-size */
+        double arg3;             /* threshold */
+        char arg4[MAX_ARG_SIZE]; /* 'record' group name */
+        char arg5[MAX_ARG_SIZE]; /* filename */
+        if (sscanf(cmd, fmt, arg1, &arg2, &arg3, arg4, arg5) != 5)
+                return false;
+        /* find group */
+        struct group *eg = find_array_element_by_name(s->anp->groups, arg1);
+        if (eg == NULL) {
+                eprintf("Cannot record units - no such group '%s'\n", arg1);
+                return true;
+        }
+        if (eg->ctx_groups->elements[0] == NULL) {
+                eprintf("Cannot record units - '%s' has no context group\n", arg1);
+                return true;
+        }
+        /* find 'record' group */
+        struct group *rg = find_array_element_by_name(s->anp->groups, arg4);
+        if (rg == NULL) {
+                eprintf("Cannot record units - no such group '%s'\n", arg4);
+                return true;
+        }
+        mprintf("Recording units of group '%s' in '%s'\n", rg->name, s->anp->name);
+        tep_record_units(s->anp, eg, arg2, arg3, rg, arg5);
+        mprintf("Written activation vectors \t [ %s ]\n", arg5);
+        return true;
+}
+
+bool cmd_tep_write_micro_ticks(char *cmd, char *fmt, struct session *s)
+{
+        char arg1[MAX_ARG_SIZE]; /* group name */
+        double arg2;             /* step-size */
+        double arg3;             /* threshold */
+        char arg4[MAX_ARG_SIZE]; /* filename */
+        if (sscanf(cmd, fmt, arg1, &arg2, &arg3, arg4) != 4)
+                return false;
+        /* find group */
+        struct group *eg = find_array_element_by_name(s->anp->groups, arg1);
+        if (eg == NULL) {
+                eprintf("Cannot compute micro processing ticks - no such group '%s'\n", arg1);
+                return true;
+        }
+        if (eg->ctx_groups->elements[0] == NULL) {
+                eprintf("Cannot compute micro processing ticks - '%s' has no context group\n", arg1);
+                return true;
+        }
+        mprintf("Computing micro processing ticks for group '%s' (h = %lf; th = %lf) in '%s'\n",
+                eg->name, arg2, arg3, s->anp->name);
+        tep_write_micro_ticks(s->anp, eg, arg2, arg3, arg4);
+        mprintf("Written micro ticks \t [ %s ]\n", arg4);
         return true;
 }
