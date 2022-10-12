@@ -19,8 +19,6 @@
 
 #include <stdint.h>
 
-#include "vector.h"
-
 struct matrix
 {
         uint32_t rows;              /* number of rows */
