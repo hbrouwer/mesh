@@ -27,19 +27,19 @@
 /* set */
 struct set
 {
-        char *name;                 /* name of this set */
-        struct array *items;        /* items */
-        uint32_t *order;            /* order in which to present items */
+        char *name;                     /* name of this set */
+        struct array *items;            /* items */
+        uint32_t *order;                /* order in which to present items */
 };
 
 /* item */
 struct item
 {
-        char *name;                 /* name of this item */
-        uint32_t num_events;        /* number of events */
-        char *meta;                 /* meta information */
-        struct vector **inputs;     /* input vectors */
-        struct vector **targets;    /* target vectors */
+        char *name;                     /* name of this item */
+        uint32_t num_events;            /* number of events */
+        char *meta;                     /* meta information */
+        struct vector **inputs;         /* input vectors */
+        struct vector **targets;        /* target vectors */
 };
 
 struct set *create_set(char *name);

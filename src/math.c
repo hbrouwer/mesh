@@ -90,11 +90,12 @@ double normrand(double mu, double sigma)
         return rs1 * sigma + mu;
 }
 
-/*
- * Euclidean norm:
- *
- *      en = sqrt(sum_i (x_i ^ 2))
- */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Euclidean norm:
+
+        en = sqrt(sum_i (x_i ^ 2))
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double euclidean_norm(struct vector *v)
 {
         double ssq = 0.0;
@@ -104,11 +105,12 @@ double euclidean_norm(struct vector *v)
         return sqrt(ssq);
 }
 
-/*
- * Inner product:
- *
- *      ip = sum_i (x_i * y_i)
- */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Inner product:
+
+        ip = sum_i (x_i * y_i)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double inner_product(struct vector *v1, struct vector *v2)
 {
         double ip = 0.0;
@@ -118,13 +120,14 @@ double inner_product(struct vector *v1, struct vector *v2)
         return ip;
 }
 
-/*
- * Harmonic mean:
- *
- *                     x_i * y_i
- *      hm = 2 * sum_i ---------
- *                     x_i + y_i
- */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Harmonic mean:
+
+                       x_i * y_i
+        hm = 2 * sum_i ---------
+                       x_i + y_i
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double harmonic_mean(struct vector *v1, struct vector *v2)
 {
         double nom = 0.0, denom = 0.0;
@@ -136,13 +139,14 @@ double harmonic_mean(struct vector *v1, struct vector *v2)
         return 2.0 * (nom / denom);
 }
 
-/*
- * Cosine:
- *
- *                       sum_i (x_i * y_i)
- *      cs = ---------------------------------------------
- *           sqrt(sum_i (x_i ^ 2)) * sqrt(sum_i (y_i ^ 2))
- */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Cosine:
+
+                         sum_i (x_i * y_i)
+        cs = ---------------------------------------------
+             sqrt(sum_i (x_i ^ 2)) * sqrt(sum_i (y_i ^ 2))
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double cosine(struct vector *v1, struct vector *v2)
 {
         double nom = 0.0, xsq = 0.0, ysq = 0.0;
@@ -162,13 +166,14 @@ double cosine(struct vector *v1, struct vector *v2)
                 return 0.0;
 }
 
-/*
- * Tanimoto:
- *
- *                           sum_i (x_i * y_i)
- *      jc = -----------------------------------------------------
- *           sum_i (x_i ^ 2) + sum_i (y_i ^ 2) - sum_i (x_i * y_i)
- */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Tanimoto:
+
+                             sum_i (x_i * y_i)
+        tm = -----------------------------------------------------
+             sum_i (x_i ^ 2) + sum_i (y_i ^ 2) - sum_i (x_i * y_i)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double tanimoto(struct vector *v1, struct vector *v2)
 {
         double nom = 0.0, xsq = 0.0, ysq = 0.0;
@@ -181,13 +186,14 @@ double tanimoto(struct vector *v1, struct vector *v2)
         return nom / (xsq + ysq - nom);
 }
 
-/*
- * Dice:
- *
- *                2 * sum_i (x_i * y_i)
- *      dc = ---------------------------------
- *           sum_i (x_i ^ 2) * sum_i (y_i ^ 2)
- */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Dice:
+
+                  2 * sum_i (x_i * y_i)
+        dc = ---------------------------------
+             sum_i (x_i ^ 2) * sum_i (y_i ^ 2)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double dice(struct vector *v1, struct vector *v2)
 {
         double nom = 0.0, xsq = 0.0, ysq = 0.0;
@@ -200,15 +206,16 @@ double dice(struct vector *v1, struct vector *v2)
         return (2.0 * nom) / (xsq + ysq);
 }
 
-/*
- * Pearson's correlation:
- *
- *                     sum_i ((x_i - x) * (y_i - y))
- *      pc = -----------------------------------------------------
- *          sqrt(sum_i (x_i - x) ^ 2) * sqrt(sum_i (y_i - y) ^ 2)
- *
- *      where x is the average of vector x, and y the average of vector y.
- */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Pearson's correlation:
+
+                       sum_i ((x_i - x) * (y_i - y))
+        pc = -----------------------------------------------------
+             sqrt(sum_i (x_i - x) ^ 2) * sqrt(sum_i (y_i - y) ^ 2)
+
+where x is the average of vector x, and y the average of vector y.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 double pearson_correlation(struct vector *v1, struct vector *v2)
 {
         double xmn = 0.0, ymn = 0.0;

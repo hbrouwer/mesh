@@ -29,7 +29,8 @@ void randomize_gaussian(struct matrix *m, struct network *n)
         for (uint32_t i = 0; i < m->rows; i++)
                 for (uint32_t j = 0; j < m->cols; j++)
                         m->elements[i][j] = normrand(
-                                n->pars->random_mu, n->pars->random_sigma);
+                                n->pars->random_mu,
+                                n->pars->random_sigma);
 }
 
 /*

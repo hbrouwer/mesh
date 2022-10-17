@@ -21,8 +21,8 @@
 
 struct vector
 {
-        uint32_t size;              /* vector size */
-        double *elements;           /* elements */
+        uint32_t size;                  /* vector size */
+        double *elements;               /* elements */
 };
 
 struct vector *create_vector(uint32_t size);

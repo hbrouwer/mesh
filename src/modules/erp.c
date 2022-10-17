@@ -48,8 +48,7 @@ void erp_contrast(struct network *n, struct group *gen,
         struct matrix *effects = create_matrix(cv->size, tv->size);
         for (uint32_t r = 0; r < effects->rows; r++)
                 for (uint32_t c = 0; c < effects->cols; c++)
-                        effects->elements[r][c] = tv->elements[c]
-                                - cv->elements[r];
+                        effects->elements[r][c] = tv->elements[c] - cv->elements[r];
 
         cprintf("\n");
         cprintf("Control: %s\n\n", ctl->name);

@@ -34,10 +34,10 @@ enum array_type
 
 struct array
 {
-        enum array_type type;       /* array type */
-        uint32_t num_elements;      /* number of elements in the array */
-        uint32_t max_elements;      /* max number of elements */
-        void **elements;            /* elements */
+        enum array_type type;           /* array type */
+        uint32_t num_elements;          /* number of elements in the array */
+        uint32_t max_elements;          /* max number of elements */
+        void **elements;                /* elements */
 };
 
 struct array *create_array(enum array_type type);

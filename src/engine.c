@@ -224,11 +224,9 @@ void two_stage_forward_sweep(struct network *n, struct item *item,
                 break;
         }
         struct group *ts_fw_group = find_network_group_by_name(
-                np,
-                n->ts_fw_group->name);
+                np, n->ts_fw_group->name);
         struct item  *ts_fw_item  = find_array_element_by_name(
-                n->ts_fw_set->items,
-                item->name);
+                n->ts_fw_set->items, item->name);
         copy_vector(ts_fw_item->inputs[event], ts_fw_group->vector);
         feed_forward(np, ts_fw_group);
 }
@@ -249,11 +247,9 @@ void two_stage_backward_sweep(struct network *n, struct item *item,
                 break;
         }
         struct group *ts_bw_group = find_network_group_by_name(
-                np,
-                n->ts_bw_group->name);
+                np, n->ts_bw_group->name);
         struct item  *ts_bw_item  = find_array_element_by_name(
-                n->ts_bw_set->items,
-                item->name);
+                n->ts_bw_set->items, item->name);
         bp_output_error(n, ts_bw_group, ts_bw_item->targets[event]);
         bp_backpropagate_error(np, ts_bw_group);
 }

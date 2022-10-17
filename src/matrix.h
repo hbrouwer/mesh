@@ -21,9 +21,9 @@
 
 struct matrix
 {
-        uint32_t rows;              /* number of rows */
-        uint32_t cols;              /* number of columns */
-        double **elements;          /* elements */
+        uint32_t rows;                  /* number of rows */
+        uint32_t cols;                  /* number of columns */
+        double **elements;              /* elements */
 };
 
 struct matrix *create_matrix(uint32_t rows, uint32_t cols);
