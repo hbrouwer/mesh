@@ -1214,8 +1214,8 @@ bool cmd_show_vector(char *cmd, char *fmt, struct session *s)
         /* vector types */
         enum vector_type
         {
-                vtype_units,
-                vtype_error
+                vtype_units,            /* units */
+                vtype_error             /* error */
         } type;
         /* units */
         if        (strcmp(arg1, "units") == 0) {
@@ -1260,9 +1260,9 @@ bool cmd_show_matrix(char *cmd, char *fmt, struct session *s)
         /* matrix type */
         enum matrix_type
         {
-                mtype_weights,
-                mtype_gradients,
-                mtype_dynamic_params
+                mtype_weights,          /* weights */
+                mtype_gradients,        /* gradients */
+                mtype_dynamic_params    /* dynamic learning parameters */
         } type;
         /* weights */
         if      (strcmp(arg1, "weights") == 0)

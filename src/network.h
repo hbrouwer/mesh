@@ -29,17 +29,17 @@
 /* network type */
 enum network_type
 {
-        ntype_ffn,
-        ntype_srn,
-        ntype_rnn
+        ntype_ffn,                      /* feed forward network */
+        ntype_srn,                      /* simple recurrent network */
+        ntype_rnn                       /* recurrent network */
 };
 
 /* training order */
 enum training_order
 {
-        train_ordered,
-        train_permuted,
-        train_randomized
+        train_ordered,                  /* ordered */
+        train_permuted,                 /* permuted */
+        train_randomized                /* randomized */
 };
 
                 /*****************

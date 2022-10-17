@@ -24,12 +24,12 @@
 /* array type */
 enum array_type
 {
-        atype_networks,
-        atype_groups,
-        atype_projs,
-        atype_sets,
-        atype_items,
-        atype_vectors
+        atype_networks,                 /* networks */
+        atype_groups,                   /* groups */
+        atype_projs,                    /* projections */
+        atype_sets,                     /* sets */
+        atype_items,                    /* items */
+        atype_vectors                   /* vectors */
 };
 
 struct array
