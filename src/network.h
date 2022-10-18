@@ -70,7 +70,7 @@ struct network
                 (struct vector *v1,
                  struct vector *v2);    /* vector similarity metric */
         struct network_flags *flags;    /* network flags */
-        struct network_params *pars;    /* network paramaters */
+        struct network_params *pars;    /* network parameters */
         struct rnn_unfolded_network
                 *unfolded_net;          /* unfolded recurrent network */
 };
@@ -145,7 +145,7 @@ struct group
         struct array *out_projs;        /* array of outgoing projections */
         struct array *ctx_groups;       /* array of context groups */
         struct group_flags *flags;      /* flags */
-        struct group_params *pars;      /* paramaters */
+        struct group_params *pars;      /* parameters */
 };
 
 struct group_flags
