@@ -15,6 +15,8 @@
 
 * `harmonic_mean`                Harmonic mean
 
+* `cosine`                       Cosine similarity
+
 * `tanimoto`                     Tanimoto coefficient
 
 * `dice`                         Dice coefficient

@@ -233,6 +233,7 @@
 "                                                                         \n" \
 "* `inner_product`                Inner product                           \n" \
 "* `harmonic_mean`                Harmonic mean                           \n" \
+"* `cosine`                       Cosine similarity                       \n" \
 "* `tanimoto`                     Tanimoto coefficient                    \n" \
 "* `dice`                         Dice coefficient                        \n" \
 "* `pearson_correlation`          Pearson's correlation coefficient       \n" \
